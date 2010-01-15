@@ -1,0 +1,85 @@
+/**
+ * $Id$
+ */
+package fna.parsing;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.XPath;
+
+import fna.parsing.character.CharacterLearner;
+
+/**
+ * @author chunshui
+ */
+public class VolumeFinalizer {
+
+	private String glossary;
+
+	private ProcessListener listener;
+
+	public VolumeFinalizer(ProcessListener listener) {
+		glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
+		this.listener = listener;
+	}
+	
+	public static void main (String [] args) {
+		
+	}
+
+	public void outputFinal() {
+		listener.progress(20);
+		CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name")
+				/*+ "_corpus"*/, this.glossary);
+		listener.progress(40);
+		cl.markupCharState();
+		// output final records
+		// read in treatments, replace description with what cl output
+		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
+		int total = source.listFiles().length;
+
+		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("FINAL"));
+
+		try {
+
+			SAXBuilder builder = new SAXBuilder();
+			for (int count = 1; count <= total; count++) {
+				System.out.println("finalizing "+count);
+				listener.progress(40+(count*60/total));
+				File file = new File(source, count + ".xml");
+				Document doc = builder.build(file);
+				Element root = doc.getRootElement();	
+				
+				String descXML = cl.getMarkedDescription(count + ".txt");	
+				if (descXML != null && !descXML.equals("")) {
+					doc = builder.build(new ByteArrayInputStream(
+							descXML.getBytes("UTF-8")));
+					Element descript = doc.getRootElement(); // marked-up
+					descript.detach();
+
+					Element description = (Element) XPath.selectSingleNode(
+							root, "/treatment/description");
+					int index = root.indexOf(description);
+					// replace
+					if (index >= 0) {
+						root.setContent(index, descript);
+					}
+				}
+				root.detach();
+				
+				File result = new File(target, count + ".xml");
+				ParsingUtil.outputXML(root, result);
+
+				listener.info("" + count, "", result.getName());
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ParsingException("Failed to output the final result.", e);
+		}
+	}
+}
