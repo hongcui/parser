@@ -1,0 +1,6 @@
+[200807070810]VolumeExtractor：45版本与37版本没有主要变化，只是修改了文件的路径。
+[200807070811]调试VolumeVerifier(VolumeChecker)。
+[200807070813]VolumeChecker运行后，会更新TaxonIndexer。好吧，先改这个。
+[200807070817]TaxonIndexer主要增加了setName及setNumber两个方法，这样在VolumeChecker中，可以更新TaxonIndexer。
+[200807070820]用对象持久化的方式保存更新的TaxonIndexer吧。
+[200807070947]VolumeVerifier更新成功。
