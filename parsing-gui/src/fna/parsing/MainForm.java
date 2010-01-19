@@ -58,7 +58,7 @@ import fna.parsing.VolumeMarkup;
 import fna.parsing.VolumeTransformer;
 import fna.parsing.VolumeVerifier;
 import fna.parsing.character.LearnedTermsReport;
-
+import org.eclipse.swt.custom.ScrolledComposite;
 /**
  * @author chunshui
  */
@@ -447,7 +447,13 @@ public class MainForm {
 		final Button startExtractionButton = new Button(composite_1, SWT.NONE);
 		startExtractionButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				startExtraction(); // start the extraction process
+				try {
+					startExtraction(); // start the extraction process
+				} catch (Exception exe) {
+					LOGGER.error("unable to extract in mainform", exe);
+					exe.printStackTrace();
+				}
+				 
 				// Saving the status of markup
 				statusOfMarkUp[1] = true;
 				try {
@@ -535,7 +541,8 @@ public class MainForm {
 		clearVerificationButton.setBounds(654, 385, 100, 23);
 		clearVerificationButton.setText("Clear");
 
-		verificationTable = new Table(composite_2, SWT.FULL_SELECTION | SWT.BORDER);
+		verificationTable = new Table(composite_2, SWT.FULL_SELECTION | SWT.BORDER | SWT.WRAP);
+		//verificationTable = new Table(composite_2, SWT.H_SCROLL | SWT.V_SCROLL);
 		verificationTable.setBounds(10, 10, 744, 369);
 		verificationTable.setLinesVisible(true);
 		verificationTable.setHeaderVisible(true);
@@ -756,7 +763,7 @@ public class MainForm {
 
 		final TableColumn numberColumnTableColumn = new TableColumn(tagTable, SWT.NONE);
 		numberColumnTableColumn.setWidth(78);
-		numberColumnTableColumn.setText("Count");
+		numberColumnTableColumn.setText("Sentence Id");
 
 	    final TableColumn modifierColumnTableColumn = new TableColumn(tagTable, SWT.NONE);
 	    modifierColumnTableColumn.setWidth(65);
@@ -975,7 +982,7 @@ public class MainForm {
         }
 	}
 	
-	private void startExtraction() {
+	private void startExtraction() throws Exception {
 		
 		 extractionProgressBar.setVisible(true);
 
