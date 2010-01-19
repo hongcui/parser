@@ -59,7 +59,7 @@ public class VolumeMarkupDbAccessor {
 		try {
 			conn = DriverManager.getConnection(url);
 			
-			String sql = "select distinct tag from sentence where tag != 'unknown' and tag is not null";
+			String sql = "select distinct tag from sentence where tag != 'unknown' and tag is not null and tag not like '% %'";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			
