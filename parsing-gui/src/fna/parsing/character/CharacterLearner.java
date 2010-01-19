@@ -26,6 +26,7 @@ import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.DeHyphenizerCorrected;
 
 /**
  * Changes:
@@ -123,6 +124,7 @@ public class CharacterLearner  {
 				stmt.execute("delete from learnedstates");
 				//Statement stmt = conn.createStatement();
 				stmt.execute("update sentence set charsegment =''");
+
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -137,7 +139,7 @@ public class CharacterLearner  {
 		parseSentences();//create StateGroups 
 		bootstrap();//infer characters
 		
-		DeHyphenizer dh = new DeHyphenizer(database, "learnedstates", "state", "count", "_");
+		DeHyphenizerCorrected dh = new DeHyphenizerCorrected(database, "learnedstates", "state", "count", "_");
 		dh.deHyphen();
 		this.statespatterns = collectStateNames(); //create character patterns
 	}
@@ -872,9 +874,9 @@ public class CharacterLearner  {
 		int total = sentences.size();
 		int offset = 0;
 		for(int sentid = 0; sentid < total; sentid++){
-			
-			System.out.println("sentence to clauses "+sentid);
-			
+			if(sentid == 567){
+				System.out.println();
+			}
 			String taggedsent = (String)sentences.get(new Integer(sentid));
 			taggedsent = tagStates(taggedsent);
 			String[] info = getInfo(sentid);
