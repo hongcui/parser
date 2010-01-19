@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 
 import fna.parsing.ApplicationUtilities;
-
+import fna.parsing.DeHyphenizerCorrected;
 /**
  * compare learned terms with what is in glossary, produce a report
  * @author hongcui
@@ -26,8 +26,8 @@ public class LearnedTermsReport {
 	static private String gstablename = "glossstructures";
 	private String database;
 	static private Connection conn = null;
-	static private String username = "termsuser";
-	static private String password = "termspassword";
+	static private String username = ApplicationUtilities.getProperty("database.username");
+	static private String password = ApplicationUtilities.getProperty("database.password");
 	private ArrayList overlappedstructures = new ArrayList();
 	private ArrayList newstructures = new ArrayList();
 	private ArrayList modifiedstructures = new ArrayList();
@@ -92,7 +92,8 @@ public class LearnedTermsReport {
 			createGlossStructureTable();
 			//make another table with learned singular organ names.
 			createLearnedStructureTable();
-			DeHyphenizer dh = new DeHyphenizer("fnav5_corpus", otablename, "structure", null, "_");
+			DeHyphenizerCorrected dh = new DeHyphenizerCorrected(ApplicationUtilities.getProperty("database.name"), 
+					otablename, "structure", null, "_");
 			dh.deHyphen();
 		}catch(Exception e){
 			e.printStackTrace();
