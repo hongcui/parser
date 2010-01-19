@@ -121,7 +121,7 @@ public class DeHyphenizer {
 		}
 		return term.trim();
 	}
-	private String formString(int start, int end, String connector){
+	protected String formString(int start, int end, String connector){
 		String str = "";
 		for(int i = start; i<=end; i++){
 			str +=i+connector;
@@ -129,7 +129,7 @@ public class DeHyphenizer {
 		return str;
 	}
 	
-	private String formTerm(String[] segs, int start, int end){
+	protected String formTerm(String[] segs, int start, int end){
 		String str="";
 		for(int i = start; i<=end; i++){
 			str +=segs[i];
