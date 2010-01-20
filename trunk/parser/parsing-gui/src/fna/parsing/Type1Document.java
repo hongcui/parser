@@ -28,6 +28,9 @@ import org.eclipse.swt.widgets.Label;
 
 import fna.db.ConfigurationDbAccessor;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 
 public class Type1Document {
 
@@ -49,14 +52,23 @@ public class Type1Document {
 	private static Button saveButton = null;
 	private static Button addRowButton = null;
 	private static String [] tagnames = null;
+	private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
 	
 	public void showType1Document() {
 		final Display display = Display.getDefault();
 		
 		shell = new Shell();
-		shell.setSize(520, 178);
+		shell.setSize(559, 195);
 		shell.setText("Type 1");
 		shell.setLayout(new RowLayout(SWT.HORIZONTAL));
+		
+		/*ScrolledComposite scrolledComposite = new ScrolledComposite(shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite.setLayoutData(new RowData(522, 139));
+		scrolledComposite.setBounds(0, 10, 496, 624); //0, 10, 496, 124
+		formToolkit.adapt(scrolledComposite);
+		formToolkit.paintBordersFor(scrolledComposite);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true); */
 		
 		group = new Group(shell, SWT.NONE);
 		group.setLayoutData(new RowData(490, 116));
@@ -121,6 +133,8 @@ public class Type1Document {
 		addRowButton = new Button(group, SWT.NONE);
 		addRowButton.setBounds(296, 99, 75, 25);
 		addRowButton.setText("Add a row");
+		
+
 		addRowButton.addMouseListener(new MouseListener(){
 			public void mouseUp(MouseEvent mEvent){
 				//add a row
@@ -139,6 +153,8 @@ public class Type1Document {
 			exe.printStackTrace();
 			LOGGER.error("Error loading Tag styles", exe);
 		}
+		
+
 		
 		shell.open();
 		shell.layout();
@@ -226,15 +242,22 @@ public class Type1Document {
 	
 	private void loadStyleMappinFile() throws IOException {		
 	
-		String pathName = getStyleMappingFile(); 
+		String pathName = getStyleMappingFile();
+		String style = "";
+		String tag = "";
 		
 		File styleMapping = new File(pathName);
 		if(styleMapping.isFile() && styleMapping.exists()) {
 			BufferedReader in = new BufferedReader(new FileReader(styleMapping));
 			String line = "";
 			while ((line = in.readLine())!= null){
-				String style = line.substring(0, line.indexOf("="));
-				String tag = line.substring(line.indexOf("=")+1);
+				if(line.indexOf("=")!= -1) {
+					style = line.substring(0, line.indexOf("="));
+					tag = line.substring(line.indexOf("=")+1);
+				} else {
+					style = line;
+				}
+
 				Integer key = new Integer(count-1);
 				Text text = textFields.get(key);
 				Combo combo = comboFields.get(key);
@@ -248,5 +271,4 @@ public class Type1Document {
 			}
 		}
 	}
-
 }
