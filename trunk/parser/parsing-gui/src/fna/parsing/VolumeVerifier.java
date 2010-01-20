@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -54,6 +55,7 @@ public class VolumeVerifier {
 	
 	private String namelist = "|";
 	
+	private static final Logger LOGGER = Logger.getLogger(VolumeVerifier.class);
 	public VolumeVerifier(ProcessListener listener) {
 		this.listener = listener;
 
