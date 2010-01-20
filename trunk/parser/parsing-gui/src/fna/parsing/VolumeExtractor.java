@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Link;
@@ -52,6 +53,7 @@ public class VolumeExtractor {
 	
 	private String source;
 	//private MainForm mainForm;
+	private static final Logger LOGGER = Logger.getLogger(VolumeExtractor.class);
 	
 	private String target;
 	
@@ -66,7 +68,7 @@ public class VolumeExtractor {
 	//private String start = "Name"; //TODO: include the following in the configuration file: style names indicating the start of a new treatment
 	//private String syn = "Syn";
 	//private String tribegennamestyle = "smallCaps";
-	private String start = ".*?(Heading|Name).*"; //starts a treatment
+	private String start = "^Heading.*"; //starts a treatment
 	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	public String tribegennamestyle = "caps";
 	private static String ignorednames = "incertae sedis";
@@ -86,7 +88,7 @@ public class VolumeExtractor {
 	 * 
 	 * TODO: unzip the document.xml from the docx file
 	 */
-	public void extract() {
+	public void extract() throws Exception {
 		try {
 			listener.progress(1);
 			// init the outputter
@@ -112,8 +114,9 @@ public class VolumeExtractor {
 			// output the last file
 			output();
 		} catch (Exception e) {
+			LOGGER.error("Unable to parse/ extract the file in VolumeExtractor:extract", e);
 			e.printStackTrace();
-			throw new ParsingException(e); //HongCui
+			throw new ParsingException(e);
 		}
 	}
 
