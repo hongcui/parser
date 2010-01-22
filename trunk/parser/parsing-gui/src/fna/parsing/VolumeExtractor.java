@@ -68,8 +68,8 @@ public class VolumeExtractor {
 	//private String start = "Name"; //TODO: include the following in the configuration file: style names indicating the start of a new treatment
 	//private String syn = "Syn";
 	//private String tribegennamestyle = "smallCaps";
-	//public static String start = ".*?(Heading|Name).*"; //starts a treatment
-	public static String start = ""; //starts a treatment
+	public static String start = ".*?(Heading|Name).*"; //starts a treatment
+	//public static String start = ""; //starts a treatment
 	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	public String tribegennamestyle = "caps";
 	private static String ignorednames = "incertae sedis";
@@ -83,7 +83,6 @@ public class VolumeExtractor {
 		Registry.NomenclatureStylePtn = start;
 		Registry.SynonymStylePtn = names;
 	}
-
 	/**
 	 * Extract the data from the source file
 	 * 
