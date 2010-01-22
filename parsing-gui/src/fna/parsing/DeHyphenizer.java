@@ -20,15 +20,15 @@ public class DeHyphenizer {
 	private String countcolumn;
 	private String hyphen; 
 	static private Connection conn = null;
-	static private String username = "termsuser";
-	static private String password = "termspassword";
+	static private String username = ApplicationUtilities.getProperty("database.username");
+	static private String password = ApplicationUtilities.getProperty("database.password");
 	
 	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen) {
 		// TODO Auto-generated constructor stub
 		try{
 			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
