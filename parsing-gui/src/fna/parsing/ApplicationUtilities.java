@@ -76,6 +76,34 @@ public class ApplicationUtilities {
 		
 	}
 	
+	public static String longestCommonSubstring(String first, String second) {
+		 
+		 String tmp = "";
+		 String max = "";
+						
+		 for (int i=0; i < first.length(); i++){
+			 for (int j=0; j < second.length(); j++){
+				 for (int k=1; (k+i) <= first.length() && (k+j) <= second.length(); k++){
+										 
+					 if (first.substring(i, k+i).equals(second.substring(j, k+j))){
+						 tmp = first.substring(i,k+i);
+					 }
+					 else{
+						 if (tmp.length() > max.length())
+							 max=tmp;
+						 tmp="";
+					 }
+				 }
+					 if (tmp.length() > max.length())
+							 max=tmp;
+					 tmp="";
+			 }
+		 }
+				
+		 return max;        
+			    
+	}
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String type = getProperty("popup.header.error");
