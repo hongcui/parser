@@ -44,7 +44,7 @@
 #use lib 'C:\\fna\\code\\Unsupervised\\';
 #use encoding "iso-8859-1"; #latin1
 #use encoding "cp1252"; #cp1252 is not the same as iso-8859-1, although they sometimes are all referred to as latin1!!!
-use lib 'C:\\Documents and Settings\\hongcui\\Desktop\\WordNov2009\\FNAParser\\Unsupervised\\';
+use lib 'D:\\SMART RA\\Workspace\\Unsupervised\\';
 use NounHeuristics;
 use InitialMarkup;
 use SentenceSpliter;
