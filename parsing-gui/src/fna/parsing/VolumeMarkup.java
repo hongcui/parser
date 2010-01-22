@@ -31,7 +31,7 @@ public class VolumeMarkup {
 		// call unsupervised.pl [descriptions are save in
 		// docs/output/descriptions]
 		String workdir = Registry.TargetDirectory;
-		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
+		String todofoldername = ApplicationUtilities.getProperty("DEHYPHENED");
 		String savefoldername = ApplicationUtilities.getProperty("MARKEDUP");
 		String databasenameprefix = ApplicationUtilities.getProperty("database.name");
 		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") + workdir
