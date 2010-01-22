@@ -90,13 +90,13 @@ public class ApplicationUtilities {
 					 }
 					 else{
 						 if (tmp.length() > max.length())
-							 max=tmp;
-						 tmp="";
+							 max = tmp;
+						 tmp = "";
 					 }
 				 }
 					 if (tmp.length() > max.length())
-							 max=tmp;
-					 tmp="";
+							 max = tmp;
+					 tmp = "";
 			 }
 		 }
 				
