@@ -39,17 +39,18 @@ public class VolumeDehyphenizer {
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, String todofoldername, String database) {
         this.listener = listener;
+        this.database = database;
         workdir = workdir.endsWith("/")? workdir : workdir+"/";
         folder = new File(workdir+todofoldername);
-        outfolder = new File(workdir+todofoldername+"-dehyphened");
+        outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
         if(!outfolder.exists()){
             outfolder.mkdir();
         }
         
         try{
             if(conn == null){
-                Class.forName("com.mysql.jdbc.Driver");
-                String URL = "jdbc:mysql://localhost/"+database+"?user="+this.username+"&password="+this.password;
+                Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+                String URL = ApplicationUtilities.getProperty("database.url");
                 conn = DriverManager.getConnection(URL);
                 //createNumTextMixTable();
                 createWordTable();
