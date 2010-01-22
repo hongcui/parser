@@ -1082,7 +1082,7 @@ public class MainForm {
 	private void startMarkup() {
 		markupProgressBar.setVisible(true);
 		String workdir = Registry.TargetDirectory;
-		String todofoldername = Registry.TargetDirectory + "\\" + ApplicationUtilities.getProperty("DESCRIPTIONS");
+		String todofoldername = Registry.TargetDirectory + "/" + ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
 		
