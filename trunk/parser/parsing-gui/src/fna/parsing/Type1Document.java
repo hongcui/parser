@@ -40,12 +40,17 @@ public class Type1Document {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new Type1Document().showType1Document();
+		System.out.println("disposed :(");
+		//VolumeExtractor.start = "Partha";
+		//new VolumeExtractor();
+		//System.out.println(comboFields.get(new Integer(1)).getText());
 
 	}
 	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();
 	private static final Logger LOGGER = Logger.getLogger(Type1Document.class);
 	private static final HashMap <Integer, Text> textFields = new HashMap<Integer, Text> ();
 	private static final HashMap <Integer, Combo> comboFields = new HashMap<Integer, Combo> ();
+	private static final HashMap <Integer, Button> checkFields = new HashMap<Integer, Button> ();
 	private static int count = 1;
 	private static Group group = null;
 	private static Shell shell = null;
@@ -58,7 +63,7 @@ public class Type1Document {
 		final Display display = Display.getDefault();
 		
 		shell = new Shell();
-		shell.setSize(559, 195);
+		shell.setSize(514, 195);
 		shell.setText("Type 1");
 		shell.setLayout(new RowLayout(SWT.HORIZONTAL));
 		
@@ -71,11 +76,11 @@ public class Type1Document {
 		scrolledComposite.setExpandVertical(true); */
 		
 		group = new Group(shell, SWT.NONE);
-		group.setLayoutData(new RowData(490, 116));
+		group.setLayoutData(new RowData(487, 136));
 		group.setBounds(10, 10, 500, 115);
 		
 		Combo combo_1 = new Combo(group, SWT.NONE);
-		combo_1.setBounds(292, 52, 172, 23);
+		combo_1.setBounds(260, 52, 172, 23);
 				
 		//retrieve the data from db here.		
 		List <String> tags = new ArrayList <String>();
@@ -95,7 +100,7 @@ public class Type1Document {
 		
 		
 		saveButton = new Button(group, SWT.NONE);
-		saveButton.setBounds(389, 99, 75, 25);
+		saveButton.setBounds(341, 99, 75, 25);
 		saveButton.setText("Save");
 		saveButton.addMouseListener(new MouseListener(){
 			public void mouseUp(MouseEvent mEvent){
@@ -110,6 +115,8 @@ public class Type1Document {
 					LOGGER.error("Error saving tags to database in Type1doc", sqlexp);
 				}
 				ApplicationUtilities.showPopUpWindow(message , "Information", SWT.ICON_INFORMATION);
+				// call the function here to calculate common string
+				VolumeExtractor.start = ".*?(" + commonStartUpString() + ").*";
 				shell.dispose();
 			}
 			public void mouseDown(MouseEvent mEvent) { }
@@ -122,7 +129,7 @@ public class Type1Document {
 		label.setText("Word Document Style:");
 		
 		Label label_1 = new Label(group, SWT.NONE);
-		label_1.setBounds(292, 24, 172, 15);
+		label_1.setBounds(260, 24, 172, 15);
 		label_1.setText("Semantic Tags:");
 		
 		Text text = new Text(group, SWT.BORDER);
@@ -131,8 +138,13 @@ public class Type1Document {
 		count += 1;
 		
 		addRowButton = new Button(group, SWT.NONE);
-		addRowButton.setBounds(296, 99, 75, 25);
+		addRowButton.setBounds(260, 99, 75, 25);
 		addRowButton.setText("Add a row");
+		
+		Button checkButton = new Button(group, SWT.CHECK);
+		checkButton.setBounds(455, 54, 13, 16);
+		formToolkit.adapt(checkButton, true, true);
+		checkFields.put(new Integer(1), checkButton);
 		
 
 		addRowButton.addMouseListener(new MouseListener(){
@@ -192,7 +204,15 @@ public class Type1Document {
 	    rect = textFields.get(previousKey).getBounds();
 	    rect.y += 30;
 	    tempText.setBounds(rect);
-	    textFields.put(key, tempText);	
+	    textFields.put(key, tempText);
+	    
+	    Button tempCheck = new Button(group, SWT.CHECK);
+	    rect = checkFields.get(previousKey).getBounds();
+	    rect.y += 30;
+	    tempCheck.setBounds(rect);
+	    formToolkit.adapt(tempCheck, true, true);
+	    checkFields.put(key, tempCheck);
+	    
 		
 		rect = saveButton.getBounds();
 		rect.y += 30;				
@@ -270,5 +290,12 @@ public class Type1Document {
 				
 			}
 		}
+	}
+	
+	private String commonStartUpString(){
+		
+		Button button = new Button(group, SWT.CHECK);
+		//button.ge
+		return null;
 	}
 }
