@@ -1081,8 +1081,13 @@ public class MainForm {
 	
 	private void startMarkup() {
 		markupProgressBar.setVisible(true);
-
+		String workdir = Registry.TargetDirectory;
+		String todofoldername = Registry.TargetDirectory + "\\" + ApplicationUtilities.getProperty("DESCRIPTIONS");
+		String databasename = ApplicationUtilities.getProperty("database.name");
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
+		
+		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,databasename);
+		vd.dehyphen();
 		VolumeMarkup vm = new VolumeMarkup(listener);
 		vm.markup();
 		
