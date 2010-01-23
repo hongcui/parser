@@ -33,7 +33,7 @@ public class Test {
 		System.out.println(alist.get(0));
 		System.out.println(alist.get(1));
 		System.out.println(alist.get(2));*/
-		String a = "adsgsbfsbdrrr35gtebHeadking1cccc";
+		String a = "adsgsbfsbdrrr35gtebHeading1cccc";
 		String b = "$*YYYHeading2ssss";
 		String c = "Heading3" ;
 		String d = "Hearding4" ;
