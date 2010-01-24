@@ -83,10 +83,13 @@ public class Segmentation {
                         }
                         else{
                         	String hide = terms[i];
-                        	Pattern pattern2 = Pattern.compile("(<[a-zA-Z_ ]+>)|((?<![<])\\{[a-zA-Z_\\./\\-\\d\\s\\–{}]+\\}(?![>]))");
+                        	Pattern pattern2 = Pattern.compile("(<[a-zA-Z_ ]+>)|((?<![<])\\{[a-zA-Z_\\./\\-\\d\\–{}:]+\\}(?![>]))");
                         	Matcher matcher1 = pattern2.matcher(hide);
+                        	
                         	hide=matcher1.replaceAll("#");
                         	matcher1.reset();
+                        	//System.out.println(source+":"+terms[i]);
+                        	//System.out.println(source+":"+hide);
                         	Pattern pattern4 = Pattern.compile("[\\w±]+|(<\\{[a-zA-Z_]+\\}>)");
                         	matcher1 = pattern4.matcher(hide);
                         	if ( matcher1.find())
