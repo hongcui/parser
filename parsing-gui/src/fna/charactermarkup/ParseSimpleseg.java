@@ -45,6 +45,7 @@ public class ParseSimpleseg {
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
 			Statement stmt2 = conn.createStatement();
+			Statement stmt3 = conn.createStatement();
 			String str;
 			String newsrcstr="";
 			String oldsrcstr="";
@@ -133,13 +134,22 @@ public class ParseSimpleseg {
                             matcher1.reset();
                 		}               			
                 			if(!str.subSequence(i,j).toString().contains("<n>")){
+                				String singorg = str.subSequence(i+1,j-1).toString();
+                				ResultSet rs2 = stmt3.executeQuery("select * from singularplural where plural='"+singorg+"'");
+                				while(rs2.next()){
+                					singorg = rs2.getString(1);
+                				}
                 				if(ct>1){
-                					str2=str2.concat(">"+str.subSequence(i,j-1).toString());
-                					str4="</"+str.subSequence(i+1,j).toString()+str4;
+                					//str2=str2.concat(">"+str.subSequence(i,j-1).toString());
+                					str2=str2.concat("><"+singorg);
+                					//str4="</"+str.subSequence(i+1,j).toString()+str4;
+                					str4="</"+singorg+">"+str4;
                 				}
                 				else{
-                					str2=str2.concat(str.subSequence(i,j-1).toString());
-                					str4="</"+str.subSequence(i+1,j).toString();
+                					//str2=str2.concat(str.subSequence(i,j-1).toString());
+                					str2=str2.concat("<"+singorg);
+                					//str4="</"+str.subSequence(i+1,j).toString();
+                					str4="</"+singorg+">";
                 				}
                 				Pattern pattern7 = Pattern.compile("[\\d]?[\\s]?n[\\s]?=[\\s]?[\\d]+([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\d]+)*|x[\\s]?=[\\s]?[\\d]+([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\d]+)*");
                 				Matcher matcher1 = pattern7.matcher(str1);
