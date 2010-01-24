@@ -69,7 +69,7 @@ public class HideCommas {
                		 	int streq=0;
                		 	while (rs1.next()){
                		 		streq=1;
-                		 }
+                		}
                    		if(streq==1){
                    			Pattern pattern2 = Pattern.compile("(<[a-zA-Z_]+>)");
                    			Matcher matcher2 = pattern2.matcher(inputStr);
@@ -115,6 +115,7 @@ public class HideCommas {
                    				//Store in exception table and don't pass it to next function
                    				if(flag1==0){
                    					stmt1.execute("insert into exception values('"+source+"','"+inputStr+"')");
+                   					stmt1.execute("insert into tmp_result2 values('"+source+"','"+inputStr+"')");
                    				}
                    				flag1=1;
                    			}
