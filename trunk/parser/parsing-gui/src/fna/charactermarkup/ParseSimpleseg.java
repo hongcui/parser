@@ -244,11 +244,25 @@ public class ParseSimpleseg {
                 			i=matcher.start();
                 		}
                 		int j=matcher.end();
-                		if(flag1==0)
-                			str2=str2.concat(" "+"size=\""+str1.subSequence(i,j).toString());
-                		else
-                			str2=str2.concat(","+str1.subSequence(i,j).toString());
-                		flag1=1;
+                		if(flag==1){
+                			StringBuffer sb = new StringBuffer();
+        					Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
+        					Matcher matcher1 = pattern9.matcher(str2);
+        					while ( matcher1.find()){
+        						int k=matcher1.start();
+        						int l=matcher1.end();
+        						matcher1.appendReplacement(sb, str2.subSequence(k,l-1)+","+str1.subSequence(i,j).toString()+"\"");
+        					}
+        					matcher1.appendTail(sb);
+        					str2=sb.toString();
+                		}
+                		else{
+                			if(flag1==0)
+                				str2=str2.concat(" "+"size=\""+str1.subSequence(i,j).toString());
+                			else
+                				str2=str2.concat(","+str1.subSequence(i,j).toString());
+                			flag1=1;
+                		}
                 	}
                 	if(flag1==1)
                 		str2=str2.concat("\"");
@@ -309,7 +323,7 @@ public class ParseSimpleseg {
                 					chstate=terms[0];
                         			for(int m=1;m<terms.length;m++)
                         				chstate=chstate.concat("_or_"+terms[m]);  
-                					System.out.println(chstate);
+                					//System.out.println(chstate);
                 				}
                 				StringBuffer sb = new StringBuffer();
             					Pattern pattern9 = Pattern.compile(chstate+"=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
