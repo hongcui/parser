@@ -205,11 +205,26 @@ public class ParseComplexseg {
                             			i=matcher2.start();
                             		}
                             		j=matcher2.end();
-                            		if(flag1==0)
-                            			innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
-                            		else
-                            			innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
-                            		flag1=1;
+                            		if(flag==1){
+                            			StringBuffer sb = new StringBuffer();
+                    					Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
+                    					Matcher matcher1 = pattern9.matcher(innertagstate);
+                    					while ( matcher1.find()){
+                    						int p=matcher1.start();
+                    						int q=matcher1.end();
+                    						matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
+                    					}
+                    					matcher1.appendTail(sb);
+                    					innertagstate=sb.toString();
+                    					matcher1.reset();
+                            		}
+                            		else{
+                            			if(flag1==0)
+                            				innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
+                            			else
+                            				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+                            			flag1=1;
+                            		}
                             	}
                             	if(flag1==1)
                             		innertagstate=innertagstate.concat("\"");
@@ -443,11 +458,26 @@ public class ParseComplexseg {
                         			i=matcher2.start();
                         		}
                         		j=matcher2.end();
-                        		if(flag1==0)
-                        			innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
-                        		else
-                        			innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
-                        		flag1=1;
+                        		if(flag==1){
+                        			StringBuffer sb = new StringBuffer();
+                					Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
+                					Matcher matcher3 = pattern9.matcher(innertagstate);
+                					while ( matcher3.find()){
+                						int p=matcher3.start();
+                						int q=matcher3.end();
+                						matcher3.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
+                					}
+                					matcher3.appendTail(sb);
+                					innertagstate=sb.toString();
+                					matcher3.reset();
+                        		}
+                        		else{
+                        			if(flag1==0)
+                        				innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
+                        			else
+                        				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+                        			flag1=1;
+                        		}
                         	}
                         	if(flag1==1)
                         		innertagstate=innertagstate.concat("\"");
@@ -608,11 +638,26 @@ public class ParseComplexseg {
                         			i=matcher2.start();
                         		}
                         		j=matcher2.end();
-                        		if(flag1==0)
-                        			innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
-                        		else
-                        			innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
-                        		flag1=1;
+                        		if(flag==1){
+                        			StringBuffer sb = new StringBuffer();
+                					Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
+                					Matcher matcher3 = pattern9.matcher(innertagstate);
+                					while ( matcher3.find()){
+                						int p=matcher3.start();
+                						int q=matcher3.end();
+                						matcher3.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
+                					}
+                					matcher3.appendTail(sb);
+                					innertagstate=sb.toString();
+                					matcher3.reset();
+                        		}
+                        		else{
+                        			if(flag1==0)
+                        				innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
+                        			else
+                        				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+                        			flag1=1;
+                        		}
                         	}
                         	if(flag1==1)
                         		innertagstate=innertagstate.concat("\"");
