@@ -255,6 +255,7 @@ public class ParseSimpleseg {
         					}
         					matcher1.appendTail(sb);
         					str2=sb.toString();
+        					matcher1.reset();
                 		}
                 		else{
                 			if(flag1==0)
