@@ -140,15 +140,11 @@ public class ParseSimpleseg {
                 					singorg = rs2.getString(1);
                 				}
                 				if(ct>1){
-                					//str2=str2.concat(">"+str.subSequence(i,j-1).toString());
                 					str2=str2.concat("><"+singorg);
-                					//str4="</"+str.subSequence(i+1,j).toString()+str4;
                 					str4="</"+singorg+">"+str4;
                 				}
                 				else{
-                					//str2=str2.concat(str.subSequence(i,j-1).toString());
                 					str2=str2.concat("<"+singorg);
-                					//str4="</"+str.subSequence(i+1,j).toString();
                 					str4="</"+singorg+">";
                 				}
                 				Pattern pattern7 = Pattern.compile("[\\d]?[\\s]?n[\\s]?=[\\s]?[\\d]+([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\d]+)*|x[\\s]?=[\\s]?[\\d]+([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\d]+)*");
@@ -372,6 +368,19 @@ public class ParseSimpleseg {
                     }
                     else
                     	str2=str2.concat(">"+str6+str4);
+                    
+                    StringBuffer sb = new StringBuffer();
+                    Pattern pattern17 = Pattern.compile("<[a-zA-Z_]+><[a-zA-Z_]+");
+                	matcher2 = pattern17.matcher(str2);
+					while ( matcher2.find()){
+						int k=matcher2.start();
+						int l=matcher2.end();
+						matcher2.appendReplacement(sb, str2.subSequence(str2.indexOf('<', str2.indexOf('>')),l)+" modifier=\""+str2.subSequence(k+1,str2.indexOf('>'))+"\"");
+					}
+					matcher2.appendTail(sb);
+					str2=sb.toString();
+					matcher2.reset();
+                    
                 	stmt2.execute("insert into marked_simpleseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+str2+"')");
                 	matcher.reset();
                 }
