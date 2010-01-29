@@ -69,6 +69,7 @@ public class VolumeTransformerDbAccess {
 			
 		}catch (SQLException sqlexe) {
 			LOGGER.error("database access error in VolumeTransformerDbAccess:add2TaxonTable", sqlexe);
+			sqlexe.printStackTrace();
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 			
 		} finally {
