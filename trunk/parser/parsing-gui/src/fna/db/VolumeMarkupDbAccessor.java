@@ -70,6 +70,7 @@ public class VolumeMarkupDbAccessor {
 
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:updateData", sqlexe);
+			sqlexe.printStackTrace();
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 			
 		} finally {
