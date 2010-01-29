@@ -55,6 +55,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception exe) {
 			
 			LOGGER.error("Couldn't retrieve Tag Details in ConfigurationDbAccessor" + exe);
+			exe.printStackTrace();
 		} finally {
 			if (rset != null) {
 				rset.close();
@@ -90,11 +91,13 @@ public class ConfigurationDbAccessor {
 					}
 				} catch (Exception exe) {
 					LOGGER.error("Couldn't insert into configtags", exe);
+					exe.printStackTrace();
 				}
 			}
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
+			exe.printStackTrace();
 		} finally {
 
 			if (stmt != null) {
