@@ -82,6 +82,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in MainFormDbAccessor:removeMarkUpData", sqlexe);
+			sqlexe.printStackTrace();
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 			
 		} /*catch (ClassNotFoundException clexe) {
@@ -130,6 +131,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:loadTagsData", exe);
+			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:loadTagsData", clex);
@@ -179,6 +181,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:loadTagsTableData", exe);
+			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:loadTagsTableData", clex);
@@ -240,6 +243,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
+			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:updateContextData", clex);
@@ -299,6 +303,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:saveTagData", exe);
+			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} finally {
 			if (rs != null) {
@@ -336,6 +341,7 @@ public class MainFormDbAccessor {
 			}
 		}catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
+			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} finally {
 			if (rset != null) {
@@ -372,6 +378,7 @@ public class MainFormDbAccessor {
 		}
 	}catch (SQLException exe) {
 		LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
+		exe.printStackTrace();
 		throw new ParsingException("Failed to execute the statement.", exe);
 	} finally {
 		if (rset != null) {
@@ -500,6 +507,7 @@ public class MainFormDbAccessor {
 			}
 		} catch (Exception exe) {
 			LOGGER.error("Error loading saved status",exe);
+			exe.printStackTrace();
 		} finally {
 			
 			if (rset != null) {
@@ -564,6 +572,7 @@ public class MainFormDbAccessor {
 			
 		} catch (Exception exe) {
 			LOGGER.error("Unable to save status", exe);
+			exe.printStackTrace();
 		} finally {
 			
 			if (stmt != null) {
