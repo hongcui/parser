@@ -630,12 +630,12 @@ public class MainForm {
 		removeMarkupButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeMarkup();
-				try {
+				/*try { You don't need to run markup again ater removal!
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
 					statusOfMarkUp[4] = false;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
-				}
+				} */
 				
 			}
 		});
