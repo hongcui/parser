@@ -14,6 +14,8 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.regex.*;
 
+import org.apache.log4j.Logger;
+
 //import fna.parsing.finalizer.Output;
 
 
@@ -36,6 +38,7 @@ public class VolumeDehyphenizer {
     protected String database = "";
     protected Hashtable<String,String> mapping = new Hashtable<String, String>();
     protected ProcessListener listener;
+    private static final Logger LOGGER = Logger.getLogger(VolumeDehyphenizer.class);
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, String todofoldername, String database) {
         this.listener = listener;
@@ -56,6 +59,7 @@ public class VolumeDehyphenizer {
                 createWordTable();
             }
         }catch(Exception e){
+        	LOGGER.error("Database is down! (VolumeDehyphenizer)", e);
             e.printStackTrace();
         }
     }
@@ -77,6 +81,7 @@ public class VolumeDehyphenizer {
                 mapping.put(word, dhword);
             }
         }catch(Exception e){
+        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
             e.printStackTrace();
         }
         normalizeDocument();
@@ -90,6 +95,7 @@ public class VolumeDehyphenizer {
             stmt.execute(query);
             stmt.execute("delete from "+tablename);
         }catch(Exception e){
+        	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
             e.printStackTrace();
         }
     }
@@ -143,6 +149,7 @@ public class VolumeDehyphenizer {
                 reader.close();
             }
         } catch (Exception e) {
+        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
             e.printStackTrace();
         }
     }
@@ -216,6 +223,7 @@ public class VolumeDehyphenizer {
                 System.out.println(flist[i].getName()+" dehyphenized");
             }
         } catch (Exception e) {
+        	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
             e.printStackTrace();
         }
     }
