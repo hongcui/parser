@@ -257,6 +257,7 @@ public class VolumeExtractor {
 			listener.info(count + "", file);
 
 		} catch (IOException e) {
+			LOGGER.error("Exception in VolumeExtractor : output", e);
 			throw new ParsingException(e);
 		}
 	}
