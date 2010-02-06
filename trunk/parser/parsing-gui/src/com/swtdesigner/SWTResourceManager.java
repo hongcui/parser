@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
@@ -60,6 +61,7 @@ public class SWTResourceManager {
      * Maps RGB values to colors
      */
     private static HashMap<RGB, Color> m_ColorMap = new HashMap<RGB, Color>();
+    private static final Logger LOGGER = Logger.getLogger(SWTResourceManager.class);
 
     /**
      * Returns the system color matching the specific ID
@@ -160,6 +162,8 @@ public class SWTResourceManager {
             } catch (Exception e) {
             	image = getMissingImage();
             	m_ClassImageMap.put(key, image);
+            	LOGGER.error("Couldn't get Image in SWTResourceManager", e);
+            	
             }
         }
         return image;
