@@ -6,6 +6,7 @@ package fna.parsing;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -21,6 +22,7 @@ public class VolumeFinalizer {
 	private String glossary;
 
 	private ProcessListener listener;
+	private static final Logger LOGGER = Logger.getLogger(VolumeFinalizer.class);
 
 	public VolumeFinalizer(ProcessListener listener) {
 		glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
@@ -79,6 +81,7 @@ public class VolumeFinalizer {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
 			throw new ParsingException("Failed to output the final result.", e);
 		}
 	}
