@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -18,6 +19,7 @@ import org.jdom.output.XMLOutputter;
  */
 public class ParsingUtil {
 	
+	private static final Logger LOGGER = Logger.getLogger(ParsingUtil.class);
 	public static void outputXML(Element treatment, File file) {
 		try {
 			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
@@ -32,6 +34,8 @@ public class ParsingUtil {
 			// generate the information to the listener (gui)
 			// listener.info(String.valueOf(count), "", file.getPath());
 		} catch (IOException e) {
+			LOGGER.error("Exception in ParsingUtil:outputXML");
+			e.printStackTrace();
 			throw new ParsingException(e);
 		}
 	}
