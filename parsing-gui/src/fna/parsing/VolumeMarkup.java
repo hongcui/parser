@@ -27,7 +27,7 @@ public class VolumeMarkup {
 		this.listener = listener;
 	}
 	
-	public void markup() {
+	public void markup() throws ParsingException {
 		// call unsupervised.pl [descriptions are save in
 		// docs/output/descriptions]
 		String workdir = Registry.TargetDirectory;

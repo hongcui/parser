@@ -62,7 +62,7 @@ public class VolumeTransformer {
 										+ ApplicationUtilities.getProperty("publicationtable");
 	private Connection conn = null;
 	
-	public VolumeTransformer(ProcessListener listener) {
+	public VolumeTransformer(ProcessListener listener) throws ParsingException {
 		this.listener = listener;
 		this.errors = new Hashtable();
 		ti = TaxonIndexer.loadUpdated(Registry.ConfigurationDirectory);
@@ -101,7 +101,7 @@ public class VolumeTransformer {
 	/**
 	 * Transform the extracted data to the xml format.
 	 */
-	public void transform() {
+	public void transform() throws ParsingException {
 		// get the extracted files list
 		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("EXTRACTED"));
 		int total = source.listFiles().length;
@@ -494,7 +494,7 @@ public class VolumeTransformer {
 		parent.addContent(e);
 	}
 
-	private void outputDescriptionText(int count, String text) {
+	private void outputDescriptionText(int count, String text) throws ParsingException {
 		System.out.println("write file "+count+".txt");
 		try {
 			File file = new File(Registry.TargetDirectory,

@@ -88,7 +88,7 @@ public class VolumeExtractor {
 	 * 
 	 * TODO: unzip the document.xml from the docx file
 	 */
-	public void extract() throws Exception {
+	public void extract() throws ParsingException {
 		try {
 			listener.progress(1);
 			// init the outputter
@@ -243,7 +243,7 @@ public class VolumeExtractor {
 	 * 
 	 * @throws IOException
 	 */
-	private void output() throws Exception {
+	private void output() throws ParsingException {
 		try {
 			
 			String file = target + "extracted\\" + count + ".xml";
