@@ -109,6 +109,7 @@ public class MainForm {
 			window.open();
 		} catch (Exception e) {
 			LOGGER.error("Error Launching application", e);
+			e.printStackTrace();
 		}
 	}
 
@@ -181,6 +182,7 @@ public class MainForm {
 						mainDb.savePrefixData(dataPrefixCombo.getText().trim());
 					} catch (Exception exe) {
 						LOGGER.error("Error saving dataprefix", exe);
+						exe.printStackTrace();
 					}
 				 }
 				
@@ -367,6 +369,7 @@ public class MainForm {
 					
 				} catch (Exception ex) {
 					LOGGER.error("Error Setting focus", ex);
+					ex.printStackTrace();
 				} 
 				
 			}
@@ -429,6 +432,7 @@ public class MainForm {
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 				} catch (Exception exe) {
 					LOGGER.error("Error in loading Status of mark Up", exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -460,6 +464,7 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), true);
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - segment" , exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -520,6 +525,7 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), true);
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - verify" , exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -535,6 +541,7 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - verify" , exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -619,6 +626,7 @@ public class MainForm {
 					statusOfMarkUp[4] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
+					exe.printStackTrace();
 				}
 				
 			}
@@ -697,6 +705,7 @@ public class MainForm {
 					statusOfMarkUp[3] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - transform" , exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -713,6 +722,7 @@ public class MainForm {
 					statusOfMarkUp[3] = false;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - transform" , exe);
+					exe.printStackTrace();
 				}
 			}
 		});
@@ -798,6 +808,7 @@ public class MainForm {
 					statusOfMarkUp[5] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
+					exe.printStackTrace();
 				}
 				
 			}
@@ -885,6 +896,7 @@ public class MainForm {
 					statusOfMarkUp[6] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
+					exe.printStackTrace();
 				}
 				
 			}
@@ -918,6 +930,7 @@ public class MainForm {
 					statusOfMarkUp[7] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - glossary" , exe);
+					exe.printStackTrace();
 				}
 				
 			}
@@ -1117,6 +1130,7 @@ public class MainForm {
 			mainDb.removeMarkUpData(removedTags);
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in removing tags from database in MainForm:removeMarkup", exe);
+			exe.printStackTrace();
 		}
 
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
@@ -1132,6 +1146,7 @@ public class MainForm {
 			 mainDb.loadTagsData(tagListCombo, modifierListCombo);
 			} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
+				exe.printStackTrace();
 		    }
 
 	}
@@ -1143,6 +1158,7 @@ public class MainForm {
 			 mainDb.loadTagsTableData(tagTable);
 		} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
+				exe.printStackTrace();
 		}
 
 	}
@@ -1186,6 +1202,7 @@ public class MainForm {
 			
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in loading tags from database in MainForm:saveTag", exe);
+			exe.printStackTrace();
 		}
 		loadTagTable();
 		//reset context box
