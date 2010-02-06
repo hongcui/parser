@@ -44,6 +44,7 @@ public class VolumeMarkup {
 			 runCommand(com);
 		} catch (Exception e) {
 			e.printStackTrace();
+			LOGGER.error("VolumeMarkup : markup Failed to run the unsupervised.pl.", e);
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
 		
