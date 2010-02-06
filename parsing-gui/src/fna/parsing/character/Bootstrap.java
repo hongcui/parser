@@ -9,19 +9,24 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
+
+import fna.parsing.ApplicationUtilities;
+
 public class Bootstrap implements Comparator<StateGroup>{
 	private ArrayList source;
 	private Glossary glossary;
 	//private String tablename; //save the discoveries made from bootstrapping iterations
 	static private Connection conn = null;
-	static private String username = "termsuser";
-	static private String password = "termspassword";
+	static private String username = ApplicationUtilities.getProperty("database.username");
+	static private String password = ApplicationUtilities.getProperty("database.password");
+	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class);
 	
 	public Bootstrap(ArrayList source, Glossary glossary, String database) {
 		try{
 			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
