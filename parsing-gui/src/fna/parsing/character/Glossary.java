@@ -49,6 +49,7 @@ public class Glossary {
 				
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in CharacterLearner constructor" + e);
 			e.printStackTrace();
 		}
 	}
@@ -172,6 +173,7 @@ public class Glossary {
 				}
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in CharacterLearner populateTable" + e);
 			e.printStackTrace();
 		}
 	}
@@ -232,6 +234,7 @@ public class Glossary {
 					Statement stmt = conn.createStatement();
 					stmt.execute("insert into "+tablename1+ "(term1, type, term2) values ('"+term1s[i]+"', '"+type+"', '"+term2.trim()+"')");
 				}catch(Exception e){
+					LOGGER.error("Exception in CharacterLearner add2TermForms" + e);
 					e.printStackTrace();
 				}
 			}
@@ -270,6 +273,7 @@ public class Glossary {
 				chs.add(rs.getString("category"));
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in CharacterLearner getCharacter" + e);
 			e.printStackTrace();
 		}
 		return chs;
@@ -285,6 +289,7 @@ public class Glossary {
 				chs.append(rs.getString("term").trim()+"|");
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in CharacterLearner getAllCharacters" + e);
 			e.printStackTrace();
 		}
 		return chs.toString().replaceFirst("\\|$", "");
@@ -299,6 +304,7 @@ public class Glossary {
 				String query = "insert into "+tablename+" (term, category, status) values (\""+term+"\", \""+cat+"\", \"learned\" )";
 				stmt.execute(query);
 			}catch(Exception e){
+				LOGGER.error("Exception in CharacterLearner addInducedPair" + e);
 				e.printStackTrace();
 			}
 		}
