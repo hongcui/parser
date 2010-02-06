@@ -389,6 +389,7 @@ public class MainForm {
 					mainDb.savePrefixData(dataPrefixCombo.getText().trim());
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 				} catch (Exception exe) {
+					exe.printStackTrace();
 					LOGGER.error("Error saving dataprefix", exe);
 				}
 				String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
@@ -1163,7 +1164,7 @@ public class MainForm {
 
 	}
 	
-	private void updateContext(int sentid) {
+	private void updateContext(int sentid) throws ParsingException {
 		contextStyledText.setText("");
 		tagListCombo.setText("");
 		
@@ -1173,6 +1174,7 @@ public class MainForm {
 
 		} catch (Exception e) {
 			LOGGER.error("Exception encountered in loading tags from database in MainForm:updateContext", e);
+			e.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", e);
 			
 		}
