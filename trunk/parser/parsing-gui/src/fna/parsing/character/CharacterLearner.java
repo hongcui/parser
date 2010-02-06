@@ -127,6 +127,7 @@ public class CharacterLearner  {
 
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in  CharacterLearner constructor" + e);
 			e.printStackTrace();
 		}
 		this.glossary = new Glossary(new File(glossaryfilepath), true, this.database);
@@ -175,6 +176,7 @@ public class CharacterLearner  {
 			}
 
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner markupCharState" + e);
 			e.printStackTrace();
 		}
 	}
@@ -198,6 +200,7 @@ public class CharacterLearner  {
 				start = end+1;
 			}
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner assembleDescription" + e);
 			e.printStackTrace();
 		}
 	}
@@ -215,6 +218,7 @@ public class CharacterLearner  {
 				return getDescription(start, end);
 			}
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner getMarkedDescription" + e);
 			e.printStackTrace();
 		}
 		return null;
@@ -556,6 +560,7 @@ public class CharacterLearner  {
 				}
 				stmt.execute("update sentence set charsegment =\""+matchedseg+"\" where sentid ="+clauseid);
 			}catch (Exception e){
+				LOGGER.error("Exception in  CharacterLearner group" + e);
 				e.printStackTrace();
 			}
 			/*clause
@@ -636,6 +641,7 @@ public class CharacterLearner  {
 				tags.append(tag+"|");
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in  CharacterLearner collectStateNames" + e);
 			e.printStackTrace();
 		}
 		return tags.toString()+glossary.getAllCharacters();
@@ -665,6 +671,7 @@ public class CharacterLearner  {
 		}
 		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
+			LOGGER.error("Exception in  CharacterLearner collectOrganNames" + e);
 			e.printStackTrace();
 		}
 		return tags.toString();
@@ -778,6 +785,7 @@ public class CharacterLearner  {
 				
 			}
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner markSentences" + e);
 			e.printStackTrace();
 		}
 	}
@@ -803,6 +811,7 @@ public class CharacterLearner  {
 			stmt.execute("create table if not exists fileclauselink (filename varchar(200) not null primary key, endindex int(11))");
 			stmt.execute("delete from fileclauselink");
 		}catch(Exception e){
+			LOGGER.error("Exception in  CharacterLearner createClauseTables" + e);
 			e.printStackTrace();
 		}
 	}
@@ -834,6 +843,7 @@ public class CharacterLearner  {
 			info[1]=  rs.getString("modifier");
 			info[2] = rs.getString("charsegment");
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner getInfo" + e);
 			e.printStackTrace();
 		}
 		return info;
@@ -940,6 +950,7 @@ public class CharacterLearner  {
 				}
 			}
 		}catch (Exception e){
+			LOGGER.error("Exception in  CharacterLearner addClause" + e);
 			e.printStackTrace();
 		}
 		
