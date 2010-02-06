@@ -193,6 +193,7 @@ public class VolumeVerifier {
 
 			}
 		} catch (Exception e) {
+			LOGGER.error("VolumeVerifier : verifyStyle - Exception ", e);
 			throw new ParsingException(e);
 		}
 
@@ -250,6 +251,8 @@ public class VolumeVerifier {
 				}
 			}
 		} catch (Exception e) {
+			LOGGER.error("VolumeVerifier : verifyNumber - Exception ", e);
+			e.printStackTrace();
 			throw new ParsingException(e);
 		}
 
@@ -280,6 +283,8 @@ public class VolumeVerifier {
 				
 			}
 		} catch (Exception e) {
+			LOGGER.error("VolumeVerifier : fillInNumbers - Exception ", e);
+			e.printStackTrace();
 				throw new ParsingException(e);
 		}
 	}
@@ -327,6 +332,7 @@ public class VolumeVerifier {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			LOGGER.error("VolumeVerifier : verifyName - Exception ", e);
 			throw new ParsingException(e);//HongCui
 		}
 
@@ -492,6 +498,7 @@ public class VolumeVerifier {
 				}*/
 			}
 		}catch(Exception e){
+			LOGGER.error("VolumeVerifier : extractName - Exception ", e);
 			e.printStackTrace();
 		}
 	
@@ -558,6 +565,8 @@ public class VolumeVerifier {
 				System.out.println("add name :"+taxonname+ " for file "+i+".xml");
 			}
 		} catch (Exception e) {
+			LOGGER.error("VolumeVerifier : fillInNames - Exception ", e);
+			e.printStackTrace();
 				throw new ParsingException(e);
 		}
 	}
