@@ -9,6 +9,9 @@ import java.util.regex.*;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
+
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.character.CharacterLearner;
 
 /*
@@ -25,9 +28,10 @@ public class UnknownResolver {
 	private static String postable;
 	
 	private Hashtable unmarked = new Hashtable();
-	private static String username = "termsuser";
-	private static String password = "termspassword";
+	private static String username = ApplicationUtilities.getProperty("database.username");
+	private static String password = ApplicationUtilities.getProperty("database.password");
 	private Connection conn = null;
+	private static final Logger LOGGER = Logger.getLogger(UnknownResolver.class);
 	
 	//public UnknownResolver(String database, String senttable, String postable, String structtable, String statetable, String glosstable) {
 	public UnknownResolver(String database, String senttable, String postable, String statetable) {
@@ -38,11 +42,12 @@ public class UnknownResolver {
 		this.postable = postable;
 		try{
 			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
+			LOGGER.error("Error in UnknownResolver: constructor", e);
 			e.printStackTrace();
 		}
 	}
@@ -74,6 +79,7 @@ public class UnknownResolver {
 				collectUnmarked(marked);
 			}
 		}catch(Exception e){
+			LOGGER.error("Error in UnknownResolver: markupUnknows", e);
 			e.printStackTrace();
 		}
 		Enumeration en = unmarked.keys();
@@ -128,6 +134,7 @@ public class UnknownResolver {
 			}
 			sb = sb.replace(sb.lastIndexOf("|"), sb.lastIndexOf("|")+1, "");
 		}catch(Exception e){
+			LOGGER.error("Error in UnknownResolver: getRequiredString", e);
 			e.printStackTrace();
 		}
 		return sb.toString();
@@ -174,6 +181,7 @@ public class UnknownResolver {
 			}
 			tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
+			LOGGER.error("Error in UnknownResolver: collectLearnedStateNames", e);
 			e.printStackTrace();
 		}
 		return tags.toString();
