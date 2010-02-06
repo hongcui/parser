@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
+
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.DeHyphenizerCorrected;
 /**
@@ -25,6 +27,7 @@ public class LearnedTermsReport {
 	static private String otablename = "learnedstructures";
 	static private String gstablename = "glossstructures";
 	private String database;
+	private static final Logger LOGGER = Logger.getLogger(LearnedTermsReport.class);
 	static private Connection conn = null;
 	static private String username = ApplicationUtilities.getProperty("database.username");
 	static private String password = ApplicationUtilities.getProperty("database.password");
@@ -96,6 +99,7 @@ public class LearnedTermsReport {
 					otablename, "structure", null, "_");
 			dh.deHyphen();
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport constructor", e);
 			e.printStackTrace();
 		}
 	}
@@ -179,6 +183,7 @@ public class LearnedTermsReport {
 			stmt.execute("drop table if exists "+this.gstablename);
 			stmt.execute("create table if not exists "+this.gstablename+" as select term from "+gtablename+" where category in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative') and status !='learned' and term not in (select distinct term2 from termforms where type ='pl')");
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport createGlossStructureTable", e);
 			e.printStackTrace();
 		}
 	}
@@ -200,6 +205,7 @@ public class LearnedTermsReport {
 				}
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport createLearnedStructureTable", e);
 			e.printStackTrace();
 		}
 	}
@@ -259,6 +265,7 @@ public class LearnedTermsReport {
 			}
 			unused.removeAll(toremove);
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport unusedStructures", e);
 			e.printStackTrace();
 		}
 		return unused;
@@ -294,6 +301,7 @@ public class LearnedTermsReport {
 			}
 			
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport unusedStates", e);
 			e.printStackTrace();
 		}
 		return unused;
@@ -308,6 +316,7 @@ public class LearnedTermsReport {
 				donestates.put(rs.getString("term"), rs.getString("category"));
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport statesAssignedCharacters", e);
 			e.printStackTrace();
 		}
 	}
@@ -355,6 +364,7 @@ public class LearnedTermsReport {
 				learnedstructures.add(rs.getString("word").trim());
 			}*/
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getLearnedStructuresCount", e);
 			e.printStackTrace();
 		}
 		return learnedstructures.size();
@@ -369,6 +379,7 @@ public class LearnedTermsReport {
 				learnedstates.add(rs.getString("state"));
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getLearnedStatesCount", e);
 			e.printStackTrace();
 		}
 		return learnedstates.size();
@@ -383,6 +394,7 @@ public class LearnedTermsReport {
 				return rs.getInt(1);
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getAllCharacterCount", e);
 			e.printStackTrace();
 		}
 		return -1;
@@ -398,6 +410,7 @@ public class LearnedTermsReport {
 				return rs.getInt(1);
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
 			e.printStackTrace();
 		}
 		return -1;
@@ -413,6 +426,7 @@ public class LearnedTermsReport {
 				return rs.getInt(1);
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
 			e.printStackTrace();
 		}
 		return -1;
@@ -428,6 +442,7 @@ public class LearnedTermsReport {
 				match = true;
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport matchInGlossStates", e);
 			e.printStackTrace();
 		}
 		return match;
@@ -443,6 +458,7 @@ public class LearnedTermsReport {
 				find = true;
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport findInGlossStates", e);
 			e.printStackTrace();
 		}
 		return find;
@@ -459,6 +475,7 @@ public class LearnedTermsReport {
 				return rs.getInt(1);
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport getAllStructureCount", e);
 			e.printStackTrace();
 		}
 		return -1;
@@ -474,6 +491,7 @@ public class LearnedTermsReport {
 				match = true;
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport matchInGlossStructure", e);
 			e.printStackTrace();
 		}
 		return match;
@@ -489,6 +507,7 @@ public class LearnedTermsReport {
 				find = true;
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport findInGlossStructure", e);
 			e.printStackTrace();
 		}
 		return find;
@@ -504,6 +523,7 @@ public class LearnedTermsReport {
 				find = true;
 			}
 		}catch(Exception e){
+			LOGGER.error("Exception in LearnedTermsReport stringMatchInGloss", e);
 			e.printStackTrace();
 		}
 		return find;
