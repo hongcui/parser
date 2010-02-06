@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.Hashtable;
 
+import org.apache.log4j.Logger;
+
 
 /**
  * run through a column in a database, remove hyphens that separate one word
@@ -22,6 +24,7 @@ public class DeHyphenizer {
 	static private Connection conn = null;
 	static private String username = ApplicationUtilities.getProperty("database.username");
 	static private String password = ApplicationUtilities.getProperty("database.password");
+	private static final Logger LOGGER = Logger.getLogger(DeHyphenizer.class);
 	
 	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen) {
 		// TODO Auto-generated constructor stub
@@ -60,6 +63,7 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
+			LOGGER.error("Encountered a problem in DeHyphenizer:deHyphen", e);
 		}
 	}
 	
@@ -220,6 +224,7 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
+			LOGGER.error("Encountered a problem in DeHyphenizer:updateTable", e);
 		}
 	}
 	
@@ -234,6 +239,7 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
+			LOGGER.error("Encountered a problem in DeHyphenizer:stringMatchInGloss", e);
 		}
 		return find;
 	}
@@ -249,6 +255,8 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			e.printStackTrace();
+			LOGGER.error("Encountered a problem in DeHyphenizer:stringMatch", e);
+			
 		}
 		return find;
 	}
