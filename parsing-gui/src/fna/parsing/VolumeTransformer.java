@@ -92,6 +92,7 @@ public class VolumeTransformer {
 				stmt.execute("delete from "+publicationtable);
 			}
 		}catch(Exception e){
+			LOGGER.error("VolumeTransformer : Database error in constructor", e);
 			e.printStackTrace();
 		}	
 
@@ -171,6 +172,8 @@ public class VolumeTransformer {
 				listener.progress((count*100) / total);
 			}
 		} catch (Exception e) {
+			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
+			e.printStackTrace();
 			throw new ParsingException(e);
 		}
 	}
@@ -501,6 +504,7 @@ public class VolumeTransformer {
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOGGER.error("Failed to output text file in VolumeTransformer:outputDescriptionText", e);
 			throw new ParsingException("Failed to output text file.", e);
 		}
 	}
