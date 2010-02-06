@@ -34,7 +34,7 @@ public class VolumeMarkup {
 		String todofoldername = ApplicationUtilities.getProperty("DEHYPHENED");
 		String savefoldername = ApplicationUtilities.getProperty("MARKEDUP");
 		String databasenameprefix = ApplicationUtilities.getProperty("database.name");
-		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") + workdir
+		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") +workdir
 				+ " " + todofoldername + " " + savefoldername
 				+ " seednouns.txt learntnouns.txt graphml.xml "
 				+ databasenameprefix;
