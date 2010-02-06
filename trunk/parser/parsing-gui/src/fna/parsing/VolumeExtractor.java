@@ -225,10 +225,13 @@ public class VolumeExtractor {
 		List textList = XPath.selectNodes(wp, "./w:r/w:t");
 		for (Iterator ti = textList.iterator(); ti.hasNext();) {
 			Element wt = (Element) ti.next();
-			buffer.append(wt.getText()).append("-");
+			buffer.append(wt.getText()).append("#");
 		}
-		String text = buffer.toString().replaceAll("\\s+", " ").trim();
+		String text = buffer.toString().replaceAll("-#", "-").replaceAll("#", "").replaceAll("\\s+", " ").trim();
 		
+		/*			buffer.append(wt.getText()).append("-");
+		}
+		String text = buffer.toString().replaceAll("\\s+", " ").trim();*/
 		Element te = new Element("text");
 		te.setText(text);
 		pe.addContent(te);
