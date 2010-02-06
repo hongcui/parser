@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * To parse the taxon file and build the taxon index
  * 
@@ -30,6 +32,7 @@ public class TaxonIndexer implements Serializable {
 	private static final String TXT_FILE = "TaxaList.txt"; //TODO:configurable
 
 	private static final String BIN_FILE = "TaxonIndexer.bin";
+	private static final Logger LOGGER = Logger.getLogger(TaxonIndexer.class);
 	
 	private String path;
 	//Hong: 10/6/08: use arraylist for numbers and names
@@ -47,6 +50,8 @@ public class TaxonIndexer implements Serializable {
 			out.writeObject(ti);
 			out.close();
 		} catch (IOException e) {
+			LOGGER.error("Save the updated TaxonIndexer failed.", e);
+			e.printStackTrace();
 			throw new ParsingException(
 					"Save the updated TaxonIndexer failed.", e);
 		}
@@ -63,6 +68,8 @@ public class TaxonIndexer implements Serializable {
 			
 			return ti;
 		} catch (Exception e) {
+			LOGGER.error("Load the updated TaxonIndexer failed.", e);
+			e.printStackTrace();
 			throw new ParsingException(
 					"Load the updated TaxonIndexer failed.", e);
 		}
@@ -92,6 +99,8 @@ public class TaxonIndexer implements Serializable {
 				reader.close();
 			}
 		} catch (Exception e) {
+			LOGGER.error("build failed in TaxonIndexer", e);
+			e.printStackTrace();
 			throw new ParsingException(e);
 		}
 
