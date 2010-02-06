@@ -33,7 +33,7 @@ public class VolumeFinalizer {
 		
 	}
 
-	public void outputFinal() {
+	public void outputFinal() throws ParsingException {
 		listener.progress(20);
 		CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name")
 				/*+ "_corpus"*/, this.glossary);

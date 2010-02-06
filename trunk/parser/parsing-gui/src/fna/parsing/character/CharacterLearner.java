@@ -593,6 +593,7 @@ public class CharacterLearner  {
 					stmt.execute("insert into learnedstates values('"+term+"', 1)");
 				}
 			}catch (Exception e){
+				LOGGER.error("Exception in  CharacterLearner add2LearnedStates" + e);
 				e.printStackTrace();
 			}
 		/*}else{

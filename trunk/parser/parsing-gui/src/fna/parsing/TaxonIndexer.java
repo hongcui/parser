@@ -42,7 +42,7 @@ public class TaxonIndexer implements Serializable {
 	private ArrayList<String> nameList = new ArrayList<String>();
 	/*if TXT_FILE is available, build TaxonIndex. Otherwise create an empty TaxonIndex to be populated by VolumeVerifier*/
 
-	public static void saveUpdated(String path, TaxonIndexer ti) {
+	public static void saveUpdated(String path, TaxonIndexer ti) throws ParsingException {
 		try {
 			File file = new File(path, BIN_FILE);
 			ObjectOutput out = new ObjectOutputStream(
@@ -57,7 +57,7 @@ public class TaxonIndexer implements Serializable {
 		}
 	}
 	
-	public static TaxonIndexer loadUpdated(String path) {
+	public static TaxonIndexer loadUpdated(String path) throws ParsingException{
 		try {
 			File file = new File(path, BIN_FILE);
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(
@@ -80,7 +80,8 @@ public class TaxonIndexer implements Serializable {
 		this.path = path;
 	}
 
-	public void build() {
+	public void build() throws ParsingException {
+	
 		try {
 			File file = new File(path, TXT_FILE);
 			if(file.exists()){//otherwise do nothing. 
