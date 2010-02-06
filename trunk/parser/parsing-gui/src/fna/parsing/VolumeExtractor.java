@@ -96,7 +96,8 @@ public class VolumeExtractor {
 
 			// build the root element from the xml file
 			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build(source + "/document.xml");
+			Document doc = builder.build(source + "document.xml");
+			System.out.println(source + "document.xml");
 			Element root = doc.getRootElement();
 			
 			// find all <w:p> tags
