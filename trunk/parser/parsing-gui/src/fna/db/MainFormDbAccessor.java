@@ -421,7 +421,10 @@ public class MainFormDbAccessor {
 					" where prefix = '" + prefix + "'" ); 
 			stmt.executeUpdate();
 		}
-		throw new ParsingException("Failed to execute the statement.", exe);
+		if (!exe.getMessage().contains("key 'PRIMARY'")) {
+			throw new ParsingException("Failed to execute the statement.", exe);
+		}
+		
 	} finally {
 		if (rset != null) {
 			rset.close();
