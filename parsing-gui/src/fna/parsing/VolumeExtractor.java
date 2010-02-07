@@ -1,6 +1,3 @@
-/**
- * $Id$
- */
 package fna.parsing;
 
 import java.io.BufferedOutputStream;
