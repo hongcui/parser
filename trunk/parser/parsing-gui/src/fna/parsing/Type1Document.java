@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.swt.custom.ScrolledComposite;
+import com.swtdesigner.SWTResourceManager;
 
 public class Type1Document {
 
@@ -80,7 +81,7 @@ public class Type1Document {
 		group.setBounds(10, 10, 500, 115);
 		
 		Combo combo_1 = new Combo(group, SWT.NONE);
-		combo_1.setBounds(260, 52, 172, 23);
+		combo_1.setBounds(229, 52, 172, 23);
 				
 		//retrieve the data from db here.		
 		List <String> tags = new ArrayList <String>();
@@ -100,7 +101,7 @@ public class Type1Document {
 		
 		
 		saveButton = new Button(group, SWT.NONE);
-		saveButton.setBounds(341, 99, 75, 25);
+		saveButton.setBounds(326, 99, 75, 25);
 		saveButton.setText("Save");
 		saveButton.addMouseListener(new MouseListener(){
 			public void mouseUp(MouseEvent mEvent){
@@ -129,7 +130,7 @@ public class Type1Document {
 		label.setText("Word Document Style:");
 		
 		Label label_1 = new Label(group, SWT.NONE);
-		label_1.setBounds(260, 24, 172, 15);
+		label_1.setBounds(229, 24, 87, 15);
 		label_1.setText("Semantic Tags:");
 		
 		Text text = new Text(group, SWT.BORDER);
@@ -138,13 +139,17 @@ public class Type1Document {
 		count += 1;
 		
 		addRowButton = new Button(group, SWT.NONE);
-		addRowButton.setBounds(260, 99, 75, 25);
+		addRowButton.setBounds(243, 99, 75, 25);
 		addRowButton.setText("Add a row");
 		
 		Button checkButton = new Button(group, SWT.CHECK);
-		checkButton.setBounds(455, 54, 13, 16);
+		checkButton.setBounds(448, 54, 13, 16);
 		formToolkit.adapt(checkButton, true, true);
 		checkFields.put(new Integer(1), checkButton);
+		
+		Label lblStartStyle = formToolkit.createLabel(group, "Start Style:", SWT.NONE);
+		lblStartStyle.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		lblStartStyle.setBounds(428, 24, 55, 24);
 		
 
 		addRowButton.addMouseListener(new MouseListener(){

@@ -94,8 +94,7 @@ public class MainForm {
 	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
-
-	/**
+		/**
 	 * Launch the application
 	 * @param args
 	 */
@@ -548,9 +547,8 @@ public class MainForm {
 		});
 		clearVerificationButton.setBounds(654, 385, 100, 23);
 		clearVerificationButton.setText("Clear");
-
-		verificationTable = new Table(composite_2, SWT.FULL_SELECTION | SWT.BORDER | SWT.WRAP);
-		//verificationTable = new Table(composite_2, SWT.H_SCROLL | SWT.V_SCROLL);
+// SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL
+		verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
 		verificationTable.setBounds(10, 10, 744, 369);
 		verificationTable.setLinesVisible(true);
 		verificationTable.setHeaderVisible(true);
