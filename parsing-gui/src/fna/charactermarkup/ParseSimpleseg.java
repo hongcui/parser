@@ -16,6 +16,10 @@ public class ParseSimpleseg {
 	static protected String username = "root";
 	static protected String password = "";
 
+	public ParseSimpleseg() {
+		
+	}
+	
 	public ParseSimpleseg(String database) {
 		// TODO Auto-generated constructor stub
 		collect(database);
@@ -67,47 +71,9 @@ public class ParseSimpleseg {
                 }
                 matcher.reset();
                 if(orcount==1|orcount==0){
-                	StringBuffer sb2 = new StringBuffer();
-                	Pattern pattern12 = Pattern.compile("<[a-zA-Z_ ]+>");
-                	matcher = pattern12.matcher(str);
-                	while ( matcher.find()){
-                		int k=matcher.start()+1;
-						int l=matcher.end()-1;
-						String org=str.subSequence(k,l).toString();
-						if(org.contains("_has_")){
-							String org1=org.subSequence(0,org.indexOf("_")).toString();
-							String org2=org.subSequence(org.lastIndexOf("_")+1,org.length()).toString();
-							matcher.appendReplacement(sb2, "<"+org1+"> <"+org2+">");
-						}
-                	}
-                	matcher.appendTail(sb2);
-					str=sb2.toString();
-					matcher.reset();
-                	StringBuffer sb1 = new StringBuffer();
-					Pattern pattern11 = Pattern.compile("[{][\\w±\\+\\–\\-\\.:=/\\_]+[}]");
-					matcher = pattern11.matcher(str);
-					while ( matcher.find()){
-						int k=matcher.start()+1;
-						int l=matcher.end()-1;
-						String state=str.subSequence(k,l).toString();
-						if(state.contains("_")){
-							String firstr=state.subSequence(0,state.indexOf("_")).toString();
-							String secstr=state.subSequence(state.indexOf("_")+1,state.length()).toString();
-							matcher.appendReplacement(sb1, "{"+firstr+"} or {"+secstr+"}");
-						}
-					}
-					matcher.appendTail(sb1);
-					str=sb1.toString();
-					matcher.reset();
+                	str = reversecondense(str);
                 	String str1="";
-                	Pattern pattern1 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
-                	matcher = pattern1.matcher(str);
-                	while ( matcher.find()){
-                		int i=matcher.start();
-                		int j=matcher.end();
-                		str1=str1.concat(str.subSequence(i,j).toString());
-                	}
-                	matcher.reset();
+                	str1 = plaintextextractor(str);
                 	String str6=str1;
                 	String str2="";
                 	String str4="";
@@ -206,9 +172,11 @@ public class ParseSimpleseg {
                     	oldorg="<org>";
                 	}
                 	matcher.reset();
-                	Pattern pattern4 = Pattern.compile("[xX\\×±\\d\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
-                	matcher = pattern4.matcher(str1);
-                	int flag=0;
+                	
+                	
+                	Pattern pattern19 = Pattern.compile("[±]?[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m[\\s]?[xX\\×]+[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m");
+                	matcher = pattern19.matcher(str1);
+                	int flag3=0;
                 	while ( matcher.find()){
                 		int i;
                 		if(str1.charAt(matcher.start())==' '){
@@ -218,15 +186,72 @@ public class ParseSimpleseg {
                 			i=matcher.start();
                 		}
                 		int j=matcher.end();
-                		if(flag==0)
-                			str2=str2.concat(" "+"size=\""+str1.subSequence(i,j).toString());
-                		else
-                			str2=str2.concat(","+str1.subSequence(i,j).toString());
-                		flag=1;
+                		if(flag3==0)
+            				str2=str2.concat(" "+"size=\""+str1.subSequence(i,j).toString());
+            			else
+            				str2=str2.concat(","+str1.subSequence(i,j).toString());
+            			flag3=1;
+                	}
+                	if(flag3==1)
+                		str2=str2.concat("\"");
+                	str1 = matcher.replaceAll("#");
+                	matcher.reset();
+                	
+                	int sizect = 0;
+                	Pattern pattern4 = Pattern.compile("[xX\\×±\\d\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
+                	matcher = pattern4.matcher(str1);
+                	int flag=0;
+                	String numrange="";
+                	while ( matcher.find()){
+                		int i;
+                		if(str1.charAt(matcher.start())==' '){
+                			i=matcher.start()+1;
+                		}
+                		else{
+                			i=matcher.start();
+                		}
+                		int j=matcher.end();
+                		if(str1.substring(i,j).contains("–")|str1.substring(i,j).contains("-") && !str1.substring(i,j).contains("×") && !str1.substring(i,j).contains("x") && !str1.substring(i,j).contains("X")){
+                			sizect+=1;
+                			String extract = str1.substring(i,j);
+                			Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
+                        	Matcher matcher2 = pattern18.matcher(extract);
+                        	String unit="";
+                        	if ( matcher2.find()){
+                        		unit = extract.substring(matcher2.start(), matcher2.end());
+                        	}
+                        	extract = matcher2.replaceAll("#");
+                        	matcher2.reset();
+                        	System.out.println(extract);
+                			numrange = numrange.concat(" min_size_"+sizect+"=\""+extract.substring(0, extract.indexOf('-'))+"\" min_size_unit_"+sizect+"=\""+unit+"\" max_size_"+sizect+"=\""+extract.substring(extract.indexOf('-')+1,extract.indexOf('#'))+"\" max_size_unit_"+sizect+"=\""+unit+"\"");
+                		}
+                		else{
+                			if(flag3==1){
+                				StringBuffer sb = new StringBuffer();
+        						Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
+        						Matcher matcher1 = pattern9.matcher(str2);
+        						while ( matcher1.find()){
+        							int k=matcher1.start();
+        							int l=matcher1.end();
+        							matcher1.appendReplacement(sb, str2.subSequence(k,l-1)+","+str1.subSequence(i,j).toString()+"\"");
+        						}
+        						matcher1.appendTail(sb);
+        						str2=sb.toString();
+        						matcher1.reset();
+                			}
+                			else{
+                				if(flag==0)
+                					str2=str2.concat(" "+"size=\""+str1.subSequence(i,j).toString());
+                				else
+                					str2=str2.concat(","+str1.subSequence(i,j).toString());
+                				flag=1;
+                			}
+                		}
                 	}
                 	if(flag==1)
                 		str2=str2.concat("\"");
                 	str1 = matcher.replaceAll("#");
+                	str2 = str2.concat(numrange);
                 	matcher.reset();
                 	Pattern pattern5 = Pattern.compile("[±\\d\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
                 	matcher = pattern5.matcher(str1);
@@ -265,29 +290,40 @@ public class ParseSimpleseg {
                 		str2=str2.concat("\"");
                 	str1 = matcher.replaceAll("#");
                 	matcher.reset();
+                	int countct = 0;
                 	Pattern pattern10 = Pattern.compile("([±]?[\\d]+[\\–\\-][\\d]+[+]?|[±]?[\\d]+[+]?)[\\–\\–\\-]+[a-zA-Z]+");
                 	matcher = pattern10.matcher(str1);
                 	str1 = matcher.replaceAll("#");
                 	matcher.reset();     	
-                	Pattern pattern6 = Pattern.compile("(?<!([/]))([±]?[\\d]+[\\–\\-][\\d]+[+]?|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[cm]?m))");
+                	Pattern pattern6 = Pattern.compile("(?<!([/][\\s]?))([±]?[\\d]+[\\–\\-][\\d]+[+]?[\\–\\-]?[\\d]*[+]?|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
                 	matcher = pattern6.matcher(str1);
                 	int flag2=0;
+                	String countrange = "";
                 	while ( matcher.find()){
                 		int i=matcher.start();
                 		int j=matcher.end();
-                		if(flag2==0)
-                			str2=str2.concat(" "+"count=\""+str1.subSequence(i,j).toString());
-                		else
-                			str2=str2.concat(","+str1.subSequence(i,j).toString());
-                		flag2=1;
+                		if(str1.substring(i,j).contains("–")|str1.substring(i,j).contains("-") && !str1.substring(i,j).contains("×") && !str1.substring(i,j).contains("x") && !str1.substring(i,j).contains("X")){
+                			countct+=1;
+                			String extract = str1.substring(i,j);
+                        	System.out.println(extract);
+                			countrange = countrange.concat(" min_count_"+countct+"=\""+extract.substring(0, extract.indexOf('-'))+"\" max_count_"+countct+"=\""+extract.substring(extract.indexOf('-')+1,extract.length())+"\"");
+                		}
+                		else{
+                			if(flag2==0)
+                				str2=str2.concat(" "+"count=\""+str1.subSequence(i,j).toString());
+                			else
+                				str2=str2.concat(","+str1.subSequence(i,j).toString());
+                			flag2=1;
+                		}
                 	}
                 	if(flag2==1)
                 		str2=str2.concat("\"");
+                	str2 = str2.concat(countrange);
                 	matcher.reset();
                 	String str3="";
                 	Pattern pattern3 = Pattern.compile("[{][\\w±\\+\\–\\-\\.:=/\\_]+[}]");
                 	matcher = pattern3.matcher(str);
-                	int flag3=0;
+                	//int flag3=0;
                 	while ( matcher.find()){
                 		int flag5=0;
                 		String first = "";
@@ -300,17 +336,6 @@ public class ParseSimpleseg {
                 			str3=str3.substring(str3.indexOf("-")+1|str3.indexOf("–")+1, str3.length());
                 			flag5=1;
                 		}
-                		/*if(flag3==0){
-                			ResultSet rs1 = stmt1.executeQuery("select * from character_markup_ontology where term='"+str3+"'");
-                			if(rs1.next()){
-                				if(flag5==1)
-                					str2=str2.concat(" "+rs1.getString(4)+"=\""+first+"-"+str3+"\"");
-                				else
-                					str2=str2.concat(" "+rs1.getString(4)+"=\""+str3+"\"");
-                				flag3=1;
-                			}
-                		}*/
-                		//else{
                 			ResultSet rs1 = stmt1.executeQuery("select * from character_markup_ontology where term='"+str3+"'");
                 			if(rs1.next()){
                 				int flag4=0;
@@ -346,8 +371,6 @@ public class ParseSimpleseg {
             					}
             					matcher1.reset();
                 			}                			
-                		//}
-                		
                 	}
                 	matcher.reset();
                 	Pattern pattern13 = Pattern.compile("_");
@@ -466,6 +489,55 @@ public class ParseSimpleseg {
         {
         		System.err.println(e);
         }
+	}
+	
+	protected String reversecondense(String str) { 
+		StringBuffer sb2 = new StringBuffer();
+    	Pattern pattern12 = Pattern.compile("<[a-zA-Z_ ]+>");
+    	Matcher matcher = pattern12.matcher(str);
+    	while ( matcher.find()){
+    		int k=matcher.start()+1;
+			int l=matcher.end()-1;
+			String org=str.subSequence(k,l).toString();
+			if(org.contains("_has_")){
+				String org1=org.subSequence(0,org.indexOf("_")).toString();
+				String org2=org.subSequence(org.lastIndexOf("_")+1,org.length()).toString();
+				matcher.appendReplacement(sb2, "<"+org1+"> <"+org2+">");
+			}
+    	}
+    	matcher.appendTail(sb2);
+		str=sb2.toString();
+		matcher.reset();
+    	StringBuffer sb1 = new StringBuffer();
+		Pattern pattern11 = Pattern.compile("[{][\\w±\\+\\–\\-\\.:=/\\_]+[}]");
+		matcher = pattern11.matcher(str);
+		while ( matcher.find()){
+			int k=matcher.start()+1;
+			int l=matcher.end()-1;
+			String state=str.subSequence(k,l).toString();
+			if(state.contains("_")){
+				String firstr=state.subSequence(0,state.indexOf("_")).toString();
+				String secstr=state.subSequence(state.indexOf("_")+1,state.length()).toString();
+				matcher.appendReplacement(sb1, "{"+firstr+"} or {"+secstr+"}");
+			}
+		}
+		matcher.appendTail(sb1);
+		str=sb1.toString();
+		matcher.reset();
+		return(str);
+	}
+	
+	protected String plaintextextractor(String str) {
+		String str1 = "";
+		Pattern pattern1 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
+    	Matcher matcher = pattern1.matcher(str);
+    	while ( matcher.find()){
+    		int i=matcher.start();
+    		int j=matcher.end();
+    		str1=str1.concat(str.subSequence(i,j).toString());
+    	}
+    	matcher.reset();
+    	return(str1);
 	}
 	
 	public static void main(String[] args) {
