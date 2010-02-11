@@ -52,12 +52,34 @@ public class MainFormDbAccessor {
 	private static String url = ApplicationUtilities.getProperty("database.url");
 	
 	static {
+		Statement stmt = null;
+		Connection conn = null;
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+			conn = DriverManager.getConnection(url);
+			stmt = conn.createStatement();
+			stmt.executeUpdate("create database if not exists "+ ApplicationUtilities.getProperty("database.name"));
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
 			e.printStackTrace();
+		} catch (SQLException sql) {
+			LOGGER.error("SQl Exception in static block of MainDb" + sql);
+			sql.printStackTrace();
+		} finally {
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}
+				if (conn != null) {
+					conn.close();
+				}
+			}
+			catch (SQLException sql) {
+				LOGGER.error("SQl Exception in static block of MainDb" + sql);
+				sql.printStackTrace();
+			}
+
 		}
 	}
 	
