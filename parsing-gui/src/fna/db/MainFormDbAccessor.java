@@ -350,7 +350,7 @@ public class MainFormDbAccessor {
 		try {
 			conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
-			stmt.execute("createprefixTable");
+			stmt.execute(createprefixTable);
 			rset = stmt.executeQuery("select * from datasetprefix order by time_last_accessed desc");
 			while (rset.next()) {
 				datasetPrefixes.add(rset.getString("prefix"));
