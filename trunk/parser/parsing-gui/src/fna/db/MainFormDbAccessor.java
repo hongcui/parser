@@ -334,9 +334,23 @@ public class MainFormDbAccessor {
 		Statement stmt = null;
 		ResultSet rset = null;
 		
+		String createprefixTable = "CREATE TABLE  if not exists datasetprefix (" +
+				 "prefix varchar(20) NOT NULL DEFAULT '', "+
+				  "time_last_accessed timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+				  "tab_general varchar(1) DEFAULT NULL, "+
+				  "tab_segm varchar(1) DEFAULT NULL, "+
+				  "tab_verf varchar(1) DEFAULT NULL, "+
+				  "tab_trans varchar(1) DEFAULT NULL, "+
+				  "tab_struct varchar(1) DEFAULT NULL, "+
+				  "tab_unknown varchar(1) DEFAULT NULL, "+
+				  "tab_finalm varchar(1) DEFAULT NULL, "+
+				  "tab_gloss varchar(1) DEFAULT NULL, "+
+				  "PRIMARY KEY (prefix) ) " ; 
+		
 		try {
 			conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
+			stmt.execute("createprefixTable");
 			rset = stmt.executeQuery("select * from datasetprefix order by time_last_accessed desc");
 			while (rset.next()) {
 				datasetPrefixes.add(rset.getString("prefix"));
