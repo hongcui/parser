@@ -111,6 +111,9 @@ public class Type1Document {
 			public void mouseUp(MouseEvent mEvent){
 				//add a row
 				addRow();
+			    group.redraw();
+			    scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			    scrolledComposite.redraw();
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
@@ -164,7 +167,7 @@ public class Type1Document {
 			LOGGER.error("Error loading Tag styles", exe);
 		}
 		
-		
+		scrolledComposite.setRedraw(true);
 		scrolledComposite.setContent(group);
 		scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		scrolledComposite.setExpandHorizontal(true);
@@ -251,9 +254,6 @@ public class Type1Document {
 	}
 	
 	private void addRow() {
-/*		Point p = shell.getSize();
-		p.y += 30;
-		shell.setSize(p);*/
 		
 		// group height				
 		RowData rowdata = (RowData)group.getLayoutData();
@@ -284,9 +284,8 @@ public class Type1Document {
 	    rect = checkFields.get(previousKey).getBounds();
 	    rect.y += 30;
 	    tempCheck.setBounds(rect);
-	    //formToolkit.adapt(tempCheck, true, true);
-	    checkFields.put(key, tempCheck);
-	
+	    checkFields.put(key, tempCheck);	    
+
 		count += 1;
 	}
 	
