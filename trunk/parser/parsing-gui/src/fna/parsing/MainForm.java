@@ -62,6 +62,8 @@ import org.eclipse.swt.custom.ScrolledComposite;
 /**
  * @author chunshui
  */
+
+
 public class MainForm {
 
 	private Combo combo;
