@@ -87,7 +87,7 @@ public class Type1Document {
 				
 				try {
 					message += createStyleMappingFile();
-					configDb.saveSemanticTagDetails(comboFields);
+					configDb.saveSemanticTagDetails(comboFields, checkFields);
 				} catch (IOException exe) {
 					LOGGER.error("Error saving to file in Type1doc", exe);
 				} catch (SQLException sqlexp) {
@@ -157,6 +157,7 @@ public class Type1Document {
 		
 		Button checkButton = new Button(group, SWT.CHECK);
 		checkButton.setBounds(460, 10, 12, 16);
+		System.out.println(checkButton.isEnabled());
 		checkFields.put(new Integer(1), checkButton);
 		
 		/*Load from style-mapping properties here */
