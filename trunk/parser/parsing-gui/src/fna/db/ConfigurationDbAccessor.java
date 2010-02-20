@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 
 import fna.parsing.ApplicationUtilities;
@@ -72,7 +73,8 @@ public class ConfigurationDbAccessor {
 		
 	}
 	
-	public void saveSemanticTagDetails(HashMap <Integer, Combo> comboFields) throws SQLException{
+	public void saveSemanticTagDetails(HashMap <Integer, Combo> comboFields, 
+			HashMap <Integer, Button> checkFields) throws SQLException{
 		Connection conn = null;
 		Statement stmt = null;
 		
@@ -84,20 +86,25 @@ public class ConfigurationDbAccessor {
 				Integer key = new Integer(i);
 				Combo combo = comboFields.get(key);
 				String tagName = combo.getText().trim();
-				try {
-					if(!tagName.equals("")) {
+				Button button = checkFields.get(key);
+				boolean checked = button.getSelection();
+				if(!tagName.equals("")) {
+					if(checked) {
+						stmt.executeUpdate("insert into configtags (tagname, marker, startStyle) values " +
+								"('" + tagName + "', 'U', 'Y');");
+					} else {
 						stmt.executeUpdate("insert into configtags (tagname, marker) values " +
 								"('" + tagName + "', 'U');");
 					}
-				} catch (Exception exe) {
-					LOGGER.error("Couldn't insert into configtags", exe);
-					exe.printStackTrace();
+
 				}
 			}
-			
+
 		} catch (Exception exe) {
-			LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
-			exe.printStackTrace();
+			if(!exe.getMessage().contains("Duplicate entry")) {
+			 LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
+			 exe.printStackTrace();
+			}
 		} finally {
 
 			if (stmt != null) {
