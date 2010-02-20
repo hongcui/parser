@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -50,11 +51,14 @@ public class Type1Document {
 	private static String [] tagnames = null;
 	private static ScrolledComposite scrolledComposite = null;
 	Group group = null;
+	private static String startUpString = null;
 
 		
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new Type1Document().showType1Document();
+
+			new Type1Document().showType1Document();
+		
 		//System.out.println("disposed :(");
 		
 	}
@@ -71,8 +75,8 @@ public class Type1Document {
 		scrolledComposite.setBounds(10, 31, 557, 150);
 		scrolledComposite.setLayout(new RowLayout(SWT.HORIZONTAL));
 		group = new Group(scrolledComposite, SWT.NONE);
-		group.setLayoutData(new RowData(487, 136));		
-		
+		group.setLayoutData(new RowData(487, 136));	
+				
 		Label label = new Label(shell, SWT.NONE);
 		label.setBounds(28, 10, 131, 15);
 		label.setText("Word Document Style");
@@ -84,10 +88,16 @@ public class Type1Document {
 		button.addMouseListener(new MouseListener(){
 			public void mouseUp(MouseEvent mEvent){
 				String message = ApplicationUtilities.getProperty("popup.info.savetype1.tag") ;
-				
+				boolean flag = true;
 				try {
-					message += createStyleMappingFile();
-					configDb.saveSemanticTagDetails(comboFields, checkFields);
+					flag =  commonStartUpString();
+					if (flag) {
+						message += createStyleMappingFile();					
+						configDb.saveSemanticTagDetails(comboFields, checkFields);
+					} else {
+						message = "You need to select start style(s) or a different document if you don't have a start style";
+					}
+
 				} catch (IOException exe) {
 					LOGGER.error("Error saving to file in Type1doc", exe);
 				} catch (SQLException sqlexp) {
@@ -95,8 +105,11 @@ public class Type1Document {
 				}
 				ApplicationUtilities.showPopUpWindow(message , "Information", SWT.ICON_INFORMATION);
 				// call the function here to calculate common string
-				VolumeExtractor.start = ".*?(" + commonStartUpString() + ").*";
-				shell.dispose();
+				if(flag) {
+					VolumeExtractor.setStart(".*?(" + startUpString + ").*");
+					//shell.dispose();
+				}
+
 			}
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
@@ -153,9 +166,8 @@ public class Type1Document {
 		combo.setItems(tagnames);
 		comboFields.put(new Integer(1), combo);
 		
-		Button checkButton = new Button(group, SWT.CHECK);
+		final Button checkButton = new Button(group, SWT.CHECK);
 		checkButton.setBounds(460, 10, 12, 16);
-		System.out.println(checkButton.isEnabled());
 		checkFields.put(new Integer(1), checkButton);
 		
 		/*Load from style-mapping properties here */
@@ -287,11 +299,52 @@ public class Type1Document {
 
 		count += 1;
 	}
+
 	
-	private String commonStartUpString(){
+	private boolean commonStartUpString(){
 		
-		//Button button = new Button(group, SWT.CHECK);
-		//button.ge
-		return null;
+		Set <Integer> keys = checkFields.keySet();
+		List<String> styles = new ArrayList<String>();
+		boolean flag = false;
+		Button check = null;
+		for (Integer i : keys) {
+			check = checkFields.get(i);
+			flag = check.getSelection();
+			if(flag) {
+				styles.add(textFields.get(i).getText());
+			}
+		}
+		
+		if(styles.size() == 0) {
+			return false;
+		}
+		
+		if (styles.size() == 1) {
+			for (String style : styles) {
+				startUpString = style ;
+				return true;
+			}
+		}
+		
+		int size = styles.size();
+		String [] startStyles = new String [size];
+		styles.toArray(startStyles);
+		String common = startStyles[0];
+		for (int i=0; i < size-1; i++) {			
+			common = ApplicationUtilities.longestCommonSubstring(common, startStyles[i+1]);
+		}
+		
+		if (common.length() == 0) {
+			
+			for (String s : startStyles) {
+				common += s + "|";
+			}
+			startUpString = common.substring(0, common.lastIndexOf('|'));
+		} else {
+			startUpString = common;
+		}
+		
+		ApplicationUtilities.showPopUpWindow(startUpString, "Common String", SWT.ICON_INFORMATION);
+		return true;
 	}
 }
