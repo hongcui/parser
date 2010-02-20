@@ -65,7 +65,7 @@ public class VolumeExtractor {
 	//private String start = "Name"; //TODO: include the following in the configuration file: style names indicating the start of a new treatment
 	//private String syn = "Syn";
 	//private String tribegennamestyle = "smallCaps";
-	public static String start = ".*?(Heading|Name).*"; //starts a treatment
+	private static String start = null;//".*?(Heading|Name).*"; //starts a treatment
 	//public static String start = ""; //starts a treatment
 	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	public String tribegennamestyle = "caps";
@@ -257,5 +257,11 @@ public class VolumeExtractor {
 			LOGGER.error("Exception in VolumeExtractor : output", e);
 			throw new ParsingException(e);
 		}
+	}
+	public static String getStart() {
+		return start;
+	}
+	public static void setStart(String start) {
+		VolumeExtractor.start = start;
 	}
 }
