@@ -111,9 +111,7 @@ public class Type1Document {
 			public void mouseUp(MouseEvent mEvent){
 				//add a row
 				addRow();
-			    group.redraw();
 			    scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-			    scrolledComposite.redraw();
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
