@@ -134,6 +134,7 @@ public class MainForm {
 	protected void createContents() throws Exception{
 		shell = new Shell();
 		shell.setSize(852, 600);
+		shell.setLocation(200, 100);
 		shell.setText(ApplicationUtilities.getProperty("application.name"));
 
 		final TabFolder tabFolder = new TabFolder(shell, SWT.NONE);

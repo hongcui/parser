@@ -37,6 +37,7 @@ public class Configuration {
 		
 		final Shell shell = new Shell(display);
 		shell.setSize(800, 600);
+		shell.setLocation(200, 100);
 		shell.setText("Choose a document style");
 	
 		Group group = new Group(shell, SWT.NONE);
@@ -100,7 +101,12 @@ public class Configuration {
 		type3.setBounds(10, 307, 90, 16);
 		type3.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
-				ApplicationUtilities.showPopUpWindow("You clicked type3" , "Info", SWT.ICON_INFORMATION);
+				shell.setVisible(false);
+				new Type3Document().showType3Document();
+				if(!shell.isDisposed()) {
+					shell.dispose();
+				}
+				MainForm.main(new String[1]);
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
