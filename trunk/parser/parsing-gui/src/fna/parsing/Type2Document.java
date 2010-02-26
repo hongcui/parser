@@ -11,6 +11,14 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.widgets.Combo;
+import com.swtdesigner.SWTResourceManager;
 
 public class Type2Document {
 	private Text text;
@@ -41,17 +49,52 @@ public class Type2Document {
 	private Text text_26;
 	private Text text_27;
 	private Text text_28;
+	private Text text_33;
+	private Text text_34;
+	private Text text_35;
+	private Text text_36;
+	private Text text_37;
+	private Text text_38;
+	private Text text_39;
+	private Text text_40;
+	private Text text_41;
+	private Text text_42;
+	private Text text_43;
+	private Text text_44;
+	private Text text_45;
+	private Text text_46;
+	private Text text_47;
+	private Text text_48;
+	private Text text_49;
+	private Text text_50;
+	private Text text_51;
+	private Text text_52;
+	private Text text_53;
+	private Text text_54;
+	private Text text_55;
+	private Text text_56;
+	private Text text_57;
+	private Text text_58;
+	private Text text_59;
+	private Text text_60;
 	private Text text_8;
 	private Text text_29;
 	private Text text_30;
 	private Text text_31;
 	private Text text_32;
+	private Text text_61;
 
+	/* String for userinput while adding a row*/
+	
+	private static String identifier = null;
+	private Group nomenclatureGroup = null;
+	private ScrolledComposite nomenScrolledComposite = null;
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		new Type2Document().showType2Document();
 
 	}
 	
@@ -61,9 +104,9 @@ public class Type2Document {
     public void showType2Document() {
 		final Display display = Display.getDefault();
 		
-		final Shell shlTypeDocument = new Shell();
+		final Shell shlTypeDocument = new Shell(display);
 		shlTypeDocument.setText("Type 2 Document");
-		shlTypeDocument.setSize(771, 634);
+		shlTypeDocument.setSize(780, 634);
 		
 		Composite composite = new Composite(shlTypeDocument, SWT.NONE);
 		composite.setBounds(0, 0, 759, 557);
@@ -189,34 +232,34 @@ public class Type2Document {
 		lblSpecies.setBounds(569, 28, 55, 15);
 		lblSpecies.setText("Species");
 		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(grpNomenclature, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBounds(10, 53, 714, 278);
-		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(true);
+		nomenScrolledComposite = new ScrolledComposite(grpNomenclature, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		nomenScrolledComposite.setBounds(10, 53, 714, 278);
+		nomenScrolledComposite.setExpandHorizontal(true);
+		nomenScrolledComposite.setExpandVertical(true);
 		
-		Group group = new Group(scrolledComposite, SWT.NONE);
+		nomenclatureGroup = new Group(nomenScrolledComposite, SWT.NONE);
 		
-		Label lblName = new Label(group, SWT.NONE);
+		Label lblName = new Label(nomenclatureGroup, SWT.NONE);
 		lblName.setBounds(10, 21, 55, 15);
 		lblName.setText("Name");
 		
-		Label lblAuthors = new Label(group, SWT.NONE);
+		Label lblAuthors = new Label(nomenclatureGroup, SWT.NONE);
 		lblAuthors.setBounds(10, 66, 55, 15);
 		lblAuthors.setText("Authors");
 		
-		Label lblDate = new Label(group, SWT.NONE);
+		Label lblDate = new Label(nomenclatureGroup, SWT.NONE);
 		lblDate.setBounds(10, 113, 55, 15);
 		lblDate.setText("Date");
 		
-		Label lblPublication = new Label(group, SWT.NONE);
+		Label lblPublication = new Label(nomenclatureGroup, SWT.NONE);
 		lblPublication.setBounds(10, 157, 67, 15);
 		lblPublication.setText("Publication");
 		
-		Label lblTaxonRank = new Label(group, SWT.NONE);
+		Label lblTaxonRank = new Label(nomenclatureGroup, SWT.NONE);
 		lblTaxonRank.setBounds(10, 204, 67, 15);
 		lblTaxonRank.setText("Taxon Rank");
 		
-		Group group_2 = new Group(group, SWT.NONE);
+		Group group_2 = new Group(nomenclatureGroup, SWT.NONE);
 		group_2.setBounds(97, 10, 182, 40);
 		
 		Button button = new Button(group_2, SWT.RADIO);
@@ -230,7 +273,7 @@ public class Type2Document {
 		text_14 = new Text(group_2, SWT.BORDER);
 		text_14.setBounds(100, 11, 76, 21);
 		
-		Group group_1 = new Group(group, SWT.NONE);
+		Group group_1 = new Group(nomenclatureGroup, SWT.NONE);
 		group_1.setBounds(299, 10, 182, 40);
 		
 		Button button_2 = new Button(group_1, SWT.RADIO);
@@ -244,7 +287,7 @@ public class Type2Document {
 		text_15 = new Text(group_1, SWT.BORDER);
 		text_15.setBounds(100, 11, 76, 21);
 		
-		Group group_4 = new Group(group, SWT.NONE);
+		Group group_4 = new Group(nomenclatureGroup, SWT.NONE);
 		group_4.setBounds(501, 10, 182, 40);
 		
 		Button button_4 = new Button(group_4, SWT.RADIO);
@@ -258,7 +301,7 @@ public class Type2Document {
 		text_16 = new Text(group_4, SWT.BORDER);
 		text_16.setBounds(100, 11, 76, 21);
 		
-		Group group_5 = new Group(group, SWT.NONE);
+		Group group_5 = new Group(nomenclatureGroup, SWT.NONE);
 		group_5.setBounds(97, 56, 182, 40);
 		
 		Button button_6 = new Button(group_5, SWT.RADIO);
@@ -272,7 +315,7 @@ public class Type2Document {
 		text_17 = new Text(group_5, SWT.BORDER);
 		text_17.setBounds(100, 11, 76, 21);
 		
-		Group group_6 = new Group(group, SWT.NONE);
+		Group group_6 = new Group(nomenclatureGroup, SWT.NONE);
 		group_6.setBounds(299, 56, 182, 40);
 		
 		Button button_8 = new Button(group_6, SWT.RADIO);
@@ -286,7 +329,7 @@ public class Type2Document {
 		text_18 = new Text(group_6, SWT.BORDER);
 		text_18.setBounds(100, 11, 76, 21);
 		
-		Group group_7 = new Group(group, SWT.NONE);
+		Group group_7 = new Group(nomenclatureGroup, SWT.NONE);
 		group_7.setBounds(501, 56, 182, 40);
 		
 		Button button_10 = new Button(group_7, SWT.RADIO);
@@ -300,7 +343,7 @@ public class Type2Document {
 		text_19 = new Text(group_7, SWT.BORDER);
 		text_19.setBounds(100, 11, 76, 21);
 		
-		Group group_8 = new Group(group, SWT.NONE);
+		Group group_8 = new Group(nomenclatureGroup, SWT.NONE);
 		group_8.setBounds(97, 101, 182, 40);
 		
 		Button button_12 = new Button(group_8, SWT.RADIO);
@@ -314,7 +357,7 @@ public class Type2Document {
 		text_20 = new Text(group_8, SWT.BORDER);
 		text_20.setBounds(100, 11, 76, 21);
 		
-		Group group_9 = new Group(group, SWT.NONE);
+		Group group_9 = new Group(nomenclatureGroup, SWT.NONE);
 		group_9.setBounds(299, 101, 182, 40);
 		
 		Button button_14 = new Button(group_9, SWT.RADIO);
@@ -328,7 +371,7 @@ public class Type2Document {
 		text_21 = new Text(group_9, SWT.BORDER);
 		text_21.setBounds(100, 11, 76, 21);
 		
-		Group group_10 = new Group(group, SWT.NONE);
+		Group group_10 = new Group(nomenclatureGroup, SWT.NONE);
 		group_10.setBounds(501, 102, 182, 40);
 		
 		Button button_16 = new Button(group_10, SWT.RADIO);
@@ -342,7 +385,7 @@ public class Type2Document {
 		text_22 = new Text(group_10, SWT.BORDER);
 		text_22.setBounds(100, 11, 76, 21);
 		
-		Group group_11 = new Group(group, SWT.NONE);
+		Group group_11 = new Group(nomenclatureGroup, SWT.NONE);
 		group_11.setBounds(97, 147, 182, 40);
 		
 		Button button_18 = new Button(group_11, SWT.RADIO);
@@ -356,7 +399,7 @@ public class Type2Document {
 		text_23 = new Text(group_11, SWT.BORDER);
 		text_23.setBounds(100, 11, 76, 21);
 		
-		Group group_12 = new Group(group, SWT.NONE);
+		Group group_12 = new Group(nomenclatureGroup, SWT.NONE);
 		group_12.setBounds(299, 147, 182, 40);
 		
 		Button button_20 = new Button(group_12, SWT.RADIO);
@@ -370,7 +413,7 @@ public class Type2Document {
 		text_24 = new Text(group_12, SWT.BORDER);
 		text_24.setBounds(100, 11, 76, 21);
 		
-		Group group_13 = new Group(group, SWT.NONE);
+		Group group_13 = new Group(nomenclatureGroup, SWT.NONE);
 		group_13.setBounds(501, 148, 182, 40);
 		
 		Button button_22 = new Button(group_13, SWT.RADIO);
@@ -384,7 +427,7 @@ public class Type2Document {
 		text_25 = new Text(group_13, SWT.BORDER);
 		text_25.setBounds(100, 11, 76, 21);
 		
-		Group group_14 = new Group(group, SWT.NONE);
+		Group group_14 = new Group(nomenclatureGroup, SWT.NONE);
 		group_14.setBounds(97, 193, 182, 40);
 		
 		Button button_24 = new Button(group_14, SWT.RADIO);
@@ -398,7 +441,7 @@ public class Type2Document {
 		text_26 = new Text(group_14, SWT.BORDER);
 		text_26.setBounds(100, 11, 76, 21);
 		
-		Group group_15 = new Group(group, SWT.NONE);
+		Group group_15 = new Group(nomenclatureGroup, SWT.NONE);
 		group_15.setBounds(299, 193, 182, 40);
 		
 		Button button_26 = new Button(group_15, SWT.RADIO);
@@ -412,7 +455,7 @@ public class Type2Document {
 		text_27 = new Text(group_15, SWT.BORDER);
 		text_27.setBounds(100, 11, 76, 21);
 		
-		Group group_16 = new Group(group, SWT.NONE);
+		Group group_16 = new Group(nomenclatureGroup, SWT.NONE);
 		group_16.setBounds(501, 194, 182, 40);
 		
 		Button button_28 = new Button(group_16, SWT.RADIO);
@@ -425,18 +468,19 @@ public class Type2Document {
 		
 		text_28 = new Text(group_16, SWT.BORDER);
 		text_28.setBounds(100, 11, 76, 21);
-		
-		Label label_1 = new Label(group, SWT.SEPARATOR | SWT.VERTICAL);
-		label_1.setBounds(285, 10, 2, 242);
-		
-		Label label_4 = new Label(group, SWT.SEPARATOR | SWT.VERTICAL);
-		label_4.setBounds(487, 10, 2, 242);
-		scrolledComposite.setContent(group);
-		scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		nomenScrolledComposite.setContent(nomenclatureGroup);
+		//When you add a row, reset the size of scrolledComposite
+		nomenScrolledComposite.setMinSize(nomenclatureGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Button btnAddARow = new Button(grpNomenclature, SWT.NONE);
 		btnAddARow.setBounds(10, 337, 75, 25);
 		btnAddARow.setText("Add a Row");
+		btnAddARow.addSelectionListener (new SelectionAdapter () {
+			public void widgetSelected (SelectionEvent e) {
+				showInputBox();
+				addNomenclatureRow();
+			}
+		});
 		
 		TabItem tbtmExpressions = new TabItem(tabFolder, SWT.NONE);
 		tbtmExpressions.setText("Expressions");
@@ -447,48 +491,246 @@ public class Type2Document {
 		
 		Label lblUseCapLetters = new Label(grpExpressionsUsedIn, SWT.NONE);
 		lblUseCapLetters.setBounds(10, 22, 426, 15);
-		lblUseCapLetters.setText("Use cap letters for fix tokens; use small letters for variables");
-		
-		Label lblSpecialTokensUsed = new Label(grpExpressionsUsedIn, SWT.NONE);
-		lblSpecialTokensUsed.setBounds(10, 59, 119, 15);
-		lblSpecialTokensUsed.setText("Special tokens used:");
-		
-		Label lblMinorAmendment = new Label(grpExpressionsUsedIn, SWT.NONE);
-		lblMinorAmendment.setBounds(10, 151, 119, 15);
-		lblMinorAmendment.setText("Minor Amendment:");
-		
-		Label lblPastName = new Label(grpExpressionsUsedIn, SWT.NONE);
-		lblPastName.setBounds(10, 238, 55, 15);
-		lblPastName.setText("Past name:");
-		
-		Label lblNameOrigin = new Label(grpExpressionsUsedIn, SWT.NONE);
-		lblNameOrigin.setBounds(10, 329, 119, 15);
-		lblNameOrigin.setText("Name origin:");
+		lblUseCapLetters.setText("Use CAP words for fixed tokens; use small letters for variables");
 		
 		Label lblHononyms = new Label(grpExpressionsUsedIn, SWT.NONE);
-		lblHononyms.setBounds(10, 420, 99, 15);
+		lblHononyms.setBounds(348, 22, 99, 15);
 		lblHononyms.setText("Hononyms:");
 		
-		text_8 = new Text(grpExpressionsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		text_8.setBounds(135, 63, 589, 70);
+		ScrolledComposite scrolledComposite_2 = new ScrolledComposite(grpExpressionsUsedIn, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite_2.setBounds(10, 43, 714, 440);
+		scrolledComposite_2.setExpandHorizontal(true);
+		scrolledComposite_2.setExpandVertical(true);
 		
-		text_29 = new Text(grpExpressionsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		text_29.setBounds(135, 151, 589, 70);
+		Group group_17 = new Group(scrolledComposite_2, SWT.NONE);
 		
-		text_30 = new Text(grpExpressionsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		text_30.setBounds(135, 238, 589, 70);
+		Label lblSpecialTokensUsed = new Label(group_17, SWT.NONE);
+		lblSpecialTokensUsed.setBounds(10, 21, 119, 15);
+		lblSpecialTokensUsed.setText("Special tokens used:");
 		
-		text_31 = new Text(grpExpressionsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		text_31.setBounds(135, 329, 589, 70);
+		text_29 = new Text(group_17, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_29.setBounds(135, 18, 550, 69);
 		
-		text_32 = new Text(grpExpressionsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-		text_32.setBounds(135, 420, 589, 70);
+		Label lblMinorAmendment = new Label(group_17, SWT.NONE);
+		lblMinorAmendment.setBounds(10, 110, 119, 15);
+		lblMinorAmendment.setText("Minor Amendment:");
+		
+		text_30 = new Text(group_17, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_30.setBounds(137, 107, 548, 69);
+		
+		Label lblPastName = new Label(group_17, SWT.NONE);
+		lblPastName.setBounds(10, 203, 67, 15);
+		lblPastName.setText("Past name:");
+		
+		text_31 = new Text(group_17, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_31.setBounds(137, 200, 548, 69);
+		
+		Label lblNameOrigin = new Label(group_17, SWT.NONE);
+		lblNameOrigin.setBounds(10, 283, 119, 15);
+		lblNameOrigin.setText("Name origin:");
+		
+		text_32 = new Text(group_17, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_32.setBounds(137, 290, 550, 69);
+		
+		text_61 = new Text(group_17, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_61.setBounds(137, 381, 548, 69);
+		
+		Label lblHononyms_1 = new Label(group_17, SWT.NONE);
+		lblHononyms_1.setBounds(10, 381, 85, 15);
+		lblHononyms_1.setText("Homonyms:");
+		scrolledComposite_2.setContent(group_17);
+		scrolledComposite_2.setMinSize(group_17.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		Button btnAddARow_2 = new Button(grpExpressionsUsedIn, SWT.NONE);
+		btnAddARow_2.setBounds(10, 489, 75, 25);
+		btnAddARow_2.setText("Add a row");
 		
 		TabItem tbtmDescription = new TabItem(tabFolder, SWT.NONE);
 		tbtmDescription.setText("Description");
 		
-		Group group_3 = new Group(tabFolder, SWT.NONE);
-		tbtmDescription.setControl(group_3);
+		Group grpMorphologicalDescriptions = new Group(tabFolder, SWT.NONE);
+		tbtmDescription.setControl(grpMorphologicalDescriptions);
+		
+		Label lblAllInOne = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblAllInOne.setBounds(10, 53, 160, 15);
+		lblAllInOne.setText("All in one paragraph");
+		
+		Button btnYes = new Button(grpMorphologicalDescriptions, SWT.RADIO);
+		btnYes.setBounds(241, 52, 90, 16);
+		btnYes.setText("Yes");
+		
+		Button btnNo = new Button(grpMorphologicalDescriptions, SWT.RADIO);
+		btnNo.setBounds(378, 52, 90, 16);
+		btnNo.setText("No");
+		
+		Label lblOtherInformationMay = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblOtherInformationMay.setBounds(10, 85, 438, 15);
+		lblOtherInformationMay.setText("Other information may also be included in a description paragraph:");
+		
+		Combo combo = new Combo(grpMorphologicalDescriptions, SWT.NONE);
+		combo.setItems(new String[] {"Nomenclature", "Habitat", "Distribution", "Discussion", "Other"});
+		combo.setBounds(496, 82, 177, 23);
+		
+		Label lblMorphological = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblMorphological.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblMorphological.setBounds(10, 25, 242, 15);
+		lblMorphological.setText("Morphological Descriptions: ");
+		
+		Label lblOrder = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblOrder.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblOrder.setBounds(22, 142, 55, 15);
+		lblOrder.setText("Order");
+		
+		Label lblSection = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblSection.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblSection.setBounds(140, 142, 55, 15);
+		lblSection.setText("Section");
+		
+		Label lblStartTokens = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblStartTokens.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblStartTokens.setBounds(285, 142, 90, 15);
+		lblStartTokens.setText("Start tokens");
+		
+		Label lblEndTokens = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblEndTokens.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblEndTokens.setBounds(443, 142, 68, 15);
+		lblEndTokens.setText("End tokens");
+		
+		Label lblEmbeddedTokens = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblEmbeddedTokens.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblEmbeddedTokens.setBounds(592, 142, 132, 15);
+		lblEmbeddedTokens.setText("Embedded tokens");
+		
+		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(grpMorphologicalDescriptions, 
+				SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite_1.setBounds(10, 169, 714, 310);
+		scrolledComposite_1.setExpandHorizontal(true);
+		scrolledComposite_1.setExpandVertical(true);
+		
+		Group group_3 = new Group(scrolledComposite_1, SWT.NONE);
+		
+		text_33 = new Text(group_3, SWT.BORDER);
+		text_33.setBounds(10, 21, 76, 21);
+		
+		text_34 = new Text(group_3, SWT.BORDER);
+		text_34.setBounds(10, 62, 76, 21);
+		
+		text_35 = new Text(group_3, SWT.BORDER);
+		text_35.setBounds(10, 105, 76, 21);
+		
+		text_36 = new Text(group_3, SWT.BORDER);
+		text_36.setBounds(10, 151, 76, 21);
+		
+		text_37 = new Text(group_3, SWT.BORDER);
+		text_37.setBounds(10, 191, 76, 21);
+		
+		text_38 = new Text(group_3, SWT.BORDER);
+		text_38.setBounds(10, 232, 76, 21);
+		
+		text_39 = new Text(group_3, SWT.BORDER);
+		text_39.setBounds(10, 275, 76, 21);
+		
+		Label lblNomenclature = new Label(group_3, SWT.NONE);
+		lblNomenclature.setBounds(120, 21, 101, 15);
+		lblNomenclature.setText("Nomenclature");
+		
+		text_40 = new Text(group_3, SWT.BORDER);
+		text_40.setBounds(270, 21, 113, 21);
+		
+		text_41 = new Text(group_3, SWT.BORDER);
+		text_41.setBounds(432, 21, 101, 21);
+		
+		text_42 = new Text(group_3, SWT.BORDER);
+		text_42.setBounds(576, 21, 107, 21);
+		
+		Label lblMorphDescription = new Label(group_3, SWT.NONE);
+		lblMorphDescription.setBounds(120, 62, 113, 15);
+		lblMorphDescription.setText("Morph. description");
+		
+		text_43 = new Text(group_3, SWT.BORDER);
+		text_43.setBounds(270, 62, 113, 21);
+		
+		text_44 = new Text(group_3, SWT.BORDER);
+		text_44.setBounds(432, 62, 101, 21);
+		
+		text_45 = new Text(group_3, SWT.BORDER);
+		text_45.setBounds(576, 62, 107, 21);
+		
+		Label lblHabitat = new Label(group_3, SWT.NONE);
+		lblHabitat.setBounds(120, 105, 55, 15);
+		lblHabitat.setText("Habitat");
+		
+		text_46 = new Text(group_3, SWT.BORDER);
+		text_46.setBounds(270, 105, 113, 21);
+		
+		text_47 = new Text(group_3, SWT.BORDER);
+		text_47.setBounds(432, 105, 101, 21);
+		
+		text_48 = new Text(group_3, SWT.BORDER);
+		text_48.setBounds(576, 105, 107, 21);
+		
+		Label lblDistribution = new Label(group_3, SWT.NONE);
+		lblDistribution.setBounds(120, 151, 101, 15);
+		lblDistribution.setText("Distribution");
+		
+		text_49 = new Text(group_3, SWT.BORDER);
+		text_49.setBounds(270, 151, 113, 21);
+		
+		text_50 = new Text(group_3, SWT.BORDER);
+		text_50.setBounds(432, 151, 101, 21);
+		
+		text_51 = new Text(group_3, SWT.BORDER);
+		text_51.setBounds(576, 151, 107, 21);
+		
+		text_52 = new Text(group_3, SWT.BORDER);
+		text_52.setBounds(270, 191, 113, 21);
+		
+		text_53 = new Text(group_3, SWT.BORDER);
+		text_53.setBounds(432, 191, 101, 21);
+		
+		text_54 = new Text(group_3, SWT.BORDER);
+		text_54.setBounds(576, 191, 107, 21);
+		
+		text_55 = new Text(group_3, SWT.BORDER);
+		text_55.setBounds(270, 232, 113, 21);
+		
+		Label lblDiscussion = new Label(group_3, SWT.NONE);
+		lblDiscussion.setBounds(120, 191, 101, 15);
+		lblDiscussion.setText("Discussion");
+		
+		Label lblKeys = new Label(group_3, SWT.NONE);
+		lblKeys.setBounds(120, 238, 55, 15);
+		lblKeys.setText("Keys");
+		
+		Label lblReferences_1 = new Label(group_3, SWT.NONE);
+		lblReferences_1.setBounds(120, 275, 87, 15);
+		lblReferences_1.setText("References");
+		
+		text_56 = new Text(group_3, SWT.BORDER);
+		text_56.setBounds(270, 275, 113, 21);
+		
+		text_57 = new Text(group_3, SWT.BORDER);
+		text_57.setBounds(432, 232, 101, 21);
+		
+		text_58 = new Text(group_3, SWT.BORDER);
+		text_58.setBounds(576, 232, 107, 21);
+		
+		text_59 = new Text(group_3, SWT.BORDER);
+		text_59.setBounds(432, 275, 101, 21);
+		
+		text_60 = new Text(group_3, SWT.BORDER);
+		text_60.setBounds(576, 275, 107, 21);
+		scrolledComposite_1.setContent(group_3);
+		scrolledComposite_1.setMinSize(group_3.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		Button btnAddARow_1 = new Button(grpMorphologicalDescriptions, SWT.NONE);
+		btnAddARow_1.setBounds(10, 482, 75, 25);
+		btnAddARow_1.setText("Add a row");
+		
+		Label lblSectionIndicationsAnd = new Label(grpMorphologicalDescriptions, SWT.NONE);
+		lblSectionIndicationsAnd.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
+		lblSectionIndicationsAnd.setBounds(10, 116, 222, 15);
+		lblSectionIndicationsAnd.setText("Section indications and order:");
 		
 		TabItem tbtmSpecial = new TabItem(tabFolder, SWT.NONE);
 		tbtmSpecial.setText("Special");
@@ -554,6 +796,13 @@ public class Type2Document {
 		text_13 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text_13.setBounds(10, 296, 691, 69);
 		
+		Label lblAbbreviationsUsedIn_3 = new Label(grpAbbreviationsUsedIn, SWT.NONE);
+		lblAbbreviationsUsedIn_3.setBounds(10, 395, 204, 15);
+		lblAbbreviationsUsedIn_3.setText("Abbreviations used in others:");
+		
+		text_8 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		text_8.setBounds(10, 416, 691, 69);
+		
 		Button btnSave = new Button(shlTypeDocument, SWT.NONE);
 		btnSave.setBounds(670, 563, 75, 25);
 		btnSave.setText("Save");
@@ -565,4 +814,66 @@ public class Type2Document {
 				display.sleep();
 		}
     }
+    
+    private void addNomenclatureRow() {
+        Rectangle rect = nomenclatureGroup.getBounds();
+        rect.height += 30;
+        nomenclatureGroup.setBounds(rect);
+        nomenScrolledComposite.setMinSize(nomenclatureGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    }
+    private static void showInputBox() {
+    	final Shell dialog = new Shell (Display.getDefault(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		dialog.setText("Add a row");
+		FormLayout formLayout = new FormLayout ();
+		formLayout.marginWidth = 10;
+		formLayout.marginHeight = 10;
+		formLayout.spacing = 10;
+		dialog.setLayout (formLayout);
+
+		Label label = new Label (dialog, SWT.NONE);
+		label.setText ("Type an identifier:");
+		FormData data = new FormData ();
+		label.setLayoutData (data);
+
+		Button cancel = new Button (dialog, SWT.PUSH);
+		cancel.setText ("Cancel");
+		data = new FormData ();
+		data.width = 60;
+		data.right = new FormAttachment (100, 0);
+		data.bottom = new FormAttachment (100, 0);
+		cancel.setLayoutData (data);
+		cancel.addSelectionListener (new SelectionAdapter () {
+			public void widgetSelected (SelectionEvent e) {
+				dialog.close ();
+			}
+		});
+
+		final Text text = new Text (dialog, SWT.BORDER);
+		data = new FormData ();
+		data.width = 200;
+		data.left = new FormAttachment (label, 0, SWT.DEFAULT);
+		data.right = new FormAttachment (100, 0);
+		data.top = new FormAttachment (label, 0, SWT.CENTER);
+		data.bottom = new FormAttachment (cancel, 0, SWT.DEFAULT);
+		text.setLayoutData (data);
+
+		Button ok = new Button (dialog, SWT.PUSH);
+		ok.setText ("OK");
+		data = new FormData ();
+		data.width = 60;
+		data.right = new FormAttachment (cancel, 0, SWT.DEFAULT);
+		data.bottom = new FormAttachment (100, 0);
+		ok.setLayoutData (data);
+		ok.addSelectionListener (new SelectionAdapter () {
+			public void widgetSelected (SelectionEvent e) {
+				identifier = text.getText();
+				dialog.close ();
+			}
+		});
+
+		dialog.setDefaultButton (ok);
+		dialog.pack ();
+		dialog.open ();
+
+	}
 }
