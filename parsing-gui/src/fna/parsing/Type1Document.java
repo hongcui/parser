@@ -42,32 +42,42 @@ public class Type1Document {
 	
 	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();
 	private static final Logger LOGGER = Logger.getLogger(Type1Document.class);
-	private static final HashMap <Integer, Text> textFields = new HashMap<Integer, Text> ();
-	private static final HashMap <Integer, Combo> comboFields = new HashMap<Integer, Combo> ();
-	private static final HashMap <Integer, Button> checkFields = new HashMap<Integer, Button> ();
-	private static int count = 1;
+	private final HashMap <Integer, Text> textFields = new HashMap<Integer, Text> ();
+	private final HashMap <Integer, Combo> comboFields = new HashMap<Integer, Combo> ();
+	private final HashMap <Integer, Button> checkFields = new HashMap<Integer, Button> ();
+	private int count = 1;
 	
 	private static Shell shell = null;
-	private static String [] tagnames = null;
-	private static ScrolledComposite scrolledComposite = null;
-	Group group = null;
-	private static String startUpString = null;
+	private String [] tagnames = null;
+	private ScrolledComposite scrolledComposite = null;
+	private Group group = null;
+	private String startUpString = null;
 
 		
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		
+/*		Type1Document td1 = new Type1Document();
+		
+		do {
+			td1.showType1Document();
+			if(VolumeExtractor.getStart() == null) {
 
-			new Type1Document().showType1Document();
+			}
+		}
+		while(VolumeExtractor.getStart() == null);
+			
 		
 		//System.out.println("disposed :(");
-		
+*/		
 	}
 	
 	/**
 	 * @wbp.parser.entryPoint
 	 */
 	public void showType1Document() {
-		Display display = new Display ();
+		//Display display = new Display ();
+		final Display display = Display.getDefault();
 		shell = new Shell (display);
 		shell.setText("Type1 Document");
 		shell.setSize(593, 276);
@@ -95,7 +105,7 @@ public class Type1Document {
 						message += createStyleMappingFile();					
 						configDb.saveSemanticTagDetails(comboFields, checkFields);
 					} else {
-						message = "You need to select start style(s) or a different document if you don't have a start style";
+						message = ApplicationUtilities.getProperty("popup.error.style");
 					}
 
 				} catch (IOException exe) {
@@ -107,8 +117,8 @@ public class Type1Document {
 				// call the function here to calculate common string
 				if(flag) {
 					VolumeExtractor.setStart(".*?(" + startUpString + ").*");
-					//shell.dispose();
-				}
+					shell.dispose();
+				} 
 
 			}
 			public void mouseDown(MouseEvent mEvent) { }
@@ -344,7 +354,7 @@ public class Type1Document {
 			startUpString = common;
 		}
 		
-		ApplicationUtilities.showPopUpWindow(startUpString, "Common String", SWT.ICON_INFORMATION);
+		//ApplicationUtilities.showPopUpWindow(startUpString, "Common StartUp String", SWT.ICON_INFORMATION);
 		return true;
 	}
 }
