@@ -2,6 +2,7 @@ package fna.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -105,6 +106,38 @@ public class ConfigurationDbAccessor {
 			 LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
 			 exe.printStackTrace();
 			}
+		} finally {
+
+			if (stmt != null) {
+				stmt.close();
+			}
+
+			if (conn != null) {
+				conn.close();
+			}
+		}
+
+	}
+	
+	
+	public void saveParagraphTagDetails(String...paragraphs) throws SQLException{
+		Connection conn = null;
+		PreparedStatement stmt = null;
+
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("insert into ocrstartparagraph(paragraph) values (?)");
+
+			for (String para : paragraphs) {
+				if(!para.trim().equals("") && !para.trim().equals("\r")) {
+					stmt.setString(1, para);
+					stmt.executeUpdate();
+				}
+			}
+
+		} catch (Exception exe) {
+			 LOGGER.error("Couldn't insert paragraph Details in ConfigurationDbAccessor:saveParagraphTagDetails" + exe);
+			 exe.printStackTrace();
 		} finally {
 
 			if (stmt != null) {
