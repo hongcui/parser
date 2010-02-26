@@ -100,6 +100,7 @@ public class Type1Document {
 				String message = ApplicationUtilities.getProperty("popup.info.savetype1.tag") ;
 				boolean flag = true;
 				try {
+					// call the function here to calculate common string
 					flag =  commonStartUpString();
 					if (flag) {
 						message += createStyleMappingFile();					
@@ -114,7 +115,7 @@ public class Type1Document {
 					LOGGER.error("Error saving tags to database in Type1doc", sqlexp);
 				}
 				ApplicationUtilities.showPopUpWindow(message , "Information", SWT.ICON_INFORMATION);
-				// call the function here to calculate common string
+
 				if(flag) {
 					VolumeExtractor.setStart(".*?(" + startUpString + ").*");
 					shell.dispose();
