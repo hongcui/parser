@@ -35,7 +35,7 @@ public class Configuration {
 	public void viewConfigurationForm () {
 		final Display display = Display.getDefault();
 		
-		final Shell shell = new Shell();
+		final Shell shell = new Shell(display);
 		shell.setSize(800, 600);
 		shell.setText("Choose a document style");
 	
@@ -53,24 +53,40 @@ public class Configuration {
 		Group group_1 = new Group(shell, SWT.NONE);
 		group_1.setBounds(20, 98, 740, 456);
 		
-		Button button_1 = new Button(group_1, SWT.RADIO);
-		button_1.setBounds(10, 29, 90, 16);
-		button_1.addMouseListener(new MouseListener() {
+		Button type1 = new Button(group_1, SWT.RADIO);
+		type1.setBounds(10, 29, 90, 16);
+		type1.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
+				shell.setVisible(false);
 				new Type1Document().showType1Document();
-				shell.dispose();
-				//call the parser application
-				MainForm.main(new String[1]);
+				 do {
+					 if (VolumeExtractor.getStart() == null) {
+							String message = ApplicationUtilities.getProperty("popup.info.type1") + " ";
+							ApplicationUtilities.showPopUpWindow(message + ApplicationUtilities.getProperty("popup.error.style"), 
+									ApplicationUtilities.getProperty("popup.header.error"), SWT.ICON_ERROR);
+							new Configuration().viewConfigurationForm();
+					 }
+					 
+				} while (VolumeExtractor.getStart() == null &&!shell.isDisposed());
+				 
+				if (VolumeExtractor.getStart() != null) {
+					if(!shell.isDisposed()) {
+						shell.dispose();
+					}
+					MainForm.main(new String[1]);
+					System.exit(0);
+				}	
+
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		button_1.setText("Type 1");
+		type1.setText("Type 1");
 		
-		Button button_2 = new Button(group_1, SWT.RADIO);
-		button_2.setBounds(10, 166, 90, 16);
-		button_2.addMouseListener(new MouseListener() {
+		Button type2 = new Button(group_1, SWT.RADIO);
+		type2.setBounds(10, 166, 90, 16);
+		type2.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
 				ApplicationUtilities.showPopUpWindow("You clicked type2" , "Info", SWT.ICON_INFORMATION);
 			}
@@ -78,11 +94,11 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		button_2.setText("Type 2");
+		type2.setText("Type 2");
 		
-		Button button_3 = new Button(group_1, SWT.RADIO);
-		button_3.setBounds(10, 307, 90, 16);
-		button_3.addMouseListener(new MouseListener() {
+		Button type3 = new Button(group_1, SWT.RADIO);
+		type3.setBounds(10, 307, 90, 16);
+		type3.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
 				ApplicationUtilities.showPopUpWindow("You clicked type3" , "Info", SWT.ICON_INFORMATION);
 			}
@@ -90,7 +106,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		button_3.setText("Type 3");
+		type3.setText("Type 3");
 		
 		Label label_1 = new Label(group_1, SWT.NONE);
 		label_1.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
