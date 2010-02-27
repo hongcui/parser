@@ -17,6 +17,10 @@ public class ParseComplexseg {
 	static protected String password = "";
 	int flag6;
 
+	public ParseComplexseg() {
+		// TODO Auto-generated constructor stub
+	}
+	
 	public ParseComplexseg(String database) {
 		// TODO Auto-generated constructor stub
 		collect(database);
@@ -96,7 +100,7 @@ public class ParseComplexseg {
 					matcher.reset();*/
                 	
                 	String str1="";
-                	str1 = ps.plaintextextractor(str);
+                	str1 = ps.plaintextextractornum(str);
                 	/*Pattern pattern3 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×µ%“”\\_,]+");
                 	matcher = pattern3.matcher(str);
                 	while ( matcher.find()){
@@ -106,12 +110,13 @@ public class ParseComplexseg {
                 		System.out.println(str1);
                 	}
                 	matcher.reset();*/
-                	String str6=str1;
+                	String str6=ps.plaintextextractor(str);
                 	orcount = 0;
                 	                    
                     // Replace all occurrences of pattern in input
                     matcher = pattern.matcher(str);
                     while ( matcher.find()){
+                    	//System.out.println("Organ:"+str.substring(matcher.start(),matcher.end()));
                     	orcount +=1;
                     }
                     matcher.reset();
@@ -132,12 +137,14 @@ public class ParseComplexseg {
                 	String markedsent1 = "";
                 	String markedsent2 = "";
                 	String charset = "";
-                	Pattern pattern4 = Pattern.compile("(<[a-zA-Z_ ]+>)[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\](<\\{)(\\}>) m]+(<[a-zA-Z_ ]+>)");
+                	System.out.println("str:"+str);
+                	Pattern pattern4 = Pattern.compile("(<[a-zA-Z_ ]+>)[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>) m]+(<[a-zA-Z_ ]+>)");
             		matcher = pattern4.matcher(str);
             		while ( matcher.find()){
             			int i=matcher.start();
                 		int j=matcher.end();
                 		str2=str.subSequence(i,j).toString();
+                		//System.out.println("str2:"+str2);
                 		int m=str2.indexOf("<");
                 		int k=str2.indexOf(">");
                 		int l;
@@ -161,13 +168,13 @@ public class ParseComplexseg {
                 			m=l;
                 			k=str2.indexOf(">",l);
                 			innertagstate = "";
-                			//System.out.println(relation);
+                			//System.out.println("relation:"+relation);
                 			if(relation.contains(":")){
                 				charset = relation.substring(0, relation.lastIndexOf("{:}"));
                 				relation = relation.substring(relation.lastIndexOf("{:}")+3);
                 				int flag7 = 0;
                 				String plaincharset = "";
-                				plaincharset = ps.plaintextextractor(charset);
+                				plaincharset = ps.plaintextextractornum(charset);
                 				/*Pattern pattern12 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
                             	Matcher matcher2 = pattern12.matcher(charset);
                             	while ( matcher2.find()){
@@ -177,7 +184,7 @@ public class ParseComplexseg {
                             	}
                             	matcher2.reset();*/
                 				
-                				Pattern pattern19 = Pattern.compile("[±]?[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m[\\s]?[xX\\×]+[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m");
+                				Pattern pattern19 = Pattern.compile("[±]?[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[\\]]?[dcmµ]?[m]?[\\s]?[xX\\×]+[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[\\]]?[dcmµ]?m");
                             	Matcher matcher2 = pattern19.matcher(plaincharset);
                             	int flag3=0;
                             	while ( matcher2.find()){
@@ -198,9 +205,9 @@ public class ParseComplexseg {
                             		innertagstate=innertagstate.concat("\"");
                             	plaincharset = matcher2.replaceAll("#");
                             	matcher2.reset();
-                            	
+                            	//System.out.println("plaincharset1:"+plaincharset);
                             	int sizect = 0;
-                				Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
+                				Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\[\\]\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
                             	matcher2 = pattern13.matcher(plaincharset);
                             	int flag=0;
                             	String numrange="";
@@ -213,9 +220,48 @@ public class ParseComplexseg {
                             			i=matcher2.start();
                             		}
                             		j=matcher2.end();
-                            		if(plaincharset.substring(i,j).contains("–")|plaincharset.substring(i,j).contains("-") && !plaincharset.substring(i,j).contains("×") && !plaincharset.substring(i,j).contains("x") && !plaincharset.substring(i,j).contains("X")){
-                            			sizect+=1;
-                            			String extract = plaincharset.substring(i,j);
+                            		String extreme = plaincharset.substring(i,j);
+                        			i = 0;
+                        			j = extreme.length();
+                            		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
+                                	Matcher matcher1 = pattern20.matcher(extreme);
+                                	if ( matcher1.find()){
+                                		int p = matcher1.start();
+                                		int q = matcher1.end();
+                                		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-')
+                                			numrange = numrange.concat(" min_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-2)+"\"");
+                                		else
+                                			numrange = numrange.concat(" min_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+                                	}
+                                	extreme = matcher1.replaceAll("#");
+                            		matcher1.reset();
+                            		if(extreme.contains("#"))
+                            			i = extreme.indexOf("#")+1;
+                            		Pattern pattern21 = Pattern.compile("\\[[±\\d\\.\\s\\+\\–\\-]*[\\–\\-]{1}[±\\d\\.\\s\\+]+\\]");
+                                	matcher1 = pattern21.matcher(extreme);
+                                	if ( matcher1.find()){
+                                		int p = matcher1.start();
+                                		int q = matcher1.end();
+                                		if(extreme.charAt(p+1)=='–' | extreme.charAt(p+1)=='-')
+                                			numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+2,q-1)+"\"");
+                                		else
+                                			numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+                                	}
+                                	extreme = matcher1.replaceAll("#");
+                            		matcher1.reset();
+                            		j = extreme.length();
+                            		Pattern pattern23 = Pattern.compile("\\[[±\\d\\.\\s\\+]+\\]");
+	                            	matcher1 = pattern23.matcher(extreme);
+	                            	if ( matcher1.find()){
+	                            		int p = matcher1.start();
+	                            		int q = matcher1.end();
+	                            		numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+	                            	}
+	                            	extreme = matcher1.replaceAll("#");
+	                            	matcher1.reset();
+	                            	j = extreme.length();
+                            		if(extreme.substring(i,j).contains("–")|extreme.substring(i,j).contains("-") && !extreme.substring(i,j).contains("×") && !extreme.substring(i,j).contains("x") && !extreme.substring(i,j).contains("X")){
+                            			String extract = extreme.substring(i,j);
                             			Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
                                     	Matcher matcher3 = pattern18.matcher(extract);
                                     	String unit="";
@@ -224,18 +270,18 @@ public class ParseComplexseg {
                                     	}
                                     	extract = matcher3.replaceAll("#");
                                     	matcher3.reset();
-                                    	System.out.println(extract);
                             			numrange = numrange.concat(" min_size_"+sizect+"=\""+extract.substring(0, extract.indexOf('-'))+"\" min_size_unit_"+sizect+"=\""+unit+"\" max_size_"+sizect+"=\""+extract.substring(extract.indexOf('-')+1,extract.indexOf('#'))+"\" max_size_unit_"+sizect+"=\""+unit+"\"");
+                            			sizect+=1;
                             		}
                             		else{
                             			if(flag3==1){
                             				StringBuffer sb = new StringBuffer();
                     						Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
-                    						Matcher matcher1 = pattern9.matcher(innertagstate);
+                    						matcher1 = pattern9.matcher(innertagstate);
                     						while ( matcher1.find()){
                     							int p=matcher1.start();
                     							int q=matcher1.end();
-                    							matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
+                    							matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+extreme.subSequence(i,j).toString()+"\"");
                     						}
                     						matcher1.appendTail(sb);
                     						innertagstate=sb.toString();
@@ -243,9 +289,9 @@ public class ParseComplexseg {
                             			}
                             			else{
                             				if(flag==0)
-                            					innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
+                            					innertagstate=innertagstate.concat(" "+"size=\""+extreme.subSequence(i,j).toString());
                             				else
-                            					innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+                            					innertagstate=innertagstate.concat(","+extreme.subSequence(i,j).toString());
                             				flag=1;
                             			}
                             		}
@@ -255,7 +301,8 @@ public class ParseComplexseg {
                             	plaincharset = matcher2.replaceAll("#");
                             	innertagstate = innertagstate.concat(numrange);
                             	matcher2.reset();
-                            	Pattern pattern14 = Pattern.compile("[±\\d\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
+                            	//System.out.println("plaincharset2:"+plaincharset);
+                            	Pattern pattern14 = Pattern.compile("[±\\d\\[\\]\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
                             	matcher2 = pattern14.matcher(plaincharset);
                             	int flag1=0;
                             	while ( matcher2.find()){
@@ -293,11 +340,11 @@ public class ParseComplexseg {
                             	plaincharset = matcher2.replaceAll("#");
                             	matcher2.reset();
                             	int countct = 0;
-                            	Pattern pattern15 = Pattern.compile("([±]?[\\d]+[\\–\\-][\\d]+[+]?|[±]?[\\d]+[+]?)[\\–\\–\\-]+[a-zA-Z]+");
+                            	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?)[\\–\\–\\-]+[a-zA-Z]+");
                             	matcher2 = pattern15.matcher(plaincharset);
                             	plaincharset = matcher2.replaceAll("#");
                             	matcher2.reset();     	
-                            	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([±]?[\\d]+[\\–\\-][\\d]+[+]?[\\–\\-]?[\\d]*[+]?|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+                            	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?([\\[]?[\\–\\-]?[\\]]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
                             	matcher2 = pattern16.matcher(plaincharset);
                             	int flag2=0;
                             	String countrange = "";
@@ -305,17 +352,50 @@ public class ParseComplexseg {
                             		flag7 = 1;
                             		i=matcher2.start();
                             		j=matcher2.end();
-                            		if(plaincharset.substring(i,j).contains("–")|plaincharset.substring(i,j).contains("-") && !plaincharset.substring(i,j).contains("×") && !plaincharset.substring(i,j).contains("x") && !plaincharset.substring(i,j).contains("X")){
-                            			countct+=1;
-                            			String extract = plaincharset.substring(i,j);
-                                    	System.out.println(extract);
+                            		String extreme = plaincharset.substring(i,j);
+                        			i = 0;
+                        			j = extreme.length();
+                            		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
+                                	Matcher matcher1 = pattern20.matcher(extreme);
+                                	if ( matcher1.find()){
+                                		int p = matcher1.start();
+                                		int q = matcher1.end();
+                                		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-')
+                                			countrange = countrange.concat(" min_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-2)+"\"");
+                                		else
+                                			countrange = countrange.concat(" min_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-1)+"\"");
+                                	}
+                                	extreme = matcher1.replaceAll("#");
+                            		matcher1.reset();
+                            		if(extreme.contains("#"))
+                            			i = extreme.indexOf("#")+1;
+                            		j = extreme.length();
+                            		Pattern pattern21 = Pattern.compile("\\[[±\\d\\.\\s\\+\\–\\-]*[\\–\\-]{1}[±\\d\\.\\s\\+]+\\]");
+                                	matcher1 = pattern21.matcher(extreme);
+                                	if ( matcher1.find()){
+                                		int p = matcher1.start();
+                                		int q = matcher1.end();
+                                		j = p;
+                                		if(extreme.charAt(p+1)=='–' | extreme.charAt(p+1)=='-')
+                                			countrange = countrange.concat(" max_extreme_count_"+countct+"=\""+extreme.substring(p+2,q-1)+"\"");
+                                		else
+                                			countrange = countrange.concat(" max_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-1)+"\"");
+                                	}
+                            		matcher1.reset();
+                            		if(extreme.substring(i,j).contains("–")|extreme.substring(i,j).contains("-") && !extreme.substring(i,j).contains("×") && !extreme.substring(i,j).contains("x") && !extreme.substring(i,j).contains("X")){
+                            			String extract = extreme.substring(i,j);
+                            			Pattern pattern22 = Pattern.compile("[\\[\\]]+");
+                            			matcher1 = pattern22.matcher(extract);
+                            			extract = matcher1.replaceAll("");
+                            			matcher1.reset();
                             			countrange = countrange.concat(" min_count_"+countct+"=\""+extract.substring(0, extract.indexOf('-'))+"\" max_count_"+countct+"=\""+extract.substring(extract.indexOf('-')+1,extract.length())+"\"");
+                            			countct+=1;
                             		}
                             		else{
                             			if(flag2==0)
-                            				innertagstate=innertagstate.concat(" "+"count=\""+plaincharset.subSequence(i,j).toString());
+                            				innertagstate=innertagstate.concat(" "+"count=\""+extreme.subSequence(i,j).toString());
                             			else
-                            				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+                            				innertagstate=innertagstate.concat(","+extreme.subSequence(i,j).toString());
                             			flag2=1;
                             		}
                             	}
@@ -467,7 +547,6 @@ public class ParseComplexseg {
                 			ct++;
                 		}
                 		outertag=outertag.concat(">");               		
-                		//System.out.println("inside1");
                 		
                 //handle states for first and last organ in segment
                 		innertagstate = "";
@@ -480,7 +559,7 @@ public class ParseComplexseg {
                     		j=matcher1.end();
                     		state=state.concat(str.subSequence(i,j).toString());
                     		String plaincharset = "";
-                    		plaincharset = ps.plaintextextractor(state);
+                    		plaincharset = ps.plaintextextractornum(state);
                     		/*Pattern pattern12 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
                         	Matcher matcher2 = pattern12.matcher(state);
                         	while ( matcher2.find()){
@@ -492,7 +571,6 @@ public class ParseComplexseg {
             				innertagstate = charstatehandler(plaincharset, state);
                     	}
                     	matcher1.reset();
-                    	//System.out.println("inside2");
                     	if(flag6 == 1){
                     		StringBuffer sb = new StringBuffer();
                     		if(organ1.compareTo("n")==0)
@@ -506,7 +584,6 @@ public class ParseComplexseg {
                     		matcher2.appendTail(sb);
                     		innertags=sb.toString();
                     	}
-                    	//System.out.println("inside3");
                     	innertagstate = "";
                     	Pattern pattern10 = Pattern.compile("<"+organ2+">[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,=µ%\\*\\{\\}\\[\\](<\\{)(\\}>)m]+");
                     	matcher1 = pattern10.matcher(str);
@@ -517,7 +594,7 @@ public class ParseComplexseg {
                     		j=matcher1.end();
                     		state=state.concat(str.subSequence(i,j).toString());
                     		String plaincharset = "";
-                    		plaincharset = ps.plaintextextractor(state);
+                    		plaincharset = ps.plaintextextractornum(state);
             				/*Pattern pattern12 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
                         	Matcher matcher2 = pattern12.matcher(state);
                         	while ( matcher2.find()){
@@ -674,9 +751,7 @@ public class ParseComplexseg {
                     		Pattern pattern9 = Pattern.compile("<"+org2+"/><relation code=\"R"+ct+"\" agent=\""+org1+"\" target=\""+org2+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
                     		Matcher matcher2 = pattern9.matcher(innertags);
                     		while ( matcher2.find()){
-                    			//System.out.println("inside6");
                     			int q=matcher2.start();
-                    			//System.out.println("inside7");
                     			matcher2.appendReplacement(sb, innertags.subSequence(q,innertags.indexOf("/",q))+innertagstate+"/><relation code=\"R"+ct+"\" agent=\""+org1+"\" target=\""+org2+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
                     		}
                     		matcher2.appendTail(sb);
@@ -684,6 +759,7 @@ public class ParseComplexseg {
                     		matcher2.reset();
                     	}
                     }
+            		System.out.println("str6:"+str6);
             		Pattern pattern10 = Pattern.compile("_");
                     // Replace all occurrences of pattern in input
                     Matcher matcher2 = pattern10.matcher(str6);
@@ -697,8 +773,9 @@ public class ParseComplexseg {
             		innertags = innertags.concat("<Text>"+str6+"</Text>");
             		markedsent = markedsent.concat(outertag+innertags+"</"+outertag.substring(1));
             		stmt1.execute("insert into marked_complexseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+markedsent+"','"+markedrelations+"')");
+            		//stmt1.execute("insert into marked_simpleseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+markedsent+"')");
                 }
-        	}
+			}
 		}catch (Exception e)
         {
     		System.err.println(e);
@@ -710,8 +787,9 @@ public class ParseComplexseg {
 		try{
 			Statement stmt1 = conn.createStatement();
 			int i,j;
-			
-			Pattern pattern19 = Pattern.compile("[±]?[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m[\\s]?[xX\\×]+[\\d\\s\\.]+[\\–\\-]+[\\d\\s\\.]+[dcmµ]?m");
+			//System.out.println("plain:"+plaincharset);
+			//System.out.println("state:"+state);
+			Pattern pattern19 = Pattern.compile("[±]?[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[\\]]?[dcmµ]?[m]?[\\s]?[xX\\×]+[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[\\]]?[dcmµ]?m");
         	Matcher matcher2 = pattern19.matcher(plaincharset);
         	int flag3=0;
         	while ( matcher2.find()){
@@ -734,7 +812,7 @@ public class ParseComplexseg {
         	matcher2.reset();
         	
            	int sizect = 0;
-			Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
+           	Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\[\\]\\–\\-\\.\\s\\+]+[\\s]?[dcmµ]?m(?![\\w])(([\\s]diam)?([\\s]wide)?)");
 	    	matcher2 = pattern13.matcher(plaincharset);
 	    	int flag=0;
 	    	String numrange="";
@@ -747,9 +825,48 @@ public class ParseComplexseg {
 	    			i=matcher2.start();
 	    		}
 	    		j=matcher2.end();
-	    		if(plaincharset.substring(i,j).contains("–")|plaincharset.substring(i,j).contains("-") && !plaincharset.substring(i,j).contains("×") && !plaincharset.substring(i,j).contains("x") && !plaincharset.substring(i,j).contains("X")){
-        			sizect+=1;
-        			String extract = plaincharset.substring(i,j);
+	    		String extreme = plaincharset.substring(i,j);
+    			i = 0;
+    			j = extreme.length();
+        		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
+            	Matcher matcher1 = pattern20.matcher(extreme);
+            	if ( matcher1.find()){
+            		int p = matcher1.start();
+            		int q = matcher1.end();
+            		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-')
+            			numrange = numrange.concat(" min_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-2)+"\"");
+            		else
+            			numrange = numrange.concat(" min_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+            	}
+            	extreme = matcher1.replaceAll("#");
+        		matcher1.reset();
+        		if(extreme.contains("#"))
+        			i = extreme.indexOf("#")+1;
+        		Pattern pattern21 = Pattern.compile("\\[[±\\d\\.\\s\\+\\–\\-]*[\\–\\-]{1}[±\\d\\.\\s\\+]+\\]");
+            	matcher1 = pattern21.matcher(extreme);
+            	if ( matcher1.find()){
+            		int p = matcher1.start();
+            		int q = matcher1.end();
+            		if(extreme.charAt(p+1)=='–' | extreme.charAt(p+1)=='-')
+            			numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+2,q-1)+"\"");
+            		else
+            			numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+            	}
+            	extreme = matcher1.replaceAll("#");
+        		matcher1.reset();
+        		j = extreme.length();
+        		Pattern pattern23 = Pattern.compile("\\[[±\\d\\.\\s\\+]+\\]");
+            	matcher1 = pattern23.matcher(extreme);
+            	if ( matcher1.find()){
+            		int p = matcher1.start();
+            		int q = matcher1.end();
+            		numrange = numrange.concat(" max_extreme_size_"+sizect+"=\""+extreme.substring(p+1,q-1)+"\"");
+            	}
+            	extreme = matcher1.replaceAll("#");
+            	matcher1.reset();
+            	j = extreme.length();
+        		if(extreme.substring(i,j).contains("–")|extreme.substring(i,j).contains("-") && !extreme.substring(i,j).contains("×") && !extreme.substring(i,j).contains("x") && !extreme.substring(i,j).contains("X")){
+        			String extract = extreme.substring(i,j);
         			Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
                 	Matcher matcher3 = pattern18.matcher(extract);
                 	String unit="";
@@ -758,18 +875,18 @@ public class ParseComplexseg {
                 	}
                 	extract = matcher3.replaceAll("#");
                 	matcher3.reset();
-                	System.out.println(extract);
         			numrange = numrange.concat(" min_size_"+sizect+"=\""+extract.substring(0, extract.indexOf('-'))+"\" min_size_unit_"+sizect+"=\""+unit+"\" max_size_"+sizect+"=\""+extract.substring(extract.indexOf('-')+1,extract.indexOf('#'))+"\" max_size_unit_"+sizect+"=\""+unit+"\"");
+        			sizect+=1;
         		}
         		else{
         			if(flag3==1){
         				StringBuffer sb = new StringBuffer();
 						Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
-						Matcher matcher1 = pattern9.matcher(innertagstate);
+						matcher1 = pattern9.matcher(innertagstate);
 						while ( matcher1.find()){
 							int p=matcher1.start();
 							int q=matcher1.end();
-							matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
+							matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+extreme.subSequence(i,j).toString()+"\"");
 						}
 						matcher1.appendTail(sb);
 						innertagstate=sb.toString();
@@ -777,9 +894,9 @@ public class ParseComplexseg {
         			}
         			else{
         				if(flag==0)
-        					innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
+        					innertagstate=innertagstate.concat(" "+"size=\""+extreme.subSequence(i,j).toString());
         				else
-        					innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+        					innertagstate=innertagstate.concat(","+extreme.subSequence(i,j).toString());
         				flag=1;
         			}
         		}
@@ -789,7 +906,7 @@ public class ParseComplexseg {
 	    	plaincharset = matcher2.replaceAll("#");
 	    	innertagstate = innertagstate.concat(numrange);
 	    	matcher2.reset();
-	    	Pattern pattern14 = Pattern.compile("[±\\d\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
+	    	Pattern pattern14 = Pattern.compile("[±\\d\\[\\]\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
 	    	matcher2 = pattern14.matcher(plaincharset);
 	    	int flag1=0;
 	    	while ( matcher2.find()){
@@ -827,11 +944,11 @@ public class ParseComplexseg {
 	    	plaincharset = matcher2.replaceAll("#");
 	    	matcher2.reset();
 	    	int countct = 0;
-	    	Pattern pattern15 = Pattern.compile("([±]?[\\d]+[\\–\\-][\\d]+[+]?|[±]?[\\d]+[+]?)[\\–\\–\\-]+[a-zA-Z]+");
+	    	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?)[\\–\\–\\-]+[a-zA-Z]+");
 	    	matcher2 = pattern15.matcher(plaincharset);
 	    	plaincharset = matcher2.replaceAll("#");
 	    	matcher2.reset();     	
-	    	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([±]?[\\d]+[\\–\\-][\\d]+[+]?[\\–\\-]?[\\d]*[+]?|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+	    	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?([\\[]?[\\–\\-]?[\\]]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
 	    	matcher2 = pattern16.matcher(plaincharset);
 	    	int flag2=0;
 	    	String countrange = "";
@@ -839,17 +956,50 @@ public class ParseComplexseg {
 	    		flag6 = 1;
 	    		i=matcher2.start();
 	    		j=matcher2.end();
-	    		if(plaincharset.substring(i,j).contains("–")|plaincharset.substring(i,j).contains("-") && !plaincharset.substring(i,j).contains("×") && !plaincharset.substring(i,j).contains("x") && !plaincharset.substring(i,j).contains("X")){
-        			countct+=1;
-        			String extract = plaincharset.substring(i,j);
-                	System.out.println(extract);
+	    		String extreme = plaincharset.substring(i,j);
+    			i = 0;
+    			j = extreme.length();
+        		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
+            	Matcher matcher1 = pattern20.matcher(extreme);
+            	if ( matcher1.find()){
+            		int p = matcher1.start();
+            		int q = matcher1.end();
+            		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-')
+            			countrange = countrange.concat(" min_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-2)+"\"");
+            		else
+            			countrange = countrange.concat(" min_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-1)+"\"");
+            	}
+            	extreme = matcher1.replaceAll("#");
+        		matcher1.reset();
+        		if(extreme.contains("#"))
+        			i = extreme.indexOf("#")+1;
+        		j = extreme.length();
+        		Pattern pattern21 = Pattern.compile("\\[[±\\d\\.\\s\\+\\–\\-]*[\\–\\-]{1}[±\\d\\.\\s\\+]+\\]");
+            	matcher1 = pattern21.matcher(extreme);
+            	if ( matcher1.find()){
+            		int p = matcher1.start();
+            		int q = matcher1.end();
+            		j = p;
+            		if(extreme.charAt(p+1)=='–' | extreme.charAt(p+1)=='-')
+            			countrange = countrange.concat(" max_extreme_count_"+countct+"=\""+extreme.substring(p+2,q-1)+"\"");
+            		else
+            			countrange = countrange.concat(" max_extreme_count_"+countct+"=\""+extreme.substring(p+1,q-1)+"\"");
+            	}
+        		matcher1.reset();
+        		if(extreme.substring(i,j).contains("–")|extreme.substring(i,j).contains("-") && !extreme.substring(i,j).contains("×") && !extreme.substring(i,j).contains("x") && !extreme.substring(i,j).contains("X")){
+        			String extract = extreme.substring(i,j);
+        			Pattern pattern22 = Pattern.compile("[\\[\\]]+");
+        			matcher1 = pattern22.matcher(extract);
+        			extract = matcher1.replaceAll("");
+        			matcher1.reset();
         			countrange = countrange.concat(" min_count_"+countct+"=\""+extract.substring(0, extract.indexOf('-'))+"\" max_count_"+countct+"=\""+extract.substring(extract.indexOf('-')+1,extract.length())+"\"");
+        			countct+=1;
         		}
         		else{
         			if(flag2==0)
-        				innertagstate=innertagstate.concat(" "+"count=\""+plaincharset.subSequence(i,j).toString());
+        				innertagstate=innertagstate.concat(" "+"count=\""+extreme.subSequence(i,j).toString());
         			else
-        				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
+        				innertagstate=innertagstate.concat(","+extreme.subSequence(i,j).toString());
         			flag2=1;
         		}
 	    	}
@@ -920,7 +1070,7 @@ public class ParseComplexseg {
           	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new ParseComplexseg("onto_fna_corpus");
+		new ParseComplexseg("fnav19_benchmark");
 	}
 
 }
