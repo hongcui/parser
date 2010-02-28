@@ -1037,7 +1037,7 @@ public class MainForm {
 	}
 	
 	private void clearTransformation() {
-		
+		transformationTable.removeAll();
 	}
 	
 	private void loadProject() {
