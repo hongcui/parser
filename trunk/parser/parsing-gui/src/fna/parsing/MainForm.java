@@ -1025,6 +1025,7 @@ public class MainForm {
 	
 	private void clearVerification() {
 		
+		verificationTable.removeAll();
 	}
 	
 	private void startTransformation() {
