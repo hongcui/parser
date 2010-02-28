@@ -8,22 +8,8 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.grouplayout.GroupLayout;
-import org.eclipse.swt.layout.grouplayout.LayoutStyle;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StackLayout;
 public class ApplicationUtilities {
 
 	/**
@@ -43,6 +29,10 @@ public class ApplicationUtilities {
 	}
 	
 	private ApplicationUtilities(){}
+	
+	public static void setLogFilePath() {
+		
+	}
 	
 	public static String getProperty(String key) {
 	
