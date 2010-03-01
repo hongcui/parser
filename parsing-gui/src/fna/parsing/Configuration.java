@@ -23,11 +23,22 @@ public class Configuration {
 	/**
 	 * @param args
 	 */
+	
+	static {
+		//Set the Log File path
+		try {
+			ApplicationUtilities.setLogFilePath();
+		} catch (Exception exe) {
+			exe.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new Configuration().viewConfigurationForm();
 	}
 	
+
 	
 	/**
 	 * @wbp.parser.entryPoint
