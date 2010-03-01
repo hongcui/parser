@@ -66,6 +66,15 @@ import org.eclipse.swt.custom.ScrolledComposite;
 
 public class MainForm {
 
+	static {
+		//Set the Log File path
+		try {
+			ApplicationUtilities.setLogFilePath();
+		} catch (Exception exe) {
+			exe.printStackTrace();
+		}
+
+	}
 	private Combo combo;
 	
 	private Combo modifierListCombo;
