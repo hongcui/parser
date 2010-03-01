@@ -111,6 +111,7 @@ public class MainForm {
 	 */
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
+	public static Text markUpPerlLog;
 	
 	public static void main(String[] args) {
 		try {
@@ -122,7 +123,7 @@ public class MainForm {
 			e.printStackTrace();
 		}
 	}
-
+	
 	/**
 	 * Open the window
 	 */
@@ -611,7 +612,7 @@ public class MainForm {
 		markupTabItem.setControl(composite_4);
 
 		markupTable = new Table(composite_4, SWT.CHECK | SWT.BORDER);
-		markupTable.setBounds(10, 10, 744, 369);
+		markupTable.setBounds(10, 10, 744, 228);
 		markupTable.setLinesVisible(true);
 		markupTable.setHeaderVisible(true);
 		
@@ -664,6 +665,14 @@ public class MainForm {
 		markupProgressBar = new ProgressBar(composite_4, SWT.NONE);
 		markupProgressBar.setVisible(false);
 		markupProgressBar.setBounds(10, 388, 532, 17);
+		
+		markUpPerlLog = new Text(composite_4, SWT.BORDER | SWT.MULTI| SWT.WRAP | SWT.V_SCROLL);
+		markUpPerlLog.setBounds(10, 266, 744, 113);
+		markUpPerlLog.setEnabled(false);
+		
+		Label lblPerlMessages = new Label(composite_4, SWT.NONE);
+		lblPerlMessages.setBounds(10, 245, 100, 15);
+		lblPerlMessages.setText("Status Messages :");
 
 		final Composite composite_3 = new Composite(tabFolder, SWT.NONE);
 		transformationTabItem.setControl(composite_3);
@@ -1265,6 +1274,4 @@ public class MainForm {
 		
 		return errorFlag;
 	}
-
-
 }
