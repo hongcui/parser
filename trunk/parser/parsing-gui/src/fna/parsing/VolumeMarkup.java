@@ -39,12 +39,13 @@ public class VolumeMarkup {
 				+ " seednouns.txt learntnouns.txt graphml.xml "
 				+ databasenameprefix;
 		System.out.println("Run command: " + com);
-
+        MainForm.markUpPerlLog.append("Run command: " + com + "\n");
 		try {
 			 runCommand(com);
 		} catch (Exception e) {
 			e.printStackTrace();
-			LOGGER.error("VolumeMarkup : markup Failed to run the unsupervised.pl.", e);
+			LOGGER.error("VolumeMarkup : markup Failed to run the unsupervised.pl", e);
+			MainForm.markUpPerlLog.append("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
 		
@@ -89,6 +90,8 @@ public class VolumeMarkup {
 			listener.progress(i++ % 100);
 			System.out.println(s + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
+			MainForm.markUpPerlLog.append(s + " at " + (System.currentTimeMillis() - time)
+					/ 1000 + " seconds\n");
 		}
 		
 		// read the errors from the command
@@ -98,6 +101,8 @@ public class VolumeMarkup {
 			listener.progress(i++ % 100);
 			System.out.println(e + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
+			MainForm.markUpPerlLog.append(e + " at " + (System.currentTimeMillis() - time)
+					/ 1000 + " seconds\n");
 		}
 	}
 }
