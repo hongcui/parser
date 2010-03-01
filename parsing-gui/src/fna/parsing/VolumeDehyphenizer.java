@@ -78,6 +78,7 @@ public class VolumeDehyphenizer {
                 String word = rs.getString("word");
                 String dhword = dh.normalFormat(word);
                 System.out.println(word+"===>"+dhword);
+                MainForm.markUpPerlLog.append(word+"===>"+dhword+"\n");
                 mapping.put(word, dhword);
             }
         }catch(Exception e){
@@ -116,6 +117,7 @@ public class VolumeDehyphenizer {
             File[] flist = folder.listFiles();
             for(int i= 0; i < flist.length; i++){
                 System.out.println("read "+flist[i].getName());
+                MainForm.markUpPerlLog.append("read "+flist[i].getName()+"\n");
                 BufferedReader reader = new BufferedReader(new FileReader(flist[i]));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
@@ -221,6 +223,7 @@ public class VolumeDehyphenizer {
                 out.write(text);
                 out.close();
                 System.out.println(flist[i].getName()+" dehyphenized");
+                MainForm.markUpPerlLog.append(flist[i].getName()+" dehyphenized\n");
             }
         } catch (Exception e) {
         	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
