@@ -431,13 +431,14 @@ public class MainFormDbAccessor {
 			stmt.executeUpdate();
 		}
 	}catch (SQLException exe) {
-		LOGGER.error("Couldn't execute db query in MainFormDbAccessor:savePrefixdata", exe);
+		
 		if (exe.getMessage().contains("key 'PRIMARY'")) {
 			stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp" +
 					" where prefix = '" + prefix + "'" ); 
 			stmt.executeUpdate();
 		}
 		if (!exe.getMessage().contains("key 'PRIMARY'")) {
+			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:savePrefixdata", exe);
 			throw new ParsingException("Failed to execute the statement.", exe);
 		}
 		
