@@ -1,5 +1,5 @@
  package fna.parsing;
-
+/*Written by Partha Pratim Sanyal ppsanyal@email.arizona.edu*/
 import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
@@ -91,9 +91,10 @@ public class Type2Document {
 
 	/* String for userinput while adding a row*/
 	
-	private static String identifier = null;
+	private String identifier = null;
 	private Group nomenclatureGroup = null;
 	private ScrolledComposite nomenScrolledComposite = null;
+	/* This variable stores the data available from the nomenclature tab */
 	private HashMap<Integer, NomenclatureBean> nomenclatures = new HashMap<Integer, NomenclatureBean>();
 	// This variable will count the number of instances of nomenclature beans on the UI Nomenclature tab
 	private int count = 0;
@@ -134,6 +135,7 @@ public class Type2Document {
 		Label lblLeadingIndentionOf = new Label(grpText, SWT.NONE);
 		lblLeadingIndentionOf.setBounds(10, 82, 374, 15);
 		lblLeadingIndentionOf.setText("Leading indention of other paragraph:");
+		Group test = (Group)lblLeadingIndentionOf.getParent();
 		
 		text = new Text(grpText, SWT.BORDER);
 		text.setBounds(422, 79, 76, 21);
@@ -251,23 +253,23 @@ public class Type2Document {
 		nomenclatureGroup.setLayoutData(new RowData());
 		
 		Label lblName = new Label(nomenclatureGroup, SWT.NONE);
-		lblName.setBounds(10, 20, 67, 15);
+		lblName.setBounds(10, 20, 75, 15);
 		lblName.setText("Name");
 		
 		Label lblAuthors = new Label(nomenclatureGroup, SWT.NONE);
-		lblAuthors.setBounds(10, 65, 67, 15);
+		lblAuthors.setBounds(10, 65, 75, 15);
 		lblAuthors.setText("Authors");
 		
 		Label lblDate = new Label(nomenclatureGroup, SWT.NONE);
-		lblDate.setBounds(10, 110, 67, 15);
+		lblDate.setBounds(10, 110, 75, 15);
 		lblDate.setText("Date");
 		
 		Label lblPublication = new Label(nomenclatureGroup, SWT.NONE);
-		lblPublication.setBounds(10, 155, 67, 15);
+		lblPublication.setBounds(10, 155, 75, 15);
 		lblPublication.setText("Publication");
 		
 		Label lblTaxonRank = new Label(nomenclatureGroup, SWT.NONE);
-		lblTaxonRank.setBounds(10, 200, 67, 15);
+		lblTaxonRank.setBounds(10, 200, 75, 15);
 		lblTaxonRank.setText("Taxon Rank");
 		
 
@@ -549,6 +551,7 @@ public class Type2Document {
 		btnAddARow.setText("Add a Row");
 		btnAddARow.addSelectionListener (new SelectionAdapter () {
 			public void widgetSelected (SelectionEvent e) {
+				identifier = null;
 				showInputBox();
 				if(identifier != null && !identifier.equals("")) {
 					addNomenclatureRow();
@@ -908,6 +911,7 @@ public class Type2Document {
         Label lblNew = new Label(nomenclatureGroup, SWT.NONE);
 		lblNew.setBounds(rect);
 		lblNew.setText(identifier);
+		lblNew.setFocus();
         
 		/* Create the first group*/
 		Group prevGroup = nbean.getParent();
