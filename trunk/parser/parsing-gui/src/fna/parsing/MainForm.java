@@ -129,7 +129,7 @@ public class MainForm {
 	 */
 	public void open() throws Exception {
 		final Display display = Display.getDefault();
-		createContents();
+		createContents(display);
 		shell.open();
 		shell.layout();
 		while (!shell.isDisposed()) {
@@ -141,8 +141,8 @@ public class MainForm {
 	/**
 	 * Create contents of the window
 	 */
-	protected void createContents() throws Exception{
-		shell = new Shell();
+	protected void createContents(Display display) throws Exception{
+		shell = new Shell(display);
 		shell.setSize(852, 600);
 		shell.setLocation(200, 100);
 		shell.setText(ApplicationUtilities.getProperty("application.name"));
