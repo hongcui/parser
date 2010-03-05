@@ -1,4 +1,6 @@
-package fna.parsing;
+ package fna.parsing;
+
+import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -17,8 +19,11 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Combo;
 import com.swtdesigner.SWTResourceManager;
+
+import fna.beans.NomenclatureBean;
 
 public class Type2Document {
 	private Text text;
@@ -89,6 +94,10 @@ public class Type2Document {
 	private static String identifier = null;
 	private Group nomenclatureGroup = null;
 	private ScrolledComposite nomenScrolledComposite = null;
+	private HashMap<Integer, NomenclatureBean> nomenclatures = new HashMap<Integer, NomenclatureBean>();
+	// This variable will count the number of instances of nomenclature beans on the UI Nomenclature tab
+	private int count = 0;
+	private Shell shlTypeDocument = null;
 	/**
 	 * @param args
 	 */
@@ -104,9 +113,10 @@ public class Type2Document {
     public void showType2Document() {
 		final Display display = Display.getDefault();
 		
-		final Shell shlTypeDocument = new Shell(display);
+		shlTypeDocument = new Shell(display);
 		shlTypeDocument.setText("Type 2 Document");
 		shlTypeDocument.setSize(780, 634);
+		shlTypeDocument.setLocation(display.getBounds().x+200, display.getBounds().y+100);
 		
 		Composite composite = new Composite(shlTypeDocument, SWT.NONE);
 		composite.setBounds(0, 0, 759, 557);
@@ -238,29 +248,31 @@ public class Type2Document {
 		nomenScrolledComposite.setExpandVertical(true);
 		
 		nomenclatureGroup = new Group(nomenScrolledComposite, SWT.NONE);
+		nomenclatureGroup.setLayoutData(new RowData());
 		
 		Label lblName = new Label(nomenclatureGroup, SWT.NONE);
-		lblName.setBounds(10, 21, 55, 15);
+		lblName.setBounds(10, 20, 67, 15);
 		lblName.setText("Name");
 		
 		Label lblAuthors = new Label(nomenclatureGroup, SWT.NONE);
-		lblAuthors.setBounds(10, 66, 55, 15);
+		lblAuthors.setBounds(10, 65, 67, 15);
 		lblAuthors.setText("Authors");
 		
 		Label lblDate = new Label(nomenclatureGroup, SWT.NONE);
-		lblDate.setBounds(10, 113, 55, 15);
+		lblDate.setBounds(10, 110, 67, 15);
 		lblDate.setText("Date");
 		
 		Label lblPublication = new Label(nomenclatureGroup, SWT.NONE);
-		lblPublication.setBounds(10, 157, 67, 15);
+		lblPublication.setBounds(10, 155, 67, 15);
 		lblPublication.setText("Publication");
 		
 		Label lblTaxonRank = new Label(nomenclatureGroup, SWT.NONE);
-		lblTaxonRank.setBounds(10, 204, 67, 15);
+		lblTaxonRank.setBounds(10, 200, 67, 15);
 		lblTaxonRank.setText("Taxon Rank");
 		
+
 		Group group_2 = new Group(nomenclatureGroup, SWT.NONE);
-		group_2.setBounds(97, 10, 182, 40);
+		group_2.setBounds(100, 10, 182, 40);
 		
 		Button button = new Button(group_2, SWT.RADIO);
 		button.setText("Yes");
@@ -272,9 +284,12 @@ public class Type2Document {
 		
 		text_14 = new Text(group_2, SWT.BORDER);
 		text_14.setBounds(100, 11, 76, 21);
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_2, button, button_1, text_14, lblName));
+		count++;
 		
+		///////////
 		Group group_1 = new Group(nomenclatureGroup, SWT.NONE);
-		group_1.setBounds(299, 10, 182, 40);
+		group_1.setBounds(300, 10, 182, 40);
 		
 		Button button_2 = new Button(group_1, SWT.RADIO);
 		button_2.setText("Yes");
@@ -287,8 +302,12 @@ public class Type2Document {
 		text_15 = new Text(group_1, SWT.BORDER);
 		text_15.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_1, button_2, button_3, text_15, lblName));
+		count++;
+		
+		///////////////
 		Group group_4 = new Group(nomenclatureGroup, SWT.NONE);
-		group_4.setBounds(501, 10, 182, 40);
+		group_4.setBounds(500, 10, 182, 40);
 		
 		Button button_4 = new Button(group_4, SWT.RADIO);
 		button_4.setText("Yes");
@@ -301,8 +320,12 @@ public class Type2Document {
 		text_16 = new Text(group_4, SWT.BORDER);
 		text_16.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_4, button_4, button_5, text_16, lblName));
+		count++;
+		/////////
+		
 		Group group_5 = new Group(nomenclatureGroup, SWT.NONE);
-		group_5.setBounds(97, 56, 182, 40);
+		group_5.setBounds(100, 55, 182, 40);
 		
 		Button button_6 = new Button(group_5, SWT.RADIO);
 		button_6.setText("Yes");
@@ -315,8 +338,12 @@ public class Type2Document {
 		text_17 = new Text(group_5, SWT.BORDER);
 		text_17.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_5, button_6, button_7, text_17, lblAuthors));
+		count++;
+		/////////////////
+		
 		Group group_6 = new Group(nomenclatureGroup, SWT.NONE);
-		group_6.setBounds(299, 56, 182, 40);
+		group_6.setBounds(300, 55, 182, 40);
 		
 		Button button_8 = new Button(group_6, SWT.RADIO);
 		button_8.setText("Yes");
@@ -329,8 +356,13 @@ public class Type2Document {
 		text_18 = new Text(group_6, SWT.BORDER);
 		text_18.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_6, button_8, button_9, text_18, lblAuthors));
+		count++;
+		
+		///////////////////////////////////////////
+		
 		Group group_7 = new Group(nomenclatureGroup, SWT.NONE);
-		group_7.setBounds(501, 56, 182, 40);
+		group_7.setBounds(500, 55, 182, 40);
 		
 		Button button_10 = new Button(group_7, SWT.RADIO);
 		button_10.setText("Yes");
@@ -343,8 +375,12 @@ public class Type2Document {
 		text_19 = new Text(group_7, SWT.BORDER);
 		text_19.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_7, button_10, button_11, text_19, lblAuthors));
+		count++;
+		//////////////////////////////
+		
 		Group group_8 = new Group(nomenclatureGroup, SWT.NONE);
-		group_8.setBounds(97, 101, 182, 40);
+		group_8.setBounds(100, 100, 182, 40);
 		
 		Button button_12 = new Button(group_8, SWT.RADIO);
 		button_12.setText("Yes");
@@ -357,8 +393,12 @@ public class Type2Document {
 		text_20 = new Text(group_8, SWT.BORDER);
 		text_20.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_8, button_12, button_13, text_20, lblDate));
+		count++;
+		////////////////////////
+		
 		Group group_9 = new Group(nomenclatureGroup, SWT.NONE);
-		group_9.setBounds(299, 101, 182, 40);
+		group_9.setBounds(300, 100, 182, 40);
 		
 		Button button_14 = new Button(group_9, SWT.RADIO);
 		button_14.setText("Yes");
@@ -370,9 +410,13 @@ public class Type2Document {
 		
 		text_21 = new Text(group_9, SWT.BORDER);
 		text_21.setBounds(100, 11, 76, 21);
+				
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_9, button_14, button_15, text_21, lblDate));
+		count++;
+		//////////////////////////////////
 		
 		Group group_10 = new Group(nomenclatureGroup, SWT.NONE);
-		group_10.setBounds(501, 102, 182, 40);
+		group_10.setBounds(500, 100, 182, 40);
 		
 		Button button_16 = new Button(group_10, SWT.RADIO);
 		button_16.setText("Yes");
@@ -385,8 +429,12 @@ public class Type2Document {
 		text_22 = new Text(group_10, SWT.BORDER);
 		text_22.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_10, button_16, button_17, text_22, lblDate));
+		count++;
+		//////////////////////////////
+		
 		Group group_11 = new Group(nomenclatureGroup, SWT.NONE);
-		group_11.setBounds(97, 147, 182, 40);
+		group_11.setBounds(100, 145, 182, 40);
 		
 		Button button_18 = new Button(group_11, SWT.RADIO);
 		button_18.setText("Yes");
@@ -399,8 +447,12 @@ public class Type2Document {
 		text_23 = new Text(group_11, SWT.BORDER);
 		text_23.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_11, button_18, button_19, text_23, lblPublication));
+		count++;
+		///////////////////////////////////////
+		
 		Group group_12 = new Group(nomenclatureGroup, SWT.NONE);
-		group_12.setBounds(299, 147, 182, 40);
+		group_12.setBounds(300, 145, 182, 40);
 		
 		Button button_20 = new Button(group_12, SWT.RADIO);
 		button_20.setText("Yes");
@@ -413,8 +465,12 @@ public class Type2Document {
 		text_24 = new Text(group_12, SWT.BORDER);
 		text_24.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_12, button_20, button_21, text_24, lblPublication));
+		count++;
+		//////////////////
+		
 		Group group_13 = new Group(nomenclatureGroup, SWT.NONE);
-		group_13.setBounds(501, 148, 182, 40);
+		group_13.setBounds(500, 145, 182, 40);
 		
 		Button button_22 = new Button(group_13, SWT.RADIO);
 		button_22.setText("Yes");
@@ -427,8 +483,12 @@ public class Type2Document {
 		text_25 = new Text(group_13, SWT.BORDER);
 		text_25.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_13, button_22, button_23, text_25, lblPublication));
+		count++;
+		/////////////////////////
+		
 		Group group_14 = new Group(nomenclatureGroup, SWT.NONE);
-		group_14.setBounds(97, 193, 182, 40);
+		group_14.setBounds(100, 190, 182, 40);
 		
 		Button button_24 = new Button(group_14, SWT.RADIO);
 		button_24.setText("Yes");
@@ -441,8 +501,12 @@ public class Type2Document {
 		text_26 = new Text(group_14, SWT.BORDER);
 		text_26.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_14, button_24, button_25, text_26, lblTaxonRank));
+		count++;
+		//////////////////////////////
+		
 		Group group_15 = new Group(nomenclatureGroup, SWT.NONE);
-		group_15.setBounds(299, 193, 182, 40);
+		group_15.setBounds(300, 190, 182, 40);
 		
 		Button button_26 = new Button(group_15, SWT.RADIO);
 		button_26.setText("Yes");
@@ -455,8 +519,12 @@ public class Type2Document {
 		text_27 = new Text(group_15, SWT.BORDER);
 		text_27.setBounds(100, 11, 76, 21);
 		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_15, button_26, button_27, text_27, lblTaxonRank));
+		count++;
+		////////////////////////////////
+		
 		Group group_16 = new Group(nomenclatureGroup, SWT.NONE);
-		group_16.setBounds(501, 194, 182, 40);
+		group_16.setBounds(500, 190, 182, 40);
 		
 		Button button_28 = new Button(group_16, SWT.RADIO);
 		button_28.setText("Yes");
@@ -468,6 +536,10 @@ public class Type2Document {
 		
 		text_28 = new Text(group_16, SWT.BORDER);
 		text_28.setBounds(100, 11, 76, 21);
+		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_16, button_28, button_29, text_28, lblTaxonRank));
+		count++;
+		///////////////////////////////
 		nomenScrolledComposite.setContent(nomenclatureGroup);
 		//When you add a row, reset the size of scrolledComposite
 		nomenScrolledComposite.setMinSize(nomenclatureGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -478,7 +550,9 @@ public class Type2Document {
 		btnAddARow.addSelectionListener (new SelectionAdapter () {
 			public void widgetSelected (SelectionEvent e) {
 				showInputBox();
-				addNomenclatureRow();
+				if(identifier != null && !identifier.equals("")) {
+					addNomenclatureRow();
+				}
 			}
 		});
 		
@@ -814,16 +888,93 @@ public class Type2Document {
 				display.sleep();
 		}
     }
-    
+
     private void addNomenclatureRow() {
+    	
+		RowData rowdata = (RowData)nomenclatureGroup.getLayoutData();
+		rowdata.height += 30;
+		nomenclatureGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
         Rectangle rect = nomenclatureGroup.getBounds();
         rect.height += 30;
         nomenclatureGroup.setBounds(rect);
+        
+        /*Create a row*/
+        
+        NomenclatureBean nbean = nomenclatures.get(new Integer(count-1));
+        Label previousLabel = nbean.getLabel();
+        rect = previousLabel.getBounds();
+        rect.y += 45;
+       
+        Label lblNew = new Label(nomenclatureGroup, SWT.NONE);
+		lblNew.setBounds(rect);
+		lblNew.setText(identifier);
+        
+		/* Create the first group*/
+		Group prevGroup = nbean.getParent();
+		rect = prevGroup.getBounds();
+		Group group_1 = new Group(nomenclatureGroup, SWT.NONE);
+		group_1.setBounds(100, rect.y+45, 182, 40);
+		
+		Button buttonYes_1 = new Button(group_1, SWT.RADIO);
+		buttonYes_1.setText("Yes");
+		buttonYes_1.setBounds(10, 13, 39, 16);
+		
+		Button buttonNo_1 = new Button(group_1, SWT.RADIO);
+		buttonNo_1.setText("No");
+		buttonNo_1.setBounds(55, 13, 39, 16);
+		
+		Text text1 = new Text(group_1, SWT.BORDER);
+		text1.setBounds(100, 11, 76, 21);
+		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_1, buttonYes_1, buttonNo_1, text1, lblNew));
+		count++;
+		///////////////////////////////////
+		
+		 /*Create the second group */
+		Group group_2 = new Group(nomenclatureGroup, SWT.NONE);
+		group_2.setBounds(300, rect.y+45, 182, 40);
+		
+		Button buttonYes_2 = new Button(group_2, SWT.RADIO);
+		buttonYes_2.setText("Yes");
+		buttonYes_2.setBounds(10, 13, 39, 16);
+		
+		Button buttonNo_2 = new Button(group_2, SWT.RADIO);
+		buttonNo_2.setText("No");
+		buttonNo_2.setBounds(55, 13, 39, 16);
+		
+		Text text2 = new Text(group_2, SWT.BORDER);
+		text2.setBounds(100, 11, 76, 21);
+		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_2, buttonYes_2, buttonNo_2, text2, lblNew));
+		count++; 
+        ////////////////////////////////////////
+		
+		/* Create the third group */
+		Group group_3 = new Group(nomenclatureGroup, SWT.NONE);
+		group_3.setBounds(500,rect.y+45, 182, 40);
+		
+		Button buttonYes_3 = new Button(group_3, SWT.RADIO);
+		buttonYes_3.setText("Yes");
+		buttonYes_3.setBounds(10, 13, 39, 16);
+		
+		Button buttonNo_3 = new Button(group_3, SWT.RADIO);
+		buttonNo_3.setText("No");
+		buttonNo_3.setBounds(55, 13, 39, 16);
+		
+		Text text3 = new Text(group_3, SWT.BORDER);
+		text3.setBounds(100, 11, 76, 21);
+		
+		nomenclatures.put(new Integer(count), new NomenclatureBean(group_3, buttonYes_3, buttonNo_3, text3, lblNew));
+		count++;
+		////////////////////////////
         nomenScrolledComposite.setMinSize(nomenclatureGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
-    private static void showInputBox() {
-    	final Shell dialog = new Shell (Display.getDefault(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+    private void showInputBox() {
+    	Display display = Display.getDefault();
+    	final Shell dialog = new Shell (display, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		dialog.setText("Add a row");
+		dialog.setLocation(shlTypeDocument.getBounds().x/2 + shlTypeDocument.getBounds().width/2, 
+				shlTypeDocument.getBounds().y/2+ shlTypeDocument.getBounds().height/2);
 		FormLayout formLayout = new FormLayout ();
 		formLayout.marginWidth = 10;
 		formLayout.marginHeight = 10;
@@ -874,6 +1025,10 @@ public class Type2Document {
 		dialog.setDefaultButton (ok);
 		dialog.pack ();
 		dialog.open ();
+		while (!dialog.isDisposed()) {
+			if (!display.readAndDispatch())
+				display.sleep();
+		}
 
 	}
 }
