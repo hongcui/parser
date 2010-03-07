@@ -25,6 +25,7 @@ import com.swtdesigner.SWTResourceManager;
 
 import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
+import fna.beans.SpecialBean;
 
 public class Type2Document {
 	private Text text;
@@ -109,6 +110,10 @@ public class Type2Document {
 	private HashMap<Integer, Text> descriptions = new HashMap<Integer, Text>();
 	/* This HashMap stores the label data available from the expression tab */
 	private HashMap<Integer, Label> sections = new HashMap<Integer, Label>();
+	/* This HashMap store the data from the last tab - Abbreviations */
+	private HashMap<String, Text> abbreviations = new HashMap<String, Text>();
+	/* This bean will be used to store data from the special tab */
+	SpecialBean special = null;
 	
 	/* This variable will count the number of instances of nomenclature beans on the UI Nomenclature tab */
 	private int nomenCount = 0;	
@@ -204,9 +209,9 @@ public class Type2Document {
 		text_4 = new Text(grpText, SWT.BORDER);
 		text_4.setBounds(161, 191, 477, 21);
 		
-		Label label = new Label(grpText, SWT.NONE);
-		label.setBounds(10, 237, 141, 15);
-		label.setText("Page number forms:");
+		Label lblSectionHeadings = new Label(grpText, SWT.NONE);
+		lblSectionHeadings.setBounds(10, 237, 141, 15);
+		lblSectionHeadings.setText("Section headings:");
 		
 		Button btnCapitalized = new Button(grpText, SWT.RADIO);
 		btnCapitalized.setBounds(169, 236, 90, 16);
@@ -995,6 +1000,8 @@ public class Type2Document {
 		
 		text_10 = new Text(grpSpecialSections, SWT.BORDER);
 		text_10.setBounds(377, 99, 76, 21);
+		special = 
+			new SpecialBean(btnHasGlossaries,btnHasReferences, text_9, text_10);
 		
 		TabItem tbtmAbbreviations = new TabItem(tabFolder, SWT.NONE);
 		tbtmAbbreviations.setText("Abbreviations");
@@ -1004,6 +1011,7 @@ public class Type2Document {
 		
 		text_11 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.MULTI| SWT.WRAP | SWT.V_SCROLL );
 		text_11.setBounds(10, 52, 691, 69);
+		abbreviations.put("Text", text_11);
 		
 		Label lblAbbreviationsUsedIn = new Label(grpAbbreviationsUsedIn, SWT.NONE);
 		lblAbbreviationsUsedIn.setBounds(10, 31, 272, 15);
@@ -1015,6 +1023,7 @@ public class Type2Document {
 		
 		text_12 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text_12.setBounds(10, 175, 691, 69);
+		abbreviations.put("Bibliographical Citations", text_12);
 		
 		Label lblAbbreviationsUsedIn_2 = new Label(grpAbbreviationsUsedIn, SWT.NONE);
 		lblAbbreviationsUsedIn_2.setBounds(10, 275, 272, 15);
@@ -1022,6 +1031,7 @@ public class Type2Document {
 		
 		text_13 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text_13.setBounds(10, 296, 691, 69);
+		abbreviations.put("Authorities", text_13);
 		
 		Label lblAbbreviationsUsedIn_3 = new Label(grpAbbreviationsUsedIn, SWT.NONE);
 		lblAbbreviationsUsedIn_3.setBounds(10, 395, 204, 15);
@@ -1029,6 +1039,7 @@ public class Type2Document {
 		
 		text_8 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text_8.setBounds(10, 416, 691, 69);
+		abbreviations.put("Others", text_8);
 		
 		Button btnSave = new Button(shlTypeDocument, SWT.NONE);
 		btnSave.setBounds(670, 563, 75, 25);
