@@ -1,5 +1,5 @@
  package fna.parsing;
-/*Written by Partha Pratim Sanyal ppsanyal@email.arizona.edu*/
+/** @author Partha Pratim Sanyal ppsanyal@email.arizona.edu*/
 import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
