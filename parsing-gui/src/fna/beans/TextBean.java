@@ -1,5 +1,7 @@
 package fna.beans;
-
+/**
+ * @ author Partha 
+ * */
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
 
@@ -14,22 +16,23 @@ public class TextBean {
 	private Button sectionHeadingsAllCapButton;
 	private Text sectionHeadingsText;
 	private SpecialBean footerHeaderBean;
-	
-	public TextBean(Text firstPara, Text leadingIndentation, 
-			Text spacing, Text estimatedLength, Text pageNumberFormsText, 
-			Button sectionHeadingsCapButton, Button sectionHeadingsAllCapButton,
-			Text sectionHeadingsText, SpecialBean footerHeaderBean) {
-		this.estimatedLength = estimatedLength;
+
+	public TextBean(Text firstPara, Text leadingIndentation, Text spacing,
+			Text estimatedLength, Text pageNumberFormsText,
+			Button sectionHeadingsCapButton,
+			Button sectionHeadingsAllCapButton, Text sectionHeadingsText,
+			SpecialBean footerHeaderBean) {
+		super();
 		this.firstPara = firstPara;
-		this.footerHeaderBean = footerHeaderBean;
 		this.leadingIndentation = leadingIndentation;
-		this.pageNumberFormsText = pageNumberFormsText;
-		this.sectionHeadingsAllCapButton = sectionHeadingsAllCapButton;
-		this.sectionHeadingsCapButton = sectionHeadingsCapButton;
-		this.sectionHeadingsText = sectionHeadingsText;
 		this.spacing = spacing;
+		this.estimatedLength = estimatedLength;
+		this.pageNumberFormsText = pageNumberFormsText;
+		this.sectionHeadingsCapButton = sectionHeadingsCapButton;
+		this.sectionHeadingsAllCapButton = sectionHeadingsAllCapButton;
+		this.sectionHeadingsText = sectionHeadingsText;
+		this.footerHeaderBean = footerHeaderBean;
 	}
-	
 	public Text getFirstPara() {
 		return firstPara;
 	}
