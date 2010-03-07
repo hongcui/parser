@@ -1,8 +1,21 @@
 package testing_lab;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
+
+import fna.parsing.ApplicationUtilities;
 
 public class Test {
 
@@ -12,39 +25,74 @@ public class Test {
 	public String toString() {
 		return "Hola!";
 	}
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
+
+		//log4j.appender.ROOT.File=D:\\SMART RA\\Work Folders\\Source\\Logs\\markup.log
+/*		String path = System.getProperty("user.dir") + "\\src\\log4j.properties";
+		try{
+		    // Create file 
+		    FileWriter fstream = new FileWriter(path ,true);
+		        BufferedWriter out = new BufferedWriter(fstream);
+		        out.newLine();
+		    out.write("Hello Java");
+		    //Close the output stream
+		    out.close();
+		    }catch (Exception e){//Catch exception if any
+		      System.err.println("Error: " + e.getMessage());
+		    }*/
+		String s = "D:\\SMART RA\\Workspace\\parsing-gui\\Logs\\markup.log";
+		s = s.replace("\\", "\\\\");
+		System.out.println(s);
 		
-		//String a = "TabItem {Segmentation}";
-		//System.out.println(a.substring(a.indexOf("{")+1, a.indexOf("}")));
-		//String ab = "hhhhhh=ooooooo";
-		//System.out.println(ab.substring(0, ab.indexOf("=")));
-		//System.out.println(ab.substring(ab.indexOf("=")+1));
+		setLogFilePath();
+
+}
+
+	private static void setLogFilePath() throws Exception {
 		
-		/*HashMap hm = new HashMap();
-		hm.put("1", "Partha");
-		System.out.println(hm.get("1"));
-		System.out.println(hm.get("1"));*/
-/*		ArrayList alist = new ArrayList();
-		alist.add(new HashMap());
-		alist.add(new String("p"));
-		alist.add(new Test());
+		FileInputStream fstream = null;
+		FileWriter fwriter = null;
+		BufferedWriter out = null;
 		
-		System.out.println(alist.get(0));
-		System.out.println(alist.get(1));
-		System.out.println(alist.get(2));*/
-		String a = "adsgsbfsbdrrr35gtebHeading1cccc";
-		String b = "$*YYYHeading2ssss";
-		String c = "Heading3" ;
-		String d = "Hearding4" ;
-		String e = "345He0ading5" ;
-		String [] aa = {a,b,c,d,e};
-		String common = longestCommonSubstring(aa[0], aa[1]);
-		for (int i = 2; i < 5; i++) {
-			common = longestCommonSubstring(common, aa[i]);
-		}
-		System.out.println(common);
+		try {
+			String logProperties = System.getProperty("user.dir")+"\\src\\log4j.properties";
+			fstream = new FileInputStream(logProperties);
+			Properties properties = new Properties();
+			properties.load(fstream);
+			String logFilePath = properties.getProperty("log4j.appender.ROOT.File");
+			/* Check if log path is already set*/
+			if (logFilePath == null) {
+				fwriter = new FileWriter(logProperties ,true);
+		        out = new BufferedWriter(fwriter);
+		        out.newLine();
+		        logFilePath = ApplicationUtilities.getProperty("LOG.APPENDER") + System.getProperty("user.dir") 
+		        	+ ApplicationUtilities.getProperty("LOG");
+		        System.out.println(logFilePath.trim());
+		        logFilePath = logFilePath.trim();
+		        logFilePath = logFilePath.replaceAll("\\\\", "\\\\\\\\");
+		        out.write(logFilePath);
+			}
+			
+			
+		} catch(Exception exe) {
+			exe.printStackTrace();
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+			
+			if (fwriter != null){
+				fwriter.close();
+			}
+			
+			if (fstream != null){
+				fstream.close();
+			}
+		}		
 	}
+
+	//}
 	
 /*	public static String longestCommonSubstring(String str1, String str2)
 	{
