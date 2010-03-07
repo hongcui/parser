@@ -90,26 +90,36 @@ public class Type2Document {
 	private Text text_32;
 	private Text text_61;
 
-	/* String for userinput while adding a row*/
+	/* String for user input while adding a row*/
 	
 	private String identifier = null;
 	private Group nomenclatureGroup = null;
 	private Group expressionGroup = null;
-	private Group descriptionGroup= null;
+	private Group descriptionGroup = null;
 	private ScrolledComposite nomenScrolledComposite = null;
 	private ScrolledComposite expScrolledComposite = null;
+	private ScrolledComposite descScrolledComposite = null;
+	
+	/*The following set of variables will act as beans to hold data for saving in database*/
 	/* This HashMap stores the data available from the nomenclature tab */
 	private HashMap<Integer, NomenclatureBean> nomenclatures = new HashMap<Integer, NomenclatureBean>();
 	/* This HashMap stores the data available from the expression tab */
 	private HashMap<Integer, ExpressionBean> expressions = new HashMap<Integer, ExpressionBean>();
 	/* This HashMap stores the data available from the expression tab */
 	private HashMap<Integer, Text> descriptions = new HashMap<Integer, Text>();
+	/* This HashMap stores the label data available from the expression tab */
+	private HashMap<Integer, Label> sections = new HashMap<Integer, Label>();
+	
 	/* This variable will count the number of instances of nomenclature beans on the UI Nomenclature tab */
 	private int nomenCount = 0;	
 	/* This variable will count the number of instances of nomenclature beans on the UI Expressions tab */
 	private int expCount = 0;
 	/* This variable will count the number of instances of descriptions on the UI Descriptons tab */
-	private int descCount = 0;
+	private int descCount = 0;	
+	/* This variable will count the number of instances of descriptions - 
+	 * section labels on the UI Descriptons tab */
+	private int secCount = 0;
+	
 	private Shell shlTypeDocument = null;
 
 	public static void main(String[] args) {
@@ -726,190 +736,223 @@ public class Type2Document {
 		lblEmbeddedTokens.setBounds(592, 142, 132, 15);
 		lblEmbeddedTokens.setText("Embedded tokens");
 		
-		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(grpMorphologicalDescriptions, 
+		descScrolledComposite = new ScrolledComposite(grpMorphologicalDescriptions, 
 				SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite_1.setBounds(10, 169, 714, 310);
-		scrolledComposite_1.setExpandHorizontal(true);
-		scrolledComposite_1.setExpandVertical(true);
+		descScrolledComposite.setBounds(10, 169, 714, 310);
+		descScrolledComposite.setExpandHorizontal(true);
+		descScrolledComposite.setExpandVertical(true);
 		
-		descriptionGroup = new Group(scrolledComposite_1, SWT.NONE);
+		descriptionGroup = new Group(descScrolledComposite, SWT.NONE);
+		descriptionGroup.setLayoutData(new RowData());
+		
+		////////////////////////////////
 		
 		text_33 = new Text(descriptionGroup, SWT.BORDER);
-		text_33.setBounds(10, 21, 76, 21);
-		
+		text_33.setBounds(10, 20, 75, 20);
 		descriptions.put(new Integer(descCount), text_33);
 		descCount++;
 		
 		Label lblNomenclature = new Label(descriptionGroup, SWT.NONE);
-		lblNomenclature.setBounds(120, 21, 101, 15);
+		lblNomenclature.setBounds(120, 20, 145, 20);
 		lblNomenclature.setText("Nomenclature");
+		sections.put(new Integer(secCount), lblNomenclature);
+		secCount ++;
 		
 		text_40 = new Text(descriptionGroup, SWT.BORDER);
-		text_40.setBounds(270, 21, 113, 21);
-		
+		text_40.setBounds(270, 20, 115, 20);
 		descriptions.put(new Integer(descCount), text_40);
 		descCount++;
 		
 		text_41 = new Text(descriptionGroup, SWT.BORDER);
-		text_41.setBounds(432, 21, 101, 21);
+		text_41.setBounds(420, 20, 115, 20);
 		descriptions.put(new Integer(descCount), text_41);
 		descCount++;
 		
 		text_42 = new Text(descriptionGroup, SWT.BORDER);
-		text_42.setBounds(576, 21, 107, 21);
+		text_42.setBounds(570, 20, 115, 20);
 		descriptions.put(new Integer(descCount), text_42);
 		descCount++;
-	
+		//////////////////////////////////
+		
 		text_34 = new Text(descriptionGroup, SWT.BORDER);
-		text_34.setBounds(10, 62, 76, 21);		
+		text_34.setBounds(10, 60, 75, 20);		
 		descriptions.put(new Integer(descCount), text_34);
 		descCount++;
 		
 		Label lblMorphDescription = new Label(descriptionGroup, SWT.NONE);
-		lblMorphDescription.setBounds(120, 62, 113, 15);
-		lblMorphDescription.setText("Morph. description");
+		lblMorphDescription.setBounds(120, 60, 145, 20);
+		lblMorphDescription.setText("Morph. description");		
+		sections.put(new Integer(secCount), lblMorphDescription);
+		secCount ++;
 		
 		text_43 = new Text(descriptionGroup, SWT.BORDER);
-		text_43.setBounds(270, 62, 113, 21);
+		text_43.setBounds(270, 60, 115, 20);
 		descriptions.put(new Integer(descCount), text_43);
 		descCount++;
 		
 		text_44 = new Text(descriptionGroup, SWT.BORDER);
-		text_44.setBounds(432, 62, 101, 21);
+		text_44.setBounds(420, 60, 115, 20);
 		descriptions.put(new Integer(descCount), text_44);
 		descCount++;
 		
 		text_45 = new Text(descriptionGroup, SWT.BORDER);
-		text_45.setBounds(576, 62, 107, 21);
+		text_45.setBounds(570, 60, 115, 20);
 		descriptions.put(new Integer(descCount), text_45);
 		descCount++;
-			
+		
+		////////////////////////////////////////////////////
+		
 		text_35 = new Text(descriptionGroup, SWT.BORDER);
-		text_35.setBounds(10, 105, 76, 21);
+		text_35.setBounds(10, 100, 75, 20);
 		descriptions.put(new Integer(descCount), text_35);
 		descCount++;
-		Label lblHabitat = new Label(descriptionGroup, SWT.NONE);
-		lblHabitat.setBounds(120, 105, 55, 15);
-		lblHabitat.setText("Habitat");
 		
+		Label lblHabitat = new Label(descriptionGroup, SWT.NONE);
+		lblHabitat.setBounds(120, 100, 145, 20);
+		lblHabitat.setText("Habitat");
+		sections.put(new Integer(secCount), lblHabitat);
+		secCount ++;		
 
 		text_46 = new Text(descriptionGroup, SWT.BORDER);
-		text_46.setBounds(270, 105, 113, 21);
+		text_46.setBounds(270, 100, 115, 20);
 		descriptions.put(new Integer(descCount), text_46);
 		descCount++;
 		
 		text_47 = new Text(descriptionGroup, SWT.BORDER);
-		text_47.setBounds(432, 105, 101, 21);
+		text_47.setBounds(420, 100, 115, 20);
 		descriptions.put(new Integer(descCount), text_47);
 		descCount++;
 		
 		text_48 = new Text(descriptionGroup, SWT.BORDER);
-		text_48.setBounds(576, 105, 107, 21);
+		text_48.setBounds(570, 100, 115, 20);
 		descriptions.put(new Integer(descCount), text_48);
 		descCount++;
 		
+		/////////////////////////////////////////
 		
 		text_36 = new Text(descriptionGroup, SWT.BORDER);
-		text_36.setBounds(10, 151, 76, 21);
+		text_36.setBounds(10, 140, 75, 20);
 		descriptions.put(new Integer(descCount), text_36);
 		descCount++;
 		
+		Label lblDistribution = new Label(descriptionGroup, SWT.NONE);
+		lblDistribution.setBounds(120, 140, 145, 20);
+		lblDistribution.setText("Distribution");
+		sections.put(new Integer(secCount), lblDistribution);
+		secCount ++;
+		
 		text_49 = new Text(descriptionGroup, SWT.BORDER);
-		text_49.setBounds(270, 151, 113, 21);
+		text_49.setBounds(270, 140, 115, 20);
 		descriptions.put(new Integer(descCount), text_49);
 		descCount++;
 		
 		text_50 = new Text(descriptionGroup, SWT.BORDER);
-		text_50.setBounds(432, 151, 101, 21);
+		text_50.setBounds(420, 140, 115, 20);
 		descriptions.put(new Integer(descCount), text_50);
 		descCount++;
 		
 		text_51 = new Text(descriptionGroup, SWT.BORDER);
-		text_51.setBounds(576, 151, 107, 21);
+		text_51.setBounds(570, 140, 115, 20);
 		descriptions.put(new Integer(descCount), text_51);
 		descCount++;
+		//////////////////////////////////		
 		
 		text_37 = new Text(descriptionGroup, SWT.BORDER);
-		text_37.setBounds(10, 191, 76, 21);
+		text_37.setBounds(10, 180, 75, 20);
 		descriptions.put(new Integer(descCount), text_37);
 		descCount++;
 		
+		Label lblDiscussion = new Label(descriptionGroup, SWT.NONE);
+		lblDiscussion.setBounds(120, 180, 145, 20);
+		lblDiscussion.setText("Discussion");
+		sections.put(new Integer(secCount), lblDiscussion);
+		secCount ++;
+		
 		text_52 = new Text(descriptionGroup, SWT.BORDER);
-		text_52.setBounds(270, 191, 113, 21);
+		text_52.setBounds(270, 180, 115, 20);
 		descriptions.put(new Integer(descCount), text_52);
 		descCount++;
 		
 		text_53 = new Text(descriptionGroup, SWT.BORDER);
-		text_53.setBounds(432, 191, 101, 21);
+		text_53.setBounds(420, 180, 115, 20);
 		descriptions.put(new Integer(descCount), text_53);
 		descCount++;
 		
 		text_54 = new Text(descriptionGroup, SWT.BORDER);
-		text_54.setBounds(576, 191, 107, 21);
+		text_54.setBounds(570, 180, 115, 20);
 		descriptions.put(new Integer(descCount), text_54);
 		descCount++;
+		////////////////////////////////////
 		
 		text_38 = new Text(descriptionGroup, SWT.BORDER);
-		text_38.setBounds(10, 232, 76, 21);
+		text_38.setBounds(10, 220, 75, 20);
 		descriptions.put(new Integer(descCount), text_38);
 		descCount++;
 		
+		Label lblKeys = new Label(descriptionGroup, SWT.NONE);
+		lblKeys.setBounds(120, 220, 145, 20);
+		lblKeys.setText("Keys");
+		sections.put(new Integer(secCount), lblKeys);
+		secCount ++;
+		
 		text_55 = new Text(descriptionGroup, SWT.BORDER);
-		text_55.setBounds(270, 232, 113, 21);
+		text_55.setBounds(270, 220, 115, 20);
 		descriptions.put(new Integer(descCount), text_55);
 		descCount++;
+		
 		text_56 = new Text(descriptionGroup, SWT.BORDER);
-		text_56.setBounds(270, 275, 113, 21);
+		text_56.setBounds(420, 220, 115, 20);
 		descriptions.put(new Integer(descCount), text_56);
 		descCount++;
+		
 		text_57 = new Text(descriptionGroup, SWT.BORDER);
-		text_57.setBounds(432, 232, 101, 21);
+		text_57.setBounds(570, 220, 115, 20);
 		descriptions.put(new Integer(descCount), text_57);
 		descCount++;
-
-		
+		//////////////////////////////////////
+				
 		text_39 = new Text(descriptionGroup, SWT.BORDER);
-		text_39.setBounds(10, 275, 76, 21);	
+		text_39.setBounds(10, 260, 75, 20);	
 		descriptions.put(new Integer(descCount), text_39);
 		descCount++;
 		
+		Label lblReferences_1 = new Label(descriptionGroup, SWT.NONE);
+		lblReferences_1.setBounds(120, 260, 145, 20);
+		lblReferences_1.setText("References");
+		sections.put(new Integer(secCount), lblReferences_1);
+		secCount ++;
+		
 		text_58 = new Text(descriptionGroup, SWT.BORDER);
-		text_58.setBounds(576, 232, 107, 21);
+		text_58.setBounds(270, 260, 115, 20);
 		descriptions.put(new Integer(descCount), text_58);
 		descCount++;
 		
 		text_59 = new Text(descriptionGroup, SWT.BORDER);
-		text_59.setBounds(432, 275, 101, 21);
+		text_59.setBounds(420, 260, 115, 20);
 		descriptions.put(new Integer(descCount), text_59);
 		descCount++;
 		
 		text_60 = new Text(descriptionGroup, SWT.BORDER);
-		text_60.setBounds(576, 275, 107, 21);
+		text_60.setBounds(570, 260, 115, 20);
 		descriptions.put(new Integer(descCount), text_60);
 		descCount++;
-		
-		Label lblDistribution = new Label(descriptionGroup, SWT.NONE);
-		lblDistribution.setBounds(120, 151, 101, 15);
-		lblDistribution.setText("Distribution");
-		
-		Label lblDiscussion = new Label(descriptionGroup, SWT.NONE);
-		lblDiscussion.setBounds(120, 191, 101, 15);
-		lblDiscussion.setText("Discussion");
-		
-		Label lblKeys = new Label(descriptionGroup, SWT.NONE);
-		lblKeys.setBounds(120, 238, 55, 15);
-		lblKeys.setText("Keys");
-		
-		Label lblReferences_1 = new Label(descriptionGroup, SWT.NONE);
-		lblReferences_1.setBounds(120, 275, 87, 15);
-		lblReferences_1.setText("References");		
+	    /////////////////////////////////
 
-		scrolledComposite_1.setContent(descriptionGroup);
-		scrolledComposite_1.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		descScrolledComposite.setContent(descriptionGroup);
+		descScrolledComposite.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Button btnAddARow_1 = new Button(grpMorphologicalDescriptions, SWT.NONE);
 		btnAddARow_1.setBounds(10, 482, 75, 25);
 		btnAddARow_1.setText("Add a row");
+		btnAddARow_1.addSelectionListener (new SelectionAdapter () {
+			public void widgetSelected (SelectionEvent e) {
+				identifier = null;
+				showInputBox();
+				if(identifier != null && !identifier.equals("")) {
+					addDescriptionRow();
+				}
+			}
+		});
 		
 		Label lblSectionIndicationsAnd = new Label(grpMorphologicalDescriptions, SWT.NONE);
 		lblSectionIndicationsAnd.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
@@ -999,6 +1042,48 @@ public class Type2Document {
 		}
     }
     
+    private void addDescriptionRow() {
+    	//descriptionGroup
+		RowData rowdata = (RowData)descriptionGroup.getLayoutData();
+		rowdata.height += 60;
+		descriptionGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+        Rectangle rect = descriptionGroup.getBounds();
+        rect.height += 60;
+        descriptionGroup.setBounds(rect);
+        
+        /*Add the row*/
+        Text prevText = descriptions.get(new Integer(descCount-1));
+        rect = prevText.getBounds();
+        Text newText_1 = new Text(descriptionGroup, SWT.BORDER);
+        newText_1.setBounds(10, rect.y + 40, 75, 20);	
+        newText_1.setFocus();
+		descriptions.put(new Integer(descCount), newText_1);
+		descCount++;
+		
+		Label lblNew = new Label(descriptionGroup, SWT.NONE);
+		lblNew.setBounds(120, rect.y + 40, 145, 20);
+		lblNew.setText(identifier);
+		sections.put(new Integer(secCount), lblNew);
+		secCount ++;		
+		
+		Text newText_2 = new Text(descriptionGroup, SWT.BORDER);
+		newText_2.setBounds(270, rect.y + 40, 115, 20);
+		descriptions.put(new Integer(descCount), newText_2);
+		descCount++;
+		
+		Text newText_3 = new Text(descriptionGroup, SWT.BORDER);
+		newText_3.setBounds(420, rect.y + 40, 115, 20);
+		descriptions.put(new Integer(descCount), newText_3);
+		descCount++;
+		
+		Text newText_4 = new Text(descriptionGroup, SWT.BORDER);
+		newText_4.setBounds(570, rect.y + 40, 115, 20);
+		descriptions.put(new Integer(descCount), newText_4);
+		descCount++;
+        
+        descScrolledComposite.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    }
+    
     private void addExpressionRow() {
 		RowData rowdata = (RowData)expressionGroup.getLayoutData();
 		rowdata.height += 120;
@@ -1020,8 +1105,7 @@ public class Type2Document {
         rect = previousText.getBounds();
         
         Text newText = new Text(expressionGroup, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
-        newText.setBounds(135, rect.y + 90, 550, 70);
-        
+        newText.setBounds(135, rect.y + 90, 550, 70);        
         expressions.put(new Integer(expCount), new ExpressionBean(lblNew, newText));
         expCount++;
         
