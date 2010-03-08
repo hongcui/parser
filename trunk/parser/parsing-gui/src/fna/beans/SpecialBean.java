@@ -17,5 +17,33 @@ public class SpecialBean {
 		this.refText = refText;
 	}
 
+	/**
+	 * @return the glossButton
+	 */
+	public Button getGlossButton() {
+		return glossButton;
+	}
+
+	/**
+	 * @return the refButton
+	 */
+	public Button getRefButton() {
+		return refButton;
+	}
+
+	/**
+	 * @return the glossText
+	 */
+	public Text getGlossText() {
+		return glossText;
+	}
+
+	/**
+	 * @return the refText
+	 */
+	public Text getRefText() {
+		return refText;
+	}
+
 	
 }
