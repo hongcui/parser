@@ -26,6 +26,7 @@ import com.swtdesigner.SWTResourceManager;
 import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
 import fna.beans.SpecialBean;
+import fna.beans.TextBean;
 
 public class Type2Document {
 	private Text text;
@@ -113,7 +114,9 @@ public class Type2Document {
 	/* This HashMap store the data from the last tab - Abbreviations */
 	private HashMap<String, Text> abbreviations = new HashMap<String, Text>();
 	/* This bean will be used to store data from the special tab */
-	SpecialBean special = null;
+	private SpecialBean special = null;
+	/* This bean will store data from Text tab */
+	private TextBean textBean = null;
 	
 	/* This variable will count the number of instances of nomenclature beans on the UI Nomenclature tab */
 	private int nomenCount = 0;	
@@ -245,6 +248,11 @@ public class Type2Document {
 		
 		text_7 = new Text(grpText, SWT.BORDER);
 		text_7.setBounds(523, 277, 98, 21);
+		
+		textBean = new TextBean(text_2, text, text_1, text_3,
+				text_4, btnCapitalized,
+				btnAllCapital, text_5, 
+				new SpecialBean(btnHasFooters, btnHasHeaders, text_6, text_7));
 		
 		TabItem tbtmNomenclature = new TabItem(tabFolder, SWT.NONE);
 		tbtmNomenclature.setText("Nomenclature");
