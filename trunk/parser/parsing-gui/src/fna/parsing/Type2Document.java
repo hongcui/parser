@@ -156,7 +156,7 @@ public class Type2Document {
 		Group grpText = new Group(tabFolder, SWT.NONE);
 		grpText.setText("Text");
 		tbtmText.setControl(grpText);
-		
+		//The first tab!  --> Text
 		Label lblLeadingIndentionOf = new Label(grpText, SWT.NONE);
 		lblLeadingIndentionOf.setBounds(10, 82, 374, 15);
 		lblLeadingIndentionOf.setText("Leading indention of other paragraph:");
