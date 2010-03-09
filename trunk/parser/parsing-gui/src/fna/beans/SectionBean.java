@@ -79,6 +79,62 @@ public class SectionBean {
 	public void setEmbeddedTokens(Text embeddedTokens) {
 		this.embeddedTokens = embeddedTokens;
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((embeddedTokens == null) ? 0 : embeddedTokens.hashCode());
+		result = prime * result
+				+ ((endTokens == null) ? 0 : endTokens.hashCode());
+		result = prime * result + ((order == null) ? 0 : order.hashCode());
+		result = prime * result + ((section == null) ? 0 : section.hashCode());
+		result = prime * result
+				+ ((startTokens == null) ? 0 : startTokens.hashCode());
+		return result;
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof SectionBean))
+			return false;
+		final SectionBean other = (SectionBean) obj;
+		if (embeddedTokens == null) {
+			if (other.embeddedTokens != null)
+				return false;
+		} else if (!embeddedTokens.equals(other.embeddedTokens))
+			return false;
+		if (endTokens == null) {
+			if (other.endTokens != null)
+				return false;
+		} else if (!endTokens.equals(other.endTokens))
+			return false;
+		if (order == null) {
+			if (other.order != null)
+				return false;
+		} else if (!order.equals(other.order))
+			return false;
+		if (section == null) {
+			if (other.section != null)
+				return false;
+		} else if (!section.equals(other.section))
+			return false;
+		if (startTokens == null) {
+			if (other.startTokens != null)
+				return false;
+		} else if (!startTokens.equals(other.startTokens))
+			return false;
+		return true;
+	}
 	
 	
 }
