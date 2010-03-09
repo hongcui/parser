@@ -12,7 +12,13 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
+import fna.beans.ExpressionBean;
+import fna.beans.NomenclatureBean;
+import fna.beans.SpecialBean;
+import fna.beans.TextBean;
 import fna.parsing.ApplicationUtilities;
 
 public class ConfigurationDbAccessor {
@@ -149,6 +155,63 @@ public class ConfigurationDbAccessor {
 			}
 		}
 
+	}
+	
+	public boolean saveType2Details(TextBean textBean, HashMap <Integer, NomenclatureBean> nomenclatures, 
+			HashMap <Integer, ExpressionBean> expressions, HashMap <Integer, Text> descriptions, HashMap <Integer, Label> sections, 
+			SpecialBean special, HashMap <String, Text> abbreviations) throws SQLException {
+		
+
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		boolean success = false;
+		
+		try {
+			conn = DriverManager.getConnection(url);
+			//Insert the data from the first tab
+			
+			String query = "insert into configtype2text (firstpara, leadingIntend, spacing, avglength, pgNoForm," +
+					"capitalized, allcapital, sectionheading, hasfooter, hasHeader, footerToken, headertoken) " +
+					"values (?,?,?,?,?,?,?,?,?,?,?,?)";
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, textBean.getFirstPara().getText());
+			pstmt.setString(2, textBean.getLeadingIndentation().getText());
+			pstmt.setString(3, textBean.getSpacing().getText());
+			pstmt.setString(4, textBean.getEstimatedLength().getText());
+			pstmt.setString(5, textBean.getPageNumberFormsText().getText());
+			pstmt.setString(6, textBean.getSectionHeadingsCapButton().getSelection()?"Y":"N");
+			pstmt.setString(7, textBean.getSectionHeadingsAllCapButton().getSelection()?"Y":"N");
+			pstmt.setString(8, textBean.getSectionHeadingsText().getText());
+			SpecialBean  splBean = textBean.getFooterHeaderBean();
+			pstmt.setString(9, splBean.getFirstButton().getSelection()?"Y":"N");
+			pstmt.setString(10, splBean.getSecondButton().getSelection()?"Y":"N");
+			pstmt.setString(11, splBean.getFirstText().getText());
+			pstmt.setString(12, splBean.getSecondText().getText());			
+			pstmt.execute();
+			success = true;
+			
+		} catch (SQLException exe) {
+			LOGGER.error("Couldn't insert type2 Details in ConfigurationDbAccessor:saveType2Details" + exe);
+			exe.printStackTrace();
+			
+		} finally {
+			if (pstmt != null) {
+				pstmt.close();
+			} 
+			if (conn != null) {
+				conn.close();
+			}
+		}
+		
+		
+		
+		return success;
+	}
+	
+	public boolean retrieveType2Details(TextBean textBean, HashMap <Integer, NomenclatureBean> nomenclatures, 
+			HashMap <Integer, ExpressionBean> expressions, HashMap <Integer, Text> descriptions, HashMap <Integer, Label> sections, 
+			SpecialBean special, HashMap <String, Text> abbreviations) throws SQLException {
+		return true;
 	}
 
 }
