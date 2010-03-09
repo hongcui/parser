@@ -569,14 +569,13 @@ public class Type2Document {
 		text_8 = new Text(grpAbbreviationsUsedIn, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
 		text_8.setBounds(10, 416, 691, 69);
 		abbreviations.put("Others", text_8);
-		
+		final Type2Bean bean = new Type2Bean(textBean, nomenclatures, expressions, descriptionBean, special, abbreviations);
 		Button btnSave = new Button(shlTypeDocument, SWT.NONE);
 		btnSave.setBounds(670, 563, 75, 25);
 		btnSave.setText("Save");
 		btnSave.addSelectionListener (new SelectionAdapter () {
 			public void widgetSelected (SelectionEvent e) {
-				try {
-					Type2Bean bean = new Type2Bean(textBean, nomenclatures, expressions, descriptionBean, special, abbreviations);
+				try {					
 					if (configDb.saveType2Details(bean)) {
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
 								ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
@@ -587,6 +586,14 @@ public class Type2Document {
 				}
 			}
 		});	
+		
+		/* Load previously saved details here */
+		try {
+			configDb.retrieveType2Details(bean);
+		} catch (SQLException exe) {
+			exe.printStackTrace();
+		}
+		
 		
 		shlTypeDocument.open();
 		shlTypeDocument.layout();
