@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Button;
@@ -15,8 +16,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import fna.beans.DescriptionBean;
 import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
+import fna.beans.SectionBean;
 import fna.beans.SpecialBean;
 import fna.beans.TextBean;
 import fna.parsing.ApplicationUtilities;
@@ -158,7 +161,7 @@ public class ConfigurationDbAccessor {
 	}
 	
 	public boolean saveType2Details(TextBean textBean, HashMap <Integer, NomenclatureBean> nomenclatures, 
-			HashMap <Integer, ExpressionBean> expressions, HashMap <Integer, Text> descriptions, HashMap <Integer, Label> sections, 
+			HashMap <Integer, ExpressionBean> expressions, DescriptionBean descriptionBean, 
 			SpecialBean special, HashMap <String, Text> abbreviations) throws SQLException {
 		
 
@@ -168,8 +171,11 @@ public class ConfigurationDbAccessor {
 		
 		try {
 			conn = DriverManager.getConnection(url);
-			//Insert the data from the first tab
-			
+			/* Insert the data from the first tab 
+			 * use TextBean
+			 * */
+			pstmt = conn.prepareStatement("delete from configtype2text");
+			pstmt.execute();
 			String query = "insert into configtype2text (firstpara, leadingIntend, spacing, avglength, pgNoForm," +
 					"capitalized, allcapital, sectionheading, hasfooter, hasHeader, footerToken, headertoken) " +
 					"values (?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -188,6 +194,89 @@ public class ConfigurationDbAccessor {
 			pstmt.setString(11, splBean.getFirstText().getText());
 			pstmt.setString(12, splBean.getSecondText().getText());			
 			pstmt.execute();
+			
+			/* Save Nomenclature tab now - Use nomenclatures*/
+			pstmt = conn.prepareStatement("delete from nomenclatures");
+			pstmt.execute();
+			query = "insert into nomenclatures (nameLabel, _yes, _no, description, _type) values (?,?,?,?,?)";
+			Set <Integer> keys = nomenclatures.keySet();
+			String type1 = ApplicationUtilities.getProperty("Type1");
+			String type2 = ApplicationUtilities.getProperty("Type2");
+			String type3 = ApplicationUtilities.getProperty("Type3");
+			pstmt = conn.prepareStatement(query);
+			for (Integer i : keys) {
+				NomenclatureBean nBean = nomenclatures.get(i);
+				pstmt.setString(1, nBean.getLabel().getText());
+				pstmt.setString(2, nBean.getYesRadioButton().getSelection()?"Y":"N");
+				pstmt.setString(3, nBean.getNoRadioButton().getSelection()?"Y":"N");
+				pstmt.setString(4, nBean.getDescription().getText());
+				int offset = i.intValue()%3;
+				switch(offset) {
+				 case 0 : pstmt.setString(5, type1);
+				 		  break;
+				 case 1 : pstmt.setString(5, type2);
+				 	      break;
+				 case 2 : pstmt.setString(5, type3);
+		 	      		  break;
+				}
+				
+				pstmt.execute();
+			}
+			
+			/* Save the data in Expression tab - use expressions*/
+			pstmt = conn.prepareStatement("delete from expressions");
+			pstmt.execute();
+			query = "insert into expressions (_label, description) values (?,?)";
+			keys = expressions.keySet();
+			pstmt = conn.prepareStatement(query);
+			for (Integer i : keys) {
+				ExpressionBean expBean = expressions.get(i);
+				pstmt.setString(1, expBean.getLabel().getText());
+				pstmt.setString(2, expBean.getText().getText());
+				pstmt.execute();
+			}
+			
+			/*Save morphological descriptions  - use descriptionBean */
+			pstmt = conn.prepareStatement("delete from morpdesc");
+			pstmt.execute();
+			
+			query = "insert into morpdesc values(?,?)";
+			pstmt = conn.prepareStatement(query);			
+			pstmt.setString(1, descriptionBean.getYesButton().getSelection()?"Y":"N");
+			pstmt.setString(2, descriptionBean.getOtherInfo().getText());			
+			pstmt.execute();
+			
+			pstmt = conn.prepareStatement("delete from descriptions");
+			pstmt.execute();
+			
+			query = "insert into descriptions (_order, section, start_token, end_token, embedded_token) valuse(?,?,?,?,?)";
+			pstmt = conn.prepareStatement(query);
+			HashMap <Integer, SectionBean> descriptions = descriptionBean.getSections();
+			keys = descriptions.keySet();
+			
+			for(Integer i : keys) {
+				SectionBean  secBean = descriptions.get(i);
+				pstmt.setString(1, secBean.getOrder().getText());
+				pstmt.setString(2, secBean.getSection().getText());
+				pstmt.setString(3, secBean.getStartTokens().getText());
+				pstmt.setString(4, secBean.getEndTokens().getText());
+				pstmt.setString(5, secBean.getEmbeddedTokens().getText());
+				pstmt.execute();
+			}
+			
+			/* Save Special tab data - use SpecialBean */
+			pstmt = conn.prepareStatement("delete from specialsection");
+			pstmt.execute();
+			
+			query = "insert into specialsection(hasGlossary,glossaryHeading," +
+					"hasReference,referenceHeading) values (?,?,?,?)";
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, special.getFirstButton().getSelection()?"Y":"N");
+			pstmt.setString(2, special.getFirstText().getText());
+			pstmt.setString(3, special.getSecondButton().getSelection()?"Y":"N");
+			pstmt.setString(4, special.getSecondText().getText());
+			
+			
 			success = true;
 			
 		} catch (SQLException exe) {
