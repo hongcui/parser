@@ -249,7 +249,7 @@ public class ConfigurationDbAccessor {
 			pstmt = conn.prepareStatement("delete from descriptions");
 			pstmt.execute();
 			
-			query = "insert into descriptions (_order, section, start_token, end_token, embedded_token) valuse(?,?,?,?,?)";
+			query = "insert into descriptions (_order, section, start_token, end_token, embedded_token) values(?,?,?,?,?)";
 			pstmt = conn.prepareStatement(query);
 			HashMap <Integer, SectionBean> descriptions = descriptionBean.getSections();
 			keys = descriptions.keySet();
@@ -275,8 +275,21 @@ public class ConfigurationDbAccessor {
 			pstmt.setString(2, special.getFirstText().getText());
 			pstmt.setString(3, special.getSecondButton().getSelection()?"Y":"N");
 			pstmt.setString(4, special.getSecondText().getText());
+			pstmt.execute();
 			
+			/* Save the abbreviations tab data - use abbreviations */
+			pstmt = conn.prepareStatement("delete from abbreviations");
+			pstmt.execute();
 			
+			query = "insert into abbreviations (_label, abbreviation) values(?,?)";
+			
+			pstmt = conn.prepareStatement(query);
+			Set <String> keySet = abbreviations.keySet();
+			for (String name: keySet) {
+				pstmt.setString(1, name);
+				pstmt.setString(2, abbreviations.get(name).getText());
+				pstmt.execute();
+			}
 			success = true;
 			
 		} catch (SQLException exe) {
