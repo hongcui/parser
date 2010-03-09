@@ -84,7 +84,7 @@ public class SectionBean {
 	 */
 	@Override
 	public int hashCode() {
-		final int prime = 31;
+		final int prime = 53;
 		int result = 1;
 		result = prime * result
 				+ ((embeddedTokens == null) ? 0 : embeddedTokens.hashCode());
