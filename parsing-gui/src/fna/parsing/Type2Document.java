@@ -1,5 +1,6 @@
  package fna.parsing;
 /** @author Partha Pratim Sanyal ppsanyal@email.arizona.edu*/
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
@@ -27,6 +28,7 @@ import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
 import fna.beans.SpecialBean;
 import fna.beans.TextBean;
+import fna.db.ConfigurationDbAccessor;
 
 public class Type2Document {
 	private Text text;
@@ -127,6 +129,7 @@ public class Type2Document {
 	/* This variable will count the number of instances of descriptions - 
 	 * section labels on the UI Descriptons tab */
 	private int secCount = 0;
+	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();
 	
 	private Shell shlTypeDocument = null;
 
@@ -1052,6 +1055,21 @@ public class Type2Document {
 		Button btnSave = new Button(shlTypeDocument, SWT.NONE);
 		btnSave.setBounds(670, 563, 75, 25);
 		btnSave.setText("Save");
+		btnSave.addSelectionListener (new SelectionAdapter () {
+			public void widgetSelected (SelectionEvent e) {
+				try {
+					if (configDb.saveType2Details(textBean, nomenclatures, expressions, descriptions, sections, special, abbreviations)) {
+						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
+								ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+						shlTypeDocument.dispose();
+					}
+				} catch (SQLException exe) {
+					
+				}
+			}
+		});
+		
+		
 		
 		shlTypeDocument.open();
 		shlTypeDocument.layout();
