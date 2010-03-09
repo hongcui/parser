@@ -4,24 +4,19 @@ import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 public class DescriptionBean {
 	private Button yesButton;
 	private Button noButton;
 	private Combo OtherInfo;
-	private HashMap <Integer, Text> descriptions;
-	private HashMap <Integer, Label> sections;
+	private HashMap <Integer, SectionBean> sections;
 	
 	public DescriptionBean(Button yesButton, Button noButton, Combo otherInfo,
-			HashMap<Integer, Text> descriptions,
-			HashMap<Integer, Label> sections) {
+			HashMap<Integer, SectionBean> sections) {
 		super();
 		this.yesButton = yesButton;
 		this.noButton = noButton;
 		OtherInfo = otherInfo;
-		this.descriptions = descriptions;
 		this.sections = sections;
 	}
 
@@ -68,30 +63,16 @@ public class DescriptionBean {
 	}
 
 	/**
-	 * @return the descriptions
-	 */
-	public HashMap<Integer, Text> getDescriptions() {
-		return descriptions;
-	}
-
-	/**
-	 * @param descriptions the descriptions to set
-	 */
-	public void setDescriptions(HashMap<Integer, Text> descriptions) {
-		this.descriptions = descriptions;
-	}
-
-	/**
 	 * @return the sections
 	 */
-	public HashMap<Integer, Label> getSections() {
+	public HashMap<Integer, SectionBean> getSections() {
 		return sections;
 	}
 
 	/**
 	 * @param sections the sections to set
 	 */
-	public void setSections(HashMap<Integer, Label> sections) {
+	public void setSections(HashMap<Integer, SectionBean> sections) {
 		this.sections = sections;
 	}
 
