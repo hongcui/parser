@@ -30,6 +30,7 @@ import fna.beans.NomenclatureBean;
 import fna.beans.SectionBean;
 import fna.beans.SpecialBean;
 import fna.beans.TextBean;
+import fna.beans.Type2Bean;
 import fna.db.ConfigurationDbAccessor;
 
 public class Type2Document {
@@ -575,7 +576,8 @@ public class Type2Document {
 		btnSave.addSelectionListener (new SelectionAdapter () {
 			public void widgetSelected (SelectionEvent e) {
 				try {
-					if (configDb.saveType2Details(textBean, nomenclatures, expressions, descriptionBean, special, abbreviations)) {
+					Type2Bean bean = new Type2Bean(textBean, nomenclatures, expressions, descriptionBean, special, abbreviations);
+					if (configDb.saveType2Details(bean)) {
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
 								ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 						shlTypeDocument.dispose();
