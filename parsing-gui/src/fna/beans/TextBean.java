@@ -60,4 +60,59 @@ public class TextBean {
 	public SpecialBean getFooterHeaderBean() {
 		return footerHeaderBean;
 	}
+	/**
+	 * @param firstPara the firstPara to set
+	 */
+	public void setFirstPara(Text firstPara) {
+		this.firstPara = firstPara;
+	}
+	/**
+	 * @param leadingIndentation the leadingIndentation to set
+	 */
+	public void setLeadingIndentation(Text leadingIndentation) {
+		this.leadingIndentation = leadingIndentation;
+	}
+	/**
+	 * @param spacing the spacing to set
+	 */
+	public void setSpacing(Text spacing) {
+		this.spacing = spacing;
+	}
+	/**
+	 * @param estimatedLength the estimatedLength to set
+	 */
+	public void setEstimatedLength(Text estimatedLength) {
+		this.estimatedLength = estimatedLength;
+	}
+	/**
+	 * @param pageNumberFormsText the pageNumberFormsText to set
+	 */
+	public void setPageNumberFormsText(Text pageNumberFormsText) {
+		this.pageNumberFormsText = pageNumberFormsText;
+	}
+	/**
+	 * @param sectionHeadingsCapButton the sectionHeadingsCapButton to set
+	 */
+	public void setSectionHeadingsCapButton(Button sectionHeadingsCapButton) {
+		this.sectionHeadingsCapButton = sectionHeadingsCapButton;
+	}
+	/**
+	 * @param sectionHeadingsAllCapButton the sectionHeadingsAllCapButton to set
+	 */
+	public void setSectionHeadingsAllCapButton(Button sectionHeadingsAllCapButton) {
+		this.sectionHeadingsAllCapButton = sectionHeadingsAllCapButton;
+	}
+	/**
+	 * @param sectionHeadingsText the sectionHeadingsText to set
+	 */
+	public void setSectionHeadingsText(Text sectionHeadingsText) {
+		this.sectionHeadingsText = sectionHeadingsText;
+	}
+	/**
+	 * @param footerHeaderBean the footerHeaderBean to set
+	 */
+	public void setFooterHeaderBean(SpecialBean footerHeaderBean) {
+		this.footerHeaderBean = footerHeaderBean;
+	}
+	
 }
