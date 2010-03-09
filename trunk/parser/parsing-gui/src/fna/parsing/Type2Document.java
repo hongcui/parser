@@ -49,18 +49,6 @@ public class Type2Document {
 	private Text text_14;
 	private Text text_15;
 	private Text text_16;
-	private Text text_17;
-	private Text text_18;
-	private Text text_19;
-	private Text text_20;
-	private Text text_21;
-	private Text text_22;
-	private Text text_23;
-	private Text text_24;
-	private Text text_25;
-	private Text text_26;
-	private Text text_27;
-	private Text text_28;
 	private Text text_33;
 	private Text text_40;
 	private Text text_41;
@@ -99,10 +87,9 @@ public class Type2Document {
 	/* This variable will count the number of instances of nomenclature beans on the UI Expressions tab */
 	private int expCount = 0;
 	/* This variable will count the number of instances of descriptions - 
-	 * section labels on the UI Descriptons tab */
+	 * section labels on the UI Descriptions tab */
 	private int secCount = 0;
-	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();
-	
+	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();	
 	private Shell shlTypeDocument = null;
 
 	public static void main(String[] args) {
@@ -597,9 +584,7 @@ public class Type2Document {
 					
 				}
 			}
-		});
-		
-		
+		});	
 		
 		shlTypeDocument.open();
 		shlTypeDocument.layout();
