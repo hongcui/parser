@@ -22,6 +22,7 @@ import fna.beans.NomenclatureBean;
 import fna.beans.SectionBean;
 import fna.beans.SpecialBean;
 import fna.beans.TextBean;
+import fna.beans.Type2Bean;
 import fna.parsing.ApplicationUtilities;
 
 public class ConfigurationDbAccessor {
@@ -160,9 +161,7 @@ public class ConfigurationDbAccessor {
 
 	}
 	
-	public boolean saveType2Details(TextBean textBean, HashMap <Integer, NomenclatureBean> nomenclatures, 
-			HashMap <Integer, ExpressionBean> expressions, DescriptionBean descriptionBean, 
-			SpecialBean special, HashMap <String, Text> abbreviations) throws SQLException {
+	public boolean saveType2Details(Type2Bean bean) throws SQLException {
 		
 
 		PreparedStatement pstmt = null;
@@ -180,15 +179,15 @@ public class ConfigurationDbAccessor {
 					"capitalized, allcapital, sectionheading, hasfooter, hasHeader, footerToken, headertoken) " +
 					"values (?,?,?,?,?,?,?,?,?,?,?,?)";
 			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, textBean.getFirstPara().getText());
-			pstmt.setString(2, textBean.getLeadingIndentation().getText());
-			pstmt.setString(3, textBean.getSpacing().getText());
-			pstmt.setString(4, textBean.getEstimatedLength().getText());
-			pstmt.setString(5, textBean.getPageNumberFormsText().getText());
-			pstmt.setString(6, textBean.getSectionHeadingsCapButton().getSelection()?"Y":"N");
-			pstmt.setString(7, textBean.getSectionHeadingsAllCapButton().getSelection()?"Y":"N");
-			pstmt.setString(8, textBean.getSectionHeadingsText().getText());
-			SpecialBean  splBean = textBean.getFooterHeaderBean();
+			pstmt.setString(1, bean.getTextBean().getFirstPara().getText());
+			pstmt.setString(2, bean.getTextBean().getLeadingIndentation().getText());
+			pstmt.setString(3, bean.getTextBean().getSpacing().getText());
+			pstmt.setString(4, bean.getTextBean().getEstimatedLength().getText());
+			pstmt.setString(5, bean.getTextBean().getPageNumberFormsText().getText());
+			pstmt.setString(6, bean.getTextBean().getSectionHeadingsCapButton().getSelection()?"Y":"N");
+			pstmt.setString(7, bean.getTextBean().getSectionHeadingsAllCapButton().getSelection()?"Y":"N");
+			pstmt.setString(8, bean.getTextBean().getSectionHeadingsText().getText());
+			SpecialBean  splBean = bean.getTextBean().getFooterHeaderBean();
 			pstmt.setString(9, splBean.getFirstButton().getSelection()?"Y":"N");
 			pstmt.setString(10, splBean.getSecondButton().getSelection()?"Y":"N");
 			pstmt.setString(11, splBean.getFirstText().getText());
@@ -199,13 +198,13 @@ public class ConfigurationDbAccessor {
 			pstmt = conn.prepareStatement("delete from nomenclatures");
 			pstmt.execute();
 			query = "insert into nomenclatures (nameLabel, _yes, _no, description, _type) values (?,?,?,?,?)";
-			Set <Integer> keys = nomenclatures.keySet();
+			Set <Integer> keys = bean.getNomenclatures().keySet();
 			String type1 = ApplicationUtilities.getProperty("Type1");
 			String type2 = ApplicationUtilities.getProperty("Type2");
 			String type3 = ApplicationUtilities.getProperty("Type3");
 			pstmt = conn.prepareStatement(query);
 			for (Integer i : keys) {
-				NomenclatureBean nBean = nomenclatures.get(i);
+				NomenclatureBean nBean = bean.getNomenclatures().get(i);
 				pstmt.setString(1, nBean.getLabel().getText());
 				pstmt.setString(2, nBean.getYesRadioButton().getSelection()?"Y":"N");
 				pstmt.setString(3, nBean.getNoRadioButton().getSelection()?"Y":"N");
@@ -227,10 +226,10 @@ public class ConfigurationDbAccessor {
 			pstmt = conn.prepareStatement("delete from expressions");
 			pstmt.execute();
 			query = "insert into expressions (_label, description) values (?,?)";
-			keys = expressions.keySet();
+			keys = bean.getExpressions().keySet();
 			pstmt = conn.prepareStatement(query);
 			for (Integer i : keys) {
-				ExpressionBean expBean = expressions.get(i);
+				ExpressionBean expBean = bean.getExpressions().get(i);
 				pstmt.setString(1, expBean.getLabel().getText());
 				pstmt.setString(2, expBean.getText().getText());
 				pstmt.execute();
@@ -242,8 +241,8 @@ public class ConfigurationDbAccessor {
 			
 			query = "insert into morpdesc values(?,?)";
 			pstmt = conn.prepareStatement(query);			
-			pstmt.setString(1, descriptionBean.getYesButton().getSelection()?"Y":"N");
-			pstmt.setString(2, descriptionBean.getOtherInfo().getText());			
+			pstmt.setString(1, bean.getDescriptionBean().getYesButton().getSelection()?"Y":"N");
+			pstmt.setString(2, bean.getDescriptionBean().getOtherInfo().getText());			
 			pstmt.execute();
 			
 			pstmt = conn.prepareStatement("delete from descriptions");
@@ -251,7 +250,7 @@ public class ConfigurationDbAccessor {
 			
 			query = "insert into descriptions (_order, section, start_token, end_token, embedded_token) values(?,?,?,?,?)";
 			pstmt = conn.prepareStatement(query);
-			HashMap <Integer, SectionBean> descriptions = descriptionBean.getSections();
+			HashMap <Integer, SectionBean> descriptions = bean.getDescriptionBean().getSections();
 			keys = descriptions.keySet();
 			
 			for(Integer i : keys) {
@@ -271,10 +270,10 @@ public class ConfigurationDbAccessor {
 			query = "insert into specialsection(hasGlossary,glossaryHeading," +
 					"hasReference,referenceHeading) values (?,?,?,?)";
 			pstmt = conn.prepareStatement(query);
-			pstmt.setString(1, special.getFirstButton().getSelection()?"Y":"N");
-			pstmt.setString(2, special.getFirstText().getText());
-			pstmt.setString(3, special.getSecondButton().getSelection()?"Y":"N");
-			pstmt.setString(4, special.getSecondText().getText());
+			pstmt.setString(1, bean.getSpecial().getFirstButton().getSelection()?"Y":"N");
+			pstmt.setString(2, bean.getSpecial().getFirstText().getText());
+			pstmt.setString(3, bean.getSpecial().getSecondButton().getSelection()?"Y":"N");
+			pstmt.setString(4, bean.getSpecial().getSecondText().getText());
 			pstmt.execute();
 			
 			/* Save the abbreviations tab data - use abbreviations */
@@ -284,10 +283,10 @@ public class ConfigurationDbAccessor {
 			query = "insert into abbreviations (_label, abbreviation) values(?,?)";
 			
 			pstmt = conn.prepareStatement(query);
-			Set <String> keySet = abbreviations.keySet();
+			Set <String> keySet = bean.getAbbreviations().keySet();
 			for (String name: keySet) {
 				pstmt.setString(1, name);
-				pstmt.setString(2, abbreviations.get(name).getText());
+				pstmt.setString(2, bean.getAbbreviations().get(name).getText());
 				pstmt.execute();
 			}
 			success = true;
@@ -310,10 +309,25 @@ public class ConfigurationDbAccessor {
 		return success;
 	}
 	
-	public boolean retrieveType2Details(TextBean textBean, HashMap <Integer, NomenclatureBean> nomenclatures, 
-			HashMap <Integer, ExpressionBean> expressions, HashMap <Integer, Text> descriptions, HashMap <Integer, Label> sections, 
-			SpecialBean special, HashMap <String, Text> abbreviations) throws SQLException {
-		return true;
+	public void retrieveType2Details(Type2Bean bean) throws SQLException {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			/* Retrieve Text tab*/
+			pstmt = conn.prepareStatement("select * from configtype2text");
+			rset = pstmt.executeQuery();
+			if(rset.next()) {
+				TextBean textBean = bean.getTextBean();
+				textBean.getFirstPara().setText(rset.getString(1));
+				textBean.getLeadingIndentation().setText(rset.getString(2));
+				textBean.getSpacing().setText(rset.getString(3));
+			}
+		} catch (SQLException exe) {
+			LOGGER.error("Couldn't retrieve type2 Details in ConfigurationDbAccessor:retrieveType2Details" + exe);
+			exe.printStackTrace();
+		}
 	}
 
 }
