@@ -24,8 +24,10 @@ import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Combo;
 import com.swtdesigner.SWTResourceManager;
 
+import fna.beans.DescriptionBean;
 import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
+import fna.beans.SectionBean;
 import fna.beans.SpecialBean;
 import fna.beans.TextBean;
 import fna.db.ConfigurationDbAccessor;
@@ -109,10 +111,10 @@ public class Type2Document {
 	private HashMap<Integer, NomenclatureBean> nomenclatures = new HashMap<Integer, NomenclatureBean>();
 	/* This HashMap stores the data available from the expression tab */
 	private HashMap<Integer, ExpressionBean> expressions = new HashMap<Integer, ExpressionBean>();
-	/* This HashMap stores the data available from the expression tab */
-	private HashMap<Integer, Text> descriptions = new HashMap<Integer, Text>();
-	/* This HashMap stores the label data available from the expression tab */
-	private HashMap<Integer, Label> sections = new HashMap<Integer, Label>();
+	/* This HashMap stores the label data available from the description tab */
+	private HashMap<Integer, SectionBean> sections = new HashMap<Integer, SectionBean>();
+	/* One comprehensive bean to store all description related data */
+	private DescriptionBean descriptionBean = null;
 	/* This HashMap store the data from the last tab - Abbreviations */
 	private HashMap<String, Text> abbreviations = new HashMap<String, Text>();
 	/* This bean will be used to store data from the special tab */
@@ -124,8 +126,6 @@ public class Type2Document {
 	private int nomenCount = 0;	
 	/* This variable will count the number of instances of nomenclature beans on the UI Expressions tab */
 	private int expCount = 0;
-	/* This variable will count the number of instances of descriptions on the UI Descriptons tab */
-	private int descCount = 0;	
 	/* This variable will count the number of instances of descriptions - 
 	 * section labels on the UI Descriptons tab */
 	private int secCount = 0;
@@ -722,6 +722,8 @@ public class Type2Document {
 		combo.setItems(new String[] {"Nomenclature", "Habitat", "Distribution", "Discussion", "Other"});
 		combo.setBounds(496, 82, 177, 23);
 		
+		descriptionBean = new DescriptionBean(btnYes, btnNo, combo, sections);
+		
 		Label lblMorphological = new Label(grpMorphologicalDescriptions, SWT.NONE);
 		lblMorphological.setFont(SWTResourceManager.getFont("Segoe UI", 9, SWT.BOLD));
 		lblMorphological.setBounds(10, 25, 242, 15);
@@ -762,197 +764,34 @@ public class Type2Document {
 		descriptionGroup.setLayoutData(new RowData());
 		
 		////////////////////////////////
+		String [] sectionArray = {"Morph. description", "Habitat", 
+				"Distribution", "Discussion", "Keys", "References"};
 		
 		text_33 = new Text(descriptionGroup, SWT.BORDER);
 		text_33.setBounds(10, 20, 75, 20);
-		descriptions.put(new Integer(descCount), text_33);
-		descCount++;
 		
 		Label lblNomenclature = new Label(descriptionGroup, SWT.NONE);
 		lblNomenclature.setBounds(120, 20, 145, 20);
 		lblNomenclature.setText("Nomenclature");
-		sections.put(new Integer(secCount), lblNomenclature);
-		secCount ++;
 		
 		text_40 = new Text(descriptionGroup, SWT.BORDER);
 		text_40.setBounds(270, 20, 115, 20);
-		descriptions.put(new Integer(descCount), text_40);
-		descCount++;
 		
 		text_41 = new Text(descriptionGroup, SWT.BORDER);
 		text_41.setBounds(420, 20, 115, 20);
-		descriptions.put(new Integer(descCount), text_41);
-		descCount++;
 		
 		text_42 = new Text(descriptionGroup, SWT.BORDER);
 		text_42.setBounds(570, 20, 115, 20);
-		descriptions.put(new Integer(descCount), text_42);
-		descCount++;
+
+		sections.put(new Integer(secCount), new SectionBean(text_33, lblNomenclature, text_40, text_41, text_42));
+		secCount ++;
 		//////////////////////////////////
 		
-		text_34 = new Text(descriptionGroup, SWT.BORDER);
-		text_34.setBounds(10, 60, 75, 20);		
-		descriptions.put(new Integer(descCount), text_34);
-		descCount++;
-		
-		Label lblMorphDescription = new Label(descriptionGroup, SWT.NONE);
-		lblMorphDescription.setBounds(120, 60, 145, 20);
-		lblMorphDescription.setText("Morph. description");		
-		sections.put(new Integer(secCount), lblMorphDescription);
-		secCount ++;
-		
-		text_43 = new Text(descriptionGroup, SWT.BORDER);
-		text_43.setBounds(270, 60, 115, 20);
-		descriptions.put(new Integer(descCount), text_43);
-		descCount++;
-		
-		text_44 = new Text(descriptionGroup, SWT.BORDER);
-		text_44.setBounds(420, 60, 115, 20);
-		descriptions.put(new Integer(descCount), text_44);
-		descCount++;
-		
-		text_45 = new Text(descriptionGroup, SWT.BORDER);
-		text_45.setBounds(570, 60, 115, 20);
-		descriptions.put(new Integer(descCount), text_45);
-		descCount++;
-		
-		////////////////////////////////////////////////////
-		
-		text_35 = new Text(descriptionGroup, SWT.BORDER);
-		text_35.setBounds(10, 100, 75, 20);
-		descriptions.put(new Integer(descCount), text_35);
-		descCount++;
-		
-		Label lblHabitat = new Label(descriptionGroup, SWT.NONE);
-		lblHabitat.setBounds(120, 100, 145, 20);
-		lblHabitat.setText("Habitat");
-		sections.put(new Integer(secCount), lblHabitat);
-		secCount ++;		
-
-		text_46 = new Text(descriptionGroup, SWT.BORDER);
-		text_46.setBounds(270, 100, 115, 20);
-		descriptions.put(new Integer(descCount), text_46);
-		descCount++;
-		
-		text_47 = new Text(descriptionGroup, SWT.BORDER);
-		text_47.setBounds(420, 100, 115, 20);
-		descriptions.put(new Integer(descCount), text_47);
-		descCount++;
-		
-		text_48 = new Text(descriptionGroup, SWT.BORDER);
-		text_48.setBounds(570, 100, 115, 20);
-		descriptions.put(new Integer(descCount), text_48);
-		descCount++;
-		
-		/////////////////////////////////////////
-		
-		text_36 = new Text(descriptionGroup, SWT.BORDER);
-		text_36.setBounds(10, 140, 75, 20);
-		descriptions.put(new Integer(descCount), text_36);
-		descCount++;
-		
-		Label lblDistribution = new Label(descriptionGroup, SWT.NONE);
-		lblDistribution.setBounds(120, 140, 145, 20);
-		lblDistribution.setText("Distribution");
-		sections.put(new Integer(secCount), lblDistribution);
-		secCount ++;
-		
-		text_49 = new Text(descriptionGroup, SWT.BORDER);
-		text_49.setBounds(270, 140, 115, 20);
-		descriptions.put(new Integer(descCount), text_49);
-		descCount++;
-		
-		text_50 = new Text(descriptionGroup, SWT.BORDER);
-		text_50.setBounds(420, 140, 115, 20);
-		descriptions.put(new Integer(descCount), text_50);
-		descCount++;
-		
-		text_51 = new Text(descriptionGroup, SWT.BORDER);
-		text_51.setBounds(570, 140, 115, 20);
-		descriptions.put(new Integer(descCount), text_51);
-		descCount++;
-		//////////////////////////////////		
-		
-		text_37 = new Text(descriptionGroup, SWT.BORDER);
-		text_37.setBounds(10, 180, 75, 20);
-		descriptions.put(new Integer(descCount), text_37);
-		descCount++;
-		
-		Label lblDiscussion = new Label(descriptionGroup, SWT.NONE);
-		lblDiscussion.setBounds(120, 180, 145, 20);
-		lblDiscussion.setText("Discussion");
-		sections.put(new Integer(secCount), lblDiscussion);
-		secCount ++;
-		
-		text_52 = new Text(descriptionGroup, SWT.BORDER);
-		text_52.setBounds(270, 180, 115, 20);
-		descriptions.put(new Integer(descCount), text_52);
-		descCount++;
-		
-		text_53 = new Text(descriptionGroup, SWT.BORDER);
-		text_53.setBounds(420, 180, 115, 20);
-		descriptions.put(new Integer(descCount), text_53);
-		descCount++;
-		
-		text_54 = new Text(descriptionGroup, SWT.BORDER);
-		text_54.setBounds(570, 180, 115, 20);
-		descriptions.put(new Integer(descCount), text_54);
-		descCount++;
-		////////////////////////////////////
-		
-		text_38 = new Text(descriptionGroup, SWT.BORDER);
-		text_38.setBounds(10, 220, 75, 20);
-		descriptions.put(new Integer(descCount), text_38);
-		descCount++;
-		
-		Label lblKeys = new Label(descriptionGroup, SWT.NONE);
-		lblKeys.setBounds(120, 220, 145, 20);
-		lblKeys.setText("Keys");
-		sections.put(new Integer(secCount), lblKeys);
-		secCount ++;
-		
-		text_55 = new Text(descriptionGroup, SWT.BORDER);
-		text_55.setBounds(270, 220, 115, 20);
-		descriptions.put(new Integer(descCount), text_55);
-		descCount++;
-		
-		text_56 = new Text(descriptionGroup, SWT.BORDER);
-		text_56.setBounds(420, 220, 115, 20);
-		descriptions.put(new Integer(descCount), text_56);
-		descCount++;
-		
-		text_57 = new Text(descriptionGroup, SWT.BORDER);
-		text_57.setBounds(570, 220, 115, 20);
-		descriptions.put(new Integer(descCount), text_57);
-		descCount++;
-		//////////////////////////////////////
-				
-		text_39 = new Text(descriptionGroup, SWT.BORDER);
-		text_39.setBounds(10, 260, 75, 20);	
-		descriptions.put(new Integer(descCount), text_39);
-		descCount++;
-		
-		Label lblReferences_1 = new Label(descriptionGroup, SWT.NONE);
-		lblReferences_1.setBounds(120, 260, 145, 20);
-		lblReferences_1.setText("References");
-		sections.put(new Integer(secCount), lblReferences_1);
-		secCount ++;
-		
-		text_58 = new Text(descriptionGroup, SWT.BORDER);
-		text_58.setBounds(270, 260, 115, 20);
-		descriptions.put(new Integer(descCount), text_58);
-		descCount++;
-		
-		text_59 = new Text(descriptionGroup, SWT.BORDER);
-		text_59.setBounds(420, 260, 115, 20);
-		descriptions.put(new Integer(descCount), text_59);
-		descCount++;
-		
-		text_60 = new Text(descriptionGroup, SWT.BORDER);
-		text_60.setBounds(570, 260, 115, 20);
-		descriptions.put(new Integer(descCount), text_60);
-		descCount++;
-	    /////////////////////////////////
+		int i = 0;
+		while ( i < 6) {
+			addDescriptionRow(sectionArray[i]);
+			i++;
+		}
 
 		descScrolledComposite.setContent(descriptionGroup);
 		descScrolledComposite.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -965,7 +804,7 @@ public class Type2Document {
 				identifier = null;
 				showInputBox();
 				if(identifier != null && !identifier.equals("")) {
-					addDescriptionRow();
+					addDescriptionRow(identifier);
 				}
 			}
 		});
@@ -1058,7 +897,7 @@ public class Type2Document {
 		btnSave.addSelectionListener (new SelectionAdapter () {
 			public void widgetSelected (SelectionEvent e) {
 				try {
-					if (configDb.saveType2Details(textBean, nomenclatures, expressions, descriptions, sections, special, abbreviations)) {
+					if (configDb.saveType2Details(textBean, nomenclatures, expressions, descriptionBean, special, abbreviations)) {
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
 								ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 						shlTypeDocument.dispose();
@@ -1079,7 +918,7 @@ public class Type2Document {
 		}
     }
     
-    private void addDescriptionRow() {
+    private void addDescriptionRow(String sectionName) {
     	//descriptionGroup
 		RowData rowdata = (RowData)descriptionGroup.getLayoutData();
 		rowdata.height += 60;
@@ -1089,34 +928,26 @@ public class Type2Document {
         descriptionGroup.setBounds(rect);
         
         /*Add the row*/
-        Text prevText = descriptions.get(new Integer(descCount-1));
+        Text prevText = sections.get(new Integer(secCount-1)).getEndTokens();
         rect = prevText.getBounds();
         Text newText_1 = new Text(descriptionGroup, SWT.BORDER);
         newText_1.setBounds(10, rect.y + 40, 75, 20);	
         newText_1.setFocus();
-		descriptions.put(new Integer(descCount), newText_1);
-		descCount++;
 		
 		Label lblNew = new Label(descriptionGroup, SWT.NONE);
 		lblNew.setBounds(120, rect.y + 40, 145, 20);
-		lblNew.setText(identifier);
-		sections.put(new Integer(secCount), lblNew);
-		secCount ++;		
+		lblNew.setText(sectionName);
 		
 		Text newText_2 = new Text(descriptionGroup, SWT.BORDER);
 		newText_2.setBounds(270, rect.y + 40, 115, 20);
-		descriptions.put(new Integer(descCount), newText_2);
-		descCount++;
 		
 		Text newText_3 = new Text(descriptionGroup, SWT.BORDER);
 		newText_3.setBounds(420, rect.y + 40, 115, 20);
-		descriptions.put(new Integer(descCount), newText_3);
-		descCount++;
-		
+
 		Text newText_4 = new Text(descriptionGroup, SWT.BORDER);
 		newText_4.setBounds(570, rect.y + 40, 115, 20);
-		descriptions.put(new Integer(descCount), newText_4);
-		descCount++;
+		sections.put(new Integer(secCount), new SectionBean(newText_1, lblNew, newText_2, newText_3, newText_4));
+		secCount ++;
         
         descScrolledComposite.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
