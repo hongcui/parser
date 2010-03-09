@@ -320,14 +320,40 @@ public class ConfigurationDbAccessor {
 			rset = pstmt.executeQuery();
 			if(rset.next()) {
 				TextBean textBean = bean.getTextBean();
-				textBean.getFirstPara().setText(rset.getString(1));
-				textBean.getLeadingIndentation().setText(rset.getString(2));
-				textBean.getSpacing().setText(rset.getString(3));
+				textBean.getFirstPara().setText(rset.getString("firstpara"));
+				textBean.getLeadingIndentation().setText(rset.getString("leadingIntend"));
+				textBean.getSpacing().setText(rset.getString("spacing"));
+				textBean.getEstimatedLength().setText(rset.getString("avglength"));
+				textBean.getPageNumberFormsText().setText(rset.getString("pgNoForm"));
+				textBean.getSectionHeadingsCapButton().setSelection(rset.getString("capitalized").equals("Y")?true:false);
+				textBean.getSectionHeadingsAllCapButton().setSelection(rset.getString("allcapital").equals("Y")?true:false);
+				textBean.getSectionHeadingsText().setText(rset.getString("sectionheading"));
+				textBean.getFooterHeaderBean().getFirstButton().setSelection(
+						rset.getString("hasfooter").equals("Y")?true:false);
+				textBean.getFooterHeaderBean().getSecondButton().setSelection(
+						rset.getString("hasHeader").equals("Y")?true:false);
+				textBean.getFooterHeaderBean().getFirstText().setText(rset.getString("footerToken"));
+				textBean.getFooterHeaderBean().getSecondText().setText(rset.getString("headertoken"));
 			}
+			
+			/* Retrieve nomenclature tab */
+			
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't retrieve type2 Details in ConfigurationDbAccessor:retrieveType2Details" + exe);
 			exe.printStackTrace();
-		}
+		} finally {
+			if (rset != null) {
+				rset.close();
+			}
+			
+			if (pstmt != null) {
+				pstmt.close();
+			}
+
+			if (conn != null) {
+				conn.close();
+			}
+	    }
 	}
 
 }
