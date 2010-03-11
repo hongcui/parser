@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.MainForm;
 import fna.parsing.ParsingException;
 import fna.parsing.Registry;
 
@@ -36,7 +37,8 @@ public class VolumeMarkupDbAccessor {
 	 */
     private static final Logger LOGGER = Logger.getLogger(VolumeMarkupDbAccessor.class);
     private static String url = ApplicationUtilities.getProperty("database.url");
-	static {
+	private static String tablePrefix = MainForm.dataPrefixCombo.getText();
+    static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 		} catch (ClassNotFoundException e) {
@@ -59,7 +61,7 @@ public class VolumeMarkupDbAccessor {
 		try {
 			conn = DriverManager.getConnection(url);
 			
-			String sql = "select distinct tag from sentence where tag != 'unknown' and tag is not null and tag not like '% %'";
+			String sql = "select distinct tag from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %'";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			

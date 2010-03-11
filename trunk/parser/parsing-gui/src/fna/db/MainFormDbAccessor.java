@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.MainForm;
 import fna.parsing.ParsingException;
 
 
@@ -41,6 +42,7 @@ public class MainFormDbAccessor {
 
 
 	private static final Logger LOGGER = Logger.getLogger(MainFormDbAccessor.class);
+	
 	 
 	public static void main(String[] args) throws Exception {
 
@@ -71,8 +73,8 @@ public class MainFormDbAccessor {
 			
 				//Class.forName(driverPath);
 				conn = DriverManager.getConnection(url);
-				
-				String sql = "update sentence set tag = 'unknown' where tag = ?";
+				String tablePrefix = MainForm.dataPrefixCombo.getText();
+				String sql = "update "+tablePrefix+"_sentence set tag = 'unknown' where tag = ?";
 				stmt = conn.prepareStatement(sql);
 				
 				for (String tag : removedTags) {
@@ -111,8 +113,8 @@ public class MainFormDbAccessor {
 		try {
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
-			
-			String sql = "select distinct tag from sentence where tag != 'unknown' and tag is not null order by tag asc";
+			String tablePrefix = MainForm.dataPrefixCombo.getText();
+			String sql = "select distinct tag from "+tablePrefix+"_sentence where tag != 'unknown' and tag is not null order by tag asc";
 			stmt = conn.prepareStatement(sql);
 			
 			rs = stmt.executeQuery();
@@ -121,7 +123,7 @@ public class MainFormDbAccessor {
 				tagListCombo.add(tag);
 			}
 
-			sql = "select distinct modifier from sentence where modifier is not null order by modifier asc";
+			sql = "select distinct modifier from "+tablePrefix+"_sentence where modifier is not null order by modifier asc";
 			stmt_select = conn.prepareStatement(sql);			
 			rs = stmt_select.executeQuery();
 			
@@ -166,8 +168,8 @@ public class MainFormDbAccessor {
 		try {
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
-			
-			String sql = "select * from sentence where tag = 'unknown' order by sentence";
+			String tablePrefix = MainForm.dataPrefixCombo.getText();
+			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' order by sentence";
 			stmt = conn.prepareStatement(sql);
 			
 			int i = 0;
@@ -217,8 +219,8 @@ public class MainFormDbAccessor {
 		try {
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
-			
-			String sql = "select * from sentence where sentid > ? and sentid < ?";
+			String tablePrefix = MainForm.dataPrefixCombo.getText();
+			String sql = "select * from "+tablePrefix+"_sentence where sentid > ? and sentid < ?";
 			stmt = conn.prepareStatement(sql);
 			
 			stmt.setString(1, min);
@@ -287,14 +289,15 @@ public class MainFormDbAccessor {
 					continue;
 				
 				if(tag.equals("PART OF LAST SENTENCE")){//find tag of the last sentence
-					String sql = "select tag from sentence where sentid ="+(Integer.parseInt(sentid)-1);
+					String tablePrefix = MainForm.dataPrefixCombo.getText();
+					String sql = "select tag from "+tablePrefix+"_sentence where sentid ="+(Integer.parseInt(sentid)-1);
 					stmt = conn.prepareStatement(sql);
 					rs = stmt.executeQuery();
 					rs.next();
 					tag = rs.getString("tag");
 				}
-			
-				String sql = "update sentence set modifier = ?, tag = ? where sentid = ?";
+				String tablePrefix = MainForm.dataPrefixCombo.getText();
+				String sql = "update "+tablePrefix+"_sentence set modifier = ?, tag = ? where sentid = ?";
 				stmt_update = conn.prepareStatement(sql);
 				stmt_update.setString(1, modifier);
 				stmt_update.setString(2, tag);
