@@ -23,6 +23,7 @@ public class Bootstrap implements Comparator<StateGroup>{
 	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class);
 	
 	public Bootstrap(ArrayList source, Glossary glossary, String database) {
+	//public Bootstrap(ArrayList source, String database) {
 		try{
 			if(conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));

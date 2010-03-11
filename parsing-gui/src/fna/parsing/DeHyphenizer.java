@@ -25,9 +25,10 @@ public class DeHyphenizer {
 	static private String username = ApplicationUtilities.getProperty("database.username");
 	static private String password = ApplicationUtilities.getProperty("database.password");
 	private static final Logger LOGGER = Logger.getLogger(DeHyphenizer.class);
+	private String glossPrefix = null;
 	
-	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen) {
-		// TODO Auto-generated constructor stub
+	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix) {
+		this.glossPrefix = glossPrefix;
 		try{
 			if(conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -37,7 +38,7 @@ public class DeHyphenizer {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		this.tablename = table;
+		this.tablename = glossPrefix+"_"+table;
 		this.columnname = column;
 		this.countcolumn = countcolumn;
 		this.hyphen = hyphen;
@@ -232,7 +233,7 @@ public class DeHyphenizer {
 		boolean find = false;
 		try{
 			Statement stmt = conn.createStatement();
-			String query = "select term from fnaglossary where term like '% "+term+" %' or term like '"+term+" %' or term like '% "+term+"' or term like '"+term+"'";
+			String query = "select term from "+this.glossPrefix+"_fnaglossary where term like '% "+term+" %' or term like '"+term+" %' or term like '% "+term+"' or term like '"+term+"'";
 			ResultSet rs = stmt.executeQuery(query);
 			while(rs.next()){
 				find = true;
@@ -266,7 +267,7 @@ public class DeHyphenizer {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		DeHyphenizer dh = new DeHyphenizer("fnav5_corpus", "learnedstates_copy", "state", "count", "_");
+		DeHyphenizer dh = new DeHyphenizer("fnav5_corpus", "learnedstates_copy", "state", "count", "_", "fna");
 		dh.deHyphen();
 	}
 
