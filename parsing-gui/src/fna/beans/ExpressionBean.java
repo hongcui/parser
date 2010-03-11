@@ -54,5 +54,17 @@ public class ExpressionBean {
 		this.label = label;
 		this.text = text;
 	}
+	/**
+	 * @param label the label to set
+	 */
+	public void setLabel(Label label) {
+		this.label = label;
+	}
+	/**
+	 * @param text the text to set
+	 */
+	public void setText(Text text) {
+		this.text = text;
+	}
 
 }
