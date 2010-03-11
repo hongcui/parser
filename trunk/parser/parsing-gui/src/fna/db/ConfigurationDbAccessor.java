@@ -24,6 +24,7 @@ import fna.beans.SpecialBean;
 import fna.beans.TextBean;
 import fna.beans.Type2Bean;
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.Type2Document;
 
 public class ConfigurationDbAccessor {
 
@@ -311,7 +312,7 @@ public class ConfigurationDbAccessor {
 		return success;
 	}
 	
-	public void retrieveType2Details(Type2Bean bean) throws SQLException {
+	public void retrieveType2Details(Type2Bean bean, Type2Document type2) throws SQLException {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
@@ -339,8 +340,80 @@ public class ConfigurationDbAccessor {
 			}
 			
 			/* Retrieve nomenclature tab */
+			
+			pstmt = conn.prepareStatement("select * from nomenclatures");
+			rset = pstmt.executeQuery();
+			int count = 0;
+			int groupCount = 0;
+			HashMap <Integer, NomenclatureBean> nomenclatures = bean.getNomenclatures();
+			int size = nomenclatures.size();
+			NomenclatureBean nbean = null;
+			while(rset.next()){				
+				size = nomenclatures.size();
+				if(groupCount%3 == 0) {
+					count++;
+				}
+				if(count > size/3){
+					type2.addNomenclatureRow(rset.getString("nameLabel"));
+				}
+				nbean = nomenclatures.get(new Integer(groupCount));
+				//nbean.getLabel().setText(rset.getString("nameLabel"));
+				nbean.getYesRadioButton().setSelection(rset.getString("_yes").contains("Y")?true:false);
+				nbean.getNoRadioButton().setSelection(rset.getString("_no").contains("Y")?true:false);
+				nbean.getDescription().setText(rset.getString("description"));
+				
+				groupCount++;
+				
+			}
+			
 			/* Retrieve expressions tab */
+			
+			pstmt = conn.prepareStatement("select * from expressions");
+			rset = pstmt.executeQuery();
+			count = 0;
+			HashMap <Integer, ExpressionBean> expressions = bean.getExpressions();
+			size = expressions.size();
+			ExpressionBean expBean = null;
+			while(rset.next()){
+				size = expressions.size();
+				if(count >= size) {
+					type2.addExpressionRow(rset.getString("_label"));
+				}
+				expBean = expressions.get(new Integer(count));
+				expBean.getText().setText(rset.getString("description"));
+				count++;
+			}
+			
 			/* Retrieve descriptions tab */
+			
+			pstmt = conn.prepareStatement("select * from morpdesc");
+			rset = pstmt.executeQuery();
+			if(rset.next()){
+				bean.getDescriptionBean().getYesButton().setSelection(rset.getString("allInOne").contains("Y")?true:false);
+				bean.getDescriptionBean().getNoButton().setSelection(rset.getString("allInOne").contains("N")?true:false);
+				bean.getDescriptionBean().getOtherInfo().setText(rset.getString("OtherInfo"));
+			}
+			
+			pstmt = conn.prepareStatement("select * from descriptions");
+			rset = pstmt.executeQuery();
+			count = 0;
+			HashMap <Integer, SectionBean> sections = bean.getDescriptionBean().getSections();
+			size = sections.size();
+			SectionBean secBean = null;
+			while(rset.next()){
+				size = sections.size();
+				if(count >= size){
+					type2.addDescriptionRow(rset.getString("section"));					
+				}
+				secBean = sections.get(new Integer(count));
+				secBean.getOrder().setText(rset.getString("_order"));
+				secBean.getStartTokens().setText(rset.getString("start_token"));
+				secBean.getEndTokens().setText(rset.getString("end_token"));
+				secBean.getEmbeddedTokens().setText(rset.getString("embedded_token"));
+				count ++;
+			}
+			
+			
 			
 			/* Retrieve Special tab data */
 			
@@ -353,12 +426,13 @@ public class ConfigurationDbAccessor {
 				specialBean.getFirstText().setText(rset.getString("glossaryHeading"));
 				specialBean.getSecondText().setText(rset.getString("referenceHeading"));
 			}
+			
 			/* Retrieve Abbreviations tab data */
 			
 			pstmt = conn.prepareStatement("select * from abbreviations");
 			rset = pstmt.executeQuery();
 			HashMap <String, Text> abbreviations = bean.getAbbreviations();
-			int count = 0;
+			count = 0;
 			while (rset.next()) {
 				abbreviations.get(rset.getString("_label")).setText(rset.getString("abbreviation"));
 				count++;
