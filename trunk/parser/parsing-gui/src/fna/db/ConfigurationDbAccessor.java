@@ -318,7 +318,9 @@ public class ConfigurationDbAccessor {
 		ResultSet rset = null;
 		try {
 			conn = DriverManager.getConnection(url);
+			
 			/* Retrieve Text tab*/
+			
 			pstmt = conn.prepareStatement("select * from configtype2text");
 			rset = pstmt.executeQuery();
 			if(rset.next()) {
@@ -357,13 +359,10 @@ public class ConfigurationDbAccessor {
 					type2.addNomenclatureRow(rset.getString("nameLabel"));
 				}
 				nbean = nomenclatures.get(new Integer(groupCount));
-				//nbean.getLabel().setText(rset.getString("nameLabel"));
 				nbean.getYesRadioButton().setSelection(rset.getString("_yes").contains("Y")?true:false);
 				nbean.getNoRadioButton().setSelection(rset.getString("_no").contains("Y")?true:false);
-				nbean.getDescription().setText(rset.getString("description"));
-				
-				groupCount++;
-				
+				nbean.getDescription().setText(rset.getString("description"));				
+				groupCount++;				
 			}
 			
 			/* Retrieve expressions tab */
@@ -411,9 +410,7 @@ public class ConfigurationDbAccessor {
 				secBean.getEndTokens().setText(rset.getString("end_token"));
 				secBean.getEmbeddedTokens().setText(rset.getString("embedded_token"));
 				count ++;
-			}
-			
-			
+			}			
 			
 			/* Retrieve Special tab data */
 			
