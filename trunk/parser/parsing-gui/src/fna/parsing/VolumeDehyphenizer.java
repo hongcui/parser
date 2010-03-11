@@ -2,6 +2,7 @@ package fna.parsing;
 
 
 import java.io.BufferedReader;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
@@ -16,12 +17,14 @@ import java.util.regex.*;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.character.*;
+
 //import fna.parsing.finalizer.Output;
 
 
 /**
  * normalize hyphens in the document folder. may be plain text or html/xml docs. for the latter, tags are ignored in dehyphenization process.
- * run this before MainForm.
+ * run this before VolumeMarkup.
  * @author hongcui
  *
  */
@@ -31,7 +34,7 @@ public class VolumeDehyphenizer {
     protected Connection conn = null;
     protected final String username = ApplicationUtilities.getProperty("database.username");
     protected final String password = ApplicationUtilities.getProperty("database.password");
-    protected final String tablename = "allwords";
+    protected final String tablename = MainForm.dataPrefixCombo.getText()+"_allwords";
     //private final String tablename1= "numtextmix";
     //private final int mixlength = 30;
     static public String num = "\\d[^a-z]+";
@@ -39,10 +42,12 @@ public class VolumeDehyphenizer {
     protected Hashtable<String,String> mapping = new Hashtable<String, String>();
     protected ProcessListener listener;
     private static final Logger LOGGER = Logger.getLogger(VolumeDehyphenizer.class);
+    private Glossary glossary = null;  // TODO
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, String todofoldername, String database) {
         this.listener = listener;
         this.database = database;
+        this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), true, this.database, MainForm.dataPrefixCombo.getText());
         workdir = workdir.endsWith("/")? workdir : workdir+"/";
         folder = new File(workdir+todofoldername);
         outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
@@ -65,11 +70,13 @@ public class VolumeDehyphenizer {
     }
 
     public void dehyphen(){
+    	System.out.println("Preparing files...");
+    	MainForm.markUpPerlLog.append("Preparing files...");
         if(listener!= null) listener.progress(1);
         fillInWords();
         if(listener!= null) listener.progress(50);
 
-        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-");
+        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", MainForm.dataPrefixCombo.getText());
 
         try{
             Statement stmt = conn.createStatement();
@@ -77,8 +84,8 @@ public class VolumeDehyphenizer {
             while(rs.next()){
                 String word = rs.getString("word");
                 String dhword = dh.normalFormat(word);
-                System.out.println(word+"===>"+dhword);
-                MainForm.markUpPerlLog.append(word+"===>"+dhword+"\n");
+                //System.out.println(word+"===>"+dhword);
+                //MainForm.markUpPerlLog.append(word+"===>"+dhword+"\n");
                 mapping.put(word, dhword);
             }
         }catch(Exception e){
@@ -116,8 +123,8 @@ public class VolumeDehyphenizer {
             Statement stmt = conn.createStatement();
             File[] flist = folder.listFiles();
             for(int i= 0; i < flist.length; i++){
-                System.out.println("read "+flist[i].getName());
-                MainForm.markUpPerlLog.append("read "+flist[i].getName()+"\n");
+                //System.out.println("read "+flist[i].getName());
+                //MainForm.markUpPerlLog.append("read "+flist[i].getName()+"\n");
                 BufferedReader reader = new BufferedReader(new FileReader(flist[i]));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
@@ -222,8 +229,8 @@ public class VolumeDehyphenizer {
                 BufferedWriter out = new BufferedWriter(new FileWriter(outf));
                 out.write(text);
                 out.close();
-                System.out.println(flist[i].getName()+" dehyphenized");
-                MainForm.markUpPerlLog.append(flist[i].getName()+" dehyphenized\n");
+                //System.out.println(flist[i].getName()+" dehyphenized");
+                //MainForm.markUpPerlLog.append(flist[i].getName()+" dehyphenized\n");
             }
         } catch (Exception e) {
         	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);

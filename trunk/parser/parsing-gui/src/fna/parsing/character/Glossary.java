@@ -29,24 +29,34 @@ public class Glossary {
 			e.printStackTrace();
 		}
 	}
-	private static String tablename = "fnaglossary";
-	private static String tablename1 = "termforms";
+	private static String tablename = null;
+	private static String tablename1 = null;
 	private String database;
 	static private Connection conn = null;
 	
-	public Glossary(File glossfile, boolean createnew, String databasename){
+	
+	public Glossary(File glossfile, boolean createnew, String databasename, String tablePrefix){
+		this.tablename = tablePrefix+"_fnaglossary";
+		this.tablename1 = tablePrefix+"_termforms";
 		try{
 			if(conn == null){
 				this.database = databasename;
 				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists "+tablename+" (id int not null auto_increment primary key, term varchar(100), category varchar(100), limitation varchar(200), status varchar(50), definition varchar(2000))");
+				ResultSet rs = stmt.executeQuery("show tables");
+				boolean g = false;
+				while(rs.next()){
+					if(rs.getString(1).compareToIgnoreCase(tablename)==0){
+						g=true;
+					}
+				}
+				if(!g){
+					stmt.execute("create table "+tablename+" (id int not null auto_increment primary key, term varchar(100), category varchar(100), limitation varchar(200), status varchar(50), definition varchar(2000))");
+					populateTable(glossfile);//TODO: if tablename exist, do not populate it again
+				}				
 				stmt.execute("create table if not exists "+tablename1+" (id int not null auto_increment primary key, term1 varchar(100), type varchar(10), term2 varchar(100))");
-				stmt.execute("delete from "+tablename);
-				stmt.execute("delete from "+tablename1);
-				populateTable(glossfile);
-				
+				stmt.execute("delete from "+tablename1);				
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner constructor" + e);
@@ -263,7 +273,7 @@ public class Glossary {
 		}
 	}
 
-	public ArrayList getCharacter(String state){
+	public static ArrayList getCharacter(String state){
 		ArrayList chs = new ArrayList();
 		try{
 			Statement stmt = conn.createStatement();
@@ -279,7 +289,7 @@ public class Glossary {
 		return chs;
 	}
 	
-	public String getAllCharacters(){
+	public static String getAllCharacters(){
 		StringBuffer chs = new StringBuffer();
 		try{
 			Statement stmt = conn.createStatement();
@@ -295,7 +305,7 @@ public class Glossary {
 		return chs.toString().replaceFirst("\\|$", "");
 	}
 
-	public void addInducedPair(String term, ArrayList categories){
+	public static void addInducedPair(String term, ArrayList categories){
 		Iterator it = categories.iterator();
 		while(it.hasNext()){
 			String cat = (String)it.next();
@@ -313,6 +323,6 @@ public class Glossary {
 
 	public static void main(String[] argv){
 		File glossfile = new File("C://Documents and Settings//hongcui//Desktop//WorkFeb2008//FNA//FNAGloss.txt");
-		Glossary g = new Glossary(glossfile, true, "fnav5_corpus");
+		Glossary g = new Glossary(glossfile, true, "fnav5_corpus", "fna");
 	}
 }

@@ -9,6 +9,7 @@ public class State {
 	//may consider adding constraints.
 	
 	public State(String term, Glossary glossary) {
+	//public State(String term) {
 		this.term = term;
 		this.characters = new ArrayList();
 		this.glossary = glossary;

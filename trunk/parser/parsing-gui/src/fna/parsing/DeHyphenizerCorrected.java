@@ -3,8 +3,8 @@ package fna.parsing;
 import java.util.Hashtable;
 //
 public class DeHyphenizerCorrected extends DeHyphenizer {
-	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen) {
-		super(database, table, column, countcolumn, hyphen);
+	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix) {
+		super(database, table, column, countcolumn, hyphen, glossPrefix);
 	}
 
 	

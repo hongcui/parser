@@ -18,14 +18,14 @@ import fna.parsing.character.CharacterLearner;
  * @author chunshui
  */
 public class VolumeFinalizer {
-
-	private String glossary;
+	//glossary established in VolumeDehyphenizer
+	//private String glossary;
 
 	private ProcessListener listener;
 	private static final Logger LOGGER = Logger.getLogger(VolumeFinalizer.class);
 
 	public VolumeFinalizer(ProcessListener listener) {
-		glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
+		//glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
 		this.listener = listener;
 	}
 	
@@ -36,7 +36,7 @@ public class VolumeFinalizer {
 	public void outputFinal() throws ParsingException {
 		listener.progress(20);
 		CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name")
-				/*+ "_corpus"*/, this.glossary);
+				/*+ "_corpus"*/, MainForm.dataPrefixCombo.getText());
 		listener.progress(40);
 		cl.markupCharState();
 		// output final records
@@ -57,6 +57,8 @@ public class VolumeFinalizer {
 				Element root = doc.getRootElement();	
 				
 				String descXML = cl.getMarkedDescription(count + ".txt");	
+				
+				System.out.println(descXML);
 				if (descXML != null && !descXML.equals("")) {
 					doc = builder.build(new ByteArrayInputStream(
 							descXML.getBytes("UTF-8")));

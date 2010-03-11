@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.DeHyphenizerCorrected;
+import fna.parsing.MainForm;
 /**
  * compare learned terms with what is in glossary, produce a report
  * @author hongcui
@@ -96,7 +97,7 @@ public class LearnedTermsReport {
 			//make another table with learned singular organ names.
 			createLearnedStructureTable();
 			DeHyphenizerCorrected dh = new DeHyphenizerCorrected(ApplicationUtilities.getProperty("database.name"), 
-					otablename, "structure", null, "_");
+					otablename, "structure", null, "_", MainForm.dataPrefixCombo.getText());
 			dh.deHyphen();
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport constructor", e);

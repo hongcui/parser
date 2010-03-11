@@ -21,6 +21,7 @@ import fna.db.VolumeMarkupDbAccessor;
 public class VolumeMarkup {
 	
 	private ProcessListener listener;
+	private String markupMode = "adj"; //TODO: make this configurable
 	private static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
 	public VolumeMarkup(ProcessListener listener) {
@@ -34,10 +35,16 @@ public class VolumeMarkup {
 		String todofoldername = ApplicationUtilities.getProperty("DEHYPHENED");
 		String savefoldername = ApplicationUtilities.getProperty("MARKEDUP");
 		String databasenameprefix = ApplicationUtilities.getProperty("database.name");
+
+//		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") +workdir
+//		+ " " + todofoldername + " " + savefoldername
+//		+ " seednouns.txt learntnouns.txt graphml.xml "
+//		+ databasenameprefix;
+		
 		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") +workdir
-				+ " " + todofoldername + " " + savefoldername
-				+ " seednouns.txt learntnouns.txt graphml.xml "
-				+ databasenameprefix;
+		+ todofoldername + " "+ databasenameprefix+" "+this.markupMode +" "+MainForm.dataPrefixCombo.getText().trim();
+		
+		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
 		System.out.println("Run command: " + com);
         MainForm.markUpPerlLog.append("Run command: " + com + "\n");
 		try {

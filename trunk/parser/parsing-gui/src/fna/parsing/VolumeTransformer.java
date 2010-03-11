@@ -47,7 +47,8 @@ public class VolumeTransformer {
 	private ProcessListener listener;
 	private Hashtable errors;
 	//TODO: put the following in a conf file. same for those in volumeExtractor.java
-	private String start = "^Heading.*"; //starts a treatment
+	//private String start = "^Heading.*"; //starts a treatment
+	private String start = VolumeExtractor.getStart(); //starts a treatment
 	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	private String conservednamestatement ="(name conserved|nom. cons.)";
 	private static final Logger LOGGER = Logger.getLogger(VolumeTransformer.class);
@@ -244,7 +245,10 @@ public class VolumeTransformer {
 					//System.out.println("introduced:"+m.group(2));
 			}
 			if(m.group(3) != null){
-					addElement("general_distribution", m.group(3), treatment);
+					//addElement("general_distribution", m.group(3), treatment);
+					//further markkup distribution
+					DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "general_distribution");
+					treatment = dp.parse(); 
 					//System.out.println("general_distribution:"+m.group(3));
 			}	
 		}else{//species and lower
@@ -252,7 +256,10 @@ public class VolumeTransformer {
 			Matcher mh = h.matcher(text);
 			if(mh.matches()){//TODO:habitat, elevation, state distribution, global distribution
 				if(mh.group(1) != null){
-					addElement("flowering_time",mh.group(1), treatment);
+					//addElement("flowering_time",mh.group(1), treatment);
+					//further markkup distribution
+					FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, m.group(1), "flowering_time");
+					treatment = dp.parse(); 
 					//System.out.println("flowering_time:"+mh.group(1));
 				}
 				if(mh.group(2)!= null){
@@ -275,13 +282,22 @@ public class VolumeTransformer {
 					String[] distrs = mh.group(6).split(";");
 					for(int i= 0; i<distrs.length; i++){
 						if(distrs[i].matches(".*?\\b("+this.usstates+")(\\W|$).*")){
-							addElement("us_distribution",distrs[i], treatment);
+							//addElement("us_distribution",distrs[i], treatment);
+							//further markkup distribution
+							DistributionParser4FNA dp = new DistributionParser4FNA(treatment, distrs[i], "us_distribution");
+							treatment = dp.parse(); 
 							//System.out.println("us_distribution:"+distrs[i]);
 						}else if(distrs[i].matches(".*?\\b("+this.caprovinces+")(\\W|$).*")){
-							addElement("ca_distribution",distrs[i], treatment);
+							//addElement("ca_distribution",distrs[i], treatment);
+							//further markkup distribution
+							DistributionParser4FNA dp = new DistributionParser4FNA(treatment, distrs[i], "ca_distribution");
+							treatment = dp.parse(); 
 							//System.out.println("ca_distribution:"+distrs[i]);
 						}else{
-							addElement("global_distribution",distrs[i], treatment);
+							//addElement("global_distribution",distrs[i], treatment);
+							//further markkup distribution
+							DistributionParser4FNA dp = new DistributionParser4FNA(treatment, distrs[i], "global_distribution");
+							treatment = dp.parse(); 
 							//System.out.println("global_distribution:"+distrs[i]);
 						}
 					}
