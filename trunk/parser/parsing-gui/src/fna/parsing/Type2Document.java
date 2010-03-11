@@ -589,7 +589,7 @@ public class Type2Document {
 		
 		/* Load previously saved details here */
 		try {
-			configDb.retrieveType2Details(bean);
+			configDb.retrieveType2Details(bean, this);
 		} catch (SQLException exe) {
 			exe.printStackTrace();
 		}
@@ -603,7 +603,7 @@ public class Type2Document {
 		}
     }
     
-    private void addDescriptionRow(String sectionName) {
+    public void addDescriptionRow(String sectionName) {
 		RowData rowdata = (RowData)descriptionGroup.getLayoutData();
 		rowdata.height += 60;
 		descriptionGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
@@ -636,7 +636,7 @@ public class Type2Document {
         descScrolledComposite.setMinSize(descriptionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
     
-    private void addExpressionRow(String expressionName) {
+    public void addExpressionRow(String expressionName) {
 		RowData rowdata = (RowData)expressionGroup.getLayoutData();
 		rowdata.height += 120;
 		expressionGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
@@ -662,7 +662,7 @@ public class Type2Document {
         expScrolledComposite.setMinSize(expressionGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
-    private void addNomenclatureRow(String name) {
+    public void addNomenclatureRow(String name) {
     	
 		RowData rowdata = (RowData)nomenclatureGroup.getLayoutData();
 		rowdata.height += 30;
