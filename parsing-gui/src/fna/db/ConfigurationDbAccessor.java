@@ -136,6 +136,8 @@ public class ConfigurationDbAccessor {
 
 		try {
 			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("delete from ocrstartparagraph");
+			stmt.execute();
 			stmt = conn.prepareStatement("insert into ocrstartparagraph(paragraph) values (?)");
 
 			for (String para : paragraphs) {
@@ -337,6 +339,30 @@ public class ConfigurationDbAccessor {
 			}
 			
 			/* Retrieve nomenclature tab */
+			/* Retrieve expressions tab */
+			/* Retrieve descriptions tab */
+			
+			/* Retrieve Special tab data */
+			
+			pstmt = conn.prepareStatement("select * from specialsection");
+			rset = pstmt.executeQuery();
+			if(rset.next()) {
+				SpecialBean specialBean = bean.getSpecial();
+				specialBean.getFirstButton().setSelection(rset.getString("hasGlossary").equals("Y")?true:false);
+				specialBean.getSecondButton().setSelection(rset.getString("hasReference").equals("Y")?true:false);
+				specialBean.getFirstText().setText(rset.getString("glossaryHeading"));
+				specialBean.getSecondText().setText(rset.getString("referenceHeading"));
+			}
+			/* Retrieve Abbreviations tab data */
+			
+			pstmt = conn.prepareStatement("select * from abbreviations");
+			rset = pstmt.executeQuery();
+			HashMap <String, Text> abbreviations = bean.getAbbreviations();
+			int count = 0;
+			while (rset.next()) {
+				abbreviations.get(rset.getString("_label")).setText(rset.getString("abbreviation"));
+				count++;
+			}
 			
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't retrieve type2 Details in ConfigurationDbAccessor:retrieveType2Details" + exe);
