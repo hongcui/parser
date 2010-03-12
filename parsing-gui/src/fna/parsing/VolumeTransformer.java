@@ -167,8 +167,19 @@ public class VolumeTransformer {
 					buffer.append(wt.getText()).append(" ");
 				}
 				String text = buffer.toString().replaceAll("\\s+", " ").trim();
+				outputElementText(count, text, "DESCRIPTIONS");
 				
-				outputDescriptionText(count, text);
+				// output the habitat part to Registry.habitat 08/04/09
+				textList = XPath.selectNodes(treatment, "./habitat");
+				buffer = new StringBuffer("");
+				for (Iterator ti = textList.iterator(); ti.hasNext();) {
+					Element wt = (Element) ti.next();
+					buffer.append(wt.getText()).append(" ");
+				}
+				text = buffer.toString().replaceAll("\\s+", " ").trim();
+				outputElementText(count, text, "HABITATS");
+				
+				
 				listener.info(String.valueOf(count), xml.getPath(), error);
 				listener.progress((count*100) / total);
 			}
@@ -209,8 +220,8 @@ public class VolumeTransformer {
 			//TODO: further markup distribution to: # of infrataxa, introduced, generalized distribution, flowering time,habitat, elevation, state distribution, global distribution 
 			//addElement("distribution", text, treatment);
 			parseDistriTag(text, treatment);
-		}else if(ptag.compareTo("distribution")==0){
-		//else if(ptag.compareTo("description")==0){
+		}//else if(ptag.compareTo("distribution")==0){
+		else if(ptag.compareTo("description")==0){//hong: 3/11/10 for FNA v19
 			tag = "distribution";
 			//TODO: further markup distribution to: # of infrataxa, introduced, generalized distribution, flowering time,habitat, elevation, state distribution, global distribution 
 			//addElement("distribution", text, treatment);
@@ -258,13 +269,13 @@ public class VolumeTransformer {
 				if(mh.group(1) != null){
 					//addElement("flowering_time",mh.group(1), treatment);
 					//further markkup distribution
-					FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, m.group(1), "flowering_time");
+					FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, mh.group(1), "flowering_time");
 					treatment = dp.parse(); 
 					//System.out.println("flowering_time:"+mh.group(1));
 				}
 				if(mh.group(2)!= null){
 					addElement("habitat",mh.group(2), treatment);
-					//System.out.println("habitat:"+mh.group(2));
+					System.out.println("habitat:"+mh.group(2));
 				}
 				if(mh.group(3)!= null){
 					addElement("conservation",mh.group(3), treatment);
@@ -510,11 +521,12 @@ public class VolumeTransformer {
 		parent.addContent(e);
 	}
 
-	private void outputDescriptionText(int count, String text) throws ParsingException {
-		System.out.println("write file "+count+".txt");
+	private void outputElementText(int count, String text, String elementname) throws ParsingException {
+		//System.out.println("write file "+count+".txt");
+		//elementname = "DESCRIPTIONS"
 		try {
 			File file = new File(Registry.TargetDirectory,
-					ApplicationUtilities.getProperty("DESCRIPTIONS") + "/" + count + ".txt");
+					ApplicationUtilities.getProperty(elementname) + "/" + count + ".txt");
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 			out.write(text);
 			out.close(); // don't forget to close the output stream!!!
