@@ -55,7 +55,7 @@ public class VolumeTransformerDbAccess {
 		Connection conn = null;
 		Statement stmt = null;
 		
-		System.out.println("add to taxon table:"+name+" "+rank+" "+index);
+		//System.out.println("add to taxon table:"+name+" "+rank+" "+index);
 		if(name == null || name.compareTo("") == 0){
 			return;
 		}
