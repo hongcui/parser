@@ -17,7 +17,7 @@ public abstract class EnumerativeElementParser {
 	protected String text = null;
 	protected String enutag = null;
 	
-	public EnumerativeElementParser(Element parent, String text, String eumtag){
+	public EnumerativeElementParser(Element parent, String text, String enutag){
 		this.parent = parent;
 		this.text = text;
 		this.enutag = enutag;
