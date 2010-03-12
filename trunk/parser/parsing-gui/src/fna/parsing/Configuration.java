@@ -85,7 +85,7 @@ public class Configuration {
 					if(!shell.isDisposed()) {
 						shell.dispose();
 					}
-					MainForm.main(new String[1]);
+					//MainForm.main(new String[1]);
 					System.exit(0);
 				}	
 
@@ -100,7 +100,7 @@ public class Configuration {
 		type2.setBounds(10, 166, 90, 16);
 		type2.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
-				ApplicationUtilities.showPopUpWindow("You clicked type2" , "Info", SWT.ICON_INFORMATION);
+				new Type2Document().showType2Document();				
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
@@ -117,7 +117,7 @@ public class Configuration {
 				if(!shell.isDisposed()) {
 					shell.dispose();
 				}
-				MainForm.main(new String[1]);
+				//MainForm.main(new String[] {"Type3"});
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
