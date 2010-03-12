@@ -47,7 +47,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 	
 	public Element parse(){
 		text = text.toLowerCase().replaceFirst("flowering\\s+", "").replaceAll("–", "-");
-		System.out.println("original: "+text);
+		//System.out.println("original: "+text);
 		//clean up the text
 		Pattern p = Pattern.compile(value);
 		Matcher m = p.matcher(text);
@@ -57,7 +57,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 			text = m.group(4);
 			m=p.matcher(text);			
 		}
-		System.out.println("cleaned: "+clean);
+		//System.out.println("cleaned: "+clean);
 		//fetch the values
 		String[] ranges = clean.split("\\s*@\\s*");
 		ArrayList<String> values = new ArrayList<String>();
@@ -92,7 +92,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 				Element enuelement = new Element(enutag);
 				enuelement.setText(month);
 				parent.addContent(enuelement);
-				System.out.println("add: "+month);
+				//System.out.println("add: "+month);
 				if(month.indexOf("year")>=0){
 					addAllMonthsSeasons();
 					includedseasons = this.seasons.replaceAll("\\W", "@");
@@ -142,7 +142,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 		enuelement = new Element(enutag);
 		enuelement.setText(season);
 		parent.addContent(enuelement);
-		System.out.println("add: "+season);
+		//System.out.println("add: "+season);
 	}
 	
 	
