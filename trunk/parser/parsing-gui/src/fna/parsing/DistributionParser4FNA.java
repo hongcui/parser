@@ -50,7 +50,7 @@ public class DistributionParser4FNA extends EnumerativeElementParser {
 			if(area.compareTo("") !=0){
 					Element enuelement = new Element(enutag);
 					enuelement.setText(area);
-					System.out.println("add "+enutag+": "+area);
+					//System.out.println("add "+enutag+": "+area);
 					parent.addContent(enuelement);
 			}		
 		}
