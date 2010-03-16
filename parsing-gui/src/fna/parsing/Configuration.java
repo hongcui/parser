@@ -71,6 +71,7 @@ public class Configuration {
 			public void mouseUp(MouseEvent mEvent){
 				shell.setVisible(false);
 				new Type1Document().showType1Document();
+				
 				 do {
 					 if (VolumeExtractor.getStart() == null) {
 							String message = ApplicationUtilities.getProperty("popup.info.type1") + " ";
@@ -85,7 +86,7 @@ public class Configuration {
 					if(!shell.isDisposed()) {
 						shell.dispose();
 					}
-					//MainForm.main(new String[1]);
+					MainForm.main(new String[1]);
 					System.exit(0);
 				}	
 
@@ -117,7 +118,7 @@ public class Configuration {
 				if(!shell.isDisposed()) {
 					shell.dispose();
 				}
-				//MainForm.main(new String[] {"Type3"});
+				Type3MainForm.main(new String[1]);
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
