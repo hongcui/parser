@@ -97,7 +97,7 @@ public class Type3MainForm {
 	private static int hashCodeOfItem = 0;
 	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
-	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
+	private static final Logger LOGGER = Logger.getLogger(Type3MainForm.class);
 		/**
 	 * Launch the application
 	 * @param args
@@ -313,7 +313,7 @@ public class Type3MainForm {
 				loadProject();
 				// code for setting the text of the combo to the last accessed goes here - Partha
 				try {
-					MainForm.dataPrefixCombo.setText(mainDb.getLastAccessedDataSet());
+					Type3MainForm.dataPrefixCombo.setText(mainDb.getLastAccessedDataSet());
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.saveStatus("general", combo.getText(), true);
 					statusOfMarkUp[0] = true;
@@ -669,7 +669,7 @@ public class Type3MainForm {
 		logoLabel.setBounds(10, 460, 530, 96);
 
 		final Label label = new Label(shell, SWT.NONE);
-		label.setBackgroundImage(SWTResourceManager.getImage(MainForm.class, 
+		label.setBackgroundImage(SWTResourceManager.getImage(Type3MainForm.class, 
 				ApplicationUtilities.getProperty("application.logo")));
 		label.setBounds(569, 485, 253, 71);
 
@@ -855,7 +855,7 @@ public class Type3MainForm {
 		try {
 			mainDb.removeMarkUpData(removedTags);
 		} catch (Exception exe) {
-			LOGGER.error("Exception encountered in removing tags from database in MainForm:removeMarkup", exe);
+			LOGGER.error("Exception encountered in removing tags from database in Type3MainForm:removeMarkup", exe);
 			exe.printStackTrace();
 		}
 
@@ -871,7 +871,7 @@ public class Type3MainForm {
 		try {
 			 mainDb.loadTagsData(tagListCombo, modifierListCombo);
 			} catch (Exception exe) {
-				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
+				LOGGER.error("Exception encountered in loading tags from database in Type3MainForm:loadTags", exe);
 				exe.printStackTrace();
 		    }
 
@@ -883,7 +883,7 @@ public class Type3MainForm {
 		try {
 			 mainDb.loadTagsTableData(tagTable);
 		} catch (Exception exe) {
-				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
+				LOGGER.error("Exception encountered in loading tags from database in Type3MainForm:loadTags", exe);
 				exe.printStackTrace();
 		}
 
@@ -898,7 +898,7 @@ public class Type3MainForm {
 			mainDb.updateContextData(sentid, contextStyledText);
 
 		} catch (Exception e) {
-			LOGGER.error("Exception encountered in loading tags from database in MainForm:updateContext", e);
+			LOGGER.error("Exception encountered in loading tags from database in Type3MainForm:updateContext", e);
 			e.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", e);
 			
@@ -928,7 +928,7 @@ public class Type3MainForm {
 			mainDb.saveTagData(tagTable);
 			
 		} catch (Exception exe) {
-			LOGGER.error("Exception encountered in loading tags from database in MainForm:saveTag", exe);
+			LOGGER.error("Exception encountered in loading tags from database in Type3MainForm:saveTag", exe);
 			exe.printStackTrace();
 		}
 		loadTagTable();
