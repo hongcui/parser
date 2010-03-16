@@ -111,7 +111,7 @@ public class Type3MainForm {
 /*			if (args != null && args[0] != null) {
 				typeOfmarkup = args[0];
 			}*/
-			MainForm window = new MainForm();
+			Type3MainForm window = new Type3MainForm();
 			window.open();
 		} catch (Exception e) {
 			LOGGER.error("Error Launching application", e);
