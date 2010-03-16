@@ -1,22 +1,16 @@
-/**
- * $Id$
- */
+ /* $Id$ */
 package fna.parsing;
 //
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileReader;
-import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -25,7 +19,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -43,8 +36,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Group;
-
 
 import com.swtdesigner.SWTResourceManager;
 
@@ -58,7 +49,6 @@ import fna.parsing.VolumeMarkup;
 import fna.parsing.VolumeTransformer;
 import fna.parsing.VolumeVerifier;
 import fna.parsing.character.LearnedTermsReport;
-import org.eclipse.swt.custom.ScrolledComposite;
 /**
  * @author chunshui
  */
