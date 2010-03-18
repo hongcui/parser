@@ -67,7 +67,7 @@ import fna.parsing.*;
  *tag sentence: should organ names only be tagged when they appear at the beginning of a sentence? e.g. , rounded or with single <groove> [ or change simple pattern?]
  *markup character: may need to merge saved stategroups and checked states. eg. > entire or with 3 broad ,
  */
-public class CharacterLearner  {
+public class CharacterLearner  implements Learn2Parse{
 	
 	private static final Logger LOGGER = Logger.getLogger(CharacterLearner.class);
 	static {
@@ -143,7 +143,7 @@ public class CharacterLearner  {
 		parseSentences();//create StateGroups 
 		bootstrap();//infer characters
 		
-		DeHyphenizerCorrected dh = new DeHyphenizerCorrected(database, "learnedstates", "state", "count", "_", this.tablePrefix);
+		DeHyphenizerCorrected dh = new DeHyphenizerCorrected(database, this.tablePrefix+"_learnedstates", "state", "count", "_", this.tablePrefix);
 		dh.deHyphen();
 		this.statespatterns = collectStateNames(); //create character patterns
 	}
@@ -207,7 +207,8 @@ public class CharacterLearner  {
 			e.printStackTrace();
 		}
 	}
-	public String getMarkedDescription(String filename){
+	public ArrayList getMarkedDescription(String filename){
+		ArrayList results = new ArrayList();
 		try{
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select filename, endindex from "+this.tablePrefix+"_fileclauselink where filename=\""+filename+"\"");
@@ -218,13 +219,14 @@ public class CharacterLearner  {
 				if(rs.next()){
 					start = rs.getInt("endindex")+1;
 				}
-				return getDescription(start, end);
+				results.add(getDescription(start, end));
+				return results;
 			}
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner getMarkedDescription" + e);
 			e.printStackTrace();
 		}
-		return null;
+		return results;
 	}
 	
 	private String getDescription(int start, int end) throws SQLException {
