@@ -38,7 +38,7 @@ public class DeHyphenizer {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		this.tablename = glossPrefix+"_"+table;
+		this.tablename = table;
 		this.columnname = column;
 		this.countcolumn = countcolumn;
 		this.hyphen = hyphen;
