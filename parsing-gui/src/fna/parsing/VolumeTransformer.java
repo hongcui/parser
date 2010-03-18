@@ -180,9 +180,14 @@ public class VolumeTransformer {
 				outputElementText(count, text, "HABITATS");
 				
 				
-				listener.info(String.valueOf(count), xml.getPath(), error);
-				listener.progress((count*100) / total);
+				//listener.info(String.valueOf(count), xml.getPath(), error);
+				listener.progress((count*50) / total);
 			}
+			
+			HabitatParser4FNA hpf = new HabitatParser4FNA();
+			hpf.parse();
+			VolumeFinalizer vf = new VolumeFinalizer(listener);
+			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
 			e.printStackTrace();
