@@ -21,7 +21,7 @@ import fna.db.*;;
  * @author Hong Updates
  *
  */
-public class HabitatParser4FNA {
+public class HabitatParser4FNA implements Learn2Parse{
 	private File sourcefolder = null;
 	private HabitatParserDbAccessor hpDbA = null;
 	private String seedNList = "|";
@@ -29,9 +29,9 @@ public class HabitatParser4FNA {
 	//private static Hashtable content = new Hashtable(); //tagged with <> and {}
 	public HabitatParser4FNA(){
 		//text is the database table name: source ->habitate string
-		//File source = new File(Registry.TargetDirectory,
-		//		ApplicationUtilities.getProperty("HABITATS"));
-		File source = new File("C:/DATA/FNA-v19/target/habitats");
+		File source = new File(Registry.TargetDirectory,
+				ApplicationUtilities.getProperty("HABITATS"));
+		//File source = new File("C:/DATA/FNA-v19/target/habitats");
 		//construct a database table for habitat data
 		this.hpDbA = new HabitatParserDbAccessor();
 		hpDbA.createTable();
@@ -198,20 +198,22 @@ public class HabitatParser4FNA {
 		return s;
 	}
 	
-	public Element getHabitat4Doc(int srcid, Element parent, String enutag){
+	public ArrayList getMarkedDescription(String src){
+		ArrayList<String> list = new ArrayList<String>();
 		
-		ArrayList<String> h = hpDbA.selectRecords("habitat_value", "source='"+srcid+".txt'", "", "");
-		String hs = h.get(0);
-		String[] hsegs = hs.split("@");
-		for(int i = 0; i<hsegs.length; i++){
-			if(hsegs[i].trim().length() > 0){
-				Element enuelement = new Element(enutag);
-				enuelement.setText(hsegs[i].trim());
-				//System.out.println("add "+enutag+": "+area);
-				parent.addContent(enuelement);
-			}
+		ArrayList<String> h = hpDbA.selectRecords("habitat_values", "source='"+src+"'", "", "");
+		if(h.size()>=1){
+			String hs = h.get(0);
+			hs = hs.replaceFirst("^\\?+", "");
+			String[] hsegs = hs.split("@");
+			for(int i = 0; i<hsegs.length; i++){
+				if(hsegs[i].trim().length() > 0){
+					String temp = hsegs[i].trim().replaceFirst("\\W+$", "");
+					list.add("<habitat>"+temp+"</habitat>");
+				}
+			}			
 		}
-		return parent;
+		return list;
 		
 	}
 
