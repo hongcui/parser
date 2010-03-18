@@ -867,7 +867,7 @@ public class MainForm {
 			public void mouseDoubleClick(MouseEvent event) {
 				String filePath = Registry.TargetDirectory + 
 				ApplicationUtilities.getProperty("FINAL")+ "\\" +
-				finalizerTable.getSelection()[0].getText(2).trim();				
+				finalizerTable.getSelection()[0].getText(1).trim();				
 				
 				if (filePath.indexOf("xml") != -1) {
 					try {
@@ -891,11 +891,11 @@ public class MainForm {
 
 		final TableColumn transformationNameColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
 		transformationNameColumnTableColumn_1_2.setWidth(172);
-		transformationNameColumnTableColumn_1_2.setText("Name");
+		transformationNameColumnTableColumn_1_2.setText("File");
 
 		final TableColumn transformationFileColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
 		transformationFileColumnTableColumn_1_2.setWidth(376);
-		transformationFileColumnTableColumn_1_2.setText("File");
+		transformationFileColumnTableColumn_1_2.setText("Taxon Name");
 
 		final Button startFinalizerButton = new Button(composite_5, SWT.NONE);
 		startFinalizerButton.addSelectionListener(new SelectionAdapter() {
