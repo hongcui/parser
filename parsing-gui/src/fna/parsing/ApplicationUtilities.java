@@ -39,7 +39,7 @@ public class ApplicationUtilities {
 		BufferedWriter out = null;
 		
 		try {
-			String logProperties = System.getProperty("user.dir")+ApplicationUtilities.getProperty("LOG.FILE.LOCATION");
+			String logProperties = System.getProperty("user.dir")+ getProperty("LOG.FILE.LOCATION");
 			fstream = new FileInputStream(logProperties);
 			Properties properties = new Properties();
 			properties.load(fstream);
@@ -49,22 +49,21 @@ public class ApplicationUtilities {
 				fwriter = new FileWriter(logProperties ,true);
 		        out = new BufferedWriter(fwriter);
 		        out.newLine();
-		        logFilePath = ApplicationUtilities.getProperty("LOG.APPENDER") + System.getProperty("user.dir") 
-		        	+ ApplicationUtilities.getProperty("LOG");
+		        logFilePath = getProperty("LOG.APPENDER") + System.getProperty("user.dir") 
+		        	+ getProperty("LOG");
 		        logFilePath = logFilePath.trim();
 		        logFilePath = logFilePath.replaceAll("\\\\", "\\\\\\\\");
 		        out.write(logFilePath);
 				/* Show log path setting message */
-				ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.logpath") + 
-						System.getProperty("user.dir") + ApplicationUtilities.getProperty("LOG"), 
-						ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+				showPopUpWindow(getProperty("popup.info.logpath") + 
+						System.getProperty("user.dir") + getProperty("LOG"), 
+						getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 				out.flush();
 				System.exit(0);
-			}
-
-			
+			}			
 		} catch(Exception exe) {
 			exe.printStackTrace();
+			LOGGER.error("Unable to set Log file path", exe);
 		} finally {
 			if (out != null) {
 				out.close();
