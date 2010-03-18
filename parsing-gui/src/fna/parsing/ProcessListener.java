@@ -3,22 +3,11 @@
  */
 package fna.parsing;
 
-import javax.swing.event.HyperlinkListener;
-
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.eclipse.ui.forms.events.HyperlinkAdapter;
-import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseEvent;
+
 
 
 /**
