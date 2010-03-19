@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.swt.SWT;
 
 import fna.db.VolumeMarkupDbAccessor;
 
@@ -27,7 +28,7 @@ public class VolumeMarkup {
 	public VolumeMarkup(ProcessListener listener) {
 		this.listener = listener;
 	}
-	
+
 	public void markup() throws ParsingException {
 		// call unsupervised.pl [descriptions are save in
 		// docs/output/descriptions]
