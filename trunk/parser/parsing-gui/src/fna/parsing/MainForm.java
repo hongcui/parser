@@ -37,6 +37,8 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import sun.net.ApplicationProxy;
+
 import com.swtdesigner.SWTResourceManager;
 
 import fna.db.MainFormDbAccessor;
@@ -899,9 +901,10 @@ public class MainForm {
 
 		final Button startFinalizerButton = new Button(composite_5, SWT.NONE);
 		startFinalizerButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
+			public void widgetSelected(final SelectionEvent e){
 				startFinalize();
 				try {
+					
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
 				} catch (Exception exe) {
@@ -1007,7 +1010,7 @@ public class MainForm {
 	
 	private void startExtraction() throws Exception {
 		
-		 extractionProgressBar.setVisible(true);
+		extractionProgressBar.setVisible(true);
 
 		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar);
 		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
@@ -1111,10 +1114,10 @@ public class MainForm {
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,databasename);
+		ApplicationUtilities.showPopUpWindow("Starting Dehyphenizer", "Information", SWT.ICON_INFORMATION);
 		vd.dehyphen();
 		VolumeMarkup vm = new VolumeMarkup(listener);
 		vm.markup();
-		
 		markupProgressBar.setVisible(false);
 	}
 	
@@ -1122,6 +1125,7 @@ public class MainForm {
 		finalizerProgressBar.setVisible(true);
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar);
 		VolumeFinalizer vf = new VolumeFinalizer(listener);
+		shell.getDisplay().asyncExec(Thread.currentThread());
 		vf.outputFinal();
 		finalizerProgressBar.setVisible(false);
 	}
