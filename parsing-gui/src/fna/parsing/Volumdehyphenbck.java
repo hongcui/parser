@@ -1,4 +1,4 @@
-package fna.parsing;
+/*package fna.parsing;
 
 
 import java.io.BufferedReader;
@@ -16,28 +16,25 @@ import java.util.Enumeration;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Text;
 
 import fna.parsing.character.*;
 
 //import fna.parsing.finalizer.Output;
 
 
-/**
+*//**
  * normalize hyphens in the document folder. may be plain text or html/xml docs. for the latter, tags are ignored in dehyphenization process.
  * run this before VolumeMarkup.
  * @author hongcui
  *
- */
-public class VolumeDehyphenizer extends Thread {
+ *//*
+public class VolumeDehyphenizer {
     protected File folder = null;
     protected File outfolder = null;
     protected Connection conn = null;
     protected final String username = ApplicationUtilities.getProperty("database.username");
     protected final String password = ApplicationUtilities.getProperty("database.password");
-    protected String tablename = null;
+    protected final String tablename = MainForm.dataPrefixCombo.getText()+"_allwords";
     //private final String tablename1= "numtextmix";
     //private final int mixlength = 30;
     static public String num = "\\d[^a-z]+";
@@ -47,24 +44,10 @@ public class VolumeDehyphenizer extends Thread {
     private static final Logger LOGGER = Logger.getLogger(VolumeDehyphenizer.class);
     private Glossary glossary = null;  // TODO
     
-    private Display display;
-    private Text perlLog;
-    private ProgressBar progressBar;
-    private String dataPrefix;
-    
-    public VolumeDehyphenizer(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Display display, Text perlLog, ProgressBar progressBar, String dataPrefix) {
+    public VolumeDehyphenizer(ProcessListener listener, String workdir, String todofoldername, String database) {
         this.listener = listener;
         this.database = database;
-        /** Synchronizing UI and background process **/
-        this.display = display;
-        this.perlLog = perlLog;
-        this.progressBar = progressBar;
-        this.dataPrefix = dataPrefix;
-        this.tablename = dataPrefix+"_allwords";
-        
-        this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
-        		true, this.database, dataPrefix);
+        this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), true, this.database, MainForm.dataPrefixCombo.getText());
         workdir = workdir.endsWith("/")? workdir : workdir+"/";
         folder = new File(workdir+todofoldername);
         outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
@@ -86,39 +69,14 @@ public class VolumeDehyphenizer extends Thread {
         }
     }
 
-    public void run () {
-    	dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, progressBar, dataPrefix);
-		vm.markup();
-    }
-    
-	public void showPerlMessage(final String message) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				perlLog.append(message);
-			}
-		});
-	}
-	
-	public void incrementProgressBar(final int progress) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				if(!progressBar.getVisible()) {
-					progressBar.setVisible(true);
-				}				
-				progressBar.setSelection(progress);
-			}
-		});
-	}
-	
     public void dehyphen(){
     	System.out.println("Preparing files...");
-    	showPerlMessage("Preparing files...");
-        incrementProgressBar(1);
+    	MainForm.markUpPerlLog.append("Preparing files...");
+        if(listener!= null) listener.progress(1);
         fillInWords();
-        incrementProgressBar(50);
+        if(listener!= null) listener.progress(50);
 
-        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", dataPrefix);
+        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", MainForm.dataPrefixCombo.getText());
 
         try{
             Statement stmt = conn.createStatement();
@@ -135,7 +93,7 @@ public class VolumeDehyphenizer extends Thread {
             e.printStackTrace();
         }
         normalizeDocument();
-        if(listener!= null) incrementProgressBar(100);
+        if(listener!= null) listener.progress(100);
     }
     
     private void createWordTable(){
@@ -150,7 +108,7 @@ public class VolumeDehyphenizer extends Thread {
         }
     }
     
-    /*private void createNumTextMixTable(){
+    private void createNumTextMixTable(){
         try{
             Statement stmt = conn.createStatement();
             String query = "create table if not exists "+tablename1+" (id int not null auto_increment primary key, mix varchar(30), file varchar(400))";
@@ -159,7 +117,7 @@ public class VolumeDehyphenizer extends Thread {
         }catch(Exception e){
             e.printStackTrace();
         }
-    }*/
+    }
     private void fillInWords(){
         try {
             Statement stmt = conn.createStatement();
@@ -172,9 +130,9 @@ public class VolumeDehyphenizer extends Thread {
                 while ((line = reader.readLine()) != null) {
                     line = line.toLowerCase();
                     String linec = line;
-                    /*if(line.matches(".*?\\d+-(?=[a-z]).*")){
+                    if(line.matches(".*?\\d+-(?=[a-z]).*")){
                         line = fixNumTextMix(line, flist[i]);
-                    }*/
+                    }
                     line = line.replaceAll("<[^<]+?>", " "); //for xml or html docs
                     line = line.replaceAll(num, " ");
                     line = line.replaceAll("[^-a-z]", " ");
@@ -204,14 +162,14 @@ public class VolumeDehyphenizer extends Thread {
             e.printStackTrace();
         }
     }
-    /**
+    *//**
      * save original text mix in File source in a table,
      * to be used in outputting final text
      * @param mix
      * @param source
      * @return
-     */
-    /*private String fixNumTextMix(String mix, File source){
+     *//*
+    private String fixNumTextMix(String mix, File source){
         StringBuffer fixed = new StringBuffer();
         Pattern p = Pattern.compile("(.*?)(\\d+-)([a-z].*)");
         Matcher m = p.matcher(mix);
@@ -230,7 +188,7 @@ public class VolumeDehyphenizer extends Thread {
         }
         fixed.append(mix);
         return fixed.toString();
-    }*/
+    }
     
     private String fixBrokenHyphens(String broken){ //cup-[,]  disc-[,]  or dish-shaped
         StringBuffer fixed = new StringBuffer();
@@ -299,12 +257,12 @@ public class VolumeDehyphenizer extends Thread {
         //text = text.replaceAll("\\W-", " "); 
         //text = text.replaceAll("-\\W", " ");
         //HOng, 08/04/09 for FoC doc. "-" added in place of <dox-tags>.
-        /*if(line.matches(".*?[a-z]- .*")){//cup-  disc-  or dish-shaped
+        if(line.matches(".*?[a-z]- .*")){//cup-  disc-  or dish-shaped
             line = fixBrokenHyphens(line); //Too loose. 
-        }*/
-        /*if(text.matches(".*?[a-z]-[^a-z0-9].*")){//cup-  disc-  or dish-shaped
+        }
+        if(text.matches(".*?[a-z]-[^a-z0-9].*")){//cup-  disc-  or dish-shaped
         text = fixBrokenHyphens(text);
-        }*/
+        }
         return text;
     }
     
@@ -330,9 +288,9 @@ public class VolumeDehyphenizer extends Thread {
         }
         return original;
     }
-    /**
+    *//**
      * @param args
-     */
+     *//*
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         String workdir = "C:/FOC-v11/target";
@@ -345,4 +303,4 @@ public class VolumeDehyphenizer extends Thread {
        // vd.dehyphen();
     }//
 
-}
+}*/
