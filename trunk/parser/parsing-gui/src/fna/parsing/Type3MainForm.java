@@ -131,6 +131,9 @@ public class Type3MainForm {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
+		if (shell.isDisposed()) {
+			System.exit(0);
+		}
 	}
 
 	/**
@@ -834,10 +837,9 @@ public class Type3MainForm {
 	}
 	
 	private void startFinalize() {
-		finalizerProgressBar.setVisible(true);
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar);
-		VolumeFinalizer vf = new VolumeFinalizer(listener);
-		vf.outputFinal();
+		VolumeFinalizer vf = new VolumeFinalizer(listener, shell.getDisplay(), dataPrefixCombo.getText(), finalizerProgressBar);
+		vf.start();
 		finalizerProgressBar.setVisible(false);
 	}
 	
