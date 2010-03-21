@@ -52,8 +52,6 @@ public class VolumeFinalizer extends Thread {
 				if(!progressBar.getVisible()) {
 					progressBar.setVisible(true);
 				}				
-				System.out.println("I was called " + progress);
-				//listener.progress(progress);
 				progressBar.setSelection(progress);
 			}
 		});
