@@ -1110,17 +1110,18 @@ public class MainForm {
 	}
 	
 	private void startMarkup() {
-		markupProgressBar.setVisible(true);
+		//markupProgressBar.setVisible(true);
 		String workdir = Registry.TargetDirectory;
 		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
 		
-		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,databasename);
-		ApplicationUtilities.showPopUpWindow("Starting Dehyphenizer", "Information", SWT.ICON_INFORMATION);
-		vd.dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener);
-		vm.markup();
+		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,
+				databasename, shell.getDisplay(), markUpPerlLog, markupProgressBar, dataPrefixCombo.getText());
+		//ApplicationUtilities.showPopUpWindow("Starting Dehyphenizer", "Information", SWT.ICON_INFORMATION);
+		vd.start();
+		//VolumeMarkup vm = new VolumeMarkup(listener);
+		//vm.markup();
 		markupProgressBar.setVisible(false);
 	}
 	
@@ -1150,7 +1151,7 @@ public class MainForm {
 		}
 
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
-		VolumeMarkup vm = new VolumeMarkup(listener);
+		VolumeMarkup vm = new VolumeMarkup(listener, null, null, null, null);
 		vm.update();
 	}
 	
