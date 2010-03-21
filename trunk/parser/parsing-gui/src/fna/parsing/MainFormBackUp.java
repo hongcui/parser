@@ -1,60 +1,13 @@
- /* $Id$ */
+/*  $Id$ 
 package fna.parsing;
 //
 import java.util.ArrayList;
-import java.util.List;
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FileReader;
-
-import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-
-import com.swtdesigner.SWTResourceManager;
-
-import fna.db.MainFormDbAccessor;
-import fna.parsing.ParsingException;
-import fna.parsing.ProcessListener;
-import fna.parsing.Registry;
-import fna.parsing.VolumeExtractor;
-import fna.parsing.VolumeFinalizer;
-import fna.parsing.VolumeMarkup;
-import fna.parsing.VolumeTransformer;
-import fna.parsing.VolumeVerifier;
-import fna.parsing.character.LearnedTermsReport;
-/**
+*//**
  * @author chunshui
- */
+ *//*
 
 
-public class MainFormBackUp {
+public class MainForm {
 
 	static {
 		//Set the Log File path
@@ -90,15 +43,15 @@ public class MainFormBackUp {
 	public static Combo dataPrefixCombo;
 	private StyledText glossaryStyledText;
 	public Shell shell;
-	/*In Unknown removal this variable is used to remember the last tab selected*/
+	In Unknown removal this variable is used to remember the last tab selected
 	private static int hashCodeOfItem = 0;
 	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
-		/**
+		*//**
 	 * Launch the application
 	 * @param args
-	 */
+	 *//*
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	public static Text markUpPerlLog;
@@ -114,9 +67,9 @@ public class MainFormBackUp {
 		}
 	}
 	
-	/**
+	*//**
 	 * Open the window
-	 */
+	 *//*
 	public void open() throws Exception {
 		final Display display = Display.getDefault();
 		createContents(display);
@@ -128,9 +81,9 @@ public class MainFormBackUp {
 		}
 	}
 
-	/**
+	*//**
 	 * Create contents of the window
-	 */
+	 *//*
 	protected void createContents(Display display) throws Exception{
 		shell = new Shell(display);
 		shell.setSize(852, 600);
@@ -153,10 +106,10 @@ public class MainFormBackUp {
 				String tabName = arg0.item.toString();
 				tabName = tabName.substring(tabName.indexOf("{")+1, tabName.indexOf("}"));
 	
-				/* Logic for tab access goes here*/
+				 Logic for tab access goes here
 				
-				/* 
-				 * if status is true  - u can go to the next tab, else dont even think! */
+				 
+				 * if status is true  - u can go to the next tab, else dont even think! 
 				// For general tab
 				if (configurationText == null ) return;
 				if(tabName.indexOf(
@@ -440,7 +393,7 @@ public class MainFormBackUp {
 			}
 		});
 		
-		/* Segmentation Tab */
+		 Segmentation Tab 
 		final TabItem segmentationTabItem = new TabItem(tabFolder, SWT.NONE);
 		segmentationTabItem.setText(ApplicationUtilities.getProperty("tab.two.name"));
 		
@@ -478,7 +431,7 @@ public class MainFormBackUp {
 		extractionTable.setLinesVisible(true);
 		extractionTable.setHeaderVisible(true);
 		extractionTable.setBounds(10, 10, 744, 358);
-		/*Hyperlinking the file */
+		Hyperlinking the file 
 		extractionTable.addMouseListener(new MouseListener () {
 			public void mouseDoubleClick(MouseEvent event) {
 				String filePath = Registry.TargetDirectory + "\\"+ 
@@ -510,7 +463,7 @@ public class MainFormBackUp {
 				ApplicationUtilities.getProperty("file"));
 
 
-		/* Verification Tab */
+		 Verification Tab 
 		
 		final TabItem verificationTabItem = new TabItem(tabFolder, SWT.NONE);
 		verificationTabItem.setText(ApplicationUtilities.getProperty("tab.three.name"));
@@ -640,12 +593,12 @@ public class MainFormBackUp {
 		removeMarkupButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeMarkup();
-				/*try { You don't need to run markup again ater removal!
+				try { You don't need to run markup again ater removal!
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
 					statusOfMarkUp[4] = false;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
-				} */
+				} 
 				
 			}
 		});
@@ -748,7 +701,7 @@ public class MainFormBackUp {
 
 		final Composite composite_6 = new Composite(tabFolder, SWT.NONE);
 		tagTabItem.setControl(composite_6);
-		/* Changing the "unknown removal checked box to RADIO*/
+		 Changing the "unknown removal checked box to RADIO
 	    //tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER);
 		//final Group group = new Group(, SWT.RADIO);
 		tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER);
@@ -867,7 +820,7 @@ public class MainFormBackUp {
 			public void mouseDoubleClick(MouseEvent event) {
 				String filePath = Registry.TargetDirectory + 
 				ApplicationUtilities.getProperty("FINAL")+ "\\" +
-				finalizerTable.getSelection()[0].getText(2).trim();				
+				finalizerTable.getSelection()[0].getText(1).trim();				
 				
 				if (filePath.indexOf("xml") != -1) {
 					try {
@@ -891,17 +844,18 @@ public class MainFormBackUp {
 
 		final TableColumn transformationNameColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
 		transformationNameColumnTableColumn_1_2.setWidth(172);
-		transformationNameColumnTableColumn_1_2.setText("Name");
+		transformationNameColumnTableColumn_1_2.setText("File");
 
 		final TableColumn transformationFileColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
 		transformationFileColumnTableColumn_1_2.setWidth(376);
-		transformationFileColumnTableColumn_1_2.setText("File");
+		transformationFileColumnTableColumn_1_2.setText("Taxon Name");
 
 		final Button startFinalizerButton = new Button(composite_5, SWT.NONE);
 		startFinalizerButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
+			public void widgetSelected(final SelectionEvent e){
 				startFinalize();
 				try {
+					
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
 				} catch (Exception exe) {
@@ -1007,7 +961,7 @@ public class MainFormBackUp {
 	
 	private void startExtraction() throws Exception {
 		
-		 extractionProgressBar.setVisible(true);
+		extractionProgressBar.setVisible(true);
 
 		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar);
 		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
@@ -1015,9 +969,9 @@ public class MainFormBackUp {
 		
 		extractionProgressBar.setVisible(false);
 		
-		/*ProcessListener listener = new ProcessListener(extractionTable);
+		ProcessListener listener = new ProcessListener(extractionTable);
 		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.extract();*/
+		ve.extract();
 	}
 	
 	
@@ -1068,14 +1022,14 @@ public class MainFormBackUp {
         targetText.setText(target);
         Registry.TargetDirectory = target;
 		
-        /*configurationText.setText("c:\\fna-v19\\conf\\");
+        configurationText.setText("c:\\fna-v19\\conf\\");
         Registry.ConfigurationDirectory = "c:\\fna-v19\\conf\\";
 
         sourceText.setText("c:\\fna-v19\\source\\");
         Registry.SourceDirectory = "c:\\fna-v19\\source\\";
         
         targetText.setText("c:\\fna-v19\\target\\");
-        Registry.TargetDirectory = "c:\\fna-v19\\target\\";*/
+        Registry.TargetDirectory = "c:\\fna-v19\\target\\";
 		}catch(Exception e){
 			LOGGER.error("couldn't load the configuration file", e);
 			e.printStackTrace();
@@ -1111,10 +1065,10 @@ public class MainFormBackUp {
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,databasename);
+		ApplicationUtilities.showPopUpWindow("Starting Dehyphenizer", "Information", SWT.ICON_INFORMATION);
 		vd.dehyphen();
 		VolumeMarkup vm = new VolumeMarkup(listener);
 		vm.markup();
-		
 		markupProgressBar.setVisible(false);
 	}
 	
@@ -1122,6 +1076,7 @@ public class MainFormBackUp {
 		finalizerProgressBar.setVisible(true);
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar);
 		VolumeFinalizer vf = new VolumeFinalizer(listener);
+		shell.getDisplay().asyncExec(Thread.currentThread());
 		vf.outputFinal();
 		finalizerProgressBar.setVisible(false);
 	}
@@ -1265,3 +1220,4 @@ public class MainFormBackUp {
 		return errorFlag;
 	}
 }
+*/

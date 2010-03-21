@@ -1,7 +1,9 @@
-/**
+/*package fna.parsing;
+
+*//**
  * $Id$
- */
-package fna.parsing;
+ *//*
+//package fna.parsing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,55 +13,24 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Text;
 
 import fna.db.VolumeMarkupDbAccessor;
 
-/**
+*//**
  * To run unsupervised.pl
  * 
  * @author chunshui
- */
+ *//*
 public class VolumeMarkup {
 	
 	private ProcessListener listener;
-	
-	private Display display = null;
-	private Text perlLog = null;
-	private ProgressBar progressBar = null;
-	private String dataPrefix = null;
-	
 	private String markupMode = "adj"; //TODO: make this configurable
 	private static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
-	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, ProgressBar progressBar, String dataPrefix) {
+	public VolumeMarkup(ProcessListener listener) {
 		this.listener = listener;
-        this.display = display;
-        this.perlLog = perlLog;
-        this.progressBar = progressBar;
-        this.dataPrefix = dataPrefix;
 	}
-	
-	public void showPerlMessage(final String message) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				perlLog.append(message);
-			}
-		});
-	}
-	
-	public void incrementProgressBar(final int progress) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				if(!progressBar.getVisible()) {
-					progressBar.setVisible(true);
-				}				
-				progressBar.setSelection(progress);
-			}
-		});
-	}
+
 	public void markup() throws ParsingException {
 		// call unsupervised.pl [descriptions are save in
 		// docs/output/descriptions]
@@ -74,17 +45,17 @@ public class VolumeMarkup {
 //		+ databasenameprefix;
 		
 		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") +workdir
-		+ todofoldername + " "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim();
+		+ todofoldername + " "+ databasenameprefix+" "+this.markupMode +" "+MainForm.dataPrefixCombo.getText().trim();
 		
 		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
 		System.out.println("Run command: " + com);
-		showPerlMessage("Run command: " + com + "\n");
+        MainForm.markUpPerlLog.append("Run command: " + com + "\n");
 		try {
 			 runCommand(com);
 		} catch (Exception e) {
 			e.printStackTrace();
 			LOGGER.error("VolumeMarkup : markup Failed to run the unsupervised.pl", e);
-			showPerlMessage("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
+			MainForm.markUpPerlLog.append("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
 		
@@ -126,10 +97,10 @@ public class VolumeMarkup {
 		int i = 0;
 		while ((s = stdInput.readLine()) != null) {
 			// listener.info(String.valueOf(i), s);
-			incrementProgressBar(i++ % 100);
+			listener.progress(i++ % 100);
 			System.out.println(s + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
-			showPerlMessage(s + " at " + (System.currentTimeMillis() - time)
+			MainForm.markUpPerlLog.append(s + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds\n");
 		}
 		
@@ -137,11 +108,12 @@ public class VolumeMarkup {
 		String e = "";
 		while ((e = errInput.readLine()) != null) {
 			// listener.info(String.valueOf(i), s);
-			incrementProgressBar(i++ % 100);
+			listener.progress(i++ % 100);
 			System.out.println(e + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
-			showPerlMessage(e + " at " + (System.currentTimeMillis() - time)
+			MainForm.markUpPerlLog.append(e + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds\n");
 		}
 	}
 }
+*/
