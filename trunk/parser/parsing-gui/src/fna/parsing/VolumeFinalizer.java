@@ -5,6 +5,8 @@ package fna.parsing;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -66,24 +68,49 @@ public class VolumeFinalizer extends Thread {
 		cl.markupCharState();
 		// output final records
 		// read in treatments, replace description with what cl output
+		replaceWithAnnotated(cl, "treatment/description", "FINAL", false);
+	}
+	
+	public void replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
 		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
 		int total = source.listFiles().length;
 
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("FINAL"));
+		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
 
 		try {
 
 			SAXBuilder builder = new SAXBuilder();
 			for (int count = 1; count <= total; count++) {
 				System.out.println("finalizing "+count);
-				incrementProgressBar(40+(count*60/total));
+				listener.progress(40+(count*60/total));
 				File file = new File(source, count + ".xml");
 				Document doc = builder.build(file);
 				Element root = doc.getRootElement();	
+				//create xml from annotated text
+				ArrayList<String> elementstrs = cl.getMarkedDescription(count + ".txt");	
+				Iterator<String> it = elementstrs.iterator();
+				ArrayList<Element> content = new ArrayList<Element>();
+				while(it.hasNext()){
+					String descXML =(String)it.next();
+					if (descXML != null && !descXML.equals("")) {
+						doc = builder.build(new ByteArrayInputStream(
+								descXML.getBytes("UTF-8")));
+						Element descript = doc.getRootElement(); // marked-up
+						descript.detach();
+						content.add(descript);
+					}
+				}
+				//get the element index of the unannotated counterpart 	
+				Element description = (Element) XPath.selectSingleNode(
+						root, xpath);			
+				int index = root.indexOf(description);
 				
-				String descXML = cl.getMarkedDescription(count + ".txt");	
-				
-				System.out.println(descXML);
+				// replace
+				if (index >= 0) {
+					System.out.println(count+".xml has "+xpath+" element replaced");
+					root.setContent(index, content);
+				}
+				/*System.out.println(descXML);
 				if (descXML != null && !descXML.equals("")) {
 					doc = builder.build(new ByteArrayInputStream(
 							descXML.getBytes("UTF-8")));
@@ -91,19 +118,23 @@ public class VolumeFinalizer extends Thread {
 					descript.detach();
 
 					Element description = (Element) XPath.selectSingleNode(
-							root, "/treatment/description");
+							root, xpath);
+				
 					int index = root.indexOf(description);
+					
 					// replace
 					if (index >= 0) {
+						System.out.println(count+".xml has "+xpath+" element replaced");
 						root.setContent(index, descript);
 					}
 				}
+				*/
 				root.detach();
 				
 				File result = new File(target, count + ".xml");
 				ParsingUtil.outputXML(root, result);
 
-				listener.info("" + count, "", result.getName());
+				listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
 			}
 
 		} catch (Exception e) {
