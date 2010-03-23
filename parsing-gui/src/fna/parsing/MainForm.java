@@ -138,6 +138,7 @@ public class MainForm {
 	 */
 	protected void createContents(Display display) throws Exception{
 		shell = new Shell(display);
+		shell.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/garland_logo.gif"));
 		shell.setSize(852, 600);
 		shell.setLocation(200, 100);
 		shell.setText(ApplicationUtilities.getProperty("application.name"));

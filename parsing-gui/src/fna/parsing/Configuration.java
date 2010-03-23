@@ -47,6 +47,7 @@ public class Configuration {
 		final Display display = Display.getDefault();
 		
 		final Shell shell = new Shell(display);
+		shell.setImage(SWTResourceManager.getImage(Configuration.class, "/fna/parsing/garland_logo.gif"));
 		shell.setSize(800, 600);
 		shell.setLocation(200, 100);
 		shell.setText("Choose a document style");
