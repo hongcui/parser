@@ -30,7 +30,7 @@ public class HabitatParserDbAccessor {
     private static String url = ApplicationUtilities.getProperty("database.url");
     private static Connection conn = null;
     //private static String prefix = "fna";
-    private static String prefix = MainForm.dataPrefixCombo.getText();
+    private String prefix = MainForm.dataPrefixCombo.getText();
     
 	static {
 		try {
@@ -42,7 +42,9 @@ public class HabitatParserDbAccessor {
 		}
 	}
 	
-	public HabitatParserDbAccessor(){}
+	public HabitatParserDbAccessor(String prefix){
+		this.prefix = prefix;
+	}
 	
 	public void createTable(){
 		try{
