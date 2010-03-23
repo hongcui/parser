@@ -30,7 +30,7 @@ public class HabitatParserDbAccessor {
     private static String url = ApplicationUtilities.getProperty("database.url");
     private static Connection conn = null;
     //private static String prefix = "fna";
-    private String prefix = MainForm.dataPrefixCombo.getText();
+    private String prefix = null;
     
 	static {
 		try {
