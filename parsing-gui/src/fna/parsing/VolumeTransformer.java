@@ -36,7 +36,7 @@ import fna.db.VolumeTransformerDbAccess;
  * 
  * @author chunshui
  */
-public class VolumeTransformer {
+public class VolumeTransformer extends Thread {
 	
 	private static String organnames ="2n|achene|anther|apex|awn|ax|bark|beak|blade|bract|bracteole|branch|branchlet|broad|calyx|capsule|cap_sule|caropohore|carpophore|caudex|cluster|corolla|corona|crown|cup_|cusp|cyme|cymule|embryo|endosperm|fascicle|filament|flower|fruit|head|herb|homophyllous|hypanthium|hypanth_ium|indument|inflore|inflorescence|inflores_cence|inflo_rescence|internode|involucre|invo_lucre|in_florescence|in_ternode|leaf|limb|lobe|margin|midvein|nectary|node|ocrea|ocreola|ovary|ovule|pair|papilla|pedicel|pedicle|peduncle|perennial|perianth|petal|petiole|plant|prickle|rhizome|rhi_zome|root|rootstock|rosette|scape|seed|sepal|shoot|spikelet|spur|stamen|stem|stigma|stipule|sti_pule|structure|style|subshrub|taproot|taprooted|tap_root|tendril|tepal|testa|tooth|tree|tube|tubercle|tubercule|tuft|twig|utricle|vein|vine|wing|x";
 	private static String organnamep ="achenes|anthers|awns|axes|blades|bracteoles|bracts|branches|buds|bumps|calyces|capsules|clusters|crescents|crowns|cusps|cymes|cymules|ends|escences|fascicles|filaments|flowers|fruits|heads|herbs|hoods|inflores|inflorescences|internodes|involucres|leaves|lengths|limbs|lobes|margins|midribs|midveins|nectaries|nodes|ocreae|ocreolae|ovules|pairs|papillae|pedicels|pedicles|peduncles|perennials|perianths|petals|petioles|pistils|plants|prickles|pules|rescences|rhizomes|rhi_zomes|roots|rows|scapes|seeds|sepals|shoots|spikelets|stamens|staminodes|stems|stigmas|stipules|sti_pules|structures|styles|subshrubs|taproots|tap_roots|teeth|tendrils|tepals|trees|tubercles|tubercules|tubes|tufts|twigs|utricles|veins|vines|wings";
@@ -55,17 +55,20 @@ public class VolumeTransformer {
 	private VolumeTransformerDbAccess vtDbA = new VolumeTransformerDbAccess();	
 	private Hashtable ranks;
 
-	private String taxontable = MainForm.dataPrefixCombo.getText().trim()+"_"
-										+ ApplicationUtilities.getProperty("taxontable");
-	private String authortable = MainForm.dataPrefixCombo.getText().trim()+"_"
-										+ ApplicationUtilities.getProperty("authortable");
-	private String publicationtable = MainForm.dataPrefixCombo.getText().trim()+ "_"
-										+ ApplicationUtilities.getProperty("publicationtable");
+	private String taxontable = null;
+	private String authortable = null;
+	private String publicationtable = null;
 	private Connection conn = null;
+	private String dataPrefix;
 	
-	public VolumeTransformer(ProcessListener listener) throws ParsingException {
+	public VolumeTransformer(ProcessListener listener, String dataPrefix) throws ParsingException {
 		this.listener = listener;
+		this.dataPrefix = dataPrefix;
 		this.errors = new Hashtable();
+		this.taxontable = dataPrefix.trim()+"_"	+ ApplicationUtilities.getProperty("taxontable");
+		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
+		this.publicationtable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
+		
 		ti = TaxonIndexer.loadUpdated(Registry.ConfigurationDirectory);
 		if(ti.emptyNumbers() || ti.emptyNames()) ti = null;
 		
@@ -102,6 +105,11 @@ public class VolumeTransformer {
 	/**
 	 * Transform the extracted data to the xml format.
 	 */
+	public void run() {
+		listener.setProgressBarVisible(true);
+		transform();
+		listener.setProgressBarVisible(false);
+	}
 	public void transform() throws ParsingException {
 		// get the extracted files list
 		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("EXTRACTED"));
@@ -186,7 +194,7 @@ public class VolumeTransformer {
 			
 			HabitatParser4FNA hpf = new HabitatParser4FNA();
 			hpf.parse();
-			VolumeFinalizer vf = new VolumeFinalizer(listener);
+			VolumeFinalizer vf = new VolumeFinalizer(listener, null);
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);

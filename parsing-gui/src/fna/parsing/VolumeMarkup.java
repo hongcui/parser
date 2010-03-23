@@ -28,17 +28,15 @@ public class VolumeMarkup {
 	
 	private Display display = null;
 	private Text perlLog = null;
-	private ProgressBar progressBar = null;
 	private String dataPrefix = null;
 	
 	private String markupMode = "adj"; //TODO: make this configurable
 	private static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
-	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, ProgressBar progressBar, String dataPrefix) {
+	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix) {
 		this.listener = listener;
         this.display = display;
         this.perlLog = perlLog;
-        this.progressBar = progressBar;
         this.dataPrefix = dataPrefix;
 	}
 	
@@ -50,15 +48,8 @@ public class VolumeMarkup {
 		});
 	}
 	
-	public void incrementProgressBar(final int progress) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				if(!progressBar.getVisible()) {
-					progressBar.setVisible(true);
-				}				
-				progressBar.setSelection(progress);
-			}
-		});
+	public void incrementProgressBar(int progress) {
+		listener.progress(progress);
 	}
 	public void markup() throws ParsingException {
 		// call unsupervised.pl [descriptions are save in

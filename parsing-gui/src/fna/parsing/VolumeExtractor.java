@@ -46,7 +46,7 @@ import org.jdom.xpath.XPath;
  * 
  * @author chunshui
  */
-public class VolumeExtractor {
+public class VolumeExtractor extends Thread {
 	
 	private String source;
 	//private MainForm mainForm;
@@ -75,7 +75,6 @@ public class VolumeExtractor {
 		this.source = source;
 		this.target = target;
 		this.listener = listener;
-		//this.mainForm = mainForm;
 		Registry.TribeGenusNameCase = tribegennamestyle;
 		Registry.NomenclatureStylePtn = start;
 		Registry.SynonymStylePtn = names;
@@ -85,6 +84,13 @@ public class VolumeExtractor {
 	 * 
 	 * TODO: unzip the document.xml from the docx file
 	 */
+	
+	public void run() {
+		listener.setProgressBarVisible(true);
+		extract();
+		listener.setProgressBarVisible(false);
+	}
+	
 	public void extract() throws ParsingException {
 		try {
 			listener.progress(1);
