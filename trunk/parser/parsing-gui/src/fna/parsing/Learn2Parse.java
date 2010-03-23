@@ -10,6 +10,6 @@ import java.util.ArrayList;
  *
  */
 public interface Learn2Parse {
-	public ArrayList getMarkedDescription(String source);
+	public ArrayList<String> getMarkedDescription(String source);
 
 }

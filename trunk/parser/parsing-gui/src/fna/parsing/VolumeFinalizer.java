@@ -27,17 +27,13 @@ public class VolumeFinalizer extends Thread {
 	//private String glossary;
 
 	private ProcessListener listener;
-	private Display display;
 	private String dataPrefix;
-	private ProgressBar progressBar;
 	private static final Logger LOGGER = Logger.getLogger(VolumeFinalizer.class);
 
-	public VolumeFinalizer(ProcessListener listener, Display display, String dataPrefix, ProgressBar progressBar) {
+	public VolumeFinalizer(ProcessListener listener, String dataPrefix) {
 		//glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
 		this.listener = listener;
-		this.display = display;
 		this.dataPrefix = dataPrefix;
-		this.progressBar = progressBar;
 	}
 	
 	public static void main (String [] args) {
@@ -45,25 +41,17 @@ public class VolumeFinalizer extends Thread {
 	}
 	
 	public void run () {
+		listener.setProgressBarVisible(true);
 		outputFinal();
+		listener.setProgressBarVisible(false);
 	}
-	
-	public void incrementProgressBar(final int progress) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				if(!progressBar.getVisible()) {
-					progressBar.setVisible(true);
-				}				
-				progressBar.setSelection(progress);
-			}
-		});
-	}
+
 	public void outputFinal() throws ParsingException {
 
-		incrementProgressBar(20);
+		listener.progress(20);
 		CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name")
 				/*+ "_corpus"*/, dataPrefix);
-		incrementProgressBar(40);
+		listener.progress(40);
 
 		cl.markupCharState();
 		// output final records

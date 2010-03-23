@@ -72,10 +72,6 @@ public class Type3MainForm {
 	private Combo modifierListCombo;
 	private Table finalizerTable;
 	private Table markupTable;
-	private Table transformationTable;
-	
-	private Table verificationTable;
-	private Table extractionTable;
 	private Table tagTable;
 	private Text targetText;
 	private Text sourceText;
@@ -83,12 +79,7 @@ public class Type3MainForm {
 	private TabItem generalTabItem;
 	private StyledText contextStyledText;
 	private ProgressBar markupProgressBar;
-	private ProgressBar extractionProgressBar;
-	private ProgressBar verificationProgressBar;
-	private ProgressBar transformationProgressBar;
 	private ProgressBar finalizerProgressBar;
-	private static String typeOfmarkup = null;
-	
 	private Combo tagListCombo;
 	public static Combo dataPrefixCombo;
 	private StyledText glossaryStyledText;
@@ -667,7 +658,6 @@ public class Type3MainForm {
 		reportGlossaryButton.setText("Report");
 
 		final Label logoLabel = new Label(shell, SWT.NONE);
-		String ls = System.getProperty("line.separator");
 		logoLabel.setText(ApplicationUtilities.getProperty("application.instructions"));
 		logoLabel.setBounds(10, 460, 530, 96);
 
@@ -723,48 +713,7 @@ public class Type3MainForm {
         }
 	}
 	
-	private void startExtraction() throws Exception {
-		
-		 extractionProgressBar.setVisible(true);
 
-		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar);
-		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.extract();
-		
-		extractionProgressBar.setVisible(false);
-		
-		/*ProcessListener listener = new ProcessListener(extractionTable);
-		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.extract();*/
-	}
-	
-	
-	private void startVerification() {
-		//verificationTable.clearAll();
-		
-		verificationProgressBar.setVisible(true);
-		ProcessListener listener = new ProcessListener(verificationTable, verificationProgressBar);
-		VolumeVerifier vv = new VolumeVerifier(listener);
-		vv.verify();
-		verificationProgressBar.setVisible(false);
-	}
-	
-	private void clearVerification() {
-		
-		verificationTable.removeAll();
-	}
-	
-	private void startTransformation() {
-		transformationProgressBar.setVisible(true);
-		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar);
-		VolumeTransformer vt = new VolumeTransformer(listener);
-		vt.transform();
-		transformationProgressBar.setVisible(false);
-	}
-	
-	private void clearTransformation() {
-		transformationTable.removeAll();
-	}
 	
 	private void loadProject() {
 		//TODO load configure from a local file
@@ -826,19 +775,18 @@ public class Type3MainForm {
 		String workdir = Registry.TargetDirectory;
 		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
-		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
+		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		
-		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,databasename);
+		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
+				databasename, shell.getDisplay(), markUpPerlLog, dataPrefixCombo.getText());
 		vd.dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener);
-		vm.markup();
 		
 		markupProgressBar.setVisible(false);
 	}
 	
 	private void startFinalize() {
-		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar);
-		VolumeFinalizer vf = new VolumeFinalizer(listener, shell.getDisplay(), dataPrefixCombo.getText(), finalizerProgressBar);
+		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
+		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText());
 		vf.start();
 		finalizerProgressBar.setVisible(false);
 	}
@@ -861,8 +809,8 @@ public class Type3MainForm {
 			exe.printStackTrace();
 		}
 
-		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
-		VolumeMarkup vm = new VolumeMarkup(listener);
+		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
+		VolumeMarkup vm = new VolumeMarkup(listener, null, null, null);
 		vm.update();
 	}
 	

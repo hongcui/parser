@@ -37,7 +37,7 @@ import org.jdom.xpath.XPath;
  * 
  * @author chunshui
  */
-public class VolumeVerifier {
+public class VolumeVerifier extends Thread {
 
 	private String target;
 
@@ -65,6 +65,11 @@ public class VolumeVerifier {
 		path = target + "extracted\\";
 	}
 
+	public void run () {
+		listener.setProgressBarVisible(true);
+		verify();
+		listener.setProgressBarVisible(false);
+	}
 	public void verify() {
 		// get the extracted files list
 		listener.progress(1);

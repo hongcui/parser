@@ -4,6 +4,7 @@
 package fna.parsing;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
@@ -21,34 +22,59 @@ import org.eclipse.swt.widgets.TableItem;
 public class ProcessListener {
 	
 	private Table table;
-	
+	private Display display;
 	private ProgressBar progressBar;
 	
-	public ProcessListener(Table table) {
+	public ProcessListener(Table table, Display display) {
 		this.table = table;
+		this.display = display;
 	}
 	
-	public ProcessListener(Table table, ProgressBar progressBar) {
+	public ProcessListener(Table table, ProgressBar progressBar, Display display) {
 		this.table = table;
 		this.progressBar = progressBar;
+		this.display = display;
 	}
 	
-	public void info(String... contents) {
-		TableItem item = new TableItem(table, SWT.NONE);
-		if (contents.length > 1) {
-			contents[1] = contents[1].substring(contents[1].lastIndexOf("\\")+1);
-		}
-	    item.setText(contents);	
+	public void info(final String... contents) {		
+		display.syncExec(new Runnable() {
+			public void run() {
+				TableItem item = new TableItem(table, SWT.NONE);
+				if (contents.length > 1) {
+					contents[1] = contents[1].substring(contents[1].lastIndexOf("\\")+1);
+				}
+			    item.setText(contents);	
+			}
+		});
+		
+
 	}
 
 
 	
-	public void progress(int selection) {
-		progressBar.setSelection(selection);
+	public void progress(final int selection) {
+		display.syncExec(new Runnable() {
+			public void run() {	
+				progressBar.setSelection(selection);
+			}
+		});
 	}
 	
 	public void clear() {
-		table.removeAll();
+		display.syncExec(new Runnable() {
+			public void run() {
+				table.removeAll();
+			}
+		});
+		
+	}
+	
+	public void setProgressBarVisible(final boolean visible) {
+		display.syncExec(new Runnable() {
+			public void run() {
+				progressBar.setVisible(visible);
+			}
+		});		
 	}
 	
 	public Table getTable() {

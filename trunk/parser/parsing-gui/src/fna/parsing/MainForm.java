@@ -1013,41 +1013,26 @@ public class MainForm {
 	
 	private void startExtraction() throws Exception {
 		
-		extractionProgressBar.setVisible(true);
-
-		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar);
+		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar, shell.getDisplay());
 		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.extract();
-		
-		extractionProgressBar.setVisible(false);
-		
-		/*ProcessListener listener = new ProcessListener(extractionTable);
-		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.extract();*/
+		ve.start();
 	}
 	
 	
 	private void startVerification() {
-		//verificationTable.clearAll();
-		
-		verificationProgressBar.setVisible(true);
-		ProcessListener listener = new ProcessListener(verificationTable, verificationProgressBar);
+		ProcessListener listener = new ProcessListener(verificationTable, verificationProgressBar, shell.getDisplay());
 		VolumeVerifier vv = new VolumeVerifier(listener);
-		vv.verify();
-		verificationProgressBar.setVisible(false);
+		vv.start();
 	}
 	
-	private void clearVerification() {
-		
+	private void clearVerification() {		
 		verificationTable.removeAll();
 	}
 	
 	private void startTransformation() {
-		transformationProgressBar.setVisible(true);
-		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar);
-		VolumeTransformer vt = new VolumeTransformer(listener);
-		vt.transform();
-		transformationProgressBar.setVisible(false);
+		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
+		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText());
+		vt.start();
 	}
 	
 	private void clearTransformation() {
@@ -1114,22 +1099,17 @@ public class MainForm {
 		String workdir = Registry.TargetDirectory;
 		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
-		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
+		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		
-		VolumeDehyphenizer vd = new VolumeDehyphenizer(null, workdir, todofoldername,
-				databasename, shell.getDisplay(), markUpPerlLog, markupProgressBar, dataPrefixCombo.getText());
-		//ApplicationUtilities.showPopUpWindow("Starting Dehyphenizer", "Information", SWT.ICON_INFORMATION);
+		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
+				databasename, shell.getDisplay(), markUpPerlLog, dataPrefixCombo.getText());
 		vd.start();
-		//VolumeMarkup vm = new VolumeMarkup(listener);
-		//vm.markup();
-		markupProgressBar.setVisible(false);
 	}
 	
 	private void startFinalize() {
-		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar);
-		VolumeFinalizer vf = new VolumeFinalizer(listener, shell.getDisplay(), dataPrefixCombo.getText(), finalizerProgressBar);
+		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
+		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText());
 		vf.start();
-		finalizerProgressBar.setVisible(false);
 	}
 	
 	private void removeMarkup() {
@@ -1150,8 +1130,8 @@ public class MainForm {
 			exe.printStackTrace();
 		}
 
-		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar);
-		VolumeMarkup vm = new VolumeMarkup(listener, null, null, null, null);
+		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
+		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, null);
 		vm.update();
 	}
 	

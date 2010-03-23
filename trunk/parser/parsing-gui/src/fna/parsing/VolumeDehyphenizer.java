@@ -49,17 +49,15 @@ public class VolumeDehyphenizer extends Thread {
     
     private Display display;
     private Text perlLog;
-    private ProgressBar progressBar;
     private String dataPrefix;
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Display display, Text perlLog, ProgressBar progressBar, String dataPrefix) {
+    		String todofoldername, String database, Display display, Text perlLog, String dataPrefix) {
         this.listener = listener;
         this.database = database;
         /** Synchronizing UI and background process **/
         this.display = display;
         this.perlLog = perlLog;
-        this.progressBar = progressBar;
         this.dataPrefix = dataPrefix;
         this.tablename = dataPrefix+"_allwords";
         
@@ -87,9 +85,11 @@ public class VolumeDehyphenizer extends Thread {
     }
 
     public void run () {
+    	listener.setProgressBarVisible(true);
     	dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, progressBar, dataPrefix);
+		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix);
 		vm.markup();
+		listener.setProgressBarVisible(false);
     }
     
 	public void showPerlMessage(final String message) {
@@ -100,15 +100,8 @@ public class VolumeDehyphenizer extends Thread {
 		});
 	}
 	
-	public void incrementProgressBar(final int progress) {
-		display.syncExec(new Runnable() {
-			public void run() {
-				if(!progressBar.getVisible()) {
-					progressBar.setVisible(true);
-				}				
-				progressBar.setSelection(progress);
-			}
-		});
+	public void incrementProgressBar(int progress) {
+		listener.progress(progress);
 	}
 	
     public void dehyphen(){
