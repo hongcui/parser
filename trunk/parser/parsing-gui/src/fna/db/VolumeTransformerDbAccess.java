@@ -24,7 +24,6 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
-import fna.parsing.MainForm;
 import fna.parsing.ParsingException;
 
 public class VolumeTransformerDbAccess {
@@ -32,8 +31,13 @@ public class VolumeTransformerDbAccess {
 	/**
 	 * @param args
 	 */
+	
+	public VolumeTransformerDbAccess(String dataprefix) {
+		this.dataprefix = dataprefix.trim();
+	}
     private static final Logger LOGGER = Logger.getLogger(VolumeTransformerDbAccess.class);
     private static String url = ApplicationUtilities.getProperty("database.url");
+    private String dataprefix;
 	static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -60,7 +64,7 @@ public class VolumeTransformerDbAccess {
 			return;
 		}
 		//dataset specific taxonTable Name
-		String taxonTableName = MainForm.dataPrefixCombo.getText().trim()+"_"
+		String taxonTableName = dataprefix +"_"
 		+ ApplicationUtilities.getProperty("taxontable");
 		try{
 			conn = DriverManager.getConnection(url);
@@ -93,7 +97,7 @@ public class VolumeTransformerDbAccess {
 		Statement stmt = null;
 		ResultSet rs = null;
 		// dataset specific author table name
-		String authorTableName = MainForm.dataPrefixCombo.getText().trim()+"_"
+		String authorTableName = dataprefix +"_"
 									+ ApplicationUtilities.getProperty("authortable");
 		
 		try{
@@ -131,7 +135,7 @@ public class VolumeTransformerDbAccess {
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
-		String publicationTableName = MainForm.dataPrefixCombo.getText().trim()+ "_"
+		String publicationTableName = dataprefix + "_"
 										+ ApplicationUtilities.getProperty("publicationtable");
 		
 		publication = publication.replaceFirst("\\d.*", "");
