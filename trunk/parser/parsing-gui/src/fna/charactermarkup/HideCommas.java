@@ -112,7 +112,7 @@ public class HideCommas {
                                 matcher3.reset();
                    			}
                    			else{
-                   				//Store in exception table and don't pass it to next function
+                   				//Store in exception table and don't pass it to next step
                    				if(flag1==0){
                    					stmt1.execute("insert into exception values('"+source+"','"+inputStr+"')");
                    					stmt1.execute("insert into tmp_result2 values('"+source+"','"+inputStr+"')");
