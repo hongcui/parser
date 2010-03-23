@@ -46,6 +46,7 @@ public class Segmentation {
 			String source;
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
+			Statement stmt2 = conn.createStatement();
 			int count=0;
 			ResultSet rs = stmt.executeQuery("select * from tmp_result3");
 			while(rs.next())
@@ -54,14 +55,14 @@ public class Segmentation {
         			String [] terms = rs.getString(2).split(",");
         			String str = ""; 
         			for(int i=0;i<terms.length;i++){
-        				CharSequence inputStr = terms[i];              
         				String str1 = "";
+        				int prepflag = 0;
         				// Compile regular expression
         				
                         Pattern pattern = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s)<[a-zA-Z_]+>(\\s<[a-zA-Z_]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
                         
                         // Replace all occurrences of pattern in input
-                        Matcher matcher = pattern.matcher(inputStr);
+                        Matcher matcher = pattern.matcher(terms[i]);
                         if ( matcher.find()){
                         	str1=terms[i];
                         	Pattern pattern1 = Pattern.compile("(?<!\\})>\\s<(?!\\{)");
@@ -77,27 +78,33 @@ public class Segmentation {
                             if(i<terms.length-1)
                             	str1=str1.concat(",");
                             stmt1.execute("insert into segments values('"+count+"','"+source+"','"+str1+"',0)");
-                        	int sind=terms[i].indexOf("<");
-                           	int eind=terms[i].indexOf(">");
-                       		str=terms[i].substring(sind,eind+1);
+                        	int sind=str1.indexOf("<");
+                           	int eind=str1.indexOf(">");
+                       		str=str1.substring(sind,eind+1);
                         }
                         else{
                         	String hide = terms[i];
-                        	Pattern pattern2 = Pattern.compile("(<[a-zA-Z_ ]+>)|((?<![<])\\{[a-zA-Z_\\./\\-\\d\\–{}:]+\\}(?![>]))");
+                        	Pattern pattern2 = Pattern.compile("(<[a-zA-Z_ ]+>)|([<]?\\{[a-zA-Z_\\./\\-\\d\\–{}:]+\\}[>]?)");
                         	Matcher matcher1 = pattern2.matcher(hide);
-                        	
                         	hide=matcher1.replaceAll("#");
                         	matcher1.reset();
                         	//System.out.println(source+":"+terms[i]);
                         	//System.out.println(source+":"+hide);
-                        	Pattern pattern4 = Pattern.compile("[\\w±]+|(<\\{[a-zA-Z_]+\\}>)");
+                        	Pattern pattern4 = Pattern.compile("[\\w]+");
                         	matcher1 = pattern4.matcher(hide);
-                        	if ( matcher1.find())
-                        		str1=str.concat(terms[i]);
+                        	while ( matcher1.find()){
+                        		int m=matcher1.start();
+                            	int n=matcher1.end();
+                            	String word = hide.substring(m, n);
+                        		ResultSet rs1=stmt2.executeQuery("Select * from preposition where prep='"+word+"'");
+                        		while(rs1.next())
+                       		 		prepflag = 1;
+                        	}
+                        	matcher1.reset();
+                        	if (prepflag==1)
+                   		 		str1=str.concat(terms[i]);
                         	else
                         		str1=terms[i];
-                        	matcher1.reset();
-                        	
                         	Pattern pattern1 = Pattern.compile("(?<!\\})>\\s<(?!\\{)");
                         	matcher1 = pattern1.matcher(str1);
                         	str1 = matcher1.replaceAll("_has_");
@@ -112,12 +119,12 @@ public class Segmentation {
                             	str1=str1.concat(",");
                             stmt1.execute("insert into segments values('"+count+"','"+source+"','"+str1+"',0)");
                         	if(i==0){
-                        		int sind=terms[i].indexOf("<");
-                            	int eind=terms[i].indexOf(">");
+                        		int sind=str1.indexOf("<");
+                            	int eind=str1.indexOf(">");
                             	if(sind<0)
                             		str=str.concat("<org>");
                             	else
-                            		str=terms[i].substring(sind,eind+1);
+                            		str=str1.substring(sind,eind+1);
                         	}
                         }
                         matcher.reset();
