@@ -23,17 +23,18 @@ import fna.db.*;;
  */
 public class HabitatParser4FNA implements Learn2Parse{
 	private File sourcefolder = null;
+	private String dataprefix = null;
 	private HabitatParserDbAccessor hpDbA = null;
 	private String seedNList = "|";
 	private String seedMList = "|";
 	//private static Hashtable content = new Hashtable(); //tagged with <> and {}
-	public HabitatParser4FNA(){
+	public HabitatParser4FNA(String dataprefix){
 		//text is the database table name: source ->habitate string
 		File source = new File(Registry.TargetDirectory,
 				ApplicationUtilities.getProperty("HABITATS"));
 		//File source = new File("C:/DATA/FNA-v19/target/habitats");
 		//construct a database table for habitat data
-		this.hpDbA = new HabitatParserDbAccessor();
+		this.hpDbA = new HabitatParserDbAccessor(dataprefix);
 		hpDbA.createTable();
 		hpDbA.populateTable(source);		
 	}
@@ -221,8 +222,8 @@ public class HabitatParser4FNA implements Learn2Parse{
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		HabitatParser4FNA hpf = new HabitatParser4FNA();
-		hpf.parse();
+		//HabitatParser4FNA hpf = new HabitatParser4FNA();
+		//hpf.parse();
 
 	}
 
