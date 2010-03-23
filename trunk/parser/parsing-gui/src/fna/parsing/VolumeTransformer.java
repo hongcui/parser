@@ -193,7 +193,7 @@ public class VolumeTransformer extends Thread {
 				listener.progress((count*50) / total);
 			}
 			
-			HabitatParser4FNA hpf = new HabitatParser4FNA();
+			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
 			VolumeFinalizer vf = new VolumeFinalizer(listener, null);
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
