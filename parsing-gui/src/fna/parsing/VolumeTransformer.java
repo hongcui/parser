@@ -52,7 +52,7 @@ public class VolumeTransformer extends Thread {
 	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	private String conservednamestatement ="(name conserved|nom. cons.)";
 	private static final Logger LOGGER = Logger.getLogger(VolumeTransformer.class);
-	private VolumeTransformerDbAccess vtDbA = new VolumeTransformerDbAccess();	
+	private VolumeTransformerDbAccess vtDbA = null;	
 	private Hashtable ranks;
 
 	private String taxontable = null;
@@ -68,6 +68,7 @@ public class VolumeTransformer extends Thread {
 		this.taxontable = dataPrefix.trim()+"_"	+ ApplicationUtilities.getProperty("taxontable");
 		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
 		this.publicationtable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
+		vtDbA = new VolumeTransformerDbAccess(dataPrefix);
 		
 		ti = TaxonIndexer.loadUpdated(Registry.ConfigurationDirectory);
 		if(ti.emptyNumbers() || ti.emptyNames()) ti = null;
