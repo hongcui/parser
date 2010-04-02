@@ -51,6 +51,9 @@ import fna.parsing.VolumeMarkup;
 import fna.parsing.VolumeTransformer;
 import fna.parsing.VolumeVerifier;
 import fna.parsing.character.LearnedTermsReport;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.layout.TableColumnLayout;
 /**
  * @author chunshui
  */
@@ -104,6 +107,8 @@ public class MainForm {
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	public static Text markUpPerlLog;
+	private Table table;
+	private Text text;
 	
 	public static void main(String[] args) {
 		try {
@@ -139,12 +144,12 @@ public class MainForm {
 	protected void createContents(Display display) throws Exception{
 		shell = new Shell(display);
 		shell.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/garland_logo.gif"));
-		shell.setSize(852, 600);
+		shell.setSize(843, 614);
 		shell.setLocation(200, 100);
 		shell.setText(ApplicationUtilities.getProperty("application.name"));
 
 		final TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
-		tabFolder.setBounds(10, 10, 803, 444);
+		tabFolder.setBounds(10, 10, 803, 469);
 		tabFolder.addSelectionListener(new SelectionListener() {
 
 			public void widgetDefaultSelected(SelectionEvent arg0) {
@@ -514,9 +519,6 @@ public class MainForm {
 		extractionFileColumnTableColumn.setWidth(254);
 		extractionFileColumnTableColumn.setText(
 				ApplicationUtilities.getProperty("file"));
-
-
-		/* Verification Tab */
 		
 		final TabItem verificationTabItem = new TabItem(tabFolder, SWT.NONE);
 		verificationTabItem.setText(ApplicationUtilities.getProperty("tab.three.name"));
@@ -858,6 +860,99 @@ public class MainForm {
 		});
 		applyToAllButton.setText("Apply to Checked");
 		applyToAllButton.setBounds(513, 385, 110, 23);
+		
+		///////////////// New Tab!!????????????/////////////////////////
+		/* Character State tab */
+		TabItem tbtmCharacterStates = new TabItem(tabFolder, SWT.NONE);
+		tbtmCharacterStates.setText("Character States");
+		
+		Composite composite_8 = new Composite(tabFolder, SWT.NONE);
+		tbtmCharacterStates.setControl(composite_8);
+		
+		Group group = new Group(composite_8, SWT.NONE);
+		group.setBounds(0, 0, 620, 284);
+		
+		Group group_1 = new Group(composite_8, SWT.NONE);
+		group_1.setBounds(0, 329, 504, 102);
+		
+		Label lblContextTable = new Label(group_1, SWT.NONE);
+		lblContextTable.setBounds(10, 10, 84, 15);
+		lblContextTable.setText("Context Table");
+		
+		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(group_1, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite_1.setBounds(0, 31, 493, 61);
+		scrolledComposite_1.setExpandHorizontal(true);
+		scrolledComposite_1.setExpandVertical(true);
+		
+		TableViewer tableViewer = new TableViewer(scrolledComposite_1, SWT.BORDER | SWT.FULL_SELECTION);
+		table = tableViewer.getTable();
+		scrolledComposite_1.setContent(table);
+		scrolledComposite_1.setMinSize(table.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		Group group_2 = new Group(composite_8, SWT.NONE);
+		group_2.setBounds(518, 329, 267, 102);
+		
+		text = new Text(group_2, SWT.BORDER| SWT.MULTI| SWT.WRAP | SWT.V_SCROLL);
+		text.setEditable(false);
+		text.setBounds(10, 10, 247, 82);
+		
+		Group group_3 = new Group(composite_8, SWT.NONE);
+		group_3.setBounds(0, 290, 504, 36);
+		
+		Label lblGroup = new Label(group_3, SWT.NONE);
+		lblGroup.setBounds(10, 13, 40, 15);
+		lblGroup.setText("Group");
+		
+		Combo combo_1 = new Combo(group_3, SWT.NONE);
+		combo_1.setBounds(56, 10, 128, 23);
+		
+		Label lblDecision = new Label(group_3, SWT.NONE);
+		lblDecision.setBounds(205, 13, 55, 15);
+		lblDecision.setText("Decision");
+		
+		Combo combo_2 = new Combo(group_3, SWT.NONE);
+		combo_2.setBounds(259, 10, 128, 23);
+		
+		Button btnSave = new Button(group_3, SWT.NONE);
+		btnSave.setBounds(419, 8, 75, 25);
+		btnSave.setText("Save");
+		
+		Label label_1 = new Label(composite_8, SWT.SEPARATOR | SWT.VERTICAL);
+		label_1.setBounds(510, 298, 2, 133);
+		
+		Group group_4 = new Group(composite_8, SWT.NONE);
+		group_4.setBounds(518, 293, 267, 33);
+		
+		Label lblProcessedGroups = new Label(group_4, SWT.NONE);
+		lblProcessedGroups.setBounds(10, 10, 134, 15);
+		lblProcessedGroups.setText("Processed Groups");
+		
+		Group group_6 = new Group(composite_8, SWT.NONE);
+		group_6.setBounds(626, 0, 159, 284);
+		
+		Label label_3 = new Label(group_6, SWT.NONE);
+		label_3.setBounds(10, 10, 115, 15);
+		label_3.setText("Removed Terms");
+		
+		ScrolledComposite scrolledComposite = new ScrolledComposite(group_6, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite.setBounds(10, 31, 139, 243);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		
+		Group group_7 = new Group(scrolledComposite, SWT.NONE);
+		
+		Label label_4 = new Label(group_7, SWT.NONE);
+		label_4.setBounds(10, 20, 83, 15);
+		label_4.setText("New Label");
+		
+		Label label_2 = new Label(group_7, SWT.NONE);
+		label_2.setBounds(99, 20, 15, 15);
+		label_2.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
+		scrolledComposite.setContent(group_7);
+		scrolledComposite.setMinSize(group_7.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		/////////////////////////////////////////////////////////////////////////////////////////////
+		/*
+		 * Finalizer tab */
 
 		final TabItem finalizerTabItem = new TabItem(tabFolder, SWT.NONE);
 		finalizerTabItem.setText(ApplicationUtilities.getProperty("tab.seven.name"));
@@ -958,7 +1053,7 @@ public class MainForm {
 		final Label logoLabel = new Label(shell, SWT.NONE);
 		String ls = System.getProperty("line.separator");
 		logoLabel.setText(ApplicationUtilities.getProperty("application.instructions"));
-		logoLabel.setBounds(10, 460, 530, 96);
+		logoLabel.setBounds(10, 485, 530, 83);
 
 		final Label label = new Label(shell, SWT.NONE);
 		label.setBackgroundImage(SWTResourceManager.getImage(MainForm.class, 
