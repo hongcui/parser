@@ -22,5 +22,8 @@
 	<classpathentry kind="lib" path="swt-grouplayout.jar"/>
 	<classpathentry kind="lib" path="baseline.jar"/>
 	<classpathentry kind="lib" path="formattedtext-1.0.0.jar" sourcepath="formattedtext-1.0.0-src.zip"/>
+	<classpathentry kind="lib" path="lib/ant.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-1.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/prefuse.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
