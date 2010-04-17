@@ -107,8 +107,10 @@ public class MainForm {
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	public static Text markUpPerlLog;
-	private Table table;
-	private Text text;
+	
+	/*Character Tabe variables*/
+	private Table contextTable;
+	private Table processedGroupsTable;
 	
 	public static void main(String[] args) {
 		try {
@@ -869,35 +871,31 @@ public class MainForm {
 		Composite composite_8 = new Composite(tabFolder, SWT.NONE);
 		tbtmCharacterStates.setControl(composite_8);
 		
-		Group group = new Group(composite_8, SWT.NONE);
-		group.setBounds(0, 0, 620, 284);
-		
 		Group group_1 = new Group(composite_8, SWT.NONE);
-		group_1.setBounds(0, 329, 504, 102);
+		group_1.setBounds(0, 282, 635, 149);
 		
 		Label lblContextTable = new Label(group_1, SWT.NONE);
 		lblContextTable.setBounds(10, 10, 84, 15);
 		lblContextTable.setText("Context Table");
+		// Add the context table here
+		contextTable = new Table(group_1, SWT.FULL_SELECTION | SWT.BORDER);
+		contextTable.setBounds(10, 31, 615, 108);
+		contextTable.setHeaderVisible(true);
+		contextTable.setLinesVisible(true);
 		
-		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(group_1, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite_1.setBounds(0, 31, 493, 61);
-		scrolledComposite_1.setExpandHorizontal(true);
-		scrolledComposite_1.setExpandVertical(true);
+		final TableColumn contextTablecolumn_1 = new TableColumn(contextTable, SWT.NONE);
+		contextTablecolumn_1.setWidth(100);
+		contextTablecolumn_1.setText("Source");
 		
-		TableViewer tableViewer = new TableViewer(scrolledComposite_1, SWT.BORDER | SWT.FULL_SELECTION);
-		table = tableViewer.getTable();
-		scrolledComposite_1.setContent(table);
-		scrolledComposite_1.setMinSize(table.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		final TableColumn contextTablecolumn_2 = new TableColumn(contextTable, SWT.NONE);
+		contextTablecolumn_2.setWidth(512);
+		contextTablecolumn_2.setText("Sentence");
 		
 		Group group_2 = new Group(composite_8, SWT.NONE);
-		group_2.setBounds(518, 329, 267, 102);
-		
-		text = new Text(group_2, SWT.BORDER| SWT.MULTI| SWT.WRAP | SWT.V_SCROLL);
-		text.setEditable(false);
-		text.setBounds(10, 10, 247, 82);
+		group_2.setBounds(641, 282, 144, 149);
 		
 		Group group_3 = new Group(composite_8, SWT.NONE);
-		group_3.setBounds(0, 290, 504, 36);
+		group_3.setBounds(0, 240, 504, 36);
 		
 		Label lblGroup = new Label(group_3, SWT.NONE);
 		lblGroup.setBounds(10, 13, 40, 15);
@@ -918,38 +916,29 @@ public class MainForm {
 		btnSave.setText("Save");
 		
 		Label label_1 = new Label(composite_8, SWT.SEPARATOR | SWT.VERTICAL);
-		label_1.setBounds(510, 298, 2, 133);
+		label_1.setBounds(510, 240, -6, 191);
 		
 		Group group_4 = new Group(composite_8, SWT.NONE);
-		group_4.setBounds(518, 293, 267, 33);
+		group_4.setBounds(641, 240, 144, 33);
 		
 		Label lblProcessedGroups = new Label(group_4, SWT.NONE);
 		lblProcessedGroups.setBounds(10, 10, 134, 15);
 		lblProcessedGroups.setText("Processed Groups");
 		
 		Group group_6 = new Group(composite_8, SWT.NONE);
-		group_6.setBounds(626, 0, 159, 284);
+		group_6.setBounds(419, 10, 366, 224);
 		
 		Label label_3 = new Label(group_6, SWT.NONE);
 		label_3.setBounds(10, 10, 115, 15);
 		label_3.setText("Removed Terms");
 		
 		ScrolledComposite scrolledComposite = new ScrolledComposite(group_6, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBounds(10, 31, 139, 243);
+		scrolledComposite.setBounds(10, 31, 346, 183);
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(true);
 		
-		Group group_7 = new Group(scrolledComposite, SWT.NONE);
-		
-		Label label_4 = new Label(group_7, SWT.NONE);
-		label_4.setBounds(10, 20, 83, 15);
-		label_4.setText("New Label");
-		
-		Label label_2 = new Label(group_7, SWT.NONE);
-		label_2.setBounds(99, 20, 15, 15);
-		label_2.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
-		scrolledComposite.setContent(group_7);
-		scrolledComposite.setMinSize(group_7.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		Composite composite_9 = new Composite(composite_8, SWT.NONE);
+		composite_9.setBounds(0, 10, 413, 224);
 		/////////////////////////////////////////////////////////////////////////////////////////////
 		/*
 		 * Finalizer tab */
