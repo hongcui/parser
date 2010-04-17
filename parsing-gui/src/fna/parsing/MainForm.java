@@ -111,6 +111,11 @@ public class MainForm {
 	/*Character Tabe variables*/
 	private Table contextTable;
 	private Table processedGroupsTable;
+	private Table table;
+	private Text text;
+	private Text text_1;
+	private Text text_2;
+	private Text text_3;
 	
 	public static void main(String[] args) {
 		try {
@@ -871,15 +876,12 @@ public class MainForm {
 		Composite composite_8 = new Composite(tabFolder, SWT.NONE);
 		tbtmCharacterStates.setControl(composite_8);
 		
-		Group group_1 = new Group(composite_8, SWT.NONE);
-		group_1.setBounds(0, 282, 635, 149);
-		
-		Label lblContextTable = new Label(group_1, SWT.NONE);
-		lblContextTable.setBounds(10, 10, 84, 15);
-		lblContextTable.setText("Context Table");
+		Group grpContextTable = new Group(composite_8, SWT.NONE);
+		grpContextTable.setText("Context Table");
+		grpContextTable.setBounds(0, 282, 635, 149);
 		// Add the context table here
-		contextTable = new Table(group_1, SWT.FULL_SELECTION | SWT.BORDER);
-		contextTable.setBounds(10, 31, 615, 108);
+		contextTable = new Table(grpContextTable, SWT.FULL_SELECTION | SWT.BORDER);
+		contextTable.setBounds(10, 20, 615, 119);
 		contextTable.setHeaderVisible(true);
 		contextTable.setLinesVisible(true);
 		
@@ -892,53 +894,132 @@ public class MainForm {
 		contextTablecolumn_2.setText("Sentence");
 		
 		Group group_2 = new Group(composite_8, SWT.NONE);
-		group_2.setBounds(641, 282, 144, 149);
+		group_2.setBounds(641, 240, 144, 191);
+		
+		processedGroupsTable = new Table(group_2, SWT.BORDER | SWT.FULL_SELECTION);
+		processedGroupsTable.setBounds(10, 10, 124, 171);
+		processedGroupsTable.setLinesVisible(true);
+		processedGroupsTable.setHeaderVisible(true);
+		
+		TableColumn tableColumn = new TableColumn(processedGroupsTable, SWT.NONE);
+		tableColumn.setWidth(120);
+		tableColumn.setText("Processed Groups");
 		
 		Group group_3 = new Group(composite_8, SWT.NONE);
-		group_3.setBounds(0, 240, 504, 36);
+		group_3.setBounds(0, 240, 635, 36);
 		
 		Label lblGroup = new Label(group_3, SWT.NONE);
 		lblGroup.setBounds(10, 13, 40, 15);
 		lblGroup.setText("Group");
 		
 		Combo combo_1 = new Combo(group_3, SWT.NONE);
-		combo_1.setBounds(56, 10, 128, 23);
+		combo_1.setBounds(56, 10, 161, 23);
+		
+		/*Get these values from the database later*/
+		String [] groups = new String [] {"10", "12","24","26","29", "44"};
+		combo_1.setItems(groups);
+		combo_1.setText(groups[0]);
 		
 		Label lblDecision = new Label(group_3, SWT.NONE);
-		lblDecision.setBounds(205, 13, 55, 15);
+		lblDecision.setBounds(286, 13, 55, 15);
 		lblDecision.setText("Decision");
 		
 		Combo combo_2 = new Combo(group_3, SWT.NONE);
-		combo_2.setBounds(259, 10, 128, 23);
+		combo_2.setBounds(365, 10, 145, 23);
 		
 		Button btnSave = new Button(group_3, SWT.NONE);
-		btnSave.setBounds(419, 8, 75, 25);
+		btnSave.setBounds(550, 8, 75, 25);
 		btnSave.setText("Save");
 		
 		Label label_1 = new Label(composite_8, SWT.SEPARATOR | SWT.VERTICAL);
 		label_1.setBounds(510, 240, -6, 191);
 		
-		Group group_4 = new Group(composite_8, SWT.NONE);
-		group_4.setBounds(641, 240, 144, 33);
+		Group grpRemovedTerms = new Group(composite_8, SWT.NONE);
+		grpRemovedTerms.setText("Removed Terms");
+		grpRemovedTerms.setBounds(492, 26, 293, 208);
 		
-		Label lblProcessedGroups = new Label(group_4, SWT.NONE);
-		lblProcessedGroups.setBounds(10, 10, 134, 15);
-		lblProcessedGroups.setText("Processed Groups");
-		
-		Group group_6 = new Group(composite_8, SWT.NONE);
-		group_6.setBounds(419, 10, 366, 224);
-		
-		Label label_3 = new Label(group_6, SWT.NONE);
-		label_3.setBounds(10, 10, 115, 15);
-		label_3.setText("Removed Terms");
-		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(group_6, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBounds(10, 31, 346, 183);
+		ScrolledComposite scrolledComposite = new ScrolledComposite(grpRemovedTerms, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite.setBounds(10, 24, 273, 174);
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(true);
 		
-		Composite composite_9 = new Composite(composite_8, SWT.NONE);
-		composite_9.setBounds(0, 10, 413, 224);
+		Group group_7 = new Group(scrolledComposite, SWT.NONE);
+		
+		Group group_1 = new Group(group_7, SWT.NONE);
+		group_1.setBounds(0, 10, 259, 36);
+		
+		text_2 = new Text(group_1, SWT.BORDER);
+		text_2.setBounds(10, 10, 98, 21);
+		
+		text_3 = new Text(group_1, SWT.BORDER);
+		text_3.setBounds(138, 10, 97, 21);
+		
+		Label label_3 = new Label(group_1, SWT.NONE);
+		label_3.setBounds(114, 10, 16, 15);
+		label_3.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
+		
+		Label label_6 = new Label(group_1, SWT.NONE);
+		label_6.setBounds(241, 10, 16, 15);
+		label_6.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
+		scrolledComposite.setContent(group_7);
+		scrolledComposite.setMinSize(group_7.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		Group grpDeleteAnyTerm = new Group(composite_8, SWT.NONE);
+		grpDeleteAnyTerm.setText("Delete any term that you think doesn't co-occur");
+		grpDeleteAnyTerm.setBounds(0, 0, 486, 234);
+		
+		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(grpDeleteAnyTerm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite_1.setBounds(10, 41, 466, 183);
+		scrolledComposite_1.setExpandHorizontal(true);
+		scrolledComposite_1.setExpandVertical(true);
+		
+		Group group = new Group(scrolledComposite_1, SWT.NONE);
+		
+		Group group_5 = new Group(group, SWT.NONE);
+		group_5.setBounds(10, 10, 442, 35);
+		
+		Button button = new Button(group_5, SWT.CHECK);
+		button.setBounds(10, 10, 18, 16);
+		
+		text = new Text(group_5, SWT.BORDER);
+		text.setBounds(40, 10, 124, 21);
+		
+		Label label_2 = new Label(group_5, SWT.NONE);
+		label_2.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
+		label_2.setBounds(187, 10, 18, 15);
+		
+		text_1 = new Text(group_5, SWT.BORDER);
+		text_1.setBounds(221, 10, 124, 21);
+		
+		Label label_4 = new Label(group_5, SWT.NONE);
+		label_4.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
+		label_4.setBounds(361, 11, 18, 15);
+		
+		Label label_5 = new Label(group_5, SWT.NONE);
+		label_5.setBounds(398, 11, 34, 15);
+		label_5.setText("100");
+		scrolledComposite_1.setContent(group);
+		scrolledComposite_1.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		Label lblContext = new Label(grpDeleteAnyTerm, SWT.NONE);
+		lblContext.setBounds(10, 20, 55, 15);
+		lblContext.setText("Context");
+		
+		Label lblTerm = new Label(grpDeleteAnyTerm, SWT.NONE);
+		lblTerm.setBounds(72, 20, 55, 15);
+		lblTerm.setText("Term 1");
+		
+		Label lblTerm_1 = new Label(grpDeleteAnyTerm, SWT.NONE);
+		lblTerm_1.setBounds(235, 20, 55, 15);
+		lblTerm_1.setText("Term 2");
+		
+		Label lblFrequency = new Label(grpDeleteAnyTerm, SWT.NONE);
+		lblFrequency.setBounds(411, 20, 65, 15);
+		lblFrequency.setText("Frequency");
+		
+		Button btnViewGraphVisualization = new Button(composite_8, SWT.NONE);
+		btnViewGraphVisualization.setBounds(492, 0, 159, 25);
+		btnViewGraphVisualization.setText("View Graph Visualization");
 		/////////////////////////////////////////////////////////////////////////////////////////////
 		/*
 		 * Finalizer tab */
