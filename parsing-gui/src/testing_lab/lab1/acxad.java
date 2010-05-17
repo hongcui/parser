@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Shell;
 public class acxad {
 
   public static void main(String[] args) {
-    Display display = new Display();
+/*    Display display = new Display();
     Shell shell = new Shell(display);
     ProgressBar bar = new ProgressBar(shell, SWT.SMOOTH);
     bar.setBounds(10, 10, 200, 32);
@@ -24,6 +24,8 @@ public class acxad {
       if (!display.readAndDispatch())
         display.sleep();
     }
-    display.dispose();
+    display.dispose();*/
+	  String x = "Group1.xml";
+	  System.out.println(x.substring(x.indexOf(".")-1,x.indexOf(".")));
   }
 }
