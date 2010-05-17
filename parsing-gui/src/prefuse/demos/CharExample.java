@@ -40,7 +40,7 @@ public class CharExample {
         Graph graph = null;
         try {
         	
-        	graph = new GraphMLReader().readGraph("D:/FNA/FNAV19/target/co-occurance/chars.xml");
+        	graph = new GraphMLReader().readGraph("D:/FNA/FNAV19/target/co-occurance/Group1.xml");
             //graph = new GraphMLReader().readGraph("/socialnet.xml");
         } catch ( DataIOException e ) {
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class CharExample {
         
         // draw the "name" label for NodeItems
         LabelRenderer r = new LabelRenderer("name");
-        r.setRoundedCorner(8, 8); // round the corners
+        r.setRoundedCorner(50, 50); // round the corners
         
         // create a new default renderer factory
         // return our name label renderer as the default for all non-EdgeItems
@@ -75,17 +75,17 @@ public class CharExample {
         // pink for females, baby blue for males
         int[] palette = new int[] {
             //ColorLib.rgb(255,255,255), ColorLib.rgb(0,0,0)
-            ColorLib.rgb(255,180,180), ColorLib.rgb(190,190,255)
+            ColorLib.rgb(77,147,47)//, ColorLib.rgb(190,190,255)
         };
         // map nominal data values to colors using our provided palette
-        DataColorAction fill = new DataColorAction("graph.nodes", "gender",
+        DataColorAction fill = new DataColorAction("graph.nodes", "type",
                 Constants.NOMINAL, VisualItem.FILLCOLOR, palette);
         // use black for node text
         ColorAction text = new ColorAction("graph.nodes",
-                VisualItem.TEXTCOLOR, ColorLib.gray(0));
+                VisualItem.TEXTCOLOR, ColorLib.rgb(255, 255, 255));
         // use light grey for edges
         ColorAction edges = new ColorAction("graph.edges",
-                VisualItem.STROKECOLOR, ColorLib.gray(150));
+                VisualItem.STROKECOLOR, ColorLib.rgb(121, 11, 4));
         
         // create an action list containing all color assignments
         ActionList color = new ActionList();
@@ -95,7 +95,7 @@ public class CharExample {
         
         // create an action list with an animated layout
         ActionList layout = new ActionList(Activity.INFINITY);
-        layout.add(new ForceDirectedLayout("graph"));
+        //layout.add(new ForceDirectedLayout("graph"));
         layout.add(new RepaintAction());
         
         // add the actions to the visualization
@@ -106,7 +106,7 @@ public class CharExample {
         // -- 5. the display and interactive controls -------------------------
         
         Display d = new Display(vis);
-        d.setSize(200, 200); // set display size
+        d.setSize(8, 8); // set display size
         // drag individual items around
         d.addControlListener(new DragControl());
         // pan with left-click drag on background

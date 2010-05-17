@@ -32,7 +32,7 @@ public class Example {
         Graph graph = null;
         try {
         	
-        	graph = new GraphMLReader().readGraph("/chars.xml");
+        	graph = new GraphMLReader().readGraph("D:/FNA/FNAV19/target/co-occurance/Group1.xml");
             //graph = new GraphMLReader().readGraph("/socialnet.xml");
         } catch ( DataIOException e ) {
             e.printStackTrace();
