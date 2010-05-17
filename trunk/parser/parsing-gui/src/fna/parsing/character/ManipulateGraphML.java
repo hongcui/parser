@@ -37,7 +37,7 @@ public class ManipulateGraphML {
 	    try{
 	    	
 	      //File location has to be put somewhere
-	      String xmlFile = "D:/FNA/FNAV19/target/co-occurance/" + groupName;
+	      String xmlFile = "D:/FNA/FNAV19/target/co-occurrence/" + groupName;
 	      File file = new File(xmlFile);
 	      String remElement = "node";
 	      if (file.exists()){
@@ -101,7 +101,7 @@ public class ManipulateGraphML {
 	public static boolean restoreNode(GraphNode graphNode, String groupName) {
 		
 			/*File path hardcoding has to be removed */
-	      String xmlFile = "D:/FNA/FNAV19/target/co-occurance/" + groupName;
+	      String xmlFile = "D:/FNA/FNAV19/target/co-occurrence/" + groupName;
 	      File file = new File(xmlFile);
 	      String remElement = "node";
 	      try {

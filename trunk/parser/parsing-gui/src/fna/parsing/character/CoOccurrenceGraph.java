@@ -28,7 +28,7 @@ package fna.parsing.character;
 
 	public class CoOccurrenceGraph {
 
-	    public static void main(String[] argv) {
+	    public static void viewGraph(String graphPath) {
 	        
 	        // -- 1. load the data
 			// ------------------------------------------------
@@ -38,7 +38,7 @@ package fna.parsing.character;
 	        Graph graph = null;
 	        try {
 	        	
-	        	graph = new GraphMLReader().readGraph("D:/FNA/FNAV19/target/co-occurance/Group1.xml");
+	        	graph = new GraphMLReader().readGraph(graphPath);
 	            // graph = new GraphMLReader().readGraph("/socialnet.xml");
 	        } catch ( DataIOException e ) {
 	            e.printStackTrace();
@@ -131,7 +131,7 @@ package fna.parsing.character;
 	        // create a new window to hold the visualization
 	        JFrame frame = new JFrame("Character States");
 	        // ensure application exits when window is closed
-	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	        frame.add(d);
 	        frame.pack();           // layout components in window
 	        frame.setVisible(true); // show the window
