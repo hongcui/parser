@@ -19,6 +19,8 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -41,6 +43,11 @@ import sun.net.ApplicationProxy;
 
 import com.swtdesigner.SWTResourceManager;
 
+import fna.beans.CoOccurrenceBean;
+import fna.beans.ContextBean;
+import fna.beans.TermBean;
+import fna.beans.TermsDataBean;
+import fna.db.CharacterStateDBAccess;
 import fna.db.MainFormDbAccessor;
 import fna.parsing.ParsingException;
 import fna.parsing.ProcessListener;
@@ -50,12 +57,13 @@ import fna.parsing.VolumeFinalizer;
 import fna.parsing.VolumeMarkup;
 import fna.parsing.VolumeTransformer;
 import fna.parsing.VolumeVerifier;
+import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.LearnedTermsReport;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.layout.TableColumnLayout;
 /**
- * @author chunshui
+ * @author chunshui, Partha Pratim Sanyal (ppsanyal@email.arizona.edu)
  */
 
 
@@ -93,6 +101,8 @@ public class MainForm {
 	
 	private Combo tagListCombo;
 	public static Combo dataPrefixCombo;
+
+	
 	private StyledText glossaryStyledText;
 	public Shell shell;
 	/*In Unknown removal this variable is used to remember the last tab selected*/
@@ -106,17 +116,54 @@ public class MainForm {
 	 */
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
+	private CharacterStateDBAccess charDb = new CharacterStateDBAccess();
 	public static Text markUpPerlLog;
 	
-	/*Character Tabe variables*/
+	/*Character Tab variables-------------------------------------------------------- --------------------------*/
+	/* This combo is the decision combo in Character tab */
+	public static Combo comboDecision;
+	/* This combo is the groups list on the Character Tab*/
+	public static Combo groupsCombo;
+	/* This Scrolled composite holds the termsGroup */
+	private static Group termsGroup;
+	/* This Scrolled Composite will hold the terms group */	
+	private static ScrolledComposite termsScrolledComposite;
+	/* This Group will hold all the removed terms */
+	private static Group removedTermsGroup;
+	/* This Scrolled Composite will hold the removed terms group */	
+	private static ScrolledComposite removedScrolledComposite ;
+	/* This is the standard increment for every terms row*/
+	private static int standardIncrement = 30;
+	/* These are the initial coordinates of term 1 group - this will keep on changing and hold the latest group
+	 * Once a new group is loaded, this will be reset to initial values
+	 * Initial y =
+	 * */
+	private static Rectangle term1 = new Rectangle(40, 10, 130, 35);
+	
+	/* These are the initial coordinates of term 2 group - this will keep on changing and hold the latest group
+	 * Once a new group is loaded, this will be reset to initial values
+	 * Initial y =
+	 * */
+	private static Rectangle term2 = new Rectangle(210, 10, 130, 35);
+	
+	/* These are the initial coordinates of deleted term 2 group - this will keep on changing and hold the latest group
+	 * Once a new group is loaded, this will be reset to initial values
+	 * Initial y =
+	 * */
+	private static Rectangle contextRadio = new Rectangle(10, 20, 20, 15);
+	
+	/* These are the initial coordinates of frequency label - this will keep on changing and hold the latest group
+	 * Once a new group is loaded, this will be reset to initial values
+	 * Initial y =
+	 * */
+	private static Rectangle frequencyLabel = new Rectangle(370, 20, 40, 15);
+	
+	
+	
 	private Table contextTable;
 	private Table processedGroupsTable;
-	private Table table;
-	private Text text;
-	private Text text_1;
-	private Text text_2;
-	private Text text_3;
 	
+	//-----------------------------------Character Tab Variables -----------------------------------------//
 	public static void main(String[] args) {
 		try {
 			
@@ -312,7 +359,18 @@ public class MainForm {
 						return;
 					}
 
-				}							
+				}	
+				
+				if (statusOfMarkUp[6]) {
+					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))){
+						// set the decisions combo
+						setCharacterTabDecisions();
+						// set the groups list
+						setCharactertabGroups();
+						// show the terms that co-occured in the first group
+						showTerms();
+					}
+				}
 
 			}
 			
@@ -415,7 +473,7 @@ public class MainForm {
 				String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
 				String message = ApplicationUtilities.getProperty("popup.info.saved");				
 				ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-				
+								
 			}
 		});
 		saveProjectButton.setBounds(673, 385, 100, 23);
@@ -565,7 +623,6 @@ public class MainForm {
 		});
 		clearVerificationButton.setBounds(654, 385, 100, 23);
 		clearVerificationButton.setText("Clear");
-// SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL
 		verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
 		verificationTable.setBounds(10, 10, 744, 369);
 		verificationTable.setLinesVisible(true);
@@ -871,7 +928,7 @@ public class MainForm {
 		///////////////// New Tab!!????????????/////////////////////////
 		/* Character State tab */
 		TabItem tbtmCharacterStates = new TabItem(tabFolder, SWT.NONE);
-		tbtmCharacterStates.setText("Character States");
+		tbtmCharacterStates.setText(ApplicationUtilities.getProperty("tab.character"));
 		
 		Composite composite_8 = new Composite(tabFolder, SWT.NONE);
 		tbtmCharacterStates.setControl(composite_8);
@@ -884,6 +941,34 @@ public class MainForm {
 		contextTable.setBounds(10, 20, 615, 119);
 		contextTable.setHeaderVisible(true);
 		contextTable.setLinesVisible(true);
+		contextTable.addMouseListener(new MouseListener () {
+			public void mouseDoubleClick(MouseEvent event) {
+				try {
+					String filePath = Registry.TargetDirectory + 
+					ApplicationUtilities.getProperty("DEHYPHENED")+ "\\";
+					String fileName = contextTable.getSelection()[0].getText(0).trim();
+					fileName = fileName.substring(0, fileName.indexOf("-"));
+					filePath += fileName;
+					if (filePath.indexOf("txt") != -1) {
+						try {
+							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+									+ " \"" + filePath + "\"");
+						} catch (Exception e){
+							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
+									ApplicationUtilities.getProperty("popup.editor.msg"),
+									ApplicationUtilities.getProperty("popup.header.error"), 
+									SWT.ERROR);
+						}
+					}
+				} catch (Exception exe) {
+					LOGGER.error("Error in displaying the file in context table", exe);
+					exe.printStackTrace();
+				}
+ 
+			}			
+			public void mouseDown(MouseEvent event) {}
+			public void mouseUp(MouseEvent event) {}
+		});
 		
 		final TableColumn contextTablecolumn_1 = new TableColumn(contextTable, SWT.NONE);
 		contextTablecolumn_1.setWidth(100);
@@ -912,20 +997,16 @@ public class MainForm {
 		lblGroup.setBounds(10, 13, 40, 15);
 		lblGroup.setText("Group");
 		
-		Combo combo_1 = new Combo(group_3, SWT.NONE);
-		combo_1.setBounds(56, 10, 161, 23);
-		
-		/*Get these values from the database later*/
-		String [] groups = new String [] {"10", "12","24","26","29", "44"};
-		combo_1.setItems(groups);
-		combo_1.setText(groups[0]);
+		groupsCombo = new Combo(group_3, SWT.NONE);
+		groupsCombo.setBounds(56, 10, 161, 23);
 		
 		Label lblDecision = new Label(group_3, SWT.NONE);
 		lblDecision.setBounds(286, 13, 55, 15);
 		lblDecision.setText("Decision");
 		
-		Combo combo_2 = new Combo(group_3, SWT.NONE);
-		combo_2.setBounds(365, 10, 145, 23);
+		comboDecision = new Combo(group_3, SWT.NONE);
+		comboDecision.setBounds(365, 10, 145, 23);
+
 		
 		Button btnSave = new Button(group_3, SWT.NONE);
 		btnSave.setBounds(550, 8, 75, 25);
@@ -936,70 +1017,31 @@ public class MainForm {
 		
 		Group grpRemovedTerms = new Group(composite_8, SWT.NONE);
 		grpRemovedTerms.setText("Removed Terms");
-		grpRemovedTerms.setBounds(492, 26, 293, 208);
+		grpRemovedTerms.setBounds(457, 26, 328, 208);
 		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(grpRemovedTerms, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBounds(10, 24, 273, 174);
-		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(true);
+		removedScrolledComposite = new ScrolledComposite(grpRemovedTerms, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		removedScrolledComposite.setBounds(10, 24, 308, 174);
+		removedScrolledComposite.setExpandHorizontal(true);
+		removedScrolledComposite.setExpandVertical(true);
 		
-		Group group_7 = new Group(scrolledComposite, SWT.NONE);
+		removedTermsGroup = new Group(removedScrolledComposite, SWT.NONE);
+		removedTermsGroup.setLayoutData(new RowData());
 		
-		Group group_1 = new Group(group_7, SWT.NONE);
-		group_1.setBounds(0, 10, 259, 36);
-		
-		text_2 = new Text(group_1, SWT.BORDER);
-		text_2.setBounds(10, 10, 98, 21);
-		
-		text_3 = new Text(group_1, SWT.BORDER);
-		text_3.setBounds(138, 10, 97, 21);
-		
-		Label label_3 = new Label(group_1, SWT.NONE);
-		label_3.setBounds(114, 10, 16, 15);
-		label_3.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
-		
-		Label label_6 = new Label(group_1, SWT.NONE);
-		label_6.setBounds(241, 10, 16, 15);
-		label_6.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
-		scrolledComposite.setContent(group_7);
-		scrolledComposite.setMinSize(group_7.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		removedScrolledComposite.setContent(removedTermsGroup);
+		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Group grpDeleteAnyTerm = new Group(composite_8, SWT.NONE);
 		grpDeleteAnyTerm.setText("Delete any term that you think doesn't co-occur");
-		grpDeleteAnyTerm.setBounds(0, 0, 486, 234);
+		grpDeleteAnyTerm.setBounds(0, 0, 451, 234);
 		
-		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(grpDeleteAnyTerm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite_1.setBounds(10, 41, 466, 183);
-		scrolledComposite_1.setExpandHorizontal(true);
-		scrolledComposite_1.setExpandVertical(true);
+		termsScrolledComposite = new ScrolledComposite(grpDeleteAnyTerm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		termsScrolledComposite.setBounds(10, 41, 429, 183);
+		termsScrolledComposite.setExpandHorizontal(true);
+		termsScrolledComposite.setExpandVertical(true);
 		
-		Group group = new Group(scrolledComposite_1, SWT.NONE);
-		
-		Group group_5 = new Group(group, SWT.NONE);
-		group_5.setBounds(10, 10, 442, 35);
-		
-		Button button = new Button(group_5, SWT.CHECK);
-		button.setBounds(10, 10, 18, 16);
-		
-		text = new Text(group_5, SWT.BORDER);
-		text.setBounds(40, 10, 124, 21);
-		
-		Label label_2 = new Label(group_5, SWT.NONE);
-		label_2.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
-		label_2.setBounds(187, 10, 18, 15);
-		
-		text_1 = new Text(group_5, SWT.BORDER);
-		text_1.setBounds(221, 10, 124, 21);
-		
-		Label label_4 = new Label(group_5, SWT.NONE);
-		label_4.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/remove.jpg"));
-		label_4.setBounds(361, 11, 18, 15);
-		
-		Label label_5 = new Label(group_5, SWT.NONE);
-		label_5.setBounds(398, 11, 34, 15);
-		label_5.setText("100");
-		scrolledComposite_1.setContent(group);
-		scrolledComposite_1.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
+		termsScrolledComposite.setContent(termsGroup);
+		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Label lblContext = new Label(grpDeleteAnyTerm, SWT.NONE);
 		lblContext.setBounds(10, 20, 55, 15);
@@ -1010,16 +1052,22 @@ public class MainForm {
 		lblTerm.setText("Term 1");
 		
 		Label lblTerm_1 = new Label(grpDeleteAnyTerm, SWT.NONE);
-		lblTerm_1.setBounds(235, 20, 55, 15);
+		lblTerm_1.setBounds(231, 20, 55, 15);
 		lblTerm_1.setText("Term 2");
 		
 		Label lblFrequency = new Label(grpDeleteAnyTerm, SWT.NONE);
-		lblFrequency.setBounds(411, 20, 65, 15);
+		lblFrequency.setBounds(357, 20, 61, 15);
 		lblFrequency.setText("Frequency");
 		
 		Button btnViewGraphVisualization = new Button(composite_8, SWT.NONE);
 		btnViewGraphVisualization.setBounds(492, 0, 159, 25);
 		btnViewGraphVisualization.setText("View Graph Visualization");
+		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+"\\"+
+				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText());
+			}
+		});
 		/////////////////////////////////////////////////////////////////////////////////////////////
 		/*
 		 * Finalizer tab */
@@ -1415,5 +1463,143 @@ public class MainForm {
 		}
 		
 		return errorFlag;
+	}
+	
+	private void setCharacterTabDecisions() {
+		ArrayList<String> decisions = new ArrayList<String> ();
+		
+		try {
+			
+			charDb.getDecisionCategory(decisions);
+		} catch (Exception exe) {
+			LOGGER.error("Couldnt retrieve decision names" , exe);
+			exe.printStackTrace();
+		}
+		int count = 0;
+		String [] strDecisions = new String[decisions.size()];
+		for (String decision : decisions) {
+			strDecisions[count++] = decision;
+		}
+		comboDecision.setItems(strDecisions);
+		comboDecision.setText(strDecisions[0]);
+	}
+	
+	private void setCharactertabGroups() {
+		File directory = new File(Registry.TargetDirectory+"\\"+
+				ApplicationUtilities.getProperty("CHARACTER-STATES"));
+		File [] files = directory.listFiles();
+		
+		String [] fileNames = new String[files.length];
+		int count = 0;
+		for (File group : files) {
+			fileNames[count++] = group.getName();
+		}
+		
+		groupsCombo.setItems(fileNames);
+		groupsCombo.setText(fileNames[0]);
+		
+	}
+	private static ArrayList <CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean> ();
+	
+	private void showTerms() {
+		ArrayList<TermsDataBean> terms = null;
+		term1.y = 10;
+		term2.y = 10;
+		contextRadio.y = 20;
+		frequencyLabel.y = 20;
+		cooccurrences.clear();
+
+		/*If Previous saved things to be shown, the logic changes here*/
+		termsGroup = null;
+		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
+		termsGroup.setLayoutData(new RowData());
+		termsScrolledComposite.setContent(termsGroup);
+		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+				
+		try {
+			terms = charDb.getTerms(groupsCombo.getText());				
+			
+		} catch (Exception exe) {
+			LOGGER.error("Couldnt retrieve co-occurring terms" , exe);
+			exe.printStackTrace();
+		}
+
+		if (terms.size() > 5) {
+			
+			RowData rowdata = (RowData)termsGroup.getLayoutData();
+			rowdata.height = terms.size() * 36;
+			termsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        Rectangle rect = termsGroup.getBounds();
+	        rect.height = terms.size() * 36;
+	        termsGroup.setBounds(rect);
+			
+			
+			rowdata = (RowData)removedTermsGroup.getLayoutData();
+			rowdata.height = terms.size() * 36;
+			removedTermsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        rect = removedTermsGroup.getBounds();
+	        rect.height = terms.size() * 36;
+	        removedTermsGroup.setBounds(rect);
+			
+		}
+		
+		if (terms.size() != 0) {
+
+			
+			for (final TermsDataBean tbean : terms) {
+				CoOccurrenceBean cbean = new CoOccurrenceBean();
+				Group term1Group = new Group(termsGroup, SWT.NONE);				
+				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
+				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
+				
+				Group term2Group = new Group(termsGroup, SWT.NONE);	
+				term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
+				cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
+				
+				cbean.setGroupNo(tbean.getGroupId());
+				cbean.setSourceFiles(tbean.getSourceFiles());
+				
+				final Button button = new Button(termsGroup, SWT.RADIO);
+				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
+				button.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						if (button.getSelection()) {
+							contextTable.removeAll();
+							try {
+								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
+								
+								for (ContextBean cbean : contexts){
+									TableItem item = new TableItem(contextTable, SWT.NONE);
+									item.setText(new String[]{cbean.getSourceText(), cbean.getSentence()});
+								}
+								
+								
+							} catch (Exception exe) {
+								LOGGER.error("Couldnt retrieve sentences terms" , exe);
+								exe.printStackTrace();
+							}
+							
+						}
+
+					}
+				});
+
+				cbean.setContextButton(button);
+				
+				Label label = new Label(termsGroup, SWT.NONE);
+				label.setBounds(frequencyLabel.x, frequencyLabel.y, frequencyLabel.width, frequencyLabel.height);
+				label.setText(tbean.getFrequency()+ "");
+				cbean.setFrequency(label);
+				cooccurrences.add(cbean);
+				
+				term1.y += standardIncrement;
+				term2.y += standardIncrement;
+				contextRadio.y += standardIncrement;
+				frequencyLabel.y += standardIncrement;
+			}
+		}
+		
+		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 }
