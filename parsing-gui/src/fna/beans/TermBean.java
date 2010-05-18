@@ -79,5 +79,33 @@ public class TermBean {
 		}
 	}
 
+	/**
+	 * @return the termGroup
+	 */
+	public Group getTermGroup() {
+		return termGroup;
+	}
+
+	/**
+	 * @param termGroup the termGroup to set
+	 */
+	public void setTermGroup(Group termGroup) {
+		this.termGroup = termGroup;
+	}
+
+	/**
+	 * @return the togglePosition
+	 */
+	public boolean isTogglePosition() {
+		return togglePosition;
+	}
+
+	/**
+	 * @param togglePosition the togglePosition to set
+	 */
+	public void setTogglePosition(boolean togglePosition) {
+		this.togglePosition = togglePosition;
+	}
+
 	
 }
