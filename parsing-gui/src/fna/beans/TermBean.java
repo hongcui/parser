@@ -76,6 +76,7 @@ public class TermBean {
 			}
 			termGroup.setParent(parentGroup);
 			termGroup.setBounds(rect);
+			((ScrolledComposite)parentGroup.getParent()).setMinSize(parentGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		}
 	}
 
@@ -105,6 +106,34 @@ public class TermBean {
 	 */
 	public void setTogglePosition(boolean togglePosition) {
 		this.togglePosition = togglePosition;
+	}
+
+	/**
+	 * @return the parentGroup
+	 */
+	public Group getParentGroup() {
+		return parentGroup;
+	}
+
+	/**
+	 * @param parentGroup the parentGroup to set
+	 */
+	public void setParentGroup(Group parentGroup) {
+		this.parentGroup = parentGroup;
+	}
+
+	/**
+	 * @return the deletedGroup
+	 */
+	public Group getDeletedGroup() {
+		return deletedGroup;
+	}
+
+	/**
+	 * @param deletedGroup the deletedGroup to set
+	 */
+	public void setDeletedGroup(Group deletedGroup) {
+		this.deletedGroup = deletedGroup;
 	}
 
 	
