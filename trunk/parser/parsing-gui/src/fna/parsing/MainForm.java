@@ -2,6 +2,7 @@
 package fna.parsing;
 //
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
@@ -43,6 +44,7 @@ import sun.net.ApplicationProxy;
 
 import com.swtdesigner.SWTResourceManager;
 
+import fna.beans.CharacterGroupBean;
 import fna.beans.CoOccurrenceBean;
 import fna.beans.ContextBean;
 import fna.beans.TermBean;
@@ -157,6 +159,8 @@ public class MainForm {
 	 * Initial y =
 	 * */
 	private static Rectangle frequencyLabel = new Rectangle(370, 20, 40, 15);
+	/* This HashMap will hold all the group info temporarily*/
+	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
 	
 	
 	
@@ -368,7 +372,7 @@ public class MainForm {
 						// set the groups list
 						setCharactertabGroups();
 						// show the terms that co-occured in the first group
-						showTerms();
+						loadTerms();
 					}
 				}
 
@@ -999,6 +1003,11 @@ public class MainForm {
 		
 		groupsCombo = new Combo(group_3, SWT.NONE);
 		groupsCombo.setBounds(56, 10, 161, 23);
+		groupsCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				loadTerms();
+			}
+		});
 		
 		Label lblDecision = new Label(group_3, SWT.NONE);
 		lblDecision.setBounds(286, 13, 55, 15);
@@ -1011,6 +1020,15 @@ public class MainForm {
 		Button btnSave = new Button(group_3, SWT.NONE);
 		btnSave.setBounds(550, 8, 75, 25);
 		btnSave.setText("Save");
+		btnSave.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
+				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision(comboDecision.getText());
+				TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
+				item.setText(groupsCombo.getText());
+			}
+		});
+		
 		
 		Label label_1 = new Label(composite_8, SWT.SEPARATOR | SWT.VERTICAL);
 		label_1.setBounds(510, 240, -6, 191);
@@ -1499,7 +1517,71 @@ public class MainForm {
 		groupsCombo.setText(fileNames[0]);
 		
 	}
-	private static ArrayList <CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean> ();
+	
+	private void loadTerms() {
+		String groupName = groupsCombo.getText();
+		CharacterGroupBean charGrpBean = groupInfo.get(groupName);
+		if(charGrpBean == null || !charGrpBean.isSaved()){
+			showTerms();
+		} else {
+			//load it from memory!
+			
+			termsGroup = null;
+			termsGroup = new Group(termsScrolledComposite, SWT.NONE);
+			termsGroup.setLayoutData(new RowData());
+			termsScrolledComposite.setContent(termsGroup);
+			termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			
+			removedTermsGroup = null;
+			removedTermsGroup = new Group(removedScrolledComposite, SWT.NONE);
+			removedTermsGroup.setLayoutData(new RowData());
+			removedScrolledComposite.setContent(removedTermsGroup);
+			removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			
+			ArrayList<CoOccurrenceBean> cooccurrences = (ArrayList<CoOccurrenceBean>)charGrpBean.getCooccurrences();
+			
+			if(cooccurrences.size() > 5) {
+				
+				RowData rowdata = (RowData)termsGroup.getLayoutData();
+				rowdata.height = cooccurrences.size() * 36;
+				termsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+		        Rectangle rect = termsGroup.getBounds();
+		        rect.height = cooccurrences.size() * 36;
+		        termsGroup.setBounds(rect);
+				
+				
+				rowdata = (RowData)removedTermsGroup.getLayoutData();
+				rowdata.height = cooccurrences.size() * 36;
+				removedTermsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+		        rect = removedTermsGroup.getBounds();
+		        rect.height = cooccurrences.size() * 36;
+		        removedTermsGroup.setBounds(rect);
+			}
+			
+			if (cooccurrences.size() != 0) {
+				for (CoOccurrenceBean cbean : cooccurrences) {
+					cbean.getContextButton().setParent(termsGroup);
+					cbean.getFrequency().setParent(termsGroup);
+					if (cbean.getTerm1().isTogglePosition()) {
+						cbean.getTerm1().getTermGroup().setParent(termsGroup);
+					} else {
+						cbean.getTerm1().getTermGroup().setParent(removedTermsGroup);
+					}
+					
+					if (cbean.getTerm2().isTogglePosition()) {
+						cbean.getTerm2().getTermGroup().setParent(termsGroup);
+					} else {
+						cbean.getTerm2().getTermGroup().setParent(removedTermsGroup);
+					}
+				}
+			}
+			
+			termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			
+		}
+		
+	}
 	
 	private void showTerms() {
 		ArrayList<TermsDataBean> terms = null;
@@ -1507,7 +1589,8 @@ public class MainForm {
 		term2.y = 10;
 		contextRadio.y = 20;
 		frequencyLabel.y = 20;
-		cooccurrences.clear();
+		//cooccurrences.clear();
+		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
 
 		/*If Previous saved things to be shown, the logic changes here*/
 		termsGroup = null;
@@ -1515,6 +1598,12 @@ public class MainForm {
 		termsGroup.setLayoutData(new RowData());
 		termsScrolledComposite.setContent(termsGroup);
 		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		removedTermsGroup = null;
+		removedTermsGroup = new Group(removedScrolledComposite, SWT.NONE);
+		removedTermsGroup.setLayoutData(new RowData());
+		removedScrolledComposite.setContent(removedTermsGroup);
+		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 				
 		try {
 			terms = charDb.getTerms(groupsCombo.getText());				
@@ -1601,5 +1690,7 @@ public class MainForm {
 		
 		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), false);
+		groupInfo.put(groupsCombo.getText(), charGrpBean);
 	}
 }
