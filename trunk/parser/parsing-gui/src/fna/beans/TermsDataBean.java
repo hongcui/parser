@@ -5,6 +5,7 @@ public class TermsDataBean {
 	private String term2;
 	private int groupId;
 	private int frequency;
+	private String keep;
 	private String [] sourceFiles ;
 	/**
 	 * @return the term1
@@ -65,6 +66,18 @@ public class TermsDataBean {
 	 */
 	public void setSourceFiles(String[] sourceFiles) {
 		this.sourceFiles = sourceFiles;
+	}
+	/**
+	 * @return the keep
+	 */
+	public String getKeep() {
+		return keep;
+	}
+	/**
+	 * @param keep the keep to set
+	 */
+	public void setKeep(String keep) {
+		this.keep = keep;
 	}
 	
 }
