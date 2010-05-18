@@ -4,6 +4,8 @@ package fna.parsing;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.File;
@@ -161,8 +163,8 @@ public class MainForm {
 	private static Rectangle frequencyLabel = new Rectangle(370, 20, 40, 15);
 	/* This HashMap will hold all the group info temporarily*/
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
-	
-	
+	/* This HashMap will hold all processed groups information */
+	private static TreeMap <String, String> processedGroups = new TreeMap<String, String> ();	
 	
 	private Table contextTable;
 	private Table processedGroupsTable;
@@ -373,6 +375,8 @@ public class MainForm {
 						setCharactertabGroups();
 						// show the terms that co-occured in the first group
 						loadTerms();
+						//Clear context table;
+						contextTable.removeAll();
 					}
 				}
 
@@ -1005,6 +1009,8 @@ public class MainForm {
 		groupsCombo.setBounds(56, 10, 161, 23);
 		groupsCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				//Clear context table;
+				contextTable.removeAll();
 				loadTerms();
 			}
 		});
@@ -1024,8 +1030,16 @@ public class MainForm {
 			public void widgetSelected(final SelectionEvent e) {
 				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
 				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision(comboDecision.getText());
-				TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
-				item.setText(groupsCombo.getText());
+				
+				processedGroups.put(groupsCombo.getText(), groupsCombo.getText());
+				
+				Set <String> processed = processedGroups.keySet();
+				processedGroupsTable.removeAll();
+				for (String groupName : processed) {
+					TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
+					item.setText(groupName);
+				}				
+
 			}
 		});
 		
@@ -1291,14 +1305,6 @@ public class MainForm {
         targetText.setText(target);
         Registry.TargetDirectory = target;
 		
-        /*configurationText.setText("c:\\fna-v19\\conf\\");
-        Registry.ConfigurationDirectory = "c:\\fna-v19\\conf\\";
-
-        sourceText.setText("c:\\fna-v19\\source\\");
-        Registry.SourceDirectory = "c:\\fna-v19\\source\\";
-        
-        targetText.setText("c:\\fna-v19\\target\\");
-        Registry.TargetDirectory = "c:\\fna-v19\\target\\";*/
 		}catch(Exception e){
 			LOGGER.error("couldn't load the configuration file", e);
 			e.printStackTrace();
@@ -1542,6 +1548,7 @@ public class MainForm {
 			
 			if(cooccurrences.size() > 5) {
 				
+				/* If the number of rows is more than what is displayed, resize the group*/
 				RowData rowdata = (RowData)termsGroup.getLayoutData();
 				rowdata.height = cooccurrences.size() * 36;
 				termsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
@@ -1558,24 +1565,38 @@ public class MainForm {
 		        removedTermsGroup.setBounds(rect);
 			}
 			
+			/*Set the decision if it was saved*/
+			comboDecision.setText(charGrpBean.getDecision());
+			
 			if (cooccurrences.size() != 0) {
 				for (CoOccurrenceBean cbean : cooccurrences) {
 					cbean.getContextButton().setParent(termsGroup);
+					cbean.getContextButton().setSelection(false);
 					cbean.getFrequency().setParent(termsGroup);
+					
 					if (cbean.getTerm1().isTogglePosition()) {
 						cbean.getTerm1().getTermGroup().setParent(termsGroup);
+						cbean.getTerm1().setParentGroup(termsGroup);
+						cbean.getTerm1().setDeletedGroup(removedTermsGroup);
 					} else {
 						cbean.getTerm1().getTermGroup().setParent(removedTermsGroup);
+						cbean.getTerm1().setParentGroup(termsGroup);
+						cbean.getTerm1().setDeletedGroup(removedTermsGroup);
 					}
 					
 					if (cbean.getTerm2().isTogglePosition()) {
 						cbean.getTerm2().getTermGroup().setParent(termsGroup);
+						cbean.getTerm2().setParentGroup(termsGroup);
+						cbean.getTerm2().setDeletedGroup(removedTermsGroup);
 					} else {
 						cbean.getTerm2().getTermGroup().setParent(removedTermsGroup);
+						cbean.getTerm2().setParentGroup(termsGroup);
+						cbean.getTerm2().setDeletedGroup(removedTermsGroup);
 					}
 				}
 			}
 			
+			/*Resize the groups*/
 			termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 			removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 			
@@ -1589,7 +1610,6 @@ public class MainForm {
 		term2.y = 10;
 		contextRadio.y = 20;
 		frequencyLabel.y = 20;
-		//cooccurrences.clear();
 		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
 
 		/*If Previous saved things to be shown, the logic changes here*/
