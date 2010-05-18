@@ -105,7 +105,8 @@ public class CharacterStateDBAccess {
 				tbean.setFrequency(rset.getInt("frequency"));
 				String files = rset.getString("sourceFiles");
 				String [] sourceFiles = files.split(",");
-				tbean.setSourceFiles(sourceFiles);				
+				tbean.setSourceFiles(sourceFiles);
+				tbean.setKeep(rset.getString("keep"));
 				coOccurrences.add(tbean);
 			}
 			
