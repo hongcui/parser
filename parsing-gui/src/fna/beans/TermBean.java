@@ -4,12 +4,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.swtdesigner.SWTResourceManager;
+
+import fna.parsing.MainForm;
 
 /** This bean will hold a term and the delete button 
  * It has the additional capability of shuffling between deleted terms 
@@ -28,19 +33,23 @@ public class TermBean {
 	/* Coordinates for the Text inside any Terms group */
 	private static Rectangle textCood = new Rectangle(10, 10, 100, 20);
 	/* Coordinates of the Cross Label inside the Term group*/
-	private static Rectangle delCood = new Rectangle(110, 10, 15, 15);
+	private static Rectangle delCood = new Rectangle(110, 10, 15, 20);
+	private static Color color = new Color(Display.getCurrent(), 184,244,166);
 
 
 
 	public TermBean(Group termGroup, Group deletedGroup, boolean toggleGroup, String text) {
 		termText = new Text(termGroup, SWT.BORDER);
+		termText.setBackground(color);
 		termText.setBounds(textCood);
 		termText.setEditable(false);
 		termText.setText(text);
+		termText.setToolTipText(text);
 		
 		delete = new Label(termGroup, SWT.NONE);
 		delete.setImage(SWTResourceManager.getImage(TermBean.class, "/fna/parsing/remove.jpg"));
 		delete.setBounds(delCood);
+		delete.setToolTipText("Click to delete this term");
 		delete.addMouseListener(new MouseListener() {
 			public void mouseDown(MouseEvent me){
 				changeParentGroup();
@@ -59,6 +68,8 @@ public class TermBean {
 	private void changeParentGroup() {
 
 		if(togglePosition) {
+			
+			//System.out.println(parentGroup.);
 			togglePosition = false;
 			Rectangle rect = termGroup.getBounds();
 			if (rect.x == 40) {
