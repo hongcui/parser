@@ -22,6 +22,8 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
@@ -119,7 +121,7 @@ public class MainForm {
 	private CharacterStateDBAccess charDb = new CharacterStateDBAccess();
 	public static Text markUpPerlLog;
 	
-	/*Character Tab variables-------------------------------------------------------- --------------------------*/
+	/*Character Tab variables-----------------------------------------------------------------------------------*/
 	/* This combo is the decision combo in Character tab */
 	public static Combo comboDecision;
 	/* This combo is the groups list on the Character Tab*/
@@ -161,11 +163,13 @@ public class MainForm {
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
 	/* This HashMap will hold all processed groups information */
 	private static TreeMap <String, String> processedGroups = new TreeMap<String, String> ();	
-	
+	/* This table is for showing contextual sentences */
 	private Table contextTable;
+	/* This table holed currently processed groups */
 	private Table processedGroupsTable;
 	
 	//-----------------------------------Character Tab Variables -----------------------------------------//
+	
 	public static void main(String[] args) {
 		try {
 			
@@ -182,6 +186,7 @@ public class MainForm {
 	 */
 	public void open() throws Exception {
 		final Display display = Display.getDefault();
+		
 		createContents(display);
 		shell.open();
 		shell.layout();
@@ -1022,6 +1027,7 @@ public class MainForm {
 		Button btnSave = new Button(group_3, SWT.NONE);
 		btnSave.setBounds(550, 8, 75, 25);
 		btnSave.setText("Save");
+		btnSave.setToolTipText("Save");
 		btnSave.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
@@ -1116,19 +1122,20 @@ public class MainForm {
 		
 		Label lblTerm = new Label(grpDeleteAnyTerm, SWT.NONE);
 		lblTerm.setBounds(72, 20, 55, 15);
-		lblTerm.setText("Term 1");
+		lblTerm.setText("Term");
 		
 		Label lblTerm_1 = new Label(grpDeleteAnyTerm, SWT.NONE);
-		lblTerm_1.setBounds(231, 20, 55, 15);
-		lblTerm_1.setText("Term 2");
+		lblTerm_1.setBounds(231, 20, 105, 15);
+		lblTerm_1.setText("Co-occurred Term");
 		
 		Label lblFrequency = new Label(grpDeleteAnyTerm, SWT.NONE);
-		lblFrequency.setBounds(357, 20, 61, 15);
+		lblFrequency.setBounds(365, 20, 61, 15);
 		lblFrequency.setText("Frequency");
 		
 		Button btnViewGraphVisualization = new Button(composite_8, SWT.NONE);
 		btnViewGraphVisualization.setBounds(492, 0, 159, 25);
 		btnViewGraphVisualization.setText("View Graph Visualization");
+		btnViewGraphVisualization.setToolTipText("Click to view the visualization of the terms that have co-occurred");
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+"\\"+
@@ -1694,7 +1701,8 @@ public class MainForm {
 			
 			for (final TermsDataBean tbean : terms) {
 				CoOccurrenceBean cbean = new CoOccurrenceBean();
-				Group term1Group = new Group(termsGroup, SWT.NONE);				
+				Group term1Group = new Group(termsGroup, SWT.NONE);
+				term1Group.setToolTipText(tbean.getTerm1());
 				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
 				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
 				if (tbean.getTerm1() == null || tbean.getTerm1().equals("")) {
@@ -1702,6 +1710,7 @@ public class MainForm {
 				}
 				
 				Group term2Group = new Group(termsGroup, SWT.NONE);	
+				term2Group.setToolTipText(tbean.getTerm2());
 				term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
 				cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
 				
@@ -1716,6 +1725,7 @@ public class MainForm {
 				
 				final Button button = new Button(termsGroup, SWT.RADIO);
 				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
+				button.setToolTipText("Select to see the context sentences");
 				button.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 						if (button.getSelection()) {
@@ -1747,6 +1757,7 @@ public class MainForm {
 				Label label = new Label(termsGroup, SWT.NONE);
 				label.setBounds(frequencyLabel.x, frequencyLabel.y, frequencyLabel.width, frequencyLabel.height);
 				label.setText(tbean.getFrequency()+ "");
+				label.setToolTipText("Frequency of co-occurrence");
 				cbean.setFrequency(label);
 				cooccurrences.add(cbean);
 				
