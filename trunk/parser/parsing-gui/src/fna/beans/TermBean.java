@@ -35,7 +35,7 @@ public class TermBean {
 	/* Coordinates for the Text inside any Terms group */
 	private static Rectangle textCood = new Rectangle(10, 10, 100, 20);
 	/* Coordinates of the Cross Label inside the Term group*/
-	private static Rectangle delCood = new Rectangle(110, 10, 15, 20);
+	private static Rectangle delCood = new Rectangle(110, 10, 20, 20);
 	private static Color color = new Color(Display.getCurrent(), 184,244,166);
 
 
