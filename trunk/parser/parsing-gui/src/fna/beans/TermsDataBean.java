@@ -1,5 +1,8 @@
 package fna.beans;
-
+/**
+ * This bean holds data directly from the database and also saved data into it
+ * @author Partha Pratim Sanyal
+ * */
 public class TermsDataBean {
 	private String term1;
 	private String term2;

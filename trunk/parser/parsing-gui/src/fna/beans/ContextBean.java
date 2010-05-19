@@ -1,5 +1,9 @@
 package fna.beans;
-
+/** This bean is used to get data from the sentence table in order to show
+ * context table data in the Character tab 
+ * @author Partha Pratim Sanyal
+ *
+ */
 public class ContextBean {
 	private String sourceText;
 	private String sentence;

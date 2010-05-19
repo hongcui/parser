@@ -11,6 +11,12 @@ import org.eclipse.swt.widgets.Text;
 
 import com.swtdesigner.SWTResourceManager;
 
+/** This bean will hold a term and the delete button 
+ * It has the additional capability of shuffling between deleted terms 
+ * and parent terms group
+ * @author Partha Pratim Sanyal
+ *
+ */
 public class TermBean {
 	private Text termText;
 	private Label delete;
@@ -134,6 +140,20 @@ public class TermBean {
 	 */
 	public void setDeletedGroup(Group deletedGroup) {
 		this.deletedGroup = deletedGroup;
+	}
+
+	/**
+	 * @return the termText
+	 */
+	public Text getTermText() {
+		return termText;
+	}
+
+	/**
+	 * @param termText the termText to set
+	 */
+	public void setTermText(Text termText) {
+		this.termText = termText;
 	}
 
 	

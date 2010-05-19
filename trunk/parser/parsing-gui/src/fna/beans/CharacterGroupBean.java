@@ -2,6 +2,11 @@ package fna.beans;
 
 import java.util.ArrayList;
 
+/** This is a screenshot of the entire character tab
+ * @author Partha Pratim Sanyal
+ *  */
+
+
 public class CharacterGroupBean {
 	private ArrayList <CoOccurrenceBean> cooccurrences;
 	private String groupName;
