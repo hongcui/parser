@@ -158,7 +158,7 @@ public class MainForm {
 	 * Once a new group is loaded, this will be reset to initial values
 	 * Initial y =
 	 * */
-	private static Rectangle frequencyLabel = new Rectangle(370, 20, 40, 15);
+	private static Rectangle frequencyLabel = new Rectangle(370, 20, 35, 15);
 	/* This HashMap will hold all the group info temporarily*/
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
 	/* This HashMap will hold all processed groups information */
