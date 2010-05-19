@@ -32,7 +32,6 @@ public class TermBean {
 	private Group termGroup;
 	private Group parentGroup;	
 	private Group deletedGroup;
-	private boolean x [][];
 	/* Coordinates for the Text inside any Terms group */
 	private static Rectangle textCood = new Rectangle(10, 10, 100, 20);
 	/* Coordinates of the Cross Label inside the Term group*/
