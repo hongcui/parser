@@ -94,7 +94,7 @@ public class CharacterStateDBAccess {
 			conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select * from " + tablePrefix +"_grouped_foc_terms " +
-					"where groupId=" + group+ " order by frequency";
+					"where groupId=" + group+ " order by frequency desc";
 			
 			pstmt = conn.prepareStatement(sql);
 			rset = pstmt.executeQuery();
