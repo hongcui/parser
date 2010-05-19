@@ -42,8 +42,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import sun.net.ApplicationProxy;
-
 import com.swtdesigner.SWTResourceManager;
 
 import fna.beans.CharacterGroupBean;
@@ -64,8 +62,6 @@ import fna.parsing.VolumeVerifier;
 import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.LearnedTermsReport;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.layout.TableColumnLayout;
 /**
  * @author chunshui, Partha Pratim Sanyal (ppsanyal@email.arizona.edu)
  */
@@ -1009,7 +1005,7 @@ public class MainForm {
 		groupsCombo.setBounds(56, 10, 161, 23);
 		groupsCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				//Clear context table;
+				//Clear context table as the sentences from the previous group needn't be shown for anothre group;
 				contextTable.removeAll();
 				loadTerms();
 			}
@@ -1031,8 +1027,47 @@ public class MainForm {
 				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
 				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision(comboDecision.getText());
 				
-				processedGroups.put(groupsCombo.getText(), groupsCombo.getText());
+				ArrayList<TermsDataBean> terms = new ArrayList<TermsDataBean>();				
+				ArrayList <CoOccurrenceBean> cooccurrences = groupInfo.get(groupsCombo.getText()).getCooccurrences();								
+				try {
+					
+					/*Save the decision first */
+					charDb.saveDecision(cooccurrences.get(1).getGroupNo(), comboDecision.getText());
+					
+					/*Save the rest of the Character tab */
+					for (CoOccurrenceBean cbean : cooccurrences) {
+						TermsDataBean tbean = new TermsDataBean();
+						tbean.setFrequency(Integer.parseInt(cbean.getFrequency().getText()));
+						tbean.setGroupId(cbean.getGroupNo());
+						tbean.setKeep(cbean.getKeep());
+						tbean.setSourceFiles(cbean.getSourceFiles());
+						
+						/* The fun starts here! try and save the terms that are there in parentTermGroup*/
+						if(cbean.getTerm1().isTogglePosition()) {
+							tbean.setTerm1(cbean.getTerm1().getTermText().getText());
+						} else {
+							tbean.setTerm1("");
+						}
+						
+						if(cbean.getTerm2().isTogglePosition()){
+							tbean.setTerm2(cbean.getTerm2().getTermText().getText());
+						} else {
+							tbean.setTerm2("");
+						}
+						/* Add the termdatabean to the arraylist*/
+						terms.add(tbean);
+					}
+					
+					/* Save to terms table */
+					charDb.saveTerms(terms);
+					
+				} catch (Exception exe) {
+					LOGGER.error("Couldnt retrieve save the character tab details in MainForm" , exe);
+					exe.printStackTrace();
+				}
 				
+				
+				processedGroups.put(groupsCombo.getText(), groupsCombo.getText());				
 				Set <String> processed = processedGroups.keySet();
 				processedGroupsTable.removeAll();
 				for (String groupName : processed) {
@@ -1333,7 +1368,7 @@ public class MainForm {
 	}
 	
 	private void startMarkup() {
-		//markupProgressBar.setVisible(true);
+
 		String workdir = Registry.TargetDirectory;
 		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
@@ -1475,7 +1510,6 @@ public class MainForm {
 			messageText.append(ApplicationUtilities.getProperty("popup.error.info"));
 			ApplicationUtilities.showPopUpWindow(messageText.toString(), 
 					ApplicationUtilities.getProperty("popup.header.missing"), SWT.ICON_WARNING);						
-			//tabFolder.
 			tabFolder.setSelection(0);
 			tabFolder.setFocus();
 			errorFlag = true;
@@ -1611,6 +1645,7 @@ public class MainForm {
 		contextRadio.y = 20;
 		frequencyLabel.y = 20;
 		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
+		String decision = "";
 
 		/*If Previous saved things to be shown, the logic changes here*/
 		termsGroup = null;
@@ -1626,7 +1661,9 @@ public class MainForm {
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 				
 		try {
-			terms = charDb.getTerms(groupsCombo.getText());				
+			terms = charDb.getTerms(groupsCombo.getText());
+			int groupId = ((TermsDataBean)terms.get(1)).getGroupId();
+			decision = charDb.getDecision(groupId);
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve co-occurring terms" , exe);
@@ -1660,13 +1697,22 @@ public class MainForm {
 				Group term1Group = new Group(termsGroup, SWT.NONE);				
 				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
 				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
+				if (tbean.getTerm1() == null || tbean.getTerm1().equals("")) {
+					term1Group.setVisible(false);
+				}
 				
 				Group term2Group = new Group(termsGroup, SWT.NONE);	
 				term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
 				cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
 				
+				if (tbean.getTerm2() == null || tbean.getTerm2().equals("")) {
+					term2Group.setVisible(false);
+				}
+				
+				
 				cbean.setGroupNo(tbean.getGroupId());
 				cbean.setSourceFiles(tbean.getSourceFiles());
+				cbean.setKeep(tbean.getKeep());
 				
 				final Button button = new Button(termsGroup, SWT.RADIO);
 				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
@@ -1694,6 +1740,9 @@ public class MainForm {
 				});
 
 				cbean.setContextButton(button);
+				if (decision != null && !decision.equals("")){
+					comboDecision.setText(decision);
+				}
 				
 				Label label = new Label(termsGroup, SWT.NONE);
 				label.setBounds(frequencyLabel.x, frequencyLabel.y, frequencyLabel.width, frequencyLabel.height);
