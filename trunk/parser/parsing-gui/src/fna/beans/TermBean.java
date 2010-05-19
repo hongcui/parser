@@ -6,7 +6,9 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -14,6 +16,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.swtdesigner.SWTResourceManager;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
 
 /** This bean will hold a term and the delete button 
@@ -29,7 +32,7 @@ public class TermBean {
 	private Group termGroup;
 	private Group parentGroup;	
 	private Group deletedGroup;
-	
+	private boolean x [][];
 	/* Coordinates for the Text inside any Terms group */
 	private static Rectangle textCood = new Rectangle(10, 10, 100, 20);
 	/* Coordinates of the Cross Label inside the Term group*/
@@ -68,19 +71,40 @@ public class TermBean {
 	private void changeParentGroup() {
 
 		if(togglePosition) {
-			
-			//System.out.println(parentGroup.);
-			togglePosition = false;
-			Rectangle rect = termGroup.getBounds();
-			if (rect.x == 40) {
-				rect.x = 10;
-			} else {
-				rect.x = 160;
+			/* Checking whether the user can delete a term*/
+			Control [] controls = parentGroup.getChildren();
+			Point point = null;
+			boolean canDelete = false;
+			for (Control control : controls) {
+				point = control.getLocation();
+				if (!point.equals(termGroup.getLocation())) {
+					if (point.y == termGroup.getLocation().y) {						
+						canDelete = true ;						
+						break;
+					} 
+				}
+					
 			}
 			
-			termGroup.setParent(deletedGroup);
-			termGroup.setBounds(rect);
-			((ScrolledComposite)deletedGroup.getParent()).setMinSize(deletedGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			if (canDelete) {
+				togglePosition = false;
+				Rectangle rect = termGroup.getBounds();
+				if (rect.x == 40) {
+					rect.x = 10;
+				} else {
+					rect.x = 160;
+				}
+				
+				termGroup.setParent(deletedGroup);
+				termGroup.setBounds(rect);
+				((ScrolledComposite)deletedGroup.getParent()).setMinSize(deletedGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			} else {
+				ApplicationUtilities.showPopUpWindow(								
+						"One of the terms in the pair was already deleted. " +
+						"Hence, it is not possible to delete the term you have clicked.", 
+						"Deletion not possible!",SWT.ICON_ERROR);
+			}
+
 
 		} else {
 			togglePosition = true;
