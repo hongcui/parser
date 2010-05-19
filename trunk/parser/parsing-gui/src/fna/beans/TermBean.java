@@ -70,7 +70,7 @@ public class TermBean {
 	private void changeParentGroup() {
 
 		if(togglePosition) {
-			/* Checking whether the user can delete a term*/
+			/* Checking whether the user can delete a term */
 			Control [] controls = parentGroup.getChildren();
 			Point point = null;
 			boolean canDelete = false;
