@@ -1674,12 +1674,12 @@ public class MainForm {
 		File [] files = directory.listFiles();
 		
 		String [] fileNames = new String[files.length];
-		int count = 0;
+		int count = 0, removedEdgesSize = removedEdges.size();
 		sortedBy = new boolean [fileNames.length];
 		for (File group : files) {
 			sortedBy[count] = true;
 			fileNames[count] = group.getName().substring(0, group.getName().indexOf(".xml"));
-			if (removedEdges.size() == 0){
+			if (removedEdgesSize == 0){
 				removedEdges.put(fileNames[count], new ArrayList<String>());
 			}
 			
