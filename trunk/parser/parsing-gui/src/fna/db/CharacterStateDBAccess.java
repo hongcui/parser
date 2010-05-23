@@ -87,7 +87,7 @@ public class CharacterStateDBAccess {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
-		group = group.substring(group.indexOf(".")-1,group.indexOf("."));
+		group = group.substring(group.indexOf("_")+1);
 		ArrayList<TermsDataBean > coOccurrences = new ArrayList<TermsDataBean>();
 		try {
 			
@@ -264,6 +264,40 @@ public class CharacterStateDBAccess {
 		
 		return decision;
 		
+	}
+	
+	public ArrayList<String> getProcessedGroups() throws SQLException {
+		ArrayList<String> processedGroups = new ArrayList<String>();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = "select groupId from " + MainForm.dataPrefixCombo.getText().trim() +"_group_decisions order by groupId";
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			pstmt = conn.prepareStatement(sql);
+			rset = pstmt.executeQuery();
+			
+			while (rset.next()){
+				processedGroups.add("Group_"+rset.getInt(1));
+			}
+			
+		} catch (Exception exe) {
+			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getProcessedGroups", exe);
+			exe.printStackTrace();
+		} finally {
+			if (rset != null) {
+				rset.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+			
+		}
+		return processedGroups;
 	}
 	
 	public boolean saveDecision(int groupId, String decision) throws SQLException {
