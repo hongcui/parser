@@ -62,6 +62,7 @@ import fna.parsing.VolumeMarkup;
 import fna.parsing.VolumeTransformer;
 import fna.parsing.VolumeVerifier;
 import fna.parsing.character.CoOccurrenceGraph;
+import fna.parsing.character.GraphNode;
 import fna.parsing.character.LearnedTermsReport;
 import org.eclipse.swt.custom.ScrolledComposite;
 /**
@@ -123,7 +124,7 @@ public class MainForm {
 	
 	/*Character Tab variables-----------------------------------------------------------------------------------*/
 	/* This combo is the decision combo in Character tab */
-	public static Combo comboDecision;
+	private static Combo comboDecision;
 	/* This combo is the groups list on the Character Tab*/
 	public static Combo groupsCombo;
 	/* This Scrolled composite holds the termsGroup */
@@ -171,7 +172,6 @@ public class MainForm {
 	private boolean [] sortedBy ;
 	/* This is the sort label picture */
 	private Label sortLabel;
-	
 	//-----------------------------------Character Tab Variables -----------------------------------------//
 	
 	public static void main(String[] args) {
@@ -1909,5 +1909,12 @@ public class MainForm {
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), false);
 		groupInfo.put(groupsCombo.getText(), charGrpBean);
+	}
+
+	/**
+	 * @return the groupInfo
+	 */
+	public static HashMap<String, CharacterGroupBean> getGroupInfo() {
+		return groupInfo;
 	}
 }
