@@ -382,6 +382,8 @@ public class MainForm {
 						loadTerms();
 						//Clear context table;
 						contextTable.removeAll();
+						//load processed groups table;
+						loadProcessedGroups();
 					}
 				}
 
@@ -1076,8 +1078,8 @@ public class MainForm {
 					exe.printStackTrace();
 				}
 				
-				
-				processedGroups.put(groupsCombo.getText(), groupsCombo.getText());				
+				String savedGroupName = groupsCombo.getText();
+				processedGroups.put(savedGroupName, savedGroupName);				
 				Set <String> processed = processedGroups.keySet();
 				processedGroupsTable.removeAll();
 				for (String groupName : processed) {
@@ -1247,7 +1249,7 @@ public class MainForm {
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+"\\"+
-				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText());
+				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText()+".xml");
 			}
 		});
 		/////////////////////////////////////////////////////////////////////////////////////////////
@@ -1667,7 +1669,7 @@ public class MainForm {
 		sortedBy = new boolean [fileNames.length];
 		for (File group : files) {
 			sortedBy[count] = true;
-			fileNames[count++] = group.getName();
+			fileNames[count++] = group.getName().substring(0, group.getName().indexOf(".xml"));
 		}
 		
 		groupsCombo.setItems(fileNames);		
@@ -1766,7 +1768,19 @@ public class MainForm {
 	}
 	
 	private void loadProcessedGroups() {
-		
+		try {
+			ArrayList<String> processedGroupsList = charDb.getProcessedGroups();
+			processedGroupsTable.removeAll();
+			for (String groupName : processedGroupsList){
+				processedGroups.put(groupName, groupName);
+				TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
+				item.setText(groupName);
+				
+			}
+		} catch (Exception exe) {
+			LOGGER.error("Couldnt retrieve processedGroups terms" , exe);
+			exe.printStackTrace();
+		}
 	}
 	
 	private void showTerms() {
