@@ -64,6 +64,8 @@ import fna.parsing.VolumeVerifier;
 import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.GraphNode;
 import fna.parsing.character.LearnedTermsReport;
+import fna.parsing.character.ManipulateGraphML;
+
 import org.eclipse.swt.custom.ScrolledComposite;
 /**
  * @author chunshui, Partha Pratim Sanyal (ppsanyal@email.arizona.edu)
@@ -172,6 +174,10 @@ public class MainForm {
 	private boolean [] sortedBy ;
 	/* This is the sort label picture */
 	private Label sortLabel;
+	/* This will all the groups removed edges from the graph */
+	private static HashMap<String, ArrayList<String>> removedEdges 
+		= new HashMap<String, ArrayList<String>>();
+	
 	//-----------------------------------Character Tab Variables -----------------------------------------//
 	
 	public static void main(String[] args) {
@@ -384,6 +390,7 @@ public class MainForm {
 						contextTable.removeAll();
 						//load processed groups table;
 						loadProcessedGroups();
+
 					}
 				}
 
@@ -528,6 +535,8 @@ public class MainForm {
 					LOGGER.error("Error in loading Status of mark Up", exe);
 					exe.printStackTrace();
 				}
+				/* remove the deleted edges graph if a new prefix is selected*/
+				removedEdges.clear();
 			}
 		});
 		
@@ -1669,7 +1678,12 @@ public class MainForm {
 		sortedBy = new boolean [fileNames.length];
 		for (File group : files) {
 			sortedBy[count] = true;
-			fileNames[count++] = group.getName().substring(0, group.getName().indexOf(".xml"));
+			fileNames[count] = group.getName().substring(0, group.getName().indexOf(".xml"));
+			if (removedEdges.size() == 0){
+				removedEdges.put(fileNames[count], new ArrayList<String>());
+			}
+			
+			count++;
 		}
 		
 		groupsCombo.setItems(fileNames);		
@@ -1684,6 +1698,8 @@ public class MainForm {
 		int selectionIndex = groupsCombo.getSelectionIndex();
 		if(charGrpBean == null || !charGrpBean.isSaved()){
 			showTerms();
+			//restore edges if they were removed but the group was not processed (saved)
+			restoreUnsavedEdges();
 			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));	
 		} else {
 			/* Load it from memory! */
@@ -1916,5 +1932,26 @@ public class MainForm {
 	 */
 	public static HashMap<String, CharacterGroupBean> getGroupInfo() {
 		return groupInfo;
+	}
+	
+	private void restoreUnsavedEdges(){
+		String group = groupsCombo.getText();
+		if (!groupInfo.get(group).isSaved()) {
+			ArrayList <String> edges = removedEdges.get(group);
+			
+			for (String edgeNodes : edges){
+				String [] nodes = edgeNodes.split(",");
+				ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
+				Registry.TargetDirectory+
+					ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
+			}
+		}
+	}
+
+	/**
+	 * @return the removedEdges
+	 */
+	public static HashMap<String, ArrayList<String>> getRemovedEdges() {
+		return removedEdges;
 	}
 }
