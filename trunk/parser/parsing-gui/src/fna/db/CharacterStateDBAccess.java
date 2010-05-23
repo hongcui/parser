@@ -25,8 +25,6 @@ public class CharacterStateDBAccess {
 	private static String url = ApplicationUtilities.getProperty("database.url");
 	
 	static {
-		Statement stmt = null;
-		Connection conn = null;
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 		} catch (ClassNotFoundException e) {
