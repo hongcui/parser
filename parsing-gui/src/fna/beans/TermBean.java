@@ -1,11 +1,12 @@
 package fna.beans;
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
@@ -18,6 +19,9 @@ import com.swtdesigner.SWTResourceManager;
 
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
+import fna.parsing.Registry;
+import fna.parsing.character.GraphNode;
+import fna.parsing.character.ManipulateGraphML;
 
 /** This bean will hold a term and the delete button 
  * It has the additional capability of shuffling between deleted terms 
@@ -97,6 +101,22 @@ public class TermBean {
 				termGroup.setParent(deletedGroup);
 				termGroup.setBounds(rect);
 				((ScrolledComposite)deletedGroup.getParent()).setMinSize(deletedGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+				
+				/* Delete the edge between the term nodes from the graph*/
+				CharacterGroupBean characterBean = MainForm.getGroupInfo().get(MainForm.groupsCombo.getText());
+				ArrayList <CoOccurrenceBean> cooccurrences = characterBean.getCooccurrences();
+				for (CoOccurrenceBean cbean : cooccurrences) {
+					String term1 = cbean.getTerm1().getTermText().getText();
+					String term2 = cbean.getTerm2().getTermText().getText();
+					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
+						String groupName = Registry.TargetDirectory+
+						ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+						+ characterBean.getGroupName() + ".xml";
+						ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+						break;
+					}
+				}
+				
 			} else {
 				ApplicationUtilities.showPopUpWindow(								
 						"One of the terms in the pair was already deleted. " +
@@ -117,6 +137,22 @@ public class TermBean {
 			termGroup.setParent(parentGroup);
 			termGroup.setBounds(rect);
 			((ScrolledComposite)parentGroup.getParent()).setMinSize(parentGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+			
+			/* Restore the edge between the term nodes in the graph*/
+			CharacterGroupBean characterBean = MainForm.getGroupInfo().get(MainForm.groupsCombo.getText());
+			ArrayList <CoOccurrenceBean> cooccurrences = characterBean.getCooccurrences();
+			for (CoOccurrenceBean cbean : cooccurrences) {
+				String term1 = cbean.getTerm1().getTermText().getText();
+				String term2 = cbean.getTerm2().getTermText().getText();
+				if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
+					String groupName = Registry.TargetDirectory+
+					ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+					+ characterBean.getGroupName() + ".xml";
+					ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+					break;
+				}
+			}
+			
 		}
 	}
 
