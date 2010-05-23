@@ -109,10 +109,10 @@ public class TermBean {
 					String term1 = cbean.getTerm1().getTermText().getText();
 					String term2 = cbean.getTerm2().getTermText().getText();
 					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
-						String groupName = Registry.TargetDirectory+
+						String groupPath = Registry.TargetDirectory+
 						ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
 						+ characterBean.getGroupName() + ".xml";
-						ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+						ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupPath, characterBean.getGroupName());
 						break;
 					}
 				}
