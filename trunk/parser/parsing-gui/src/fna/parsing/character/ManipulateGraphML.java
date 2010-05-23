@@ -19,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.MainForm;
 import fna.parsing.Registry;
 
 public class ManipulateGraphML {
@@ -30,7 +31,7 @@ public class ManipulateGraphML {
 		String group = "D:\\FNA\\FNAV19\\target\\co-occurrence\\" + "Group_1.xml";
 		
 		//"D:\\FNA\\FNAV19\\target\\co-occurrence\\"+ groupName;
-		removeEdge(new GraphNode("stem"), new GraphNode("herb"), group);
+		//removeEdge(new GraphNode("stem"), new GraphNode("herb"), group);
 		//GraphNode graphNode = deleteNode("rhizome", group);
 		//restoreNode(graphNode, group);
 		insertEdge(new GraphNode("stem"), new GraphNode("herb"), group);
@@ -101,10 +102,10 @@ public class ManipulateGraphML {
 	    return graphNode;
 	  }
 	
-	public static void removeEdge(GraphNode fromNode, GraphNode toNode, String groupName) {		
+	public static void removeEdge(GraphNode fromNode, GraphNode toNode, String groupPath, String group) {		
 		
 	    try{
-		      File file = new File(groupName);
+		      File file = new File(groupPath);
 		      String remElement = "node";
 		      String idFrom =  "", idTo = "";
 		      
@@ -112,7 +113,7 @@ public class ManipulateGraphML {
 		    	  /*Look for existing nodes*/
 			        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			        DocumentBuilder builder = factory.newDocumentBuilder();
-			        Document doc = builder.parse(groupName);
+			        Document doc = builder.parse(groupPath);
 			        TransformerFactory tFactory = TransformerFactory.newInstance();
 			        Transformer tFormer = tFactory.newTransformer();
 			        NodeList nodes = doc.getElementsByTagName(remElement);
@@ -141,14 +142,14 @@ public class ManipulateGraphML {
 		            			|| (source.equals(idTo) &&  target.equals(idFrom))) {
 		            		edgeElement.getParentNode().removeChild(edgeElement);
 		            		doc.normalize();
-
+		            		MainForm.getRemovedEdges().get(group).add(fromNode.getNodeName()+","+toNode.getNodeName());
 		            		break;
 		            	}
 		            	
 		            }
 			        
         	        Source source = new DOMSource(doc);
-        	        Result dest = new StreamResult(new File(groupName));
+        	        Result dest = new StreamResult(new File(groupPath));
         	        tFormer.transform(source, dest); 
 		      }
 	    } catch(Exception exe){
