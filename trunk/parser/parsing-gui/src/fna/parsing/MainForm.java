@@ -167,6 +167,10 @@ public class MainForm {
 	private Table contextTable;
 	/* This table holed currently processed groups */
 	private Table processedGroupsTable;
+	/* This will hold sorted order of each group of terms */
+	private boolean [] sortedBy ;
+	/* This is the sort label picture */
+	private Label sortLabel;
 	
 	//-----------------------------------Character Tab Variables -----------------------------------------//
 	
@@ -1010,7 +1014,7 @@ public class MainForm {
 		groupsCombo.setBounds(56, 10, 161, 23);
 		groupsCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				//Clear context table as the sentences from the previous group needn't be shown for anothre group;
+				//Clear context table as the sentences from the previous group needn't be shown for another group;
 				contextTable.removeAll();
 				loadTerms();
 			}
@@ -1068,7 +1072,7 @@ public class MainForm {
 					charDb.saveTerms(terms);
 					
 				} catch (Exception exe) {
-					LOGGER.error("Couldnt retrieve save the character tab details in MainForm" , exe);
+					LOGGER.error("Couldnt save the character tab details in MainForm" , exe);
 					exe.printStackTrace();
 				}
 				
@@ -1129,13 +1133,117 @@ public class MainForm {
 		lblTerm_1.setText("Co-occurred Term");
 		
 		Label lblFrequency = new Label(grpDeleteAnyTerm, SWT.NONE);
-		lblFrequency.setBounds(365, 20, 61, 15);
+		lblFrequency.setBounds(353, 20, 55, 15);
 		lblFrequency.setText("Frequency");
 		
+		sortLabel = new Label(grpDeleteAnyTerm, SWT.NONE);
+		sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));		
+		sortLabel.setBounds(408, 10, 31, 25);
+		sortLabel.setToolTipText("Sort by frequency");
+		sortLabel.addMouseListener(new MouseListener() {
+			public void mouseDown(MouseEvent me){
+				ArrayList <CoOccurrenceBean> cooccurences = null;
+				Rectangle tempCoordinates = null;
+					cooccurences = 
+						((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).getCooccurrences();
+					int selectionIndex = groupsCombo.getSelectionIndex();
+					int size = cooccurences.size();
+					CoOccurrenceBean [] cbeans = new CoOccurrenceBean[size];
+					int i = 0, j = 0, k = 0;
+					for (CoOccurrenceBean cbean: cooccurences) {
+						cbeans[i++] = cbean;
+					}
+					
+					boolean toSort = true;
+					int firstFrequency = cbeans[0].getFrequency().getBounds().y;
+					int lastFrequency = cbeans[size-1].getFrequency().getBounds().y;
+					if(firstFrequency<lastFrequency) {
+						toSort = true;
+					} else if (firstFrequency>lastFrequency){
+						toSort = false;
+					}
+					
+					for (i = 0, j = size-1, k = size-1; i < size/2; i++, j--, k-=2){
+						CoOccurrenceBean beanFirst = cbeans[i];
+						CoOccurrenceBean beanLast = cbeans[j];
+						
+						/* Swap coordinates of radio button */
+						tempCoordinates = beanFirst.getContextButton().getBounds();
+						beanFirst.getContextButton().setBounds(beanLast.getContextButton().getBounds());
+						beanLast.getContextButton().setBounds(tempCoordinates);
+						
+						/* Swap Frequencies */						
+						tempCoordinates = null;
+						tempCoordinates = beanFirst.getFrequency().getBounds();
+						beanFirst.getFrequency().setBounds(beanLast.getFrequency().getBounds());
+						beanLast.getFrequency().setBounds(tempCoordinates);
+						
+						/* Swap Group 1 */
+						if (toSort) {
+							/*Sort Ascending*/
+							tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
+							tempCoordinates.y += k * standardIncrement;
+							beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
+							
+							tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
+							tempCoordinates.y -= k * standardIncrement;						
+							beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
+							
+							/* Swap Group 2 */
+							tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
+							tempCoordinates.y += k * standardIncrement;
+							beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
+							
+							tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
+							tempCoordinates.y -= k * standardIncrement;						
+							beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
+							
+						} else {
+							/* Sort Descending*/
+							/* Swap Group 1 */
+							tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
+							tempCoordinates.y -= k * standardIncrement;
+							beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
+							
+							tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
+							tempCoordinates.y += k * standardIncrement;						
+							beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
+							
+							/* Swap Group 2 */
+							tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
+							tempCoordinates.y -= k * standardIncrement;
+							beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
+							
+							tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
+							tempCoordinates.y += k * standardIncrement;						
+							beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
+						}
+						
+					}
+						
+					if(sortedBy[selectionIndex]) {
+						/*Sort Ascending*/
+						sortedBy[selectionIndex] = false;
+						sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/up.jpg"));
+						
+					} else {
+						/* Sort Descending*/
+						sortedBy[selectionIndex] = true;
+						sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));	
+						
+					}
+					
+					termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+					
+			}
+			public void mouseUp(MouseEvent me){	}
+			public void mouseDoubleClick(MouseEvent me){	}
+		});
 		Button btnViewGraphVisualization = new Button(composite_8, SWT.NONE);
-		btnViewGraphVisualization.setBounds(492, 0, 159, 25);
+		btnViewGraphVisualization.setBounds(457, 0, 159, 25);
 		btnViewGraphVisualization.setText("View Graph Visualization");
-		btnViewGraphVisualization.setToolTipText("Click to view the visualization of the terms that have co-occurred");
+		btnViewGraphVisualization.setToolTipText("Click to view the graph visualization of the terms that have co-occurred");
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+"\\"+
@@ -1556,23 +1664,27 @@ public class MainForm {
 		
 		String [] fileNames = new String[files.length];
 		int count = 0;
+		sortedBy = new boolean [fileNames.length];
 		for (File group : files) {
+			sortedBy[count] = true;
 			fileNames[count++] = group.getName();
 		}
 		
-		groupsCombo.setItems(fileNames);
+		groupsCombo.setItems(fileNames);		
 		groupsCombo.setText(fileNames[0]);
+		groupsCombo.select(0);
 		
 	}
 	
 	private void loadTerms() {
 		String groupName = groupsCombo.getText();
 		CharacterGroupBean charGrpBean = groupInfo.get(groupName);
+		int selectionIndex = groupsCombo.getSelectionIndex();
 		if(charGrpBean == null || !charGrpBean.isSaved()){
 			showTerms();
+			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));	
 		} else {
-			//load it from memory!
-			
+			/* Load it from memory! */
 			termsGroup = null;
 			termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 			termsGroup.setLayoutData(new RowData());
@@ -1641,7 +1753,19 @@ public class MainForm {
 			termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 			removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 			
+				/** Show the correct sort order image */		
+				if(sortedBy[selectionIndex]) {
+					sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));			
+				} else {
+					sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/up.jpg"));	
+				
+			}
+			
 		}
+		
+	}
+	
+	private void loadProcessedGroups() {
 		
 	}
 	
@@ -1654,7 +1778,6 @@ public class MainForm {
 		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
 		String decision = "";
 
-		/*If Previous saved things to be shown, the logic changes here*/
 		termsGroup = null;
 		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 		termsGroup.setLayoutData(new RowData());
