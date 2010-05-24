@@ -113,8 +113,9 @@ import prefuse.visual.VisualItem;
 			// -------------------------
 	        
 	        Display d = new Display(vis);
-	        d.setSize(400, 400);
-	        d.pan(250, 250);
+	        //d.setSize(400, 400);
+	        d.setBounds(100, 100, 100, 100);
+	        d.pan(200, 200);
 	        d.setBackground(new Color(243,238,167));	        
 	        d.setHighQuality(true);
 	        // drag individual items around
@@ -124,13 +125,13 @@ import prefuse.visual.VisualItem;
 	 * right-click drag d.addControlListener(new ZoomControl());
 	 */
 	        
-	        //d.addControlListener(new FocusControl(1));
+	        d.addControlListener(new FocusControl(1));
 	        d.addControlListener(new DragControl());
 	        d.addControlListener(new PanControl());
 	        d.addControlListener(new ZoomControl());
 	        d.addControlListener(new WheelZoomControl());
 	        d.addControlListener(new ZoomToFitControl());
-	        //d.addControlListener(new NeighborHighlightControl());
+	        d.addControlListener(new NeighborHighlightControl());
 
 
 	        // -- 6. launch the visualization
