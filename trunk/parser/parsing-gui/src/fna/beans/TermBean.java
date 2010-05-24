@@ -106,15 +106,18 @@ public class TermBean {
 				CharacterGroupBean characterBean = MainForm.getGroupInfo().get(MainForm.groupsCombo.getText());
 				ArrayList <CoOccurrenceBean> cooccurrences = characterBean.getCooccurrences();
 				for (CoOccurrenceBean cbean : cooccurrences) {
-					String term1 = cbean.getTerm1().getTermText().getText();
-					String term2 = cbean.getTerm2().getTermText().getText();
-					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
-						String groupPath = Registry.TargetDirectory+
-						ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
-						+ characterBean.getGroupName() + ".xml";
-						ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupPath, characterBean.getGroupName());
-						break;
+					if (cbean.getTerm1() != null  && cbean.getTerm2() != null) {
+						String term1 = cbean.getTerm1().getTermText().getText();
+						String term2 = cbean.getTerm2().getTermText().getText();
+						if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
+							String groupPath = Registry.TargetDirectory+
+							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+							+ characterBean.getGroupName() + ".xml";
+							ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupPath, characterBean.getGroupName());
+							break;
+						}
 					}
+
 				}
 				
 			} else {
@@ -142,15 +145,19 @@ public class TermBean {
 			CharacterGroupBean characterBean = MainForm.getGroupInfo().get(MainForm.groupsCombo.getText());
 			ArrayList <CoOccurrenceBean> cooccurrences = characterBean.getCooccurrences();
 			for (CoOccurrenceBean cbean : cooccurrences) {
-				String term1 = cbean.getTerm1().getTermText().getText();
-				String term2 = cbean.getTerm2().getTermText().getText();
-				if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
-					String groupName = Registry.TargetDirectory+
-					ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
-					+ characterBean.getGroupName() + ".xml";
-					ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
-					break;
-				}
+				
+				if(cbean.getTerm1() != null && cbean.getTerm2() != null) {
+					String term1 = cbean.getTerm1().getTermText().getText();
+					String term2 = cbean.getTerm2().getTermText().getText();
+					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
+						String groupName = Registry.TargetDirectory+
+						ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+						+ characterBean.getGroupName() + ".xml";
+						ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+						break;
+					}
+				}				
+
 			}
 			
 		}
