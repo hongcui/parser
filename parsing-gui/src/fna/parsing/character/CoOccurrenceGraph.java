@@ -32,9 +32,9 @@ import prefuse.visual.VisualItem;
 	public class CoOccurrenceGraph {
 		public static final String AGGR = "weights";
 		public static void main(String [] args){
-			viewGraph("D:\\FNA\\FNAV19\\target\\co-occurrence\\Group_1.xml");
+			viewGraph("D:\\FNA\\FNAV19\\target\\co-occurrence\\Group_1.xml", "Group_1");
 		}
-	    public static void viewGraph(String graphPath) {
+	    public static void viewGraph(String graphPath, String groupName) {
 	        
 	        // -- 1. load the data
 			// ------------------------------------------------
@@ -138,7 +138,7 @@ import prefuse.visual.VisualItem;
 			// -------------------------------------
 	        
 	        // create a new window to hold the visualization
-	        JFrame frame = new JFrame("Character States");
+	        JFrame frame = new JFrame("Character States of " + groupName);
 	        // ensure application exits when window is closed
 	        frame.setLocation(400, 200);
 	        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
