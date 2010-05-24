@@ -1257,7 +1257,7 @@ public class MainForm {
 		btnViewGraphVisualization.setToolTipText("Click to view the graph visualization of the terms that have co-occurred");
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+"\\"+
+				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+
 				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText()+".xml");
 			}
 		});
@@ -1854,23 +1854,21 @@ public class MainForm {
 			
 			for (final TermsDataBean tbean : terms) {
 				CoOccurrenceBean cbean = new CoOccurrenceBean();
+				if (!(tbean.getTerm1() == null) && !tbean.getTerm1().equals("")) {
+					
 				Group term1Group = new Group(termsGroup, SWT.NONE);
 				term1Group.setToolTipText(tbean.getTerm1());
 				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
 				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
-				if (tbean.getTerm1() == null || tbean.getTerm1().equals("")) {
-					term1Group.setVisible(false);
+
 				}
 				
-				Group term2Group = new Group(termsGroup, SWT.NONE);	
-				term2Group.setToolTipText(tbean.getTerm2());
-				term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
-				cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
-				
-				if (tbean.getTerm2() == null || tbean.getTerm2().equals("")) {
-					term2Group.setVisible(false);
+				if (!(tbean.getTerm2() == null) && !tbean.getTerm2().equals("")) {
+					Group term2Group = new Group(termsGroup, SWT.NONE);	
+					term2Group.setToolTipText(tbean.getTerm2());
+					term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
+					cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
 				}
-				
 				
 				cbean.setGroupNo(tbean.getGroupId());
 				cbean.setSourceFiles(tbean.getSourceFiles());
@@ -1941,9 +1939,12 @@ public class MainForm {
 			
 			for (String edgeNodes : edges){
 				String [] nodes = edgeNodes.split(",");
-				ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
-				Registry.TargetDirectory+
-					ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
+				if(nodes[0] != null && !nodes[0].equals("") && nodes[1] != null && !nodes[1].equals("") ) {
+					ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
+							Registry.TargetDirectory+
+								ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
+				}
+
 			}
 		}
 	}
