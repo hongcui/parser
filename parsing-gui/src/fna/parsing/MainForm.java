@@ -1258,7 +1258,7 @@ public class MainForm {
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+
-				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText()+".xml");
+				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText()+".xml", groupsCombo.getText());
 			}
 		});
 		/////////////////////////////////////////////////////////////////////////////////////////////
