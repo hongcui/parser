@@ -74,22 +74,10 @@ public class TermBean {
 	private void changeParentGroup() {
 
 		if(togglePosition) {
-			/* Checking whether the user can delete a term */
-			Control [] controls = parentGroup.getChildren();
-			Point point = null;
-			boolean canDelete = false;
-			for (Control control : controls) {
-				point = control.getLocation();
-				if (!point.equals(termGroup.getLocation())) {
-					if (point.y == termGroup.getLocation().y) {						
-						canDelete = true ;						
-						break;
-					} 
-				}
-					
-			}
+
+			boolean canDelete = isCooccuredTermPresent();
 			
-			if (canDelete) {
+			//if (canDelete) {
 				togglePosition = false;
 				Rectangle rect = termGroup.getBounds();
 				if (rect.x == 40) {
@@ -114,18 +102,24 @@ public class TermBean {
 							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
 							+ characterBean.getGroupName() + ".xml";
 							ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupPath, characterBean.getGroupName());
+							if(!canDelete) {
+								/* If the terms paired is not present in the group then
+								 *  make the context and frequency label invisible*/
+								cbean.getFrequency().setVisible(false);
+								cbean.getContextButton().setVisible(false);
+							}
 							break;
 						}
 					}
 
 				}
 				
-			} else {
+/*			} else {
 				ApplicationUtilities.showPopUpWindow(								
 						"One of the terms in the pair was already deleted. " +
 						"Hence, it is not possible to delete the term you have clicked.", 
 						"Deletion not possible!",SWT.ICON_ERROR);
-			}
+			}*/
 
 
 		} else {
@@ -150,10 +144,19 @@ public class TermBean {
 					String term1 = cbean.getTerm1().getTermText().getText();
 					String term2 = cbean.getTerm2().getTermText().getText();
 					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
-						String groupName = Registry.TargetDirectory+
-						ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
-						+ characterBean.getGroupName() + ".xml";
-						ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+						
+						/* Need to check if the two terms are in the same parent group before restoring a link between them*/
+						if (isCooccuredTermPresent()) {
+							String groupName = Registry.TargetDirectory+
+							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+							+ characterBean.getGroupName() + ".xml";
+							ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
+						}
+						
+						/* Make the context button and the frequency label visible again*/
+						cbean.getContextButton().setVisible(true);
+						cbean.getFrequency().setVisible(true);
+						
 						break;
 					}
 				}				
@@ -163,6 +166,23 @@ public class TermBean {
 		}
 	}
 
+	private boolean isCooccuredTermPresent(){
+		/* Checking whether the term and its co-occurred term are present in the same parent group */
+		Control [] controls = parentGroup.getChildren();
+		Point point = null;
+		boolean canDelete = false;
+		for (Control control : controls) {
+			point = control.getLocation();
+			if (!point.equals(termGroup.getLocation())) {
+				if (point.y == termGroup.getLocation().y) {						
+					canDelete = true ;						
+					break;
+				} 
+			}
+				
+		}
+		return canDelete;
+	}
 	/**
 	 * @return the termGroup
 	 */
