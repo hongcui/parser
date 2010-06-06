@@ -75,7 +75,7 @@ public class TermBean {
 
 		if(togglePosition) {
 
-			boolean canDelete = isCooccuredTermPresent();
+			boolean canDelete = isCooccurredTermPresent();
 			
 			//if (canDelete) {
 				togglePosition = false;
@@ -146,7 +146,7 @@ public class TermBean {
 					if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
 						
 						/* Need to check if the two terms are in the same parent group before restoring a link between them*/
-						if (isCooccuredTermPresent()) {
+						if (isCooccurredTermPresent()) {
 							String groupName = Registry.TargetDirectory+
 							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
 							+ characterBean.getGroupName() + ".xml";
@@ -166,7 +166,7 @@ public class TermBean {
 		}
 	}
 
-	private boolean isCooccuredTermPresent(){
+	private boolean isCooccurredTermPresent(){
 		/* Checking whether the term and its co-occurred term are present in the same parent group */
 		Control [] controls = parentGroup.getChildren();
 		Point point = null;
