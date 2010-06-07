@@ -50,6 +50,7 @@ public class ParseComplexseg {
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
 			Statement stmt2 = conn.createStatement();
+			Statement stmt3 = conn.createStatement();
 			String str;
         	ResultSet rs = stmt.executeQuery("select * from segments");
         	while(rs.next()){
@@ -117,7 +118,7 @@ public class ParseComplexseg {
                     matcher = pattern.matcher(str);
                     while ( matcher.find()){
                     	//System.out.println("Organ:"+str.substring(matcher.start(),matcher.end()));
-                    	orcount +=1;
+                    	orcount+=1;
                     }
                     matcher.reset();
                 	String str2 = "";
@@ -154,6 +155,10 @@ public class ParseComplexseg {
                 				org1=str2.substring(m+1,k);
                 				if(ct==1)
                 					organ1 = org1;
+                				ResultSet rs2 = stmt3.executeQuery("select * from singularplural where plural='"+org1+"'");
+                				while(rs2.next()){
+                					org1 = rs2.getString(1);
+                				}
                 			}
                 			if(org1.compareTo("n")==0)
                 				org1 = "chromosome_count";
@@ -161,6 +166,10 @@ public class ParseComplexseg {
                 			if(str2.charAt(l+1)!='{'){
                 				org2=str2.substring(l+1,str2.indexOf(">",l));
                 				organ2 = org2;
+                				ResultSet rs2 = stmt3.executeQuery("select * from singularplural where plural='"+org2+"'");
+                				while(rs2.next()){
+                					org2 = rs2.getString(1);
+                				}
                 			}
                 			if(org2.compareTo("n")==0)
                 				org2 = "chromosome_count";
