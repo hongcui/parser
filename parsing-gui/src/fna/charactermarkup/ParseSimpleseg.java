@@ -422,6 +422,7 @@ public class ParseSimpleseg {
 	                		}
 	                		matcher2.appendTail(sb);
 	                		innertags=sb.toString();
+	                		matcher2.reset();
 	                	}
 	                	
 	             //handle states for last organ in segment
@@ -502,11 +503,11 @@ public class ParseSimpleseg {
 			int k=matcher.start()+1;
 			int l=matcher.end()-1;
 			String state=str.subSequence(k,l).toString();
-			if(state.contains("_")){
-				String firstr=state.subSequence(0,state.indexOf("_")).toString();
-				String secstr=state.subSequence(state.indexOf("_")+1,state.length()).toString();
-				matcher.appendReplacement(sb1, "{"+firstr+"} or {"+secstr+"}");
-			}
+			Pattern pattern13 = Pattern.compile("_");
+			Matcher matcher1 = pattern13.matcher(state);
+			state = matcher1.replaceAll("} or {");
+			matcher1.reset();
+			matcher.appendReplacement(sb1, state);
 		}
 		matcher.appendTail(sb1);
 		str=sb1.toString();
