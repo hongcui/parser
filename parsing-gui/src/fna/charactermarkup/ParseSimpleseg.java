@@ -500,8 +500,8 @@ public class ParseSimpleseg {
 		Pattern pattern11 = Pattern.compile("[{][\\w±\\+\\–\\-\\.:=/\\_]+[}]");
 		matcher = pattern11.matcher(str);
 		while ( matcher.find()){
-			int k=matcher.start()+1;
-			int l=matcher.end()-1;
+			int k=matcher.start();
+			int l=matcher.end();
 			String state=str.subSequence(k,l).toString();
 			Pattern pattern13 = Pattern.compile("_");
 			Matcher matcher1 = pattern13.matcher(state);
@@ -543,7 +543,7 @@ public class ParseSimpleseg {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new ParseSimpleseg("fnav19_benchmark");
+		new ParseSimpleseg("benchmark_learningcurve_fnav19_test_24");
 	}
 
 }
