@@ -44,6 +44,7 @@ public class MarkedSentGenerator {
 		{
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
+			Statement stmt2 = conn.createStatement();
 			String str = "";
         	ResultSet rs = stmt.executeQuery("select * from sentence");
         	while(rs.next()){
@@ -60,10 +61,21 @@ public class MarkedSentGenerator {
                 Pattern pattern2 = Pattern.compile("(<B>)([\\(\\)?\\–\\—°²:=/½\"¼x´\\×\\*µ%“”+\\d±.;,\\[\\]]+)(</B>)");
                 matcher = pattern2.matcher(str);
                 while (matcher.find()){
-                	matcher.appendReplacement(sb, matcher.group(2));
+           			matcher.appendReplacement(sb, matcher.group(2));
                 }
                 matcher.appendTail(sb);
         		str=sb.toString();
+                matcher.reset();
+                StringBuffer sb1 = new StringBuffer();
+                Pattern pattern5 = Pattern.compile("(<B>)([\\w]+)(</B>)");
+                matcher = pattern5.matcher(str);
+                while (matcher.find()){
+                	ResultSet rs1=stmt2.executeQuery("Select * from preposition where prep='"+matcher.group(2)+"'");
+             		if(rs1.next())
+             			matcher.appendReplacement(sb1, matcher.group(2));
+                }
+                matcher.appendTail(sb1);
+        		str=sb1.toString();
                 matcher.reset();
                 Pattern pattern3 = Pattern.compile("<M><B>|<B>|<M>");
                 matcher = pattern3.matcher(str);
