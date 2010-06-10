@@ -142,9 +142,9 @@ public class Type3PreMarkup{
 	 */
 	private void outputTo(File desfolder, File trafolder, String fname) {
 		Type3PreMarkupDbAccessor dba = new Type3PreMarkupDbAccessor();
-		ArrayList<String> desIDs = dba.selectRecords("paragraphID", dataprefix.trim()+"_paragraphbootstrap", "paragraphID like '"+fname+"%'");
+		ArrayList<String> desIDs = dba.selectRecords("paraID", dataprefix.trim()+"_paragraphbootstrap", "paraID like '"+fname+"%'");
 		
-		ArrayList<String> allPs = dba.selectRecords("paragraphID, remark", dataprefix.trim()+"_paragraphs", "paragraphID like '"+fname+"%'");
+		ArrayList<String> allPs = dba.selectRecords("paraID, remark", dataprefix.trim()+"_paragraphs", "paraID like '"+fname+"%'");
 		//put in to a hashtable
 		Hashtable<String, String> paras = new Hashtable<String, String>();
 		
