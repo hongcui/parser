@@ -87,7 +87,7 @@ public class Configuration {
 					if(!shell.isDisposed()) {
 						shell.dispose();
 					}
-					MainForm.main(new String[1]);
+					MainForm.launchMarker("");
 					System.exit(0);
 				}	
 
@@ -119,7 +119,7 @@ public class Configuration {
 				if(!shell.isDisposed()) {
 					shell.dispose();
 				}
-				Type3MainForm.main(new String[1]);
+				MainForm.launchMarker("type3");
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
