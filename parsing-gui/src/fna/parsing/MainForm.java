@@ -2,6 +2,7 @@
 package fna.parsing;
 //
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -2058,11 +2059,19 @@ public class MainForm {
 	private void loadFileInfo(Table table, String directoryPath){
 		File directory = new File(directoryPath);
 		File [] files = directory.listFiles();
-		int count = 1;
-		for (File file : files) {			
+		int count = 0;
+		int [] fileNumbers = new int[files.length];
+		/* Will need to change this logic if the filenames are no long numbers but strings */
+		for (File file : files) {
+			String fileName = file.getName();
+			fileNumbers[count++] = Integer.parseInt(fileName.substring(0, fileName.indexOf(".xml")));
+		}
+		
+		Arrays.sort(fileNumbers);
+		
+		for (int fileNumber : fileNumbers) {			
 			TableItem item = new TableItem(table, SWT.NONE);
-			item.setText(new String [] {count+"", file.getName()});
-			count++;
+			item.setText(new String [] {fileNumber+"", fileNumber+".xml"});
 		}
 		
 		
