@@ -120,6 +120,7 @@ public class Configuration {
 					shell.dispose();
 				}
 				MainForm.launchMarker("type3");
+				System.exit(0);
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }
