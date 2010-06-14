@@ -28,12 +28,13 @@ public class acxad {
 /*	  String x = "Group1.xml";
 	  System.out.println(x.substring(x.indexOf(".")-1,x.indexOf(".")));*/
 	  
-		String [] files = new String[]{"a", "b", "c", "d","e"};
+/*		String [] files = new String[]{"a", "b", "c", "d","e"};
 		String sourceFile = "";
 		for (String file : files) {
 			sourceFile += file + ",";
 		}
-		sourceFile = sourceFile.substring(0, sourceFile.lastIndexOf(","));
-		System.out.println(sourceFile);
+		sourceFile = sourceFile.substring(0, sourceFile.lastIndexOf(","));*/
+	  	String x = "Group_12.xml";
+		System.out.println(x.substring(0, x.indexOf(".xml")));
   }
 }
