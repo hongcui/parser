@@ -115,6 +115,8 @@ public class MainForm {
 	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
+	/* This will determine how many tabs to show */
+	private String type = "";
 		/**
 	 * Launch the application
 	 * @param args
@@ -178,17 +180,22 @@ public class MainForm {
 	private static HashMap<String, ArrayList<String>> removedEdges 
 		= new HashMap<String, ArrayList<String>>();
 	
-	//-----------------------------------Character Tab Variables -----------------------------------------//
+	//-----------------------------------Character Tab Variables ---END-------------------------------//
 	
-	public static void main(String[] args) {
+	public static void launchMarker(String type) {
 		try {
 			
 			MainForm window = new MainForm();
+			window.type = type ;
 			window.open();
 		} catch (Exception e) {
 			LOGGER.error("Error Launching application", e);
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) {
+		launchMarker("");
 	}
 	
 	/**
@@ -269,38 +276,41 @@ public class MainForm {
 						exe.printStackTrace();
 					}
 				 }
-				
-				//segmentation
-				if (!statusOfMarkUp[1]) {
-					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
-							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))) {
-						ApplicationUtilities.showPopUpWindow( 
-								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.two.name"), 
-								ApplicationUtilities.getProperty("popup.header.error"),
-								SWT.ICON_ERROR);
-						tabFolder.setSelection(1);
-						tabFolder.setFocus();
-						return;
+				/* Check if the Type of document selected is Type 3 or Type 4*/
+				if (type.equals("")){
+					//segmentation
+					if (!statusOfMarkUp[1]) {
+						if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+								&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))) {
+							ApplicationUtilities.showPopUpWindow( 
+									ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+									ApplicationUtilities.getProperty("tab.two.name"), 
+									ApplicationUtilities.getProperty("popup.header.error"),
+									SWT.ICON_ERROR);
+							tabFolder.setSelection(1);
+							tabFolder.setFocus();
+							return;
+						}
 					}
-				}
-				//verification
-				if (!statusOfMarkUp[2]) {
-					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
-							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
-							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))) {
-						ApplicationUtilities.showPopUpWindow(								
-								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.three.name"), 
-								ApplicationUtilities.getProperty("popup.header.error"),
-								SWT.ICON_ERROR);
-						tabFolder.setSelection(2);
-						tabFolder.setFocus();
-						return;
-						
-					}
+					//verification
+					if (!statusOfMarkUp[2]) {
+						if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+								&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
+								&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))) {
+							ApplicationUtilities.showPopUpWindow(								
+									ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+									ApplicationUtilities.getProperty("tab.three.name"), 
+									ApplicationUtilities.getProperty("popup.header.error"),
+									SWT.ICON_ERROR);
+							tabFolder.setSelection(2);
+							tabFolder.setFocus();
+							return;
+							
+						}
 
+					}
 				}
+
 				//Transformation
 				if (!statusOfMarkUp[3]) {
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
@@ -312,7 +322,12 @@ public class MainForm {
 								ApplicationUtilities.getProperty("tab.four.name"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
-						tabFolder.setSelection(3);
+						if (type.equals("")){
+							tabFolder.setSelection(3);
+						} else {
+							tabFolder.setSelection(1);
+						}
+						
 						tabFolder.setFocus();
 						return;							
 					}
@@ -331,7 +346,11 @@ public class MainForm {
 								.substring(0, ApplicationUtilities.getProperty("tab.five.name").indexOf(" ")), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
-						tabFolder.setSelection(4);
+						if (type.equals("")){
+							tabFolder.setSelection(4);
+						} else {
+							tabFolder.setSelection(2);
+						}
 						tabFolder.setFocus();
 						return;
 					}
@@ -351,7 +370,11 @@ public class MainForm {
 								ApplicationUtilities.getProperty("tab.six.name"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
-						tabFolder.setSelection(5);
+						if (type.equals("")){
+							tabFolder.setSelection(5);
+						} else {
+							tabFolder.setSelection(3);
+						}
 						tabFolder.setFocus();
 						return;
 					}
@@ -371,7 +394,11 @@ public class MainForm {
 								ApplicationUtilities.getProperty("tab.seven.name"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
-						tabFolder.setSelection(6);
+						if (type.equals("")){
+							tabFolder.setSelection(6);
+						} else {
+							tabFolder.setSelection(4);
+						}
 						tabFolder.setFocus();
 						return;
 					}
@@ -540,123 +567,52 @@ public class MainForm {
 			}
 		});
 		
-		/* Segmentation Tab */
-		final TabItem segmentationTabItem = new TabItem(tabFolder, SWT.NONE);
-		segmentationTabItem.setText(ApplicationUtilities.getProperty("tab.two.name"));
-		
-		final Composite composite_1 = new Composite(tabFolder, SWT.NONE);
-		segmentationTabItem.setControl(composite_1);
+		if (type.equals("")){
+			/* Segmentation Tab */
+			final TabItem segmentationTabItem = new TabItem(tabFolder, SWT.NONE);
+			segmentationTabItem.setText(ApplicationUtilities.getProperty("tab.two.name"));
+			
+			final Composite composite_1 = new Composite(tabFolder, SWT.NONE);
+			segmentationTabItem.setControl(composite_1);
 
-		extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
-		extractionProgressBar.setVisible(false);
-		extractionProgressBar.setBounds(10, 386, 609, 17);
-		
-		final Button startExtractionButton = new Button(composite_1, SWT.NONE);
-		startExtractionButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				try {
-					startExtraction(); // start the extraction process
-				} catch (Exception exe) {
-					LOGGER.error("unable to extract in mainform", exe);
-					exe.printStackTrace();
+			extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
+			extractionProgressBar.setVisible(false);
+			extractionProgressBar.setBounds(10, 386, 609, 17);
+			
+			final Button startExtractionButton = new Button(composite_1, SWT.NONE);
+			startExtractionButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					try {
+						startExtraction(); // start the extraction process
+					} catch (Exception exe) {
+						LOGGER.error("unable to extract in mainform", exe);
+						exe.printStackTrace();
+					}
+					 
+					// Saving the status of markup
+					statusOfMarkUp[1] = true;
+					try {
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), true);
+					} catch (Exception exe) {
+						LOGGER.error("Couldnt save status - segment" , exe);
+						exe.printStackTrace();
+					}
 				}
-				 
-				// Saving the status of markup
-				statusOfMarkUp[1] = true;
-				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), true);
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - segment" , exe);
-					exe.printStackTrace();
-				}
-			}
-		});
-		startExtractionButton.setText(ApplicationUtilities.getProperty("start"));
-		startExtractionButton.setBounds(641, 385, 100, 23);
+			});
+			startExtractionButton.setText(ApplicationUtilities.getProperty("start"));
+			startExtractionButton.setBounds(641, 385, 100, 23);
 
-		extractionTable = new Table(composite_1, SWT.FULL_SELECTION | SWT.BORDER );
-		extractionTable.setLinesVisible(true);
-		extractionTable.setHeaderVisible(true);
-		extractionTable.setBounds(10, 10, 744, 358);
-		/*Hyperlinking the file */
-		extractionTable.addMouseListener(new MouseListener () {
-			public void mouseDoubleClick(MouseEvent event) {
-				String filePath = Registry.TargetDirectory + "\\"+ 
-				ApplicationUtilities.getProperty("EXTRACTED")+"\\"+
-				extractionTable.getSelection()[0].getText(1).trim();
-				
-				try {
-					Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-							+ " \"" + filePath + "\"");
-				} catch (Exception e){
-					ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
-							ApplicationUtilities.getProperty("popup.editor.msg"),
-							ApplicationUtilities.getProperty("popup.header.error"), 
-							SWT.ERROR);
-				} 
-			}			
-			public void mouseDown(MouseEvent event) {}
-			public void mouseUp(MouseEvent event) {}
-		});
-
-		final TableColumn extractionNumberColumnTableColumn = new TableColumn(extractionTable, SWT.NONE);
-		extractionNumberColumnTableColumn.setWidth(100);
-		extractionNumberColumnTableColumn.setText(
-				ApplicationUtilities.getProperty("count"));
-
-		final TableColumn extractionFileColumnTableColumn = new TableColumn(extractionTable, SWT.NONE);
-		extractionFileColumnTableColumn.setWidth(254);
-		extractionFileColumnTableColumn.setText(
-				ApplicationUtilities.getProperty("file"));
-		
-		final TabItem verificationTabItem = new TabItem(tabFolder, SWT.NONE);
-		verificationTabItem.setText(ApplicationUtilities.getProperty("tab.three.name"));
-
-		final Composite composite_2 = new Composite(tabFolder, SWT.NONE);
-		verificationTabItem.setControl(composite_2);
-
-		final Button startVerificationButton = new Button(composite_2, SWT.NONE);
-		startVerificationButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				System.out.println("Starting!!");
-				startVerification(); // start the verification process
-				statusOfMarkUp[2] = true;
-				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), true);
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - verify" , exe);
-					exe.printStackTrace();
-				}
-			}
-		});
-		startVerificationButton.setBounds(548, 385, 100, 23);
-		startVerificationButton.setText(ApplicationUtilities.getProperty("start"));
-
-		final Button clearVerificationButton = new Button(composite_2, SWT.NONE);
-		clearVerificationButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				clearVerification();
-				statusOfMarkUp[2] = false;
-				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - verify" , exe);
-					exe.printStackTrace();
-				}
-			}
-		});
-		clearVerificationButton.setBounds(654, 385, 100, 23);
-		clearVerificationButton.setText("Clear");
-		verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
-		verificationTable.setBounds(10, 10, 744, 369);
-		verificationTable.setLinesVisible(true);
-		verificationTable.setHeaderVisible(true);
-		verificationTable.addMouseListener(new MouseListener () {
-			public void mouseDoubleClick(MouseEvent event) {
-				String filePath = Registry.TargetDirectory + 
-				ApplicationUtilities.getProperty("EXTRACTED")+ "\\" +
-				verificationTable.getSelection()[0].getText(1).trim();
-				if (filePath.indexOf("xml") != -1) {
+			extractionTable = new Table(composite_1, SWT.FULL_SELECTION | SWT.BORDER );
+			extractionTable.setLinesVisible(true);
+			extractionTable.setHeaderVisible(true);
+			extractionTable.setBounds(10, 10, 744, 358);
+			/*Hyperlinking the file */
+			extractionTable.addMouseListener(new MouseListener () {
+				public void mouseDoubleClick(MouseEvent event) {
+					String filePath = Registry.TargetDirectory + "\\"+ 
+					ApplicationUtilities.getProperty("EXTRACTED")+"\\"+
+					extractionTable.getSelection()[0].getText(1).trim();
+					
 					try {
 						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
 								+ " \"" + filePath + "\"");
@@ -665,28 +621,108 @@ public class MainForm {
 								ApplicationUtilities.getProperty("popup.editor.msg"),
 								ApplicationUtilities.getProperty("popup.header.error"), 
 								SWT.ERROR);
+					} 
+				}			
+				public void mouseDown(MouseEvent event) {}
+				public void mouseUp(MouseEvent event) {}
+			});
+
+			final TableColumn extractionNumberColumnTableColumn = new TableColumn(extractionTable, SWT.NONE);
+			extractionNumberColumnTableColumn.setWidth(100);
+			extractionNumberColumnTableColumn.setText(
+					ApplicationUtilities.getProperty("count"));
+
+			final TableColumn extractionFileColumnTableColumn = new TableColumn(extractionTable, SWT.NONE);
+			extractionFileColumnTableColumn.setWidth(254);
+			extractionFileColumnTableColumn.setText(
+					ApplicationUtilities.getProperty("file"));
+			
+			/* Verification Tab*/
+			
+			
+			
+			final TabItem verificationTabItem = new TabItem(tabFolder, SWT.NONE);
+			verificationTabItem.setText(ApplicationUtilities.getProperty("tab.three.name"));
+
+			final Composite composite_2 = new Composite(tabFolder, SWT.NONE);
+			verificationTabItem.setControl(composite_2);
+
+			final Button startVerificationButton = new Button(composite_2, SWT.NONE);
+			startVerificationButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					System.out.println("Starting!!");
+					startVerification(); // start the verification process
+					statusOfMarkUp[2] = true;
+					try {
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), true);
+					} catch (Exception exe) {
+						LOGGER.error("Couldnt save status - verify" , exe);
+						exe.printStackTrace();
 					}
-				} 
-			}			
-			public void mouseDown(MouseEvent event) {}
-			public void mouseUp(MouseEvent event) {}
-		});
+				}
+			});
+			startVerificationButton.setBounds(548, 385, 100, 23);
+			startVerificationButton.setText(ApplicationUtilities.getProperty("start"));
 
-		final TableColumn verificationStageColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
-		verificationStageColumnTableColumn.setWidth(168);
-		verificationStageColumnTableColumn.setText("Task");
+			final Button clearVerificationButton = new Button(composite_2, SWT.NONE);
+			clearVerificationButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					clearVerification();
+					statusOfMarkUp[2] = false;
+					try {
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
+					} catch (Exception exe) {
+						LOGGER.error("Couldnt save status - verify" , exe);
+						exe.printStackTrace();
+					}
+				}
+			});
+			clearVerificationButton.setBounds(654, 385, 100, 23);
+			clearVerificationButton.setText("Clear");
+			verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
+			verificationTable.setBounds(10, 10, 744, 369);
+			verificationTable.setLinesVisible(true);
+			verificationTable.setHeaderVisible(true);
+			verificationTable.addMouseListener(new MouseListener () {
+				public void mouseDoubleClick(MouseEvent event) {
+					String filePath = Registry.TargetDirectory + 
+					ApplicationUtilities.getProperty("EXTRACTED")+ "\\" +
+					verificationTable.getSelection()[0].getText(1).trim();
+					if (filePath.indexOf("xml") != -1) {
+						try {
+							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+									+ " \"" + filePath + "\"");
+						} catch (Exception e){
+							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
+									ApplicationUtilities.getProperty("popup.editor.msg"),
+									ApplicationUtilities.getProperty("popup.header.error"), 
+									SWT.ERROR);
+						}
+					} 
+				}			
+				public void mouseDown(MouseEvent event) {}
+				public void mouseUp(MouseEvent event) {}
+			});
 
-		final TableColumn verificationFileColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
-		verificationFileColumnTableColumn.setWidth(172);
-		verificationFileColumnTableColumn.setText(ApplicationUtilities.getProperty("file"));
+			final TableColumn verificationStageColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
+			verificationStageColumnTableColumn.setWidth(168);
+			verificationStageColumnTableColumn.setText("Task");
 
-		final TableColumn verificationErrorColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
-		verificationErrorColumnTableColumn.setWidth(376);
-		verificationErrorColumnTableColumn.setText("Error");
+			final TableColumn verificationFileColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
+			verificationFileColumnTableColumn.setWidth(172);
+			verificationFileColumnTableColumn.setText(ApplicationUtilities.getProperty("file"));
 
-		verificationProgressBar = new ProgressBar(composite_2, SWT.NONE);
-		verificationProgressBar.setVisible(false);
-		verificationProgressBar.setBounds(10, 387, 515, 17);
+			final TableColumn verificationErrorColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
+			verificationErrorColumnTableColumn.setWidth(376);
+			verificationErrorColumnTableColumn.setText("Error");
+
+			verificationProgressBar = new ProgressBar(composite_2, SWT.NONE);
+			verificationProgressBar.setVisible(false);
+			verificationProgressBar.setBounds(10, 387, 515, 17);
+			
+		}
+		
+
 
 		final TabItem transformationTabItem = new TabItem(tabFolder, SWT.NONE);
 		transformationTabItem.setText(ApplicationUtilities.getProperty("tab.four.name"));
