@@ -577,12 +577,13 @@ public class MainForm {
 
 			extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
 			extractionProgressBar.setVisible(false);
-			extractionProgressBar.setBounds(10, 386, 609, 17);
+			extractionProgressBar.setBounds(10, 386, 581, 17);
 			
 			final Button startExtractionButton = new Button(composite_1, SWT.NONE);
 			startExtractionButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					try {
+						extractionTable.removeAll();
 						startExtraction(); // start the extraction process
 					} catch (Exception exe) {
 						LOGGER.error("unable to extract in mainform", exe);
@@ -600,7 +601,7 @@ public class MainForm {
 				}
 			});
 			startExtractionButton.setText(ApplicationUtilities.getProperty("start"));
-			startExtractionButton.setBounds(641, 385, 100, 23);
+			startExtractionButton.setBounds(656, 380, 53, 23);
 
 			extractionTable = new Table(composite_1, SWT.FULL_SELECTION | SWT.BORDER );
 			extractionTable.setLinesVisible(true);
@@ -637,9 +638,33 @@ public class MainForm {
 			extractionFileColumnTableColumn.setText(
 					ApplicationUtilities.getProperty("file"));
 			
-			/* Verification Tab*/
+			Button btnLoad = new Button(composite_1, SWT.NONE);
+			btnLoad.setBounds(597, 380, 53, 23);
+			btnLoad.setText("Load");
+			btnLoad.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					loadFileInfo(extractionTable, Registry.TargetDirectory + 
+							ApplicationUtilities.getProperty("EXTRACTED"));
+				}
+			});
 			
-			
+			Button btnClear = new Button(composite_1, SWT.NONE);
+			btnClear.setBounds(715, 380, 45, 23);
+			btnClear.setText("Clear");
+			btnClear.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					extractionTable.removeAll();
+					statusOfMarkUp[1] = false;
+					try {
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
+					} catch (Exception exe) {
+						LOGGER.error("Couldnt save status - verify" , exe);
+						exe.printStackTrace();
+					}
+				}
+			});
+						
+			/* Verification Tab*/			
 			
 			final TabItem verificationTabItem = new TabItem(tabFolder, SWT.NONE);
 			verificationTabItem.setText(ApplicationUtilities.getProperty("tab.three.name"));
@@ -651,6 +676,7 @@ public class MainForm {
 			startVerificationButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					System.out.println("Starting!!");
+					verificationTable.removeAll();
 					startVerification(); // start the verification process
 					statusOfMarkUp[2] = true;
 					try {
@@ -661,7 +687,7 @@ public class MainForm {
 					}
 				}
 			});
-			startVerificationButton.setBounds(548, 385, 100, 23);
+			startVerificationButton.setBounds(624, 385, 65, 23);
 			startVerificationButton.setText(ApplicationUtilities.getProperty("start"));
 
 			final Button clearVerificationButton = new Button(composite_2, SWT.NONE);
@@ -677,7 +703,7 @@ public class MainForm {
 					}
 				}
 			});
-			clearVerificationButton.setBounds(654, 385, 100, 23);
+			clearVerificationButton.setBounds(695, 385, 59, 23);
 			clearVerificationButton.setText("Clear");
 			verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
 			verificationTable.setBounds(10, 10, 744, 369);
@@ -719,6 +745,16 @@ public class MainForm {
 			verificationProgressBar = new ProgressBar(composite_2, SWT.NONE);
 			verificationProgressBar.setVisible(false);
 			verificationProgressBar.setBounds(10, 387, 515, 17);
+			
+			Button btnLoad_1 = new Button(composite_2, SWT.NONE);
+			btnLoad_1.setBounds(543, 385, 75, 23);
+			btnLoad_1.setText("Load");
+			btnLoad_1.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					loadFileInfo(verificationTable, Registry.TargetDirectory + 
+							ApplicationUtilities.getProperty("EXTRACTED"));
+				}
+			});
 			
 		}
 		
@@ -840,6 +876,7 @@ public class MainForm {
 		final Button startTransformationButton = new Button(composite_3, SWT.NONE);
 		startTransformationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				transformationTable.removeAll();
 				startTransformation(); // start the transformation process
 				
 				try {
@@ -851,14 +888,13 @@ public class MainForm {
 				}
 			}
 		});
-		startTransformationButton.setBounds(548, 385, 100, 23);
+		startTransformationButton.setBounds(633, 385, 60, 23);
 		startTransformationButton.setText("Start");
 
 		final Button clearTransformationButton = new Button(composite_3, SWT.NONE);
 		clearTransformationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				clearTransformation();
-				
+				clearTransformation();				
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.four.name"), combo.getText(), false);
 					statusOfMarkUp[3] = false;
@@ -868,12 +904,22 @@ public class MainForm {
 				}
 			}
 		});
-		clearTransformationButton.setBounds(654, 385, 100, 23);
+		clearTransformationButton.setBounds(701, 385, 53, 23);
 		clearTransformationButton.setText("Clear");
 
 		transformationProgressBar = new ProgressBar(composite_3, SWT.NONE);
 		transformationProgressBar.setVisible(false);
 		transformationProgressBar.setBounds(10, 387, 524, 17);
+		
+		Button button = new Button(composite_3, SWT.NONE);
+		button.setBounds(567, 385, 60, 23);
+		button.setText("Load");
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				loadFileInfo(transformationTable, Registry.TargetDirectory + 
+						ApplicationUtilities.getProperty("TRANSFORMED"));
+			}
+		});
 
 		final TabItem tagTabItem = new TabItem(tabFolder, SWT.NONE);
 		tagTabItem.setText(ApplicationUtilities.getProperty("tab.six.name"));
@@ -1348,6 +1394,7 @@ public class MainForm {
 		final Button startFinalizerButton = new Button(composite_5, SWT.NONE);
 		startFinalizerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e){
+				finalizerTable.removeAll();
 				startFinalize();
 				try {
 					
@@ -1360,16 +1407,31 @@ public class MainForm {
 				
 			}
 		});
-		startFinalizerButton.setBounds(548, 385, 100, 23);
+		startFinalizerButton.setBounds(618, 385, 65, 23);
 		startFinalizerButton.setText("Start");
 
 		final Button clearFinalizerButton = new Button(composite_5, SWT.NONE);
-		clearFinalizerButton.setBounds(654, 385, 100, 23);
+		clearFinalizerButton.setBounds(689, 385, 65, 23);
 		clearFinalizerButton.setText("Clear");
+		clearFinalizerButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				finalizerTable.removeAll();
+			}
+		});
 
 		finalizerProgressBar = new ProgressBar(composite_5, SWT.NONE);
 		finalizerProgressBar.setVisible(false);
 		finalizerProgressBar.setBounds(10, 387, 522, 17);
+		
+		Button btnLoad_2 = new Button(composite_5, SWT.NONE);
+		btnLoad_2.setBounds(552, 385, 58, 23);
+		btnLoad_2.setText("Load");
+		btnLoad_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				loadFileInfo(finalizerTable, Registry.TargetDirectory + 
+						ApplicationUtilities.getProperty("FINAL"));
+			}
+		});
 
 		final TabItem glossaryTabItem = new TabItem(tabFolder, SWT.NONE);
 		glossaryTabItem.setText(ApplicationUtilities.getProperty("tab.eight.name"));
@@ -1990,5 +2052,19 @@ public class MainForm {
 	 */
 	public static HashMap<String, ArrayList<String>> getRemovedEdges() {
 		return removedEdges;
+	}
+	
+	/* This function loads the files, if any, to the respective tabs*/
+	private void loadFileInfo(Table table, String directoryPath){
+		File directory = new File(directoryPath);
+		File [] files = directory.listFiles();
+		int count = 1;
+		for (File file : files) {			
+			TableItem item = new TableItem(table, SWT.NONE);
+			item.setText(new String [] {count+"", file.getName()});
+			count++;
+		}
+		
+		
 	}
 }
