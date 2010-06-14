@@ -74,6 +74,14 @@ public class Type3Document {
 		Button button_1 = new Button(group, SWT.NONE);
 		button_1.setBounds(498, 360, 75, 25);
 		button_1.setText("Skip");
+		button_1.addMouseListener(new MouseListener(){
+			public void mouseUp(MouseEvent mEvent){
+					shell.dispose();				
+			}
+			
+			public void mouseDown(MouseEvent mEvent) { }
+			public void mouseDoubleClick(MouseEvent mEvent) {}
+		});
 		
 		Label label = new Label(group, SWT.NONE);
 		label.setBounds(10, 10, 482, 15);
