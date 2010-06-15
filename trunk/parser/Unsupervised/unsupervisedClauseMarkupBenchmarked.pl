@@ -106,7 +106,7 @@ use strict;
 use DBI;
 
 #commandline: 
-#perl unsupervisedClauseMarkupBenchmarked.pl D:\SMART RA\Work Folders\FOC-v7\target\descriptions markedupdatasets plain
+#perl unsupervisedClauseMarkupBenchmarked.pl D:\SMART RA\Work Folders\FOC-v7\target\descriptions markedupdatasets plain focv7
 #$ARGV[0] = $ARGV[0]." ".$ARGV[1]." ".$ARGV[2];
 #$ARGV[1] = $ARGV[3];
 #$ARGV[2] = $ARGV[4];
@@ -5492,6 +5492,41 @@ sub plural{
 
 }
 
+sub hideBrackets{
+	my $text = shift;
+	my $hidden = "";
+	while($text=~/(.*?)(\([^()]*?[a-zA-Z][^()]*?\))(.*)/){
+		my $p1 = $1;
+		my $p2 = $2;
+		$text = $3;
+		$p2 =~ s#\.#\[DOT\]#g;
+		$hidden .= $p1.$p2; 
+	}
+	$hidden .=$text;
+	$text = $hidden;
+	$hidden = "";
+	while($text=~/(.*?)(\[[^\[\]]*?[a-zA-Z][^\[\]]*?\])(.*)/){
+		my $p1 = $1;
+		my $p2 = $2;
+		$text = $3;
+		$p2 =~ s#\.#\[DOT\]#g;
+		$hidden .= $p1.$p2; 
+	}
+	$hidden .=$text;
+	$text = $hidden;
+	$hidden = "";
+	while($text=~/(.*?)({[^{}]*?[a-zA-Z][^{}]*?})(.*)/){
+		my $p1 = $1;
+		my $p2 = $2;
+		$text = $3;
+		$p2 =~ s#\.#\[DOT\]#g;
+		$hidden .= $p1.$p2; 
+	}
+	$hidden .=$text;
+	
+	return $hidden;
+}
+
 ########read $dir, mark sentences with $SENTMARKER,
 ########put space around puncts, save sentences in %SENTS,
 ########"sentences" here include . or ; ending text blocks.
@@ -5511,22 +5546,28 @@ while(defined ($file=readdir(IN))){
 	$text =~ s#>#g; greater than #g; #remove >
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
-  	$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
-  	$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
-  	$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
+  	$text = hideBrackets($text);
+  	#$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
+  	#$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
+  	#$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
   	$text =~ s#(\w)([:;\.])(\w)#\1\2 \3#g; #absent;blade => absent; blade
   	$text =~ s#(\d\s*\.)\s+(\d)#\1\2#g; #1 . 5 => 1.5
   	$text =~ s#(\sdiam)\s+(\.)#\1\2#g; #diam . =>diam.
   	$text =~ s#(\sca)\s+(\.)#\1\2#g;  #ca . =>ca.
+  	$text =~ s#(\d\s+(cm|mm|dm|m)\s*)\.(\s*[^A-Z])#\1\[DOT\]\3#g;
   	
 	#@todo: use [PERIOD] replace . etc. in brackets. Replace back when dump to disk.
-	@sentences = SentenceSpliter::get_sentences($text);#@todo: avoid splits in brackets. how?
+	@sentences = SentenceSpliter::get_sentences($text);#@todo: avoid splits in brackets. how? use hideBrackets.
+	my @sentcopy = @sentences;
+	my @validindex = ();
+	my $i = 0;
  	foreach (@sentences){
 		#may have fewer than $N words
 		if(!/\w+/){next;}
-
+		push(@validindex, $i);
+		s#\[DOT\]#.#g;
 
     	#s#([^\d])\s*-\s*([^\d])#\1_\2#g;         #hyphened words: - =>_ to avoid space padding in the next step
 		s#\s*[-]+\s*([a-z])#_\1#g;                #cup_shaped, 3_nerved, 3-5 (-7)_nerved #5/30/09 add+
@@ -5538,15 +5579,19 @@ while(defined ($file=readdir(IN))){
     	#recordpropernouns($_);
     	tr/A-Z/a-z/;                              #all to lower case
     	getallwords($_);
+    	$i++;
   	}	
 
 	$count = 0;
- 	foreach (@sentences){
+	#foreach (@sentences){
+	foreach (@validindex){
 		#may have fewer than $N words
-		if(!/\w+/){next;}
-		my $line = $_;
-		my $oline = getOriginal($line, $original, $file);
+		#if(!/\w+/){next;}
+		#my $line = $_;
+		#my $oline = getOriginal($line, $original, $file);
     	
+    	my $line = $sentences[$_];
+    	my $oline = $sentcopy[$_];
     	$line =~ s#'# #g; #remove all ' to avoid escape problems
     	$oline =~ s#'# #g;
     	@words = getfirstnwords($line, $N); # "w1 w2 w3"
