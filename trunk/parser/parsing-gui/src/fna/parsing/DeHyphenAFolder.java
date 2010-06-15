@@ -44,15 +44,14 @@ public class DeHyphenAFolder {
 	 * 
 	 */
 	public DeHyphenAFolder(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Text perlLog, String dataPrefix ) {
+    		String todofoldername, String database, Text perlLog, String dataPrefix, Glossary glossary) {
 		this.listener = listener;
         this.database = database;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
         this.tablename = dataPrefix+"_allwords";
         
-        this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
-        		true, this.database, dataPrefix);
+        this.glossary = glossary;
         workdir = workdir.endsWith("/")? workdir : workdir+"/";
         this.folder = new File(workdir+todofoldername);
         this.outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
@@ -80,7 +79,7 @@ public class DeHyphenAFolder {
 	        fillInWords();
 	        if(listener!= null) listener.progress(50);
 
-	        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", dataPrefix);
+	        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", dataPrefix, glossary);
 
 	        try{
 	            Statement stmt = conn.createStatement();
@@ -297,7 +296,9 @@ public class DeHyphenAFolder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		DeHyphenAFolder dhaf = new DeHyphenAFolder(null, "X:\\DATA\\BHL", 
+		"clausemarkup", "markedupdatasets", null, "bhl_clause", null);
+		dhaf.dehyphen();
 
 	}
 
