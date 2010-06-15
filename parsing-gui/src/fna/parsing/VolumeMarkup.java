@@ -24,14 +24,14 @@ import fna.db.VolumeMarkupDbAccessor;
  */
 public class VolumeMarkup {
 	
-	private ProcessListener listener;
+	protected ProcessListener listener;
 	
-	private Display display = null;
-	private Text perlLog = null;
-	private String dataPrefix = null;
+	protected Display display = null;
+	protected Text perlLog = null;
+	protected String dataPrefix = null;
 	
-	private String markupMode = "adj"; //TODO: make this configurable
-	private static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
+	protected String markupMode = "adj"; //TODO: make this configurable
+	protected static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
 	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix) {
 		this.listener = listener;
@@ -101,7 +101,7 @@ public class VolumeMarkup {
 		}
 	}
 	//Perl would hang on any MySQL warnings or errors
-	private void runCommand(String com) throws IOException,
+	protected void runCommand(String com) throws IOException,
 			InterruptedException {
 		long time = System.currentTimeMillis();
 
