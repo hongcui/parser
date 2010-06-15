@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
+import fna.parsing.character.Glossary;
 
 
 /**
@@ -26,9 +27,11 @@ public class DeHyphenizer {
 	static private String password = ApplicationUtilities.getProperty("database.password");
 	private static final Logger LOGGER = Logger.getLogger(DeHyphenizer.class);
 	private String glossPrefix = null;
+	private Glossary glossary;
 	
-	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix) {
+	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix, Glossary glossary) {
 		this.glossPrefix = glossPrefix;
+		this.glossary = glossary;
 		try{
 			if(conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -181,7 +184,10 @@ public class DeHyphenizer {
 	
 	private int isTerm(String[] segs, int start, int end){
 		String str=formTerm(segs, start, end);
-		if(stringMatchInGloss(str) || stringMatch(str)){
+		if(glossary!=null && stringMatchInGloss(str)){ 
+			return 1;
+		}
+		if(stringMatch(str)){
 			return 1;
 		}
 		return 0;
@@ -267,7 +273,7 @@ public class DeHyphenizer {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		DeHyphenizer dh = new DeHyphenizer("fnav5_corpus", "learnedstates_copy", "state", "count", "_", "fna");
+		DeHyphenizer dh = new DeHyphenizer("fnav5_corpus", "learnedstates_copy", "state", "count", "_", "fna", null);
 		dh.deHyphen();
 	}
 

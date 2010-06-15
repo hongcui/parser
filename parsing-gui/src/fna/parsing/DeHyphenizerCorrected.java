@@ -1,10 +1,11 @@
 package fna.parsing;
 
 import java.util.Hashtable;
+import fna.parsing.character.Glossary;
 //
 public class DeHyphenizerCorrected extends DeHyphenizer {
-	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix) {
-		super(database, table, column, countcolumn, hyphen, glossPrefix);
+	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix, Glossary glossary) {
+		super(database, table, column, countcolumn, hyphen, glossPrefix, glossary);
 	}
 
 	
