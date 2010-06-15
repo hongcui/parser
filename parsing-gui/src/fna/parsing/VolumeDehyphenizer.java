@@ -32,45 +32,45 @@ import fna.parsing.character.*;
  *
  */
 public class VolumeDehyphenizer extends Thread {
-    protected File folder = null;
-    protected File outfolder = null;
-    protected Connection conn = null;
-    protected final String username = ApplicationUtilities.getProperty("database.username");
-    protected final String password = ApplicationUtilities.getProperty("database.password");
-    protected String tablename = null;
+    //protected File folder = null;
+    //protected File outfolder = null;
+    //protected Connection conn = null;
+    //protected final String username = ApplicationUtilities.getProperty("database.username");
+    //protected final String password = ApplicationUtilities.getProperty("database.password");
+    //protected String tablename = null;
     //private final String tablename1= "numtextmix";
     //private final int mixlength = 30;
-    static public String num = "\\d[^a-z]+";
+    //static public String num = "\\d[^a-z]+";
     protected String database = "";
-    protected Hashtable<String,String> mapping = new Hashtable<String, String>();
+    //protected Hashtable<String,String> mapping = new Hashtable<String, String>();
     protected ProcessListener listener;
     private static final Logger LOGGER = Logger.getLogger(VolumeDehyphenizer.class);
     private Glossary glossary = null;  // TODO
-    
     private Display display;
     private Text perlLog;
     private String dataPrefix;
+    private DeHyphenAFolder dhf;
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, Display display, Text perlLog, String dataPrefix) {
         this.listener = listener;
-        this.database = database;
+        //this.database = database;
         /** Synchronizing UI and background process **/
         this.display = display;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
-        this.tablename = dataPrefix+"_allwords";
+        //this.tablename = dataPrefix+"_allwords";
         
         this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
         		true, this.database, dataPrefix);
-        workdir = workdir.endsWith("/")? workdir : workdir+"/";
-        folder = new File(workdir+todofoldername);
-        outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
-        if(!outfolder.exists()){
-            outfolder.mkdir();
-        }
+        //workdir = workdir.endsWith("/")? workdir : workdir+"/";
+        //folder = new File(workdir+todofoldername);
+        //outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
+        //if(!outfolder.exists()){
+        //    outfolder.mkdir();
+        //}
         
-        try{
+        /*try{
             if(conn == null){
                 Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
                 String URL = ApplicationUtilities.getProperty("database.url");
@@ -81,12 +81,17 @@ public class VolumeDehyphenizer extends Thread {
         }catch(Exception e){
         	LOGGER.error("Database is down! (VolumeDehyphenizer)", e);
             e.printStackTrace();
-        }
+        }*/
+     
+        this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, perlLog,  dataPrefix, glossary);
     }
 
     public void run () {
     	listener.setProgressBarVisible(true);
-    	dehyphen();
+    	System.out.println("Preparing files...");
+    	showPerlMessage("Preparing files...");
+    	//dehyphen();
+    	dhf.dehyphen();
 		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix);
 		vm.markup();
 		listener.setProgressBarVisible(false);
@@ -99,11 +104,11 @@ public class VolumeDehyphenizer extends Thread {
 			}
 		});
 	}
-	
-	public void incrementProgressBar(int progress) {
+	//moved the following to DeHyphenAFolder.java
+	/*public void incrementProgressBar(int progress) {
 		listener.progress(progress);
-	}
-	
+	}*/
+	/*
     public void dehyphen(){
     	System.out.println("Preparing files...");
     	showPerlMessage("Preparing files...");
@@ -143,16 +148,6 @@ public class VolumeDehyphenizer extends Thread {
         }
     }
     
-    /*private void createNumTextMixTable(){
-        try{
-            Statement stmt = conn.createStatement();
-            String query = "create table if not exists "+tablename1+" (id int not null auto_increment primary key, mix varchar(30), file varchar(400))";
-            stmt.execute(query);
-            stmt.execute("delete from "+tablename1);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }*/
     private void fillInWords(){
         try {
             Statement stmt = conn.createStatement();
@@ -165,9 +160,9 @@ public class VolumeDehyphenizer extends Thread {
                 while ((line = reader.readLine()) != null) {
                     line = line.toLowerCase();
                     String linec = line;
-                    /*if(line.matches(".*?\\d+-(?=[a-z]).*")){
-                        line = fixNumTextMix(line, flist[i]);
-                    }*/
+                    //if(line.matches(".*?\\d+-(?=[a-z]).*")){
+                    //   line = fixNumTextMix(line, flist[i]);
+                    //}
                     line = line.replaceAll("<[^<]+?>", " "); //for xml or html docs
                     line = line.replaceAll(num, " ");
                     line = line.replaceAll("[^-a-z]", " ");
@@ -197,33 +192,6 @@ public class VolumeDehyphenizer extends Thread {
             e.printStackTrace();
         }
     }
-    /**
-     * save original text mix in File source in a table,
-     * to be used in outputting final text
-     * @param mix
-     * @param source
-     * @return
-     */
-    /*private String fixNumTextMix(String mix, File source){
-        StringBuffer fixed = new StringBuffer();
-        Pattern p = Pattern.compile("(.*?)(\\d+-)([a-z].*)");
-        Matcher m = p.matcher(mix);
-        while(m.matches()){
-            fixed.append(m.group(1)).append("NUM-");
-            String save = m.group(2)+m.group(3);
-            save = save.substring(0, save.length() < mixlength ? save.length() : mixlength );
-            //save to table
-            mix = m.group(3);
-            try{
-                Statement stmt = conn.createStatement();
-                stmt.execute("insert into "+tablename1+" (mix, file) values ('"+save+"', '"+source.getName()+"')");
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        fixed.append(mix);
-        return fixed.toString();
-    }*/
     
     private String fixBrokenHyphens(String broken){ //cup-[,]  disc-[,]  or dish-shaped
         StringBuffer fixed = new StringBuffer();
@@ -292,12 +260,12 @@ public class VolumeDehyphenizer extends Thread {
         //text = text.replaceAll("\\W-", " "); 
         //text = text.replaceAll("-\\W", " ");
         //HOng, 08/04/09 for FoC doc. "-" added in place of <dox-tags>.
-        /*if(line.matches(".*?[a-z]- .*")){//cup-  disc-  or dish-shaped
-            line = fixBrokenHyphens(line); //Too loose. 
-        }*/
-        /*if(text.matches(".*?[a-z]-[^a-z0-9].*")){//cup-  disc-  or dish-shaped
-        text = fixBrokenHyphens(text);
-        }*/
+        //if(line.matches(".*?[a-z]- .*")){//cup-  disc-  or dish-shaped
+        //    line = fixBrokenHyphens(line); //Too loose. 
+        //}
+        //if(text.matches(".*?[a-z]-[^a-z0-9].*")){//cup-  disc-  or dish-shaped
+        //text = fixBrokenHyphens(text);
+        //}
         return text;
     }
     
@@ -323,6 +291,7 @@ public class VolumeDehyphenizer extends Thread {
         }
         return original;
     }
+    */
     /**
      * @param args
      */
