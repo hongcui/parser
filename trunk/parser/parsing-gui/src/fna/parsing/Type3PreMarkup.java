@@ -35,18 +35,24 @@ import fna.db.*;
 public class Type3PreMarkup{
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
-	private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
+	//private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
+	private File source = new File("Z:\\DATA\\BHL\\cleaned");
 	//File target = new File(Registry.TargetDirectory);
-	File target = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text_transformed");
+	//File target = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text_transformed");
+	File target = new File("Z:\\DATA\\BHL\\target");
 	private XMLOutputter outputter = null;
 	private String markupMode = "plain";
 	private String dataprefix = null;
 	protected static final Logger LOGGER = Logger.getLogger(Type3PreMarkup.class);
 	private String seedfilename = "seeds";
+	private ProcessListener listener;
+	private Text perlLog;
 	
 	Type3PreMarkup(ProcessListener listener, Display display, Text perllog, String dataprefix, ArrayList seeds){
 		//super(listener, display, perllog, dataprefix);
 		this.seeds = seeds;
+		this.listener = listener;
+		this.perlLog = perllog;
 		saveSeeds();
 		//this.markupMode = "plain";
 		this.dataprefix = dataprefix;
@@ -73,7 +79,7 @@ public class Type3PreMarkup{
 	 */
 	private void bootstrapMorphDes() {
 		String workdir =this.source.getAbsolutePath();
-		String com = "perl " + ApplicationUtilities.getProperty("PARAGRAPHBOOTSTRAP") + " "+
+		String com = "perl " + ApplicationUtilities.getProperty("PARAGRAPHBOOTSTRAP") + " "+ "f"+" "+
 		workdir + " " +
 		ApplicationUtilities.getProperty("database.name") + " " +
 		this.markupMode + " " + 
@@ -131,6 +137,10 @@ public class Type3PreMarkup{
 			String fname = files[i].getName();
 			outputTo(des,tra,fname);
 		}
+		//dehypen descriptions folder
+		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, null);
+		dhf.dehyphen();
+
 	}
 	/**
 	 * use the tables created by bootstrapMorphDes
@@ -158,32 +168,39 @@ public class Type3PreMarkup{
 		Element doc = new Element("document");
 		for(int i = 0; i<allPs.size(); i++){
 			String pID = fname+"p"+i;
+			String pIDattr = "";
 			if(desIDs.contains(pID)){
 				Element morph = new Element("description");
 				String text=paras.get(pID);
 				String[] parts = text.split("(<@<|>@>)"); //1-3 parts
 				if(parts.length==1){
-					morph.setAttribute("id", pID);
+					pIDattr = pID;
+					morph.setAttribute("pid", pIDattr); //use attribute pid to allow annotated descriptions to be put back in
 					morph.setText(parts[0]);
 					doc.addContent(morph);	
 				}else{
 					Element nonmorph = new Element("nonMorph");
+					nonmorph.setAttribute("pid", pID+"_0");
 					nonmorph.setText(parts[0]);
 					doc.addContent(nonmorph);
-					morph.setAttribute("id", pID);
+					pIDattr = pID+"_1";
+					morph.setAttribute("pid", pID+"_1");
 					morph.setText(parts[1]);
 					doc.addContent(morph);				
 					if(parts.length==3){
 						nonmorph = new Element("nonMorph");
+						nonmorph.setAttribute("pid", pID+"_2");
 						nonmorph.setText(parts[2]);
 						doc.addContent(nonmorph);
 					}
 				}
-				write2file(desfolder, pID+".txt", morph.getText());
+				write2file(desfolder, pIDattr+".txt", morph.getText());
+			}else{
+				Element nonmorph = new Element("nonMorph");
+				nonmorph.setAttribute("pid", pID);
+				nonmorph.setText(paras.get(pID));
+				doc.addContent(nonmorph);
 			}
-			Element nonmorph = new Element("nonMorph");
-			nonmorph.setText(paras.get(pID));
-			doc.addContent(nonmorph);
 		}
 		//write xml to transformed
 		try {
@@ -229,8 +246,8 @@ public class Type3PreMarkup{
 	 */
 	public static void main(String[] args) {
 		//save to-be-annotated files to source folder 
-		Type3PreMarkup tpm = new Type3PreMarkup(null, null, null, "ant", null);
-		tpm.bootstrapMorphDes();
+		Type3PreMarkup tpm = new Type3PreMarkup(null, null, null, "bhl_2vs", null);
+		//tpm.bootstrapMorphDes();
 		tpm.output2Target();
 	}
 
