@@ -53,7 +53,7 @@ public class CondenseMarkedsent {
 						source=rs.getString(1);
            				CharSequence inputStr = rs.getString(2);              
            				// Compile regular expression
-           				Pattern pattern = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z]+([}>]?|(\\}>)?)|[\\d]+[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z]+([}>]?|(\\}>)?)|((<\\{)?|[<{]?)[A-Za-z]+([}>]?|(\\}>)?)[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z]+([}>]?|(\\}>)?)");
+           				Pattern pattern = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z ]+([}>]?|(\\}>)?)|[\\d]+[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z ]+([}>]?|(\\}>)?)|((<\\{)?|[<{]?)[A-Za-z ]+([}>]?|(\\}>)?)[\\-\\–]+((<\\{)?|[<{]?)[A-Za-z ]+([}>]?|(\\}>)?)");
            				Pattern pattern1 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
            				Pattern pattern2 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
            				Pattern pattern3 = Pattern.compile("\\} or \\{");
@@ -135,7 +135,7 @@ public class CondenseMarkedsent {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new CondenseMarkedsent("fnav19_benchmark");
+		new CondenseMarkedsent("benchmark_learningcurve_treatiseh_test_19");
 	}
 
 }
