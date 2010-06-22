@@ -59,7 +59,7 @@ public class Segmentation {
         				int prepflag = 0;
         				// Compile regular expression
         				
-                        Pattern pattern = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s)<[a-zA-Z_]+>(\\s<[a-zA-Z_]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
+                        Pattern pattern = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s)<[a-zA-Z_ ]+>(\\s<[a-zA-Z_ ]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
                         
                         // Replace all occurrences of pattern in input
                         Matcher matcher = pattern.matcher(terms[i]);
@@ -139,7 +139,7 @@ public class Segmentation {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new Segmentation("fnav19_benchmark");
+		new Segmentation("benchmark_learningcurve_treatiseh_test_19");
 	}
 
 }
