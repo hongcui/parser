@@ -4,9 +4,9 @@ public class MainPgm {
 
 	public MainPgm() {
 		// TODO Auto-generated constructor stub
-		CondenseMarkedsent.main(null);
-		HideCommas.main(null);
-		Segmentation.main(null);
+		//CondenseMarkedsent.main(null);
+		//HideCommas.main(null);
+		//Segmentation.main(null);
 		ParseSimpleseg.main(null);
 		//ParseComplexseg.main(null);
 		//OcsFreq.main(null);
