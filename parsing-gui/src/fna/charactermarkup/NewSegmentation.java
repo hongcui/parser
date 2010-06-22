@@ -59,7 +59,7 @@ public class NewSegmentation {
         				int prepflag = 0;
         				// Compile regular expression
         				
-                        Pattern pattern = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²\\:½/¼\"“”\\_;x´\\×,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s[“\\s]?)<[a-zA-Z_]+>(\\s<[a-zA-Z_]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
+                        Pattern pattern = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²\\:½/¼\"“”\\_;x´\\×,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s[“\\s]?)<[a-zA-Z_ ]+>(\\s<[a-zA-Z_ ]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
                         
                         // Replace all occurrences of pattern in input
                         Matcher matcher = pattern.matcher(terms[i]);
