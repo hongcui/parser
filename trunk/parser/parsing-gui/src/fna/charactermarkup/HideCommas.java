@@ -71,7 +71,7 @@ public class HideCommas {
                		 		streq=1;
                 		}
                    		if(streq==1){
-                   			Pattern pattern2 = Pattern.compile("(<[a-zA-Z_]+>)");
+                   			Pattern pattern2 = Pattern.compile("(<[a-zA-Z_ ]+>)");
                    			Matcher matcher2 = pattern2.matcher(inputStr);
                    			//System.out.println(inputStr);
                    			if(inputStr.toString().indexOf(">",j)>0)
@@ -153,7 +153,7 @@ public class HideCommas {
         				CharSequence inputStr = terms[i];              
            				// Compile regular expression
         				
-                        Pattern pattern = Pattern.compile("((\\s\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|\\s[\\w]+)\\s<[a-zA-Z_]+>)|(<[a-zA-Z_]+>\\s((\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\})*|[\\w]*))|((\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|[\\w]+)\\s<[a-zA-Z_]+>\\s(\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|[\\w]+))");
+                        Pattern pattern = Pattern.compile("((\\s\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|\\s[\\w]+)\\s<[a-zA-Z_ ]+>)|(<[a-zA-Z_ ]+>\\s((\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\})*|[\\w]*))|((\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|[\\w]+)\\s<[a-zA-Z_ ]+>\\s(\\{[a-zA-Z_\\./\\-\\d\\s\\本}]+\\}|[\\w]+))");
                         	
                         // Replace all occurrences of pattern in input
                         Matcher matcher = pattern.matcher(inputStr);
@@ -183,7 +183,7 @@ public class HideCommas {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new HideCommas("fnav19_benchmark");
+		new HideCommas("benchmark_learningcurve_treatiseh_test_19");
 	}
 
 }
