@@ -56,8 +56,19 @@ public class ParseSimpleseg {
 			String oldorg="";
 			FileOutputStream ostream = new FileOutputStream("relation.txt"); 
 			PrintStream out = new PrintStream( ostream ); 
+			FileOutputStream ostream1 = new FileOutputStream("F:\\UA\\RA\\TestCase_Treatise\\Dummy.xml"); 
+    		PrintStream out1 = new PrintStream( ostream1 );
         	ResultSet rs = stmt.executeQuery("select * from segments");
         	while(rs.next()){
+        		int sampflag = 0;
+        		Random rand = new Random();
+				if(rand.nextDouble()<.10){
+					ostream1 = new FileOutputStream("F:\\UA\\RA\\TestCase_Treatise\\"+rs.getString("sentid")+".xml");
+					out1 = new PrintStream( ostream1 );
+					out1.println("<?xml version=\"1.0\" encoding=\"iso8859-1\"?>");
+	        		sampflag = 1;
+				}
+				
         		int orcount=0;
         		int srcflag=0;
         		newsrcstr=rs.getString(2);
@@ -80,7 +91,6 @@ public class ParseSimpleseg {
                 	String str2="";
                 	String str4="";
                 	String chrtag="";
-                	String modifier="";
                 	int flag6 = 0;
                 	int flag8 = 0;
                 	int ct = 0;
@@ -110,13 +120,13 @@ public class ParseSimpleseg {
                 					singorg = rs2.getString(1);
                 				}
                 				if(ct>1){
-                					str2="<structure name=\""+singorg+"\" modifier=\""+modifier+"\" id=\"o"+ct+"\">";
+                					ct--;
+                					str2="<statement id=\"s"+rs.getString(1)+"\"><structure name=\""+singorg+"\" id=\"o"+ct+"\">";
                 					str4="</structure>";
                 				}
                 				else{
                 					str2=str2.concat("<structure name=\""+singorg+"\" id=\"o"+ct+"\">");
                 					str4="</structure>";
-                					modifier=singorg;
                 				}
                 				Pattern pattern7 = Pattern.compile("([\\d]?[\\s]?n[\\s]?=[\\s]?)+[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*|x[\\s]?=[\\s]?[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*");
                 				Matcher matcher1 = pattern7.matcher(str1);
@@ -131,7 +141,7 @@ public class ParseSimpleseg {
                                 	while ( matcher2.find()){
                                 		int q=matcher2.start();
                                 		int r=matcher2.end();
-                                		chrtag=chrtag.concat("<character name=\"count\" value=\""+chr.subSequence(q,r).toString()+"\"/>");
+                                		chrtag=chrtag.concat("<character name=\"count\" value=\""+chr.subSequence(q,r).toString().trim()+"\"/>");
                                 	}
                                 	chrtag=chrtag.concat("</structure><Text>"+chr+"</Text>");
                                 	matcher2.reset();
@@ -193,21 +203,39 @@ public class ParseSimpleseg {
                     }
                     else
                     	str2=str2.concat(str4+"<Text>"+str6+"</Text></statement>");
-                    
-                   /* StringBuffer sb = new StringBuffer();
-                    Pattern pattern17 = Pattern.compile("<[a-zA-Z_]+><[a-zA-Z_]+");
-                	matcher2 = pattern17.matcher(str2);
-					while ( matcher2.find()){
-						int k=matcher2.start();
-						int l=matcher2.end();
-						matcher2.appendReplacement(sb, str2.subSequence(str2.indexOf('<', str2.indexOf('>')),l)+" modifier=\""+str2.subSequence(k+1,str2.indexOf('>'))+"\"");
-					}
-					matcher2.appendTail(sb);
-					str2=sb.toString();
-					matcher2.reset();*/
+                                        
+                    ResultSet rs3 = stmt3.executeQuery("select * from sentence where source='"+rs.getString(2)+"'");
+                    if(rs3.next()){
+                    	if(rs3.getString("modifier").compareTo("")!=0){
+                    		String tag = rs3.getString("tag");
+                    		String modifier = rs3.getString("modifier");
+                    		modifier = modifier.replaceAll("[\\[\\]]", "");
+                    		while(tag.compareTo("ditto")==0){
+	                			int sentid = rs3.getInt("sentid");
+	                			rs3 = stmt3.executeQuery("select * from sentence where sentid='"+(sentid-1)+"'");
+	                			if(rs3.next())
+	                				tag = rs3.getString("tag");
+	                		}
+	                		if(tag.compareTo("ignore")!=0){
+		                		if(tag.contains("["))
+		                			tag = tag.substring(1, tag.length()-1);
+	                    		StringBuffer sb = new StringBuffer();
+	                            Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
+	                        	matcher2 = pattern17.matcher(str2);
+	        					while ( matcher2.find()){
+	        						matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+modifier+"\"");
+	        					}
+	        					matcher2.appendTail(sb);
+	        					str2=sb.toString();
+	        					matcher2.reset();
+	                		}
+                    	}
+                    }
                     
                 	stmt2.execute("insert into marked_simpleseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+str2+"')");
                 	matcher.reset();
+                	if(sampflag == 1)
+                		out1.println(str2);
                 }
                 
                 
@@ -323,9 +351,9 @@ public class ParseSimpleseg {
 	                        	/*else
 	                        		outertag=outertag.concat("_R"+ct+"_"+org2);*/
 	                        		if(innertagstate!="")
-	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\">"+innertagstate+"</structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\">"+innertagstate+"</structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	                        		else	
-	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	                        	}
 	                        	else{
 	                        		if(innertagstate!=""){
@@ -341,9 +369,9 @@ public class ParseSimpleseg {
 	        	                		innertags=sb.toString();
 	        	                		matcher2.reset();
 	                        		}
-		                        	innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+		                        	innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	                        	}
-	                        	markedrelations = markedrelations.concat("<relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        	markedrelations = markedrelations.concat("<relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	            			}
 	            			else{
 	            				out.println(rs.getString(2)+"  "+relation);
@@ -384,13 +412,13 @@ public class ParseSimpleseg {
 	                            matcher2.reset();
 	                        	if(ct==1){
 	                        		outertag=outertag.concat("<statement id=\"s"+rs.getString(1)+"\">");
-	                        		innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        		innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	                        	}
 	                        	else
-	                        		innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        		innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	                        	/*else
 	                        		outertag=outertag.concat("_R"+ct+"_"+org2);*/
-	                        	markedrelations = markedrelations.concat("<relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation+"\" negation=\""+negation+"\"/>");
+	                        	markedrelations = markedrelations.concat("<relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	            			}
 	            			ct++;
 	            		}
@@ -467,7 +495,38 @@ public class ParseSimpleseg {
 	        		innertags = innertags.concat("<Text>"+str6+"</Text>");
 	        		markedsent = markedsent.concat(outertag+innertags+"</statement>");
 	        		//stmt1.execute("insert into marked_complexseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+markedsent+"','"+markedrelations+"')");
+	        		
+	        		 ResultSet rs3 = stmt3.executeQuery("select * from sentence where source='"+rs.getString(2)+"'");
+	                 if(rs3.next()){
+	                   	if(rs3.getString("modifier").compareTo("")!=0){
+	                   		String tag = rs3.getString("tag");
+	                   		String modifier = rs3.getString("modifier");
+	                   		modifier = modifier.replaceAll("[\\[\\]]", "");
+	                   		while(tag.compareTo("ditto")==0){
+	                   			int sentid = rs3.getInt("sentid");
+	                			rs3 = stmt3.executeQuery("select * from sentence where sentid='"+(sentid-1)+"'");
+	                			if(rs3.next())
+	                				tag = rs3.getString("tag");
+		               		}
+		               		if(tag.compareTo("ignore")!=0){
+			               		if(tag.contains("["))
+			               			tag = tag.substring(1, tag.length()-1);
+		                    	StringBuffer sb = new StringBuffer();
+		                        Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
+		                       	matcher2 = pattern17.matcher(markedsent);
+		        				while ( matcher2.find()){
+		        					matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+modifier+"\"");
+		        				}
+		        				matcher2.appendTail(sb);
+		        				markedsent=sb.toString();
+		        				matcher2.reset();
+		                	}
+	                    }
+	                 }
+	        		
 	        		stmt1.execute("insert into marked_simpleseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+markedsent+"')");
+	        		if(sampflag ==1)
+	        			out1.println(markedsent);
                 }
                 oldsrcstr=rs.getString(2);
             }
@@ -543,7 +602,7 @@ public class ParseSimpleseg {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new ParseSimpleseg("benchmark_learningcurve_fnav19_test_24");
+		new ParseSimpleseg("benchmark_learningcurve_treatiseh_test_19");
 	}
 
 }
