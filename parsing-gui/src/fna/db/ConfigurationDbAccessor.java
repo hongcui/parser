@@ -131,19 +131,35 @@ public class ConfigurationDbAccessor {
 	}
 	
 	
-	public void saveParagraphTagDetails(String...paragraphs) throws SQLException{
+	public void saveParagraphTagDetails(String docFormat, String...paragraphs) throws SQLException{
 		Connection conn = null;
 		PreparedStatement stmt = null;
+		String tableName = "ocrstartparagraph";
+		
+		if (docFormat != null) {
+			tableName = "type4startparagraph";
+		}
 
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("delete from ocrstartparagraph");
+			stmt = conn.prepareStatement("delete from " + tableName);
 			stmt.execute();
-			stmt = conn.prepareStatement("insert into ocrstartparagraph(paragraph) values (?)");
+			
+			if (docFormat != null) {
+				stmt = conn.prepareStatement("insert into "+ tableName+"(paragraph, docformat) values (?,?)");
+			} else {
+				stmt = conn.prepareStatement("insert into "+ tableName+"(paragraph) values (?)");
+			}
+			
 
 			for (String para : paragraphs) {
 				if(!para.trim().equals("") && !para.trim().equals("\r")) {
-					stmt.setString(1, para);
+					if (docFormat != null) {
+						stmt.setString(1, para);
+						stmt.setString(2, docFormat);
+					} else {
+						stmt.setString(1, para);
+					}					
 					stmt.executeUpdate();
 				}
 			}
