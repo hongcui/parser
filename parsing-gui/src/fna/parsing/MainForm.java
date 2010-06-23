@@ -878,7 +878,12 @@ public class MainForm {
 		startTransformationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				transformationTable.removeAll();
-				startTransformation(); // start the transformation process
+				if(type.equals("")) {
+					startTransformation(); // start the transformation process
+				} else if (type.equals("type3")) {
+					startPreMarkUp(); // start pre-mark up process
+				}
+				
 				
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.four.name"), combo.getText(), true);
@@ -891,6 +896,11 @@ public class MainForm {
 		});
 		startTransformationButton.setBounds(633, 385, 60, 23);
 		startTransformationButton.setText("Start");
+		
+		/* Type 4 Transformation doesn't do anything other than listing source files : Doubtful*/
+		if (type.equals("type4")){
+			startTransformationButton.setVisible(false);
+		}
 
 		final Button clearTransformationButton = new Button(composite_3, SWT.NONE);
 		clearTransformationButton.addSelectionListener(new SelectionAdapter() {
@@ -1539,6 +1549,17 @@ public class MainForm {
 		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
 		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText());
 		vt.start();
+	}
+	
+	private void startPreMarkUp() {
+		ProcessListener listener = 
+			new ProcessListener(transformationTable, transformationProgressBar, 
+					shell.getDisplay());
+		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
+		Type3PreMarkup preMarkUp = 
+			new Type3PreMarkup(listener, shell.getDisplay(), 
+					null, dataPrefixCombo.getText(), new ArrayList());
+		preMarkUp.start();
 	}
 	
 	private void clearTransformation() {

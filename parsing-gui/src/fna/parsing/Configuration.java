@@ -48,8 +48,8 @@ public class Configuration {
 		
 		final Shell shell = new Shell(display);
 		shell.setImage(SWTResourceManager.getImage(Configuration.class, "/fna/parsing/garland_logo.gif"));
-		shell.setSize(800, 600);
-		shell.setLocation(200, 100);
+		shell.setSize(793, 741);
+		shell.setLocation(200, 20);
 		shell.setText("Choose a document style");
 	
 		Group group = new Group(shell, SWT.NONE);
@@ -64,7 +64,7 @@ public class Configuration {
 		button.setText("Radio Button");
 		
 		Group group_1 = new Group(shell, SWT.NONE);
-		group_1.setBounds(20, 98, 740, 456);
+		group_1.setBounds(20, 98, 740, 597);
 		
 		Button type1 = new Button(group_1, SWT.RADIO);
 		type1.setBounds(10, 29, 90, 16);
@@ -142,6 +142,29 @@ public class Configuration {
 		label_3.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("application.logo")));
 		label_3.setBounds(106, 308, 611, 127);
+		
+		Button btnType = new Button(group_1, SWT.RADIO);
+		btnType.setBounds(10, 451, 71, 16);
+		btnType.setText("Type 4");
+		btnType.addMouseListener(new MouseListener() {
+			public void mouseUp(MouseEvent mEvent){
+				shell.setVisible(false);
+				new Type4Document().showType4Document();
+				if(!shell.isDisposed()) {
+					shell.dispose();
+				}
+				MainForm.launchMarker("type4");
+				System.exit(0);
+			}
+			
+			public void mouseDown(MouseEvent mEvent) { }
+			public void mouseDoubleClick(MouseEvent mEvent) {}
+		});
+		
+		Label label_4 = new Label(group_1, SWT.NONE);
+		label_4.setBounds(106, 451, 611, 117);
+		label_4.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
+				ApplicationUtilities.getProperty("application.logo")));
 	
 		shell.open();
 		shell.layout();
@@ -150,7 +173,4 @@ public class Configuration {
 				display.sleep();
 		}
 	}
-	
-	
-	
 }

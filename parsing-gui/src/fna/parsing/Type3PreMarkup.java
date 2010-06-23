@@ -32,7 +32,7 @@ import fna.db.*;
  * input: seeds description, with or without
  * output: prefix_paragraphs and prefix_sentence, prefix_wordpos tables etc by unsupervisedClauseMarkupBenchmarked.pl
  */
-public class Type3PreMarkup{
+public class Type3PreMarkup extends Thread {
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	//private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
@@ -48,7 +48,8 @@ public class Type3PreMarkup{
 	private ProcessListener listener;
 	private Text perlLog;
 	
-	Type3PreMarkup(ProcessListener listener, Display display, Text perllog, String dataprefix, ArrayList seeds){
+	Type3PreMarkup(ProcessListener listener, Display display, 
+			Text perllog, String dataprefix, ArrayList seeds){
 		//super(listener, display, perllog, dataprefix);
 		this.seeds = seeds;
 		this.listener = listener;
@@ -247,8 +248,15 @@ public class Type3PreMarkup{
 	public static void main(String[] args) {
 		//save to-be-annotated files to source folder 
 		Type3PreMarkup tpm = new Type3PreMarkup(null, null, null, "bhl_2vs", null);
-		//tpm.bootstrapMorphDes();
+		tpm.bootstrapMorphDes();
 		tpm.output2Target();
+	}
+	
+	public void run () {
+		listener.setProgressBarVisible(true);
+		bootstrapMorphDes();
+		output2Target();
+		listener.setProgressBarVisible(false);
 	}
 
 }
