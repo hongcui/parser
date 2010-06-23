@@ -101,9 +101,9 @@ public class ParseSimpleseg {
                 		ct++;
                 		int i=matcher.start();
                 		int j=matcher.end();
-                		if(ct==1 && srcflag==0)
+                		if(ct<3 && srcflag==0)
                 			oldorg=str.subSequence(i,j).toString();
-                		else if(ct==1 && srcflag==1){
+                	/*	else if(ct==1 && srcflag==1){
                 			Pattern pattern16 = Pattern.compile("((?<![\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×,µ%\\*\\{\\}\\[\\](<\\{)(\\}>) m]\\s)<[a-zA-Z_ ]+>(\\s<[a-zA-Z_ ]+>)*[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\](<\\{)(\\}>) m]*)");
                             
                             // Replace all occurrences of pattern in input
@@ -112,7 +112,7 @@ public class ParseSimpleseg {
                             	oldorg=str.subSequence(i,j).toString();
                             }
                             matcher1.reset();
-                		}               			
+                		}*/               			
                 			if(!str.subSequence(i,j).toString().contains("<n>")){
                 				String singorg = str.subSequence(i+1,j-1).toString();
                 				ResultSet rs2 = stmt3.executeQuery("select * from singularplural where plural='"+singorg+"'");
@@ -180,7 +180,8 @@ public class ParseSimpleseg {
                 		str2=str2.concat("<structure name=\"org\" id=\"o"+(ct+1)+"\">");
                 		str4="</structure>";
                     	}
-                    	oldorg="<org>";
+                    	if(srcflag==0)
+                    		oldorg="<org>";
                 	}
                 	matcher.reset();
                 	str2 = str2.concat(CharStateHandler.characterstate(str1, str));
@@ -350,10 +351,18 @@ public class ParseSimpleseg {
 	                        		outertag=outertag.concat("<statement id=\"s"+rs.getString(1)+"\">");
 	                        	/*else
 	                        		outertag=outertag.concat("_R"+ct+"_"+org2);*/
-	                        		if(innertagstate!="")
-	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\">"+innertagstate+"</structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
-	                        		else	
-	                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
+	                        		if(plainrelation!=""){
+		                        		if(innertagstate!="")
+		                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\">"+innertagstate+"</structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
+		                        		else	
+		                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
+	                        		}
+	                        		else{
+	                        			if(innertagstate!="")
+		                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\">"+innertagstate+"</structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure>");
+		                        		else	
+		                        			innertags=innertags.concat("<structure name=\""+org1+"\" id=\"o"+ct+"\"></structure><structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure>");
+	                        		}
 	                        	}
 	                        	else{
 	                        		if(innertagstate!=""){
@@ -369,7 +378,10 @@ public class ParseSimpleseg {
 	        	                		innertags=sb.toString();
 	        	                		matcher2.reset();
 	                        		}
-		                        	innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
+		                        	if(plainrelation!="")
+		                        		innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure><relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
+		                        	else
+		                        		innertags=innertags.concat("<structure name=\""+org2+"\" id=\"o"+(ct+1)+"\"></structure>");
 	                        	}
 	                        	markedrelations = markedrelations.concat("<relation id=\"R"+ct+"\" from=\"o"+ct+"\" to=\"o"+(ct+1)+"\" name=\""+plainrelation.trim()+"\" negation=\""+negation+"\"/>");
 	            			}
