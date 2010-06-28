@@ -28,7 +28,7 @@ import fna.db.*;
  * split taxonX documents to smaller units, each resulting xml document contains 1 treatment.
  * 
  */
-public class Type4Transformer {
+public class Type4Transformer extends Thread {
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	private File source = new File("Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\taxonX-ants");
 	//File target = new File(Registry.TargetDirectory);
@@ -36,10 +36,16 @@ public class Type4Transformer {
 	private String tableprefix = "plazi_ants";
 	private XMLOutputter outputter = null;
 	private String dataprefix = null;
+	private ProcessListener listener;
 	protected static final Logger LOGGER = Logger.getLogger(Type3PreMarkup.class);
 	/**
 	 * 
 	 */
+	
+	public Type4Transformer(ProcessListener listener) {
+		this.listener = listener;
+	}
+	
 	public Type4Transformer() {
 		if(!target.exists()){
 			target.mkdir();
@@ -58,13 +64,21 @@ public class Type4Transformer {
 		
 	}
 	
+	public void run(){
+		listener.setProgressBarVisible(true);
+		transform();
+		listener.setProgressBarVisible(false);
+	}
+	
 	public void transform(){
 		File[] files =  source.listFiles();
 		Hashtable<String, String> filemapping = new Hashtable<String, String>();
     	//read in taxonX documents from source
 		try{
 			SAXBuilder builder = new SAXBuilder();
+			listener.progress(1);
 			for(int f = 0; f < files.length; f++) {
+				listener.progress((100*(f+1))/files.length);
 				//create renaming mapping table
 				int fn = f+1;
 				System.out.println (files[f].getName()+" to "+ (f+1)+".xml");
@@ -137,7 +151,9 @@ public class Type4Transformer {
 							sb.append(((Text)cont).getTextNormalize()+" ");
 						}
 					}
+					
 					writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
+					listener.info((i+1)+"", fn+"_"+count+"_"+i+".txt");
 					i++;
 				}
 			}
@@ -150,6 +166,7 @@ public class Type4Transformer {
 	private void writeDescription2Descriptions(String textNormalize, String fn) {
 		try {
 			File file = new File(target+"/descriptions", fn+ ".txt");
+			
 			BufferedWriter out = new BufferedWriter(new FileWriter(file));
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
