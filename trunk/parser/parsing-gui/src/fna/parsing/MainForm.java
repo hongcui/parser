@@ -882,6 +882,8 @@ public class MainForm {
 					startTransformation(); // start the transformation process
 				} else if (type.equals("type3")) {
 					startPreMarkUp(); // start pre-mark up process
+				} else if (type.equals("type4")) {
+					startType4Transformation(); // When the doc selected is type 4
 				}
 				
 				
@@ -1562,6 +1564,13 @@ public class MainForm {
 		preMarkUp.start();
 	}
 	
+	private void startType4Transformation () {
+		ProcessListener listener = 
+			new ProcessListener(transformationTable, transformationProgressBar, 
+					shell.getDisplay());
+		Type4Transformer transformer = new Type4Transformer(listener);
+		transformer.start();
+	}
 	private void clearTransformation() {
 		transformationTable.removeAll();
 	}
