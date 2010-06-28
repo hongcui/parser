@@ -91,6 +91,7 @@ public class Type3PreMarkup extends Thread {
 		System.out.println("Run command: " + com);
 
 		try {
+			listener.progress(1);
 			 runCommand(com);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -134,12 +135,16 @@ public class Type3PreMarkup extends Thread {
 		File des = createFolderIn(target, "descriptions");
 		File tra = createFolderIn(target, "transformed");
 		File[] files = this.source.listFiles();
+		listener.progress(30);
 		for(int i = 0; i<files.length; i++){
 			String fname = files[i].getName();
 			outputTo(des,tra,fname);
 		}
+		
+		listener.progress(60);
 		//dehypen descriptions folder
-		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, null);
+		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", 
+				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, null);
 		dhf.dehyphen();
 
 	}
@@ -196,6 +201,7 @@ public class Type3PreMarkup extends Thread {
 					}
 				}
 				write2file(desfolder, pIDattr+".txt", morph.getText());
+				listener.info((i+1) + "", pIDattr+".txt");
 			}else{
 				Element nonmorph = new Element("nonMorph");
 				nonmorph.setAttribute("pid", pID);
