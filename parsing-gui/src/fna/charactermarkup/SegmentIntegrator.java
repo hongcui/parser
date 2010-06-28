@@ -19,6 +19,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
+import fna.parsing.*;
 
 public class SegmentIntegrator {
 	static protected Connection conn = null;
@@ -52,8 +53,7 @@ public class SegmentIntegrator {
 			String[] sentid = new String[30];
 			String newsrcstr = "", oldsrcstr = "";
 			int srcflag = 0, ct = 0;
-			/////
-			ResultSet rs = stmt.executeQuery("select * from marked_simpleseg where source='1.txt-3'");
+			ResultSet rs = stmt.executeQuery("select * from marked_simpleseg");
         	while(rs.next()){
         		newsrcstr=rs.getString("source");
         		if(oldsrcstr.compareTo(newsrcstr)==0)
@@ -63,12 +63,9 @@ public class SegmentIntegrator {
         		if(srcflag == 1){
         			sentid[ct] = rs.getString("sentid");
         			ct++;
-        			//////
-        			XMLintegrator(sentid, ct, oldsrcstr);
         		}
         		else{
-        			/////Change the "10" to "1"
-        			if(rs.getString("sentid").compareTo("10")==0){
+        			if(rs.getString("sentid").compareTo("1")==0){
         				sentid[ct] = rs.getString("sentid");
         				ct++;
         			}
@@ -84,8 +81,6 @@ public class SegmentIntegrator {
         		}
         		oldsrcstr=rs.getString("source");
         	}
-		
-		
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -97,7 +92,7 @@ public class SegmentIntegrator {
 			Document testcase = builder.build("F:\\UA\\RA\\TestCase_Benchmark\\"+sentid[0]+".xml");
 			Element testroot = testcase.getRootElement();
 			for(int i = 1; i < ct; i++){
-				System.out.println(sentid[0]);
+				System.out.println(sentid[i]);
 				Document next = builder.build("F:\\UA\\RA\\TestCase_Benchmark\\"+sentid[i]+".xml");
 				Element nextroot = next.getRootElement();
 				List testli = testroot.getChildren("structure");
@@ -105,44 +100,79 @@ public class SegmentIntegrator {
 				List testrel = testroot.getChildren("relation");
 				int flag = 0;
 				for(int j = 0; j < testli.size(); j++){ 
-					if(nextli.get(0).toString().compareTo(testli.get(j).toString())==0){
-						flag = 1;
-						Element nextele = (Element)nextli.get(0);
-						Element testele = (Element)testli.get(j);
-						testele.addContent(nextele.getChildren());
-						String id = testele.getAttributeValue("id");
-						List nextrel = nextroot.getChildren("relation");
-						for(int k = 0; k < nextrel.size(); k++){
-							Element nextrelele = (Element)nextrel.get(k);
-							if(nextrelele.getAttributeValue("from").compareTo("o1")==0){
-								nextrelele.setAttribute("from", id);
-							}
-						}
-						System.out.println(nextroot.getChildren().toString());
-						System.out.println(nextroot.getChild("relation").getAttributes().toString());
-						List nextlistruct = nextroot.getChildren("structure");
-						for(int l = 1; l < nextlistruct.size(); l++){
-							Element nextstructele = (Element)nextlistruct.get(l);
-							nextstructele.setAttribute("id", "o"+(l+testli.size()));
-							List nextlirel = nextroot.getChildren("relation");
-							for(int m = 0; m < nextlirel.size(); m++){
-								Element nextlirelele = (Element)nextlirel.get(m);
-								if(nextlirelele.getAttributeValue("from").compareTo("o"+(l+1))==0){
-									nextlirelele.setAttribute("from", "o"+(l+testli.size()));
+					Element nextele = (Element)nextli.get(0);
+					Element testele = (Element)testli.get(j);
+					if(nextele.getAttributeValue("name").compareTo(testele.getAttributeValue("name"))==0){
+						if(nextele.getAttribute("constraint")!=null && testele.getAttribute("constraint")!=null && nextele.getAttributeValue("constraint").compareTo(testele.getAttributeValue("constraint"))==0){
+							flag = 1;
+							testele.addContent(nextele.cloneContent());
+							String id = testele.getAttributeValue("id");
+							List nextrel = nextroot.getChildren("relation");
+							for(int k = 0; k < nextrel.size(); k++){
+								Element nextrelele = (Element)nextrel.get(k);
+								if(nextrelele.getAttributeValue("from").compareTo("o1")==0){
+									nextrelele.setAttribute("from", id);
 								}
-								else if(nextlirelele.getAttributeValue("to").compareTo("o"+(l+1))==0){
-									nextlirelele.setAttribute("to", "o"+(l+testli.size()));
-								}	
 							}
+							List nextlistruct = nextroot.getChildren("structure");
+							for(int l = 1; l < nextlistruct.size(); l++){
+								Element nextstructele = (Element)nextlistruct.get(l);
+								nextstructele.setAttribute("id", "o"+(l+testli.size()));
+								List nextlirel = nextroot.getChildren("relation");
+								for(int m = 0; m < nextlirel.size(); m++){
+									Element nextlirelele = (Element)nextlirel.get(m);
+									if(nextlirelele.getAttributeValue("from").compareTo("o"+(l+1))==0){
+										nextlirelele.setAttribute("from", "o"+(l+testli.size()));
+									}
+									else if(nextlirelele.getAttributeValue("to").compareTo("o"+(l+1))==0){
+										nextlirelele.setAttribute("to", "o"+(l+testli.size()));
+									}	
+								}
+							}
+							nextrel = nextroot.getChildren("relation");
+							for(int n = 0; n < nextrel.size(); n++){
+									Element nextrelele = (Element)nextrel.get(n);
+								nextrelele.setAttribute("id", "R"+(n+1+testrel.size()));
+							}
+							nextroot.removeChild("structure");
+							testroot.addContent(nextroot.cloneContent());
+							break;
 						}
-						nextrel = nextroot.getChildren("relation");
-						for(int n = 0; n < nextrel.size(); n++){
-							Element nextrelele = (Element)nextrel.get(n);
-							nextrelele.setAttribute("id", "R"+(n+1+testrel.size()));
+						else if(nextele.getAttribute("constraint")==null && testele.getAttribute("constraint")==null){
+							flag = 1;
+							testele.addContent(nextele.cloneContent());
+							String id = testele.getAttributeValue("id");
+							List nextrel = nextroot.getChildren("relation");
+							for(int k = 0; k < nextrel.size(); k++){
+								Element nextrelele = (Element)nextrel.get(k);
+								if(nextrelele.getAttributeValue("from").compareTo("o1")==0){
+									nextrelele.setAttribute("from", id);
+								}
+							}
+							List nextlistruct = nextroot.getChildren("structure");
+							for(int l = 1; l < nextlistruct.size(); l++){
+								Element nextstructele = (Element)nextlistruct.get(l);
+								nextstructele.setAttribute("id", "o"+(l+testli.size()));
+								List nextlirel = nextroot.getChildren("relation");
+								for(int m = 0; m < nextlirel.size(); m++){
+									Element nextlirelele = (Element)nextlirel.get(m);
+									if(nextlirelele.getAttributeValue("from").compareTo("o"+(l+1))==0){
+										nextlirelele.setAttribute("from", "o"+(l+testli.size()));
+									}
+									else if(nextlirelele.getAttributeValue("to").compareTo("o"+(l+1))==0){
+										nextlirelele.setAttribute("to", "o"+(l+testli.size()));
+									}	
+								}
+							}
+							nextrel = nextroot.getChildren("relation");
+							for(int n = 0; n < nextrel.size(); n++){
+								Element nextrelele = (Element)nextrel.get(n);
+								nextrelele.setAttribute("id", "R"+(n+1+testrel.size()));
+							}
+							nextroot.removeChild("structure");
+							testroot.addContent(nextroot.cloneContent());
+							break;
 						}
-						nextroot.removeChild("structure");
-						testroot.addContent(nextroot.cloneContent().toString());
-						break;
 					}
 				}
 				if(flag == 0){
@@ -169,11 +199,9 @@ public class SegmentIntegrator {
 					testroot.addContent(nextroot.cloneContent());
 				}
 			}
-			FileOutputStream ostream = new FileOutputStream("F:\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
-    		PrintStream out = new PrintStream( ostream );
-			out.println("<?xml version=\"1.0\" encoding=\"iso8859-1\"?>");
-			
-			out.println(testroot.getContent());
+			testroot.detach();
+			File f = new File("F:\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
+			ParsingUtil.outputXML(testroot, f);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
