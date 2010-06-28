@@ -517,7 +517,7 @@ public class CharStateHandler {
                 			chstate2=chstate2.concat("_or_"+terms[t]);  
         			}
         		}
-        		if(chstate1.compareTo(chstate2)==0){
+        		if(chstate1.compareTo(chstate2)==0 && chstate1.compareTo("")!=0){
         			innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\""+chstate1+"\" from=\""+resstate1.trim()+"\" to=\""+resstate2.trim()+"\"/>");
         		}
         	}    		
