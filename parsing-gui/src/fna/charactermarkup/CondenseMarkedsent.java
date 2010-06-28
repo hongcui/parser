@@ -114,7 +114,7 @@ public class CondenseMarkedsent {
                         matcher.reset();
                         
                         matcher = pattern4.matcher(output);
-                        output = matcher.replaceAll("_or_");
+                        output = matcher.replaceAll(" or ");
                         matcher.reset();
                         
                         matcher = pattern5.matcher(output);
