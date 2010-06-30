@@ -1,15 +1,13 @@
 package fna.charactermarkup;
 
 import java.io.*;
+
 import java.util.regex.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
 /**
  * @author hongcui
  *
@@ -26,7 +24,7 @@ public class Tree2XML {
         this.test = test;
     }
     
-    public String xml(){
+    public Document xml(){
         if(test==null){
             return null;
         }
@@ -59,7 +57,15 @@ public class Tree2XML {
         
         xml = format(xml);
       //  System.out.println(xml);
-        return xml;
+		Document doc =null;
+		try {
+		     SAXBuilder builder = new SAXBuilder();
+		     ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
+		     doc = builder.build(bais);
+		    } catch (Exception e) {
+		      System.out.print("Problem parsing the xml: \n" + e.toString());
+		}
+		return doc;
     }
     
     
@@ -115,20 +121,9 @@ public class Tree2XML {
         return result;
     }
 
-    private Document xmlRoot(String response){
-		Document doc =null;
-		try {
-		     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		     DocumentBuilder db = dbf.newDocumentBuilder();
-		     ByteArrayInputStream bais = new ByteArrayInputStream(response.getBytes());
-		     doc = db.parse(bais);
-		    } catch (Exception e) {
-		      System.out.print("Problem parsing the xml: \n" + e.toString());
-		}
-		return doc;
-	}
+ 
     
-    private void processxml(Document root) {
+ /*   private void processxml(Document root) {
     	str = "";
     	NodeList noun = root.getElementsByTagName("NP");
     	if( noun.getLength() != 0){
@@ -192,7 +187,7 @@ public class Tree2XML {
 				}
 			}
 			
-    }
+    }*/
 		    
     /**
      * @param args
@@ -209,10 +204,8 @@ public class Tree2XML {
 			out = new PrintWriter(ostream);
 			while ((test = stdInput.readLine())!=null){
 				Tree2XML t2x = new Tree2XML(test);
-		        String result = t2x.xml();
-		        out.println(result);
-		        Document root = t2x.xmlRoot(result);
-		        t2x.processxml(root);
+		        Document doc = t2x.xml();
+		        out.println(doc);
 		        
 			}
     	}catch (Exception e){
