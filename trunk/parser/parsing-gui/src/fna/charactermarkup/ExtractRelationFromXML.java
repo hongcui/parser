@@ -4,8 +4,10 @@
 package fna.charactermarkup;
 
 import org.jdom.*;
+import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
 /**
@@ -26,21 +28,35 @@ import java.util.*;
  */
 public class ExtractRelationFromXML {
 	private Document tree = null;
-	private String markedsent = null;
+	//private String markedsent = null;
+	private String [] tokensinsent = null;
+	private String [] posoftokens = null;
 	/**
 	 * 
 	 */
 	public ExtractRelationFromXML(Document parsingTree, String markedsent) {
 		this.tree = parsingTree;
-		this.markedsent = markedsent;
+		//in markedsent, each non-<>{}-punctuation mark is surrounded with spaces
+		this.tokensinsent = markedsent.split("\\s+");
+		this.posoftokens = this.tokensinsent;
+		for(int i =0; i<posoftokens.length; i++){
+			if(this.tokensinsent[i].indexOf("<")>=0 && this.tokensinsent[i].indexOf("{")>=0){
+				this.posoftokens[i]="NN";
+			}else if(this.tokensinsent[i].indexOf("<")>=0){
+				this.posoftokens[i]="NN";
+			}else if(this.tokensinsent[i].indexOf("{")>=0){
+				this.posoftokens[i]="ADJ";
+			}else{
+				this.posoftokens[i]="";
+			}
+		}		
 	}
 
 	public ArrayList<Relation> extract(){
-		ArrayList results = new ArrayList();
+		ArrayList<Relation> results = new ArrayList<Relation>();
 		//check to see if the tree used the POS tag provided by markedsent, if not, return empty list.
-		if(POSMatch(markedsent, tree)){
-			//hide complex number patterns should already be hidden before the tree was produced
-			
+		if(POSMatch()){
+			//hide complex number patterns should already be hidden before the tree was produced			
 			try{
 				Element root = tree.getRootElement();
 				//collapse QPs
@@ -56,7 +72,7 @@ public class ExtractRelationFromXML {
 				do{
 					PPINs = XPath.selectNodes(root, "//PP/IN");
 					it = PPINs.iterator();
-					ArrayList lPPINs = new ArrayList();
+					ArrayList<Element> lPPINs = new ArrayList<Element>();
 					while(it.hasNext()){
 						Element PPIN = it.next();
 						if(XPath.selectNodes(PPIN, "//PP/IN").size() == 0){
@@ -71,7 +87,7 @@ public class ExtractRelationFromXML {
 				do{
 					VBs = XPath.selectNodes(root, "//VP/VBD|//VP/VBG|//VP/VBN|//VP/VBP|//VP/VBZ|//VP/VB");
 					it = VBs.iterator();
-					ArrayList lVBs = new ArrayList();
+					ArrayList<Element> lVBs = new ArrayList<Element>();
 					while(it.hasNext()){
 						Element VB = it.next();
 						if(XPath.selectNodes(VB, "//VP/VBD|//VP/VBG|//VP/VBN|//VP/VBP|//VP/VBZ|//VP/VB").size() == 0){
@@ -91,27 +107,25 @@ public class ExtractRelationFromXML {
 	
 	
 	
-	private void extractFromlVBs(ArrayList lVBs, ArrayList results) {
+	private void extractFromlVBs(ArrayList<Element> lVBs, ArrayList<Relation> results) {
 		Iterator<Element> it = lVBs.iterator();
 		while(it.hasNext()){
 			Element lVB = it.next();
 			extractFromlVB(lVB, results);
-		}
-		
+		}		
 	}
 
-	private void extractFromlVB(Element lVB, ArrayList results) {
+	private void extractFromlVB(Element lVB, ArrayList<Relation> results) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	private void extractFromlPPINs(ArrayList lPPINs, ArrayList results) {
+	private void extractFromlPPINs(ArrayList<Element> lPPINs, ArrayList<Relation> results) {
 		Iterator<Element> it = lPPINs.iterator();
 		while(it.hasNext()){
 			Element lPPIN = it.next();
 			extractFromlPPIN(lPPIN, results);
 		}
-		
 	}
 	
 	
@@ -121,7 +135,7 @@ public class ExtractRelationFromXML {
                   (PP (IN of)
                     (NP (NN air))))
 	 */
-	private void extractFromlPPIN(Element lPPIN, ArrayList results) {
+	private void extractFromlPPIN(Element lPPIN, ArrayList<Relation> results) {
 		if(lPPIN.getAttribute("text").getValue().length()<2){ //text of IN is not a word, e.g. "x"
 			return;
 		}
@@ -150,26 +164,113 @@ public class ExtractRelationFromXML {
 		
 	}
 
-	private boolean containsOrgan(Element parent) {
-		// TODO Auto-generated method stub
+	/**
+	 * 
+	 * @param e
+	 * @return true if allText of this element contains an organ name, i.e., marked with <> in markedsent
+	 */
+	private boolean containsOrgan(Element e) {
+		try{
+			List<Element> nouns = XPath.selectNodes(e, "//NN");
+			Iterator<Element> it = nouns.iterator();
+			while(it.hasNext()){
+				Element noun = it.next();
+				String word = noun.getAttribute("text").getValue();
+				String index = noun.getAttribute("id").getValue();
+				int i = Integer.parseInt(index);
+				if(this.posoftokens[i].compareToIgnoreCase("NN")==0){
+					return true;
+				}				
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 		return false;
 	}
 
-	private String allText(Element QP) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 *
+	 * @param e
+	 * @return a concatnation of value of all text attributes of this element and its descendants
+	 */
+	private String allText(Element e) {
+		StringBuffer sb = new StringBuffer();
+		Attribute t = e.getAttribute("text");
+		if(t!=null){
+			sb.append(t.getValue()+" ");
+		}		
+		Iterator<Content> it = e.getDescendants();
+		while(it.hasNext()){
+			Content cont = it.next();
+			if(cont instanceof Element){
+				t = ((Element)cont).getAttribute("text");
+				if(t!=null){
+					sb.append(t.getValue()+" ");
+				}
+			}
+		}		
+		return sb.toString().trim();
 	}
 
-	private boolean POSMatch(String markedsent2, Document tree2) {
-		// TODO Auto-generated method stub
-		return false;
+	/**
+	 * establish a mapping between the words of markedsent and the tree 
+	 * @param markedsent
+	 * @param tree
+	 * @return
+	 */
+	boolean POSMatch() {		
+		Iterator<Content> it = this.tree.getDescendants();
+		int c = 0;
+		while(it.hasNext()){
+			Content cont = it.next();
+			if(cont instanceof Element){
+				Attribute t = ((Element)cont).getAttribute("text");
+				if(t!=null){ //only leaf node has a text attribute
+					String word=t.getValue();
+					String pos = ((Element)cont).getName();
+					if(pos.compareToIgnoreCase("PUNCT") != 0){
+						if(this.tokensinsent[c].compareToIgnoreCase(word)!=0){
+							System.err.println(c+"th token in sentence does not match that in the tree");
+							System.exit(1);
+						}
+						if(this.posoftokens[c].compareTo("") !=0 && this.posoftokens[c].compareToIgnoreCase(pos)!=0){
+							return false;
+						}
+					}
+					c++;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		Document doc = null;
+		String xml="<root><e1 text='e1'><e11 text='e11'></e11></e1><e2 text='e2'></e2></root>";
+		try {
+		     SAXBuilder builder = new SAXBuilder();
+		     ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
+		     doc = builder.build(bais);
+		    } catch (Exception e) {
+		      System.out.print("Problem parsing the xml: \n" + e.toString());
+		}
+		Iterator<Content> it = doc.getDescendants();
+			while(it.hasNext()){
+				Content cont = it.next();
+				if(cont instanceof Element){
+					System.out.println(cont.toString());
+					Attribute t = ((Element)cont).getAttribute("text");
+					if(t!=null){
+						String word=t.getValue();
+						System.out.println(word);
+					}
+					
+				}
+			}   
+		    
 
 	}
 
