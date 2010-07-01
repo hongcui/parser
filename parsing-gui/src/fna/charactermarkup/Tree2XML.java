@@ -77,14 +77,16 @@ public class Tree2XML {
     private String format(String xml) {
         // TODO Auto-generated method stub
         String r = "";
+        int count = 0;
         xml = xml.replaceAll("<[^A-Z/]", "<PUNCT");
         Pattern p = Pattern.compile("(.*?)<([^<]*?) ([^<]*?)/>(.*)");
         Matcher m = p.matcher(xml);
         while(m.matches()){
             r += m.group(1);
-            r +="<"+m.group(2)+" text=\""+m.group(3)+"\"/>";
+            r +="<"+m.group(2)+" id=\""+count+"\" text=\""+m.group(3)+"\"/>";
             xml = m.group(4);
             m = p.matcher(xml);
+            count++;
         }
         r +=xml;
         return r;
