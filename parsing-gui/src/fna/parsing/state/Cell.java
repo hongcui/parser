@@ -3,8 +3,8 @@ package fna.parsing.state;
 import java.util.*;
 
 public class Cell implements Comparator<Object>{
-	private int r = -1;
-	private int c = -1;
+	private int r = -1; //row index
+	private int c = -1; //colume index
 	private CoocurrenceScore score = null;
 	
 	Cell(){

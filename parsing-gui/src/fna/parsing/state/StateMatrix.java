@@ -1,10 +1,38 @@
 package fna.parsing.state;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.ResultSet;
+
+import edu.uci.ics.jung.graph.*;
+import edu.uci.ics.jung.graph.util.Context;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
+import edu.uci.ics.jung.visualization.VisualizationModel;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
+import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
+import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import edu.uci.ics.jung.algorithms.cluster.*;
+import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
+import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
+import edu.uci.ics.jung.algorithms.layout.*;
+
 import java.util.*;
+
+import javax.swing.JFrame;
+
+import org.apache.commons.collections15.Predicate;
+import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.functors.ConstantTransformer;
 
 
 
@@ -12,6 +40,7 @@ public class StateMatrix {
 	
 	private ArrayList<State> states = null;
 	private ArrayList<Cell> matrix = null;
+	private int edgeCount = 0;
 	//private Hashtable<State, Hashtable<State, CoocurrenceScore>> matrix = null;
 	
 	StateMatrix(){
@@ -48,7 +77,7 @@ public class StateMatrix {
 	 * 
 	 * @param s1
 	 * @param s2
-	 * @param score -1: first, +1: others
+	 * @param score: count = 1 for now
 	 */
 	public void addPair(State s1, State s2, int score, String source){
 		//which one(s) is a new state?
@@ -169,6 +198,129 @@ public class StateMatrix {
 		}
 		
 	}
+	/**
+	 * group cooccured nodes into groups, using JUNG libary.
+	 * 
+	 */
+	public void Grouping(){
+		//construct the graph
+		Graph<State, MyLink> g = new UndirectedSparseMultigraph<State, MyLink>();
+		Iterator<Cell> it = this.matrix.iterator();
+		while(it.hasNext()){
+			Cell c = it.next();
+			State node1  = this.states.get(c.getCindex());
+			State node2 = this.states.get(c.getRindex());
+			int weight = c.getScore().valueSum();
+			if(weight>1){
+				System.out.println(weight+" links "+node1.getName()+" and "+node2.getName());
+			}
+			g.addVertex(node1);
+			g.addVertex(node2);
+			for(int i = 0; i<weight; i++){
+				g.addEdge(new MyLink(1, edgeCount++), node1, node2);
+			}
+			
+		}
+		/*
+		//visualize the graph
+		EdgePredicateFilter<State, MyLink> f1 = new EdgePredicateFilter<State, MyLink>(new LinkPredicate());
+		VertexPredicateFilter<State, MyLink> f2 = new VertexPredicateFilter<State, MyLink>(new VertexPredicate(g));
+		g = f1.transform(g);
+		g = f2.transform(g);
+		//Layout<State, MyLink> layout = new KKLayout<State, MyLink>(g); //a big round circle with vertex on top of each other
+		//Layout<State, MyLink> layout = new FRLayout<State, MyLink>(g);//recognizable groups in the center
+		Layout<State, MyLink> layout = new CircleLayout<State, MyLink>(g);
+
+
+		final VisualizationModel<State,MyLink> visualizationModel = 
+		            new DefaultVisualizationModel<State,MyLink>(layout, new Dimension(1400,800));
+		VisualizationViewer vv =  new VisualizationViewer<State, MyLink>(visualizationModel, new Dimension(1400,800));
+
+		VertexLabelAsShapeRenderer<State,MyLink> vlasr = new VertexLabelAsShapeRenderer<State,MyLink>(vv.getRenderContext());
+		Transformer<MyLink, Stroke> edgeStrokeTransformer =
+					new Transformer<MyLink, Stroke>() {
+						public Stroke transform(MyLink l) {
+							Stroke edgeStroke = new BasicStroke(1 + (l.getWeight()/10.0f), BasicStroke.CAP_BUTT,
+									BasicStroke.JOIN_MITER);
+							return edgeStroke;
+						}
+				};
+
+		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		vv.getRenderContext().setVertexShapeTransformer(vlasr);
+		vv.getRenderContext().setVertexLabelRenderer(new DefaultVertexLabelRenderer(Color.red));
+		vv.getRenderContext().setEdgeDrawPaintTransformer(new ConstantTransformer(Color.yellow));
+		vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
+		vv.getRenderer().setVertexLabelRenderer(vlasr);
+		vv.setBackground(Color.black);
+		vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		JFrame frame = new JFrame("Simple Graph View 2");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add(vv);
+		frame.pack();
+		frame.setVisible(true);
+		 */
+		
+		//use different algorithms to group the graph
+		/*
+		//1. Bicomponent Clustering: 336 groups.
+		System.out.println("Bicomponent Clustering");
+		BicomponentClusterer bc = new BicomponentClusterer();
+		Set groups = (Set)bc.transform(g);
+		printGroups(groups);
+		
+		//2. Edge Betweenness Clustering: 31 groups, 1 large group, some states may not have been included (total states 698)
+		System.out.println("Edge Betweenness Clustering");
+		EdgeBetweennessClusterer ebc = new EdgeBetweennessClusterer(1); //use any number for 1 here
+		groups = ebc.transform(g);
+		printGroups(groups);
+		
+		//3. Week Component Clustering, 31 groups similiar to the above
+		System.out.println("Week Component Clustering");
+		WeakComponentClusterer wcc = new WeakComponentClusterer();
+		groups = wcc.transform(g);
+		printGroups(groups);
+		*/
+		//4. Voltage Clustering: 21  groups of varied sizes
+		System.out.println("Voltage Clustering");
+		VoltageClusterer vc = new VoltageClusterer(g, 50);
+		Collection clusters = vc.cluster(50);
+		printGroups(clusters);
+	}
+
+	private void printGroups(Collection groups) {
+		Iterator<Set> sets = groups.iterator();
+		int gcount = 0;
+		while(sets.hasNext()){
+			Set states = (Set)sets.next();
+			System.out.println("Group "+gcount+ ":");
+			Iterator<Set> sit = states.iterator();
+			while(sit.hasNext()){
+				State s = (State)sit.next();
+				System.out.print("state "+s.getName()+ "\t");
+			}
+			System.out.println(" ");
+			gcount++;
+		}
+	}
+	private void printGroups(Set groups) {
+		Iterator<Set> sets = groups.iterator();
+		int gcount = 0;
+		while(sets.hasNext()){
+			Set states = (Set)sets.next();
+			System.out.println("Group "+gcount+ ":");
+			Iterator<Set> sit = states.iterator();
+			while(sit.hasNext()){
+				State s = (State)sit.next();
+				System.out.print("state "+s.getName()+ "\t");
+			}
+			System.out.println(" ");
+			gcount++;
+		}
+	}
+	
+	
+	
 	public String toString(){
 		Collections.sort(matrix, new Cell());
 		StringBuffer sb = new StringBuffer("");
@@ -191,4 +343,5 @@ public class StateMatrix {
 		}
 		return sb.toString();
 	}
+					 
 }

@@ -46,6 +46,19 @@ public class CoocurrenceScore {
 		public boolean isEmpty(){
 			return scores.size() == 0;
 		}
+		
+		public int valueSum(){
+			int sum = 0;
+			Enumeration<Integer> en = scores.keys();
+			while(en.hasMoreElements()){
+				Integer v = en.nextElement();
+				Integer c = scores.get(v);
+				sum +=v.intValue()*c.intValue();
+			}
+			if(sum < 0) return 1;
+			return sum;
+		}
+		
 		public String toString(){
 			StringBuffer sb = new StringBuffer();
 			sb.append("[");

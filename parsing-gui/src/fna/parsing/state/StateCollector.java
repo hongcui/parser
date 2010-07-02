@@ -114,10 +114,9 @@ public class StateCollector  {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		this.sentences = new Hashtable<String,String>();
 		
-
-		markSentences();//tag organ names
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.database);//tag organ names
+		this.sentences = sosm.markSentences();
 		parseSentences();//create StateGroups 
 		//System.out.println(statematrix.toString());
 	}
@@ -369,67 +368,7 @@ public class StateCollector  {
 	}*/
 	
 
-	protected String collectOrganNames(){
-		StringBuffer tags = new StringBuffer();
-		try{
-		Statement stmt = conn.createStatement();
-		//organNameFromGloss(tags, stmt);
-		organNameFromSentences(tags, stmt);
-		organNameFromPlNouns(tags, stmt);
-		
-		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
-		
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return tags.toString().replaceAll("\\|+", "|");
-	}
-
-	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs;
-		rs = stmt.executeQuery("select word from wordroles where semanticrole in ('op', 'os')");
-		while(rs.next()){
-			tags.append(rs.getString("word").trim()+"|");
-		}
-	}
-
-	protected void organNameFromSentences(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs;
-		/*rs = stmt.executeQuery("select distinct tag from sentence where tag not like '% %'");
-		while(rs.next()){
-			String tag = rs.getString("tag");
-			if(tag == null || tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0){continue;}
-			tags.append(tag+"|");
-		}*/
-		
-		rs = stmt.executeQuery("select modifier, tag from sentence where tag  like '[%]'"); //inner [tepal]
-		while(rs.next()){
-			String m = rs.getString("modifier");
-			m = m.replaceAll("\\[^\\[*\\]", ""); 
-			if(m.compareTo("")!= 0){
-				String tag = null;
-				if(m.lastIndexOf(" ")<0){
-					tag = m;
-				}else{
-					tag = m.substring(m.lastIndexOf(" ")+1); //last word from modifier
-				}
-				if(tag == null ||tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0 || tag.indexOf("[")>=0 || tag.matches(".*?(\\d|"+stop+").*")){continue;}
-				tags.append(tag+"|");
-			}
-		}
-	}
-
-	protected void organNameFromGloss(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs = stmt.executeQuery("select distinct term from fnaglossary where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT')");
-		while(rs.next()){
-			String tag = rs.getString("term");
-			if(tag == null){continue;}
-			tags.append(tag+"|");
-		}
-	}
+	
 /**
  * collect tag names (sing. and pl. forms)
 	mark sentences one by one using tags
@@ -437,14 +376,7 @@ public class StateCollector  {
 	convert numbers to NUM
  * @param sentencetable
  */
-	protected void markSentences(){
-		if(this.marked){
-			loadMarked();
-		}else{
-			mark();
-		}
-	}
-
+/*
 	protected void mark() {
 	try{
 		String organnames = collectOrganNames();
@@ -479,24 +411,24 @@ public class StateCollector  {
 				m = tagsp.matcher(sent);
 		    }
 			taggedsent +=sent;
-			/* seg clauses should be done later, after the learning of states.
-			Pattern p = Pattern.compile(", (\\w+)? ?(<.*?>)");//the word after , should not be connectors such as "or"
-			Matcher m2 = p.matcher(taggedsent);
-			int start = 0;
-			while(m2.find()){
-				if(m2.group(1)==null || m2.group(1).compareTo("or") != 0){//the word after , should not be connectors such as "or"
-					int end = m2.start(); //this ends a clause
-					String taggedclause = taggedsent.substring(start, end+1);
-					addClause(sentid, sentid+offset, tag, modifier, taggedclause, false);
-					offset++;
-					start = end+1;
-					modifier = m2.group(1);
-					tag = m2.group(2).replaceAll("[<>]", "");
-				}
-			}
-			String taggedclause = taggedsent.substring(start);
-			addClause(sentid, sentid+offset, tag, modifier, taggedclause, true);
-			*/
+			// seg clauses should be done later, after the learning of states.
+			//Pattern p = Pattern.compile(", (\\w+)? ?(<.*?>)");//the word after , should not be connectors such as "or"
+			//Matcher m2 = p.matcher(taggedsent);
+			//int start = 0;
+			//while(m2.find()){
+			//	if(m2.group(1)==null || m2.group(1).compareTo("or") != 0){//the word after , should not be connectors such as "or"
+			//		int end = m2.start(); //this ends a clause
+			//		String taggedclause = taggedsent.substring(start, end+1);
+			//		addClause(sentid, sentid+offset, tag, modifier, taggedclause, false);
+			//		offset++;
+			//		start = end+1;
+			//		modifier = m2.group(1);
+			//		tag = m2.group(2).replaceAll("[<>]", "");
+			//	}
+			//}
+			//String taggedclause = taggedsent.substring(start);
+			//addClause(sentid, sentid+offset, tag, modifier, taggedclause, true);
+			
 			Statement stmt1 = conn.createStatement();
 			stmt1.executeQuery("insert into markedsentence values('"+source+"', '"+taggedsent+"')");
 			sentences.put(source, taggedsent); //do this in addClause
@@ -505,20 +437,8 @@ public class StateCollector  {
 		e.printStackTrace();
 	}
 }
+*/
 
-	protected void loadMarked() {
-	try{
-		Statement stmt = conn.createStatement();
-		ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence");
-		while(rs.next()){
-			String source = (String)rs.getString("source");
-			String taggedsent = (String)rs.getString("markedsent"); 
-			sentences.put(source, taggedsent); //do this in addClause
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-	}
-}
 	
 	static public String hide(String[] phrases, String str, String symbol){
 		for(int i = 0; i < phrases.length; i++){

@@ -35,107 +35,9 @@ public class StateCollectorTest extends StateCollector {
 	protected void saveStates(String database){
 		statematrix.save2MySQL(database, "termsuser", "termspassword");
 	}
-	/**
-	 * mark [o] and [c]: organs and characters
-	 */
-	protected void mark(){
-
-		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, originalsent from sentence");
-			while(rs.next()){
-				String source = rs.getString("source");
-				String sent = rs.getString("originalsent");
-				sentences.put(source, sent);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		String organnames = collectOrganNames();
-		String statenames = collectStateNames();
-		
-		Enumeration<String> en = sentences.keys();
-		while(en.hasMoreElements()){
-			String source = en.nextElement();
-			String sent = sentences.get(source); 
-			String taggedsent = markthis(source, sent, organnames, "<", ">");
-			taggedsent = markthis(source, taggedsent, statenames, "{", "}");
-			taggedsent = taggedsent.replaceAll("[<{]or[}>]", "or"); //make sure to/or are left untagged
-			taggedsent = taggedsent.replaceAll("[<{]to[}>]", "to");
-			sentences.put(source, taggedsent); 
-			try{
-				Statement stmt1 = conn.createStatement();
-				stmt1.execute("insert into markedsentence values('"+source+"', '"+taggedsent+"')");
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			System.out.println(source+" marked");
-		}
-
-	}
-
-	protected String markthis(String source, String sent, String parts, String leftmark, String rightmark) {
-		//remove ()
-		sent = sent.replaceAll("\\(.*?\\)", "");
-		sent = sent.replaceAll("(?<=\\w)\\s+(?=[,.;:])", "");
-
-		sent = sent.replaceAll("_", "-");
-		
-		Pattern tagsp = Pattern.compile("(.*?)\\b("+parts+")\\b(.*)", Pattern.CASE_INSENSITIVE);
-		String taggedsent = "";
-		Matcher m = tagsp.matcher(sent);
-		while(m.matches()){
-			taggedsent += m.group(1)+leftmark+m.group(2)+rightmark;
-			sent = m.group(3);
-			m = tagsp.matcher(sent);
-		}
-		taggedsent +=sent;
-		
-		String tsent = "";
-		Pattern p = Pattern.compile("(.*\\}-)(\\w+)(.*)");
-		m = p.matcher(taggedsent);
-		while(m.matches()){
-			tsent += m.group(1)+"{"+m.group(2)+"}";
-			taggedsent = m.group(3);
-			m = p.matcher(taggedsent);			
-		}
-		tsent +=taggedsent;
-		tsent = tsent.replaceAll("\\}-\\{", "_"); // => {oblong}-{ovate} :  {oblong_ovate}
-		tsent = tsent.replaceAll("\\s*,\\s*", " , ");
-		tsent = tsent.replaceAll("\\s*\\.\\s*", " . ");
-		
-
-		
-		return tsent;
-	}
 	
-	/*protected String collectOrganNames(){
-		String organstring = "";
-		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select word from wordroles where semanticrole in ('op', 'os')");
-			while(rs.next()){
-				organstring += "|"+rs.getString("word"); 
-			}
-		}catch (Exception e){
-				e.printStackTrace();
-		}
-		return organstring.replaceFirst("\\|", "");
-	}*/
-	
-	protected String collectStateNames(){
-		String statestring = "";
-		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select word from wordroles where semanticrole ='c'");
-			while(rs.next()){
-				statestring += "|"+rs.getString("word"); 
-			}
-		}catch (Exception e){
-				e.printStackTrace();
-		}
-		return statestring.replaceFirst("\\|", "").replaceAll("\\|+", "|");
+	protected void grouping(){
+		statematrix.Grouping();
 	}
 			
 	/**
@@ -263,7 +165,7 @@ public class StateCollectorTest extends StateCollector {
 		String[] alist = refined.split(",");
 		for(int i = 0; i<alist.length; i++){
 	    	for(int j = i+1; j<alist.length; j++){
-	    		int score = i==0? -1 : 1; //absent or erect
+	    		int score = 1; //absent or erect
 	    		State s1 = statematrix.getStateByName(alist[i]);
 	    		State s2 = statematrix.getStateByName(alist[j]);
 	    		s1 = s1 == null? new State(alist[i]) : s1;
@@ -284,7 +186,8 @@ public class StateCollectorTest extends StateCollector {
 		//to use the result from unsupervisedclausemarkup, change wordpos table to wordroles (word, semanticroles) where semanticroles in (c, os, op)
 		StateCollectorTest sct = new StateCollectorTest("fnav19_benchmark"); /*using learned semanticroles only*/
 		sct.collect("fnav19_benchmark");
-		sct.saveStates("fnav19_benchmark");
+		//sct.saveStates("fnav19_benchmark");
+		sct.grouping();
 	}
 
 }
