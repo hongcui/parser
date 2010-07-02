@@ -11,10 +11,10 @@ public class CharStateHandler {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 	
 	public CharStateHandler() {
-		CharStateHandler.database = "benchmark_learningcurve_treatiseh_test_19";
+		CharStateHandler.database = "benchmark_learningcurve_fnav19_test_24";
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -33,9 +33,11 @@ public class CharStateHandler {
 		try{
 			Statement stmt2 = conn.createStatement();
 			int i,j;
+			plaincharset = plaincharset.replaceAll("\\([\\s]?|\\[[\\s]?", "[");
+			plaincharset = plaincharset.replaceAll("[\\s]?\\)|[\\s]?\\]", "]");
 			//System.out.println("plain:"+plaincharset);
 			//System.out.println("state:"+state);
-			Pattern pattern19 = Pattern.compile("[±]?[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[dcmµ]?[m]?[\\s]?[xX\\×]+[\\[]?[\\d\\s\\.]+[\\]]?[\\[]?[\\–\\-]+[\\]]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[\\s]?[dcmµ]?m");
+			Pattern pattern19 = Pattern.compile("[±]?[\\[]?[\\d\\s\\.]+[\\]]?[\\s]?[\\[]?[\\–\\-]+[\\]]?[\\s]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[\\s]?[dcmµ]?[m]?[\\s]?[xX\\×]+[\\s]?[\\[]?[\\d\\s\\.]+[\\]]?[\\s]?[\\[]?[\\–\\-]+[\\]]?[\\s]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[\\s]?[dcmµ]?m");
         	Matcher matcher2 = pattern19.matcher(plaincharset);
         	while ( matcher2.find()){
         		if(plaincharset.charAt(matcher2.start())==' '){
@@ -333,55 +335,13 @@ public class CharStateHandler {
         	}
         	plaincharset = matcher2.replaceAll("#");
         	matcher2.reset();
-        	
-        	
-        	
-        	
-        	
-        	
-        	
-        /*	Pattern pattern14 = Pattern.compile("[±\\d\\[\\]\\–\\-\\./\\s]+[\\s]?[\\–\\-]?(% of [\\w]+ length|height of [\\w]+|times as [\\w]+ as [\\w]+|total length|their length|(times)?[\\s]?length of [\\w]+)");
-        	matcher2 = pattern14.matcher(plaincharset);
-        	int flag1=0;
-        	while ( matcher2.find()){
-        		if(plaincharset.charAt(matcher2.start())==' '){
-        			i=matcher2.start()+1;
-        		}
-        		else{
-        			i=matcher2.start();
-        		}
-        		j=matcher2.end();
-        		if(flag==1){
-        			StringBuffer sb = new StringBuffer();
-					Pattern pattern9 = Pattern.compile("size=\"[\\w±\\+\\–\\-\\.:/\\_;x´\\s,xX\\×]+\"");
-					Matcher matcher1 = pattern9.matcher(innertagstate);
-					while ( matcher1.find()){
-						int p=matcher1.start();
-						int q=matcher1.end();
-						matcher1.appendReplacement(sb, innertagstate.subSequence(p,q-1)+","+plaincharset.subSequence(i,j).toString()+"\"");
-					}
-					matcher1.appendTail(sb);
-					innertagstate=sb.toString();
-					matcher1.reset();
-        		}
-        		else{
-        			if(flag1==0)
-        				innertagstate=innertagstate.concat(" "+"size=\""+plaincharset.subSequence(i,j).toString());
-        			else
-        				innertagstate=innertagstate.concat(","+plaincharset.subSequence(i,j).toString());
-        			flag1=1;
-        		}
-        	}
-        	if(flag1==1)
-        		innertagstate=innertagstate.concat("\"");
-        	plaincharset = matcher2.replaceAll("#");
-        	matcher2.reset();*/
+        
         	int countct = 0;
-        	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?)[\\–\\–\\-]+[a-zA-Z]+");
+        	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	matcher2 = pattern15.matcher(plaincharset);
         	plaincharset = matcher2.replaceAll("#");
         	matcher2.reset();     	
-        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\[]?[\\–\\-][\\]]?[\\[]?[\\d]+[+]?[\\]]?([\\[]?[\\–\\-]?[\\]]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	matcher2 = pattern16.matcher(plaincharset);
         	while ( matcher2.find()){
         		i=matcher2.start();
@@ -517,7 +477,7 @@ public class CharStateHandler {
                 			chstate2=chstate2.concat("_or_"+terms[t]);  
         			}
         		}
-        		if(chstate1.compareTo(chstate2)==0 && chstate1.compareTo("")!=0){
+        		if((chstate1.contains(chstate2)|chstate2.contains(chstate1)) && chstate1.compareTo("")!=0 && chstate2.compareTo("")!=0){
         			innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\""+chstate1+"\" from=\""+resstate1.trim()+"\" to=\""+resstate2.trim()+"\"/>");
         		}
         	}    		
