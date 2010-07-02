@@ -14,7 +14,7 @@ public class ParseSimpleseg {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 	
 	public ParseSimpleseg() {
 		// TODO Auto-generated constructor stub
@@ -58,7 +58,7 @@ public class ParseSimpleseg {
 			PrintStream out = new PrintStream( ostream ); 
         	ResultSet rs = stmt.executeQuery("select * from segments");
         	while(rs.next()){
-        		FileOutputStream ostream1 = new FileOutputStream("F:\\UA\\RA\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
+        		FileOutputStream ostream1 = new FileOutputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
         		PrintStream out1 = new PrintStream( ostream1 );
 				out1.println("<?xml version=\"1.0\" encoding=\"iso8859-1\"?>");
 		
@@ -69,8 +69,6 @@ public class ParseSimpleseg {
         			srcflag=1;
         		str=rs.getString(3);
         		Pattern pattern = Pattern.compile("(<[a-zA-Z_ ]+>)");
-                
-                // Replace all occurrences of pattern in input
                 Matcher matcher = pattern.matcher(str);
                 while ( matcher.find()){
                 	orcount +=1;
@@ -84,8 +82,10 @@ public class ParseSimpleseg {
                 	String str2="";
                 	String str4="";
                 	String chrtag="";
+                	String constraint="";
                 	int flag6 = 0;
                 	int flag8 = 0;
+                	int constraintflag = 0;
                 	int ct = 0;
                 	str2=str2.concat("<statement id=\"s"+rs.getString(1)+"\">");
                 	Pattern pattern2 = Pattern.compile("<[a-zA-Z_ ]+>");
@@ -116,10 +116,12 @@ public class ParseSimpleseg {
                 					ct--;
                 					str2="<statement id=\"s"+rs.getString(1)+"\"><structure name=\""+singorg+"\" id=\"o"+ct+"\">";
                 					str4="</structure>";
+                					constraintflag = 1;
                 				}
                 				else{
                 					str2=str2.concat("<structure name=\""+singorg+"\" id=\"o"+ct+"\">");
                 					str4="</structure>";
+                					constraint = singorg;
                 				}
                 				Pattern pattern7 = Pattern.compile("([\\d]?[\\s]?n[\\s]?=[\\s]?)+[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*|x[\\s]?=[\\s]?[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*");
                 				Matcher matcher1 = pattern7.matcher(str1);
@@ -200,9 +202,9 @@ public class ParseSimpleseg {
                                         
                     ResultSet rs3 = stmt3.executeQuery("select * from sentence where source='"+rs.getString(2)+"'");
                     if(rs3.next()){
+                    	String tag = rs3.getString("tag");
+                		String modifier = rs3.getString("modifier");
                     	if(rs3.getString("modifier").compareTo("")!=0){
-                    		String tag = rs3.getString("tag");
-                    		String modifier = rs3.getString("modifier");
                     		modifier = modifier.replaceAll("[\\[\\]]", "");
                     		while(tag.compareTo("ditto")==0){
 	                			int sentid = rs3.getInt("sentid");
@@ -218,6 +220,27 @@ public class ParseSimpleseg {
 	                        	matcher2 = pattern17.matcher(str2);
 	        					while ( matcher2.find()){
 	        						matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+modifier+"\"");
+	        					}
+	        					matcher2.appendTail(sb);
+	        					str2=sb.toString();
+	        					matcher2.reset();
+	                		}
+                    	}
+                    	else if(constraintflag==1){
+                    		while(tag.compareTo("ditto")==0){
+	                			int sentid = rs3.getInt("sentid");
+	                			rs3 = stmt3.executeQuery("select * from sentence where sentid='"+(sentid-1)+"'");
+	                			if(rs3.next())
+	                				tag = rs3.getString("tag");
+	                		}
+	                		if(tag.compareTo("ignore")!=0){
+		                		if(tag.contains("["))
+		                			tag = tag.substring(1, tag.length()-1);
+	                    		StringBuffer sb = new StringBuffer();
+	                            Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
+	                        	matcher2 = pattern17.matcher(str2);
+	        					while ( matcher2.find()){
+	        						matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+constraint+"\"");
 	        					}
 	        					matcher2.appendTail(sb);
 	        					str2=sb.toString();
@@ -575,7 +598,7 @@ public class ParseSimpleseg {
 			int k=matcher.start();
 			int l=matcher.end();
 			String state=str.subSequence(k,l).toString();
-			Pattern pattern13 = Pattern.compile("_");
+			Pattern pattern13 = Pattern.compile("_or_");
 			Matcher matcher1 = pattern13.matcher(state);
 			state = matcher1.replaceAll("} or {");
 			matcher1.reset();
@@ -589,7 +612,7 @@ public class ParseSimpleseg {
 	
 	protected String plaintextextractornum(String str) {
 		String str1 = "";
-		Pattern pattern1 = Pattern.compile("[\\w±\\+\\[\\]\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
+		Pattern pattern1 = Pattern.compile("[\\w±\\+\\[\\]\\(\\)\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
     	Matcher matcher = pattern1.matcher(str);
     	while ( matcher.find()){
     		int i=matcher.start();
