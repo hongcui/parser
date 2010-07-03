@@ -36,10 +36,10 @@ public class Type3PreMarkup extends Thread {
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	//private File source = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text");
-	private File source = new File("Z:\\DATA\\BHL\\cleaned");
+	private File source = new File(Registry.TargetDirectory+"\\cleaned");
 	//File target = new File(Registry.TargetDirectory);
 	//File target = new File("Z:\\WorkFeb2008\\WordNov2009\\Description_Extraction\\extractionSource\\Plain_text_transformed");
-	File target = new File("Z:\\DATA\\BHL\\target");
+	File target = new File(Registry.TargetDirectory);
 	private XMLOutputter outputter = null;
 	private String markupMode = "plain";
 	private String dataprefix = null;
@@ -120,6 +120,7 @@ public class Type3PreMarkup extends Thread {
 		}
 
 		//		read the errors from the command
+		// perl code can be display on the perl log...
 		String e = "";
 		while ((e = errInput.readLine()) != null) {
 			System.out.println(e + " at " + (System.currentTimeMillis() - time)
@@ -139,6 +140,11 @@ public class Type3PreMarkup extends Thread {
 		for(int i = 0; i<files.length; i++){
 			String fname = files[i].getName();
 			outputTo(des,tra,fname);
+			/* Show on the table - show from transformed folder --
+			 * put a listener progress here
+			 * .*/
+			listener.info((i+1) + "", fname);
+			listener.progress((90* i)/files.length );
 		}
 		
 		listener.progress(60);
@@ -201,7 +207,7 @@ public class Type3PreMarkup extends Thread {
 					}
 				}
 				write2file(desfolder, pIDattr+".txt", morph.getText());
-				listener.info((i+1) + "", pIDattr+".txt");
+				
 			}else{
 				Element nonmorph = new Element("nonMorph");
 				nonmorph.setAttribute("pid", pID);
