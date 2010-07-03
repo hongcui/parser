@@ -14,7 +14,7 @@ public class CondenseMarkedsent {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 	/**
 	 * @param args
 	 */
@@ -110,7 +110,7 @@ public class CondenseMarkedsent {
                         matcher.reset();
                         
                         matcher = pattern3.matcher(output);
-                        output = matcher.replaceAll("_");
+                        output = matcher.replaceAll("_or_");
                         matcher.reset();
                         
                         matcher = pattern4.matcher(output);
