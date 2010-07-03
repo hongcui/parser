@@ -1,14 +1,16 @@
 package fna.charactermarkup;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -25,7 +27,7 @@ public class SegmentIntegrator {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 	
 	public SegmentIntegrator(String database) {
 		// TODO Auto-generated constructor stub
@@ -39,10 +41,81 @@ public class SegmentIntegrator {
 				Class.forName("com.mysql.jdbc.Driver");
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
-				integrator();
+				//integrator();
+				//randomdesc();
+				filecopier();
 			}
 		}
 		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void filecopier() {
+		try{
+			File ansdirectory = new File("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\AnsKey_Benchmark_selected_sentence");
+			String ansfilename[] = ansdirectory.list();
+			for (int i = 0; i < ansfilename.length; i++) {
+				String s = "";
+				String str = "";
+				FileInputStream istream = new FileInputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_sentence\\"+ansfilename[i]);
+				InputStreamReader inread = new InputStreamReader(istream);
+				BufferedReader buff = new BufferedReader(inread);
+				while((s = buff.readLine())!=null){
+					str = str.concat(s);
+				}
+				FileOutputStream ostream = new FileOutputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_selected_sentence\\"+ansfilename[i]); 
+				PrintStream out = new PrintStream( ostream ); 
+				out.print(str);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void randomdesc() {
+		try{
+			Statement stmt = conn.createStatement();
+			ArrayList<String> desc = new ArrayList();
+			ArrayList<String> randdesc = new ArrayList();
+			Random r = new Random();
+			Runtime run = Runtime.getRuntime();
+			int ct = 0;
+			ResultSet rs = stmt.executeQuery("select * from markedsentence");
+        	while(rs.next()){
+        		String src = rs.getString("source");
+        		src = src.substring(0, src.indexOf('-'));
+        		if(!desc.contains(src)){
+        			desc.add(src);
+        			ct++;
+        		}
+        	}
+        	System.out.println(ct);
+        	ct = 0;
+        	for(int i = 0; i < desc.size(); i++){
+        		if (r.nextFloat()<.10){
+        			randdesc.add(desc.get(i));
+        			ct++;
+        		}
+        	}
+        	System.out.println(ct);
+        	for(int i = 0; i < randdesc.size(); i++){
+        		rs = stmt.executeQuery("select * from markedsentence where source LIKE '"+randdesc.get(i)+"%'");
+        		while(rs.next()){
+        			String s = "";
+        			String str = "";
+        			FileInputStream istream = new FileInputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Treatise_sentence\\"+rs.getString("source")+".xml");
+        			InputStreamReader inread = new InputStreamReader(istream);
+        			BufferedReader buff = new BufferedReader(inread);
+        			while((s = buff.readLine())!=null){
+        				str = str.concat(s);
+        			}
+        			FileOutputStream ostream = new FileOutputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Treatise_selected_sentence\\"+rs.getString("source")+".xml"); 
+        			PrintStream out = new PrintStream( ostream ); 
+        			out.print(str);
+        		}
+        	}
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
@@ -81,6 +154,7 @@ public class SegmentIntegrator {
         		}
         		oldsrcstr=rs.getString("source");
         	}
+        	XMLintegrator(sentid, ct, oldsrcstr);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -89,11 +163,11 @@ public class SegmentIntegrator {
 	private void XMLintegrator(String[] sentid, int ct, String source) {
 		try{
 			SAXBuilder builder = new SAXBuilder();
-			Document testcase = builder.build("F:\\UA\\RA\\TestCase_Benchmark\\"+sentid[0]+".xml");
+			Document testcase = builder.build("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+sentid[0]+".xml");
 			Element testroot = testcase.getRootElement();
 			for(int i = 1; i < ct; i++){
 				System.out.println(sentid[i]);
-				Document next = builder.build("F:\\UA\\RA\\TestCase_Benchmark\\"+sentid[i]+".xml");
+				Document next = builder.build("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+sentid[i]+".xml");
 				Element nextroot = next.getRootElement();
 				List testli = testroot.getChildren("structure");
 				List nextli = nextroot.getChildren("structure");
@@ -200,7 +274,7 @@ public class SegmentIntegrator {
 				}
 			}
 			testroot.detach();
-			File f = new File("F:\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
+			File f = new File("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
 			ParsingUtil.outputXML(testroot, f);
 		}catch (Exception e) {
 			e.printStackTrace();
