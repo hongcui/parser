@@ -138,7 +138,7 @@ public class ParseSimpleseg {
                                 		int r=matcher2.end();
                                 		chrtag=chrtag.concat("<character name=\"count\" value=\""+chr.subSequence(q,r).toString().trim()+"\"/>");
                                 	}
-                                	chrtag=chrtag.concat("</structure><Text>"+chr+"</Text>");
+                                	chrtag=chrtag.concat("</structure><text>"+chr+"</text>");
                                 	matcher2.reset();
                             		str1 = str1.substring(0, o);
                             		str6 = str6.substring(0, o);
@@ -195,10 +195,10 @@ public class ParseSimpleseg {
                     	matcher2 = pattern14.matcher(chrtag);
                         chrtag = matcher2.replaceAll(",");
                         matcher2.reset();
-                        str2=str2.concat(str4+"<Text>"+str6+"</Text>"+chrtag+"</statement>");
+                        str2=str2.concat(str4+"<text>"+str6+"</text>"+chrtag+"</statement>");
                     }
                     else
-                    	str2=str2.concat(str4+"<Text>"+str6+"</Text></statement>");
+                    	str2=str2.concat(str4+"<text>"+str6+"</text></statement>");
                                         
                     ResultSet rs3 = stmt3.executeQuery("select * from sentence where source='"+rs.getString(2)+"'");
                     if(rs3.next()){
@@ -341,9 +341,9 @@ public class ParseSimpleseg {
 	                    		}
 	                    		matcher1.reset();
 	                    		if(flag==1)
-	                    			negation = "yes";
+	                    			negation = "true";
 	                    		else
-	                    			negation = "no";
+	                    			negation = "false";
 	                    		//plainrelation = ps.plaintextextractor(relation);
 	                    		plainrelation = "";
 	                    		Pattern pattern3 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×µ%“”\\_,]+");
@@ -417,9 +417,9 @@ public class ParseSimpleseg {
 	                    		}
 	                    		matcher1.reset();
 	                    		if(flag==1)
-	                    			negation = "yes";
+	                    			negation = "true";
 	                    		else
-	                    			negation = "no";
+	                    			negation = "false";
 	                    		//plainrelation = ps.plaintextextractor(relation);
 	                    		plainrelation = "";
 	                    		Pattern pattern3 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×µ%“”\\_,]+");
@@ -529,7 +529,7 @@ public class ParseSimpleseg {
 	                matcher2 = pattern11.matcher(str6);
 	                str6 = matcher2.replaceAll(",");
 	                matcher2.reset();
-	        		innertags = innertags.concat("<Text>"+str6+"</Text>");
+	        		innertags = innertags.concat("<text>"+str6+"</text>");
 	        		markedsent = markedsent.concat(outertag+innertags+"</statement>");
 	        		//stmt1.execute("insert into marked_complexseg values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+markedsent+"','"+markedrelations+"')");
 	        		
