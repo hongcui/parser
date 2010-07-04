@@ -30,11 +30,14 @@ import fna.db.*;
  */
 public class Type4Transformer extends Thread {
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
-	private File source = new File("Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\taxonX-ants");
+	private File source = new File(Registry.SourceDirectory);
 	//File target = new File(Registry.TargetDirectory);
-	File target = new File("Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\target-taxonX-ants");
-	private String tableprefix = "plazi_ants";
+	//target folder
+	File target = new File(Registry.TargetDirectory);
+	//private String tableprefix = "plazi_ants";
+	
 	private XMLOutputter outputter = null;
+	// this is the dataprfix from general tab
 	private String dataprefix = null;
 	private ProcessListener listener;
 	protected static final Logger LOGGER = Logger.getLogger(Type3PreMarkup.class);
@@ -42,8 +45,11 @@ public class Type4Transformer extends Thread {
 	 * 
 	 */
 	
-	public Type4Transformer(ProcessListener listener) {
+	public Type4Transformer(ProcessListener listener, String dataprefix) {
 		this.listener = listener;
+		this.dataprefix = dataprefix;
+		/* Remove this hardcoding later*/
+		dataprefix = "plazi_ants";
 	}
 	
 	public Type4Transformer() {
@@ -117,13 +123,15 @@ public class Type4Transformer extends Thread {
 					getDescriptionFrom(root, fn, count);
 					count++;
 				}
+				/* Show on GUI here*/
+			listener.info((f+1)+"", (f+1)+".xml");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 			LOGGER.error("Type4Transformer : error.", e);
 		}
 		
-		Type4TransformerDbAccessor t4tdb = new Type4TransformerDbAccessor("filenamemapping", tableprefix);
+		Type4TransformerDbAccessor t4tdb = new Type4TransformerDbAccessor("filenamemapping", dataprefix);
 		t4tdb.addRecords(filemapping);
 		
 	}
@@ -153,7 +161,6 @@ public class Type4Transformer extends Thread {
 					}
 					
 					writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
-					listener.info((i+1)+"", fn+"_"+count+"_"+i+".txt");
 					i++;
 				}
 			}
