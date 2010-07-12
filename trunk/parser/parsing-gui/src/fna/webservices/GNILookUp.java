@@ -85,8 +85,7 @@ public class GNILookUp {
 			createDictionary();
 			for (File file : files) {
 				tags = new ArrayList<String>();
-				lsidMap = new HashMap<String, String>();
-				
+				lsidMap = new HashMap<String, String>();				
 				readTags(file);
 				writeMarkUp(file, destination1);
 				saveNames();
