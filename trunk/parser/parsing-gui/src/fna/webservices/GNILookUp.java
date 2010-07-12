@@ -39,13 +39,17 @@ import fna.parsing.Registry;
 
 public class GNILookUp {
 
-	/**
-	 * @param args
-	 */
 	private static Properties properties = null;
 	private static FileInputStream fstream = null;
 	private static Set<Object> tagKeys = null;
 	private static final Logger LOGGER = Logger.getLogger(GNILookUp.class);
+	private String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
+	private String gniURL = "http://gni.globalnames.org/name_strings.xml?search_term=";
+	private String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
+	private ArrayList <String> tags ;
+	private HashMap<String, String> lsidMap;
+	private ArrayList<String> dictionary;
+	
 	static {
 		try {
 			fstream = new FileInputStream(System.getProperty("user.dir")+
@@ -60,12 +64,7 @@ public class GNILookUp {
 			e.printStackTrace();
 		} 
 	}
-	private String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
-	private String gniURL = "http://gni.globalnames.org/name_strings.xml?search_term=";
-	private String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
-	private ArrayList <String> tags ;
-	private HashMap<String, String> lsidMap;
-	private ArrayList<String> dictionary;
+
 	
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
@@ -88,7 +87,7 @@ public class GNILookUp {
 				readTags(file);
 				writeMarkUp(file, destination1);
 				//remove this break later - now taste for one file
-				break;
+				//break;
 			}
 		} catch (Exception exe){
 			exe.printStackTrace();
@@ -98,6 +97,11 @@ public class GNILookUp {
 		
 	}
 	
+	/**
+	 * This method will create a dictionary of common English 
+	 * words in memory to save the Web services invocation for every word.
+	 * @throws Exception
+	 */
 	private void createDictionary() throws Exception {
 		BufferedReader in = null;
 		try {
@@ -114,6 +118,12 @@ public class GNILookUp {
 			in.close();
 		}
 	}
+	
+	/**
+	 * This method will mark the file with lsids
+	 * @param file
+	 * @param destination
+	 */
 	private void writeMarkUp(File file, String destination) {
 		try {
 	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -175,15 +185,6 @@ public class GNILookUp {
 	        		//nodes.item(i).getFirstChild().setNodeValue(discussion);
 	        		tags.remove(properties.getProperty("discussion"));
 	        	}
-
-	        	
-/*	        	if (nodes.item(i).getNodeName().equals(taglist[0])) {
-	        		nodes.item(i).getFirstChild().setNodeValue("partha" + 
-	        				nodes.item(i).getFirstChild().getNodeValue());
-	        	}
-	        	System.out.println(nodes.item(i).getNodeName());
-	        	if (nodes.item(i).getFirstChild() != null)
-	        	System.out.println(nodes.item(i).getFirstChild().getNodeValue());*/
 	        }
 	        FileOutputStream flt = new FileOutputStream
 	        (new File(destination+file.getName()));
@@ -199,6 +200,10 @@ public class GNILookUp {
 		}
 	}
 	
+	/**
+	 * This method reads the file information into memory and also checks for lsid and valid Sceintific names.
+	 * @param file
+	 */
 	private void readTags(File file) {
 		
 		try {
@@ -265,6 +270,13 @@ public class GNILookUp {
 
 	}
 	
+	/**
+	 * This Method will extract the LSID
+	 * @param tagValue
+	 * @param url
+	 * @return
+	 * @throws Exception
+	 */
 	private String extractLSID(String tagValue, String url) throws Exception {
 		URL gniUrl = new URL(url+tagValue);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -287,6 +299,11 @@ public class GNILookUp {
         return LSID;
 	}
 	
+	/**
+	 * This method cleans the String from clutter
+	 * @param description
+	 * @return
+	 */
 	private static String clean(String description) {
 		Pattern p = Pattern.compile("[\\W\\d\\s\\e]+");
 		String [] a = p.split(description);
