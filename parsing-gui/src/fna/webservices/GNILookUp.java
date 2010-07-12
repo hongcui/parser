@@ -87,11 +87,11 @@ public class GNILookUp {
 				tags = new ArrayList<String>();
 				lsidMap = new HashMap<String, String>();
 				
-				readTags(new File(source+"\\100.xml"));
-				writeMarkUp(new File(source+"\\100.xml"), destination1);
+				readTags(file);
+				writeMarkUp(file, destination1);
 				saveNames();
 				//remove this break later - now taste for one file
-				break;
+				//break;
 			}
 		} catch (Exception exe){
 			exe.printStackTrace();
