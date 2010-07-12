@@ -13,6 +13,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -33,8 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.Registry;
 
 public class GNILookUp {
@@ -74,20 +76,22 @@ public class GNILookUp {
 	
 	public void getTagNames(String source, String destination) {
 		source = source1;
-		destination = destination1;
-		
+		destination = destination1;		
 		File transformedDirectory  = new File(source1);
 		File [] files = transformedDirectory.listFiles();
+		
 		/* The grand for loop */
 		try {
+			createDictionary();
 			for (File file : files) {
 				tags = new ArrayList<String>();
 				lsidMap = new HashMap<String, String>();
-				createDictionary();
-				readTags(file);
-				writeMarkUp(file, destination1);
+				
+				readTags(new File(source+"\\100.xml"));
+				writeMarkUp(new File(source+"\\100.xml"), destination1);
+				saveNames();
 				//remove this break later - now taste for one file
-				//break;
+				break;
 			}
 		} catch (Exception exe){
 			exe.printStackTrace();
@@ -140,19 +144,23 @@ public class GNILookUp {
 	        	
 	        	if (!nodes.item(i).getNodeName().equalsIgnoreCase
 	        			(properties.getProperty("discussion"))) {
-		        	boolean hasTag = tags.contains(nodes.item(i).getNodeName());
-		        	if (hasTag) {  		
-		        		
+	        		String nodeName = nodes.item(i).getNodeName();
+		        	boolean hasTag = tags.contains(nodeName);
+		        	
+		        	if (hasTag) { 
 		        		String nodeValue = nodes.item(i).getFirstChild().getNodeValue();
-		        		nodes.item(i).getFirstChild().setNodeValue("");
-		        		Element elem = doc.createElement("name");
-		        		elem.setAttribute("lsid", lsidMap.get(nodeValue));
-		        		elem.setAttribute("src", "gni");
-		        		elem.appendChild(doc.createTextNode(nodeValue));
-		        		nodes.item(i).appendChild(elem);
-		        		tags.remove(nodes.item(i).getNodeName());
-		        		System.out.println("Written lsid string tag for " + nodeValue);
-		        		LOGGER.info("Written lsid string tag for " + nodeValue);
+		        		if (lsidMap.get(nodeValue) != null) {
+			        		nodes.item(i).getFirstChild().setNodeValue("");
+			        		Element elem = doc.createElement("name");
+			        		elem.setAttribute("lsid", lsidMap.get(nodeValue));
+			        		elem.setAttribute("src", "gni");
+			        		elem.appendChild(doc.createTextNode(nodeValue));
+			        		nodes.item(i).appendChild(elem);
+			        		tags.remove(nodes.item(i).getNodeName());
+			        		System.out.println("Written lsid string tag for " + nodeValue);
+			        		LOGGER.info("Written lsid string tag for " + nodeValue);	
+		        		}
+
 		        	}
 	        	} else {
 	        		String original = nodes.item(i).getFirstChild().getNodeValue();
@@ -312,5 +320,37 @@ public class GNILookUp {
 			sb.append(s+" ");
 		}
 		return sb.toString().trim();		
+	}
+	
+	private void saveNames(){
+		
+		PreparedStatement stmt = null;
+		Connection conn = null;
+		
+		try {
+			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+			conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			stmt = conn.prepareStatement("insert into gnilsids(name, lsid, source) values(?,?,?)");
+			
+			Set <String> keys = lsidMap.keySet();
+    		for (String name : keys) {
+    			stmt.setString(1, name);
+    			stmt.setString(2, lsidMap.get(name));
+    			stmt.setString(3, "gni");
+    			try {
+    				stmt.execute();
+    			} catch (Exception exe) {
+    				if (!exe.getMessage().contains("Duplicate")) {
+    					exe.printStackTrace();
+    					LOGGER.error("Excepion in saveNames ", exe);
+    				}
+    			}
+    			
+    		}
+    		
+		} catch(Exception exe) {
+			exe.printStackTrace();
+			LOGGER.error("Excepion in saveNames ", exe);
+		}
 	}
 }
