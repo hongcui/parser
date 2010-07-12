@@ -1568,7 +1568,7 @@ public class MainForm {
 		ProcessListener listener = 
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
-		Type4Transformer transformer = new Type4Transformer(listener);
+		Type4Transformer transformer = new Type4Transformer(listener, dataPrefixCombo.getText());
 		transformer.start();
 	}
 	private void clearTransformation() {
