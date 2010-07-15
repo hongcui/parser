@@ -18,8 +18,14 @@ public class test1 {
 		
 		hm.put("1", "dhcb");
 		
-		String x = hm.get("2");
-		x.charAt(1);
+		HashMap <String, String> hm1  = new HashMap<String, String>();
+		hm.put("2", "dhcb");
+		//x.charAt(1);
+		
+		hm.putAll(hm1);
+		
+		System.out.println(hm);
+		
 		
 	}
 
