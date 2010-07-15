@@ -9,6 +9,8 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -91,20 +93,58 @@ public class test {
 	        Element root = doc.getDocumentElement();
 	        System.out.println(root.getNodeName() + root.getNodeValue());
 	        NodeList nodes = root.getChildNodes();
-	        String [] taglist = {"family_name", "discussion"};
+	        String [] taglist = {"discussion"};
 	        for (int i = 0 ; i <nodes.getLength(); i++) {
 	        	//Element el = (Element);
 	        	if (nodes.item(i).getNodeName().equals(taglist[0])) {
 /*	        		nodes.item(i).getFirstChild().setNodeValue("partha" + 
 	        				nodes.item(i).getFirstChild().getNodeValue());*/
+	        		HashMap<String, String> found = new HashMap<String, String>();
+	        		found.put("Illecebrum verticillatum", 
+	        				"urn:lsid:globalnames.org:index:a4a43b7a-eead-55ae-bb0b-195eaadf9c6b");
+	        		found.put("Europe", 
+	        				"urn:lsid:globalnames.org:index:29e3b733-2106-5ca8-bfc9-12d1b77f3310");
+	        		found.put("Herniaria", 
+	        				"urn:lsid:globalnames.org:index:4c09c584-4bc5-574b-942f-49b2735f50a8");
+	        		found.put("Paronychia", 
+	        				"urn:lsid:globalnames.org:index:df9047f9-7acf-535f-8161-bc62237c1871");
 	        		
-	        		String nodeValue = nodes.item(i).getFirstChild().getNodeValue();
+	        		
+	        		
+	        		String originalNodeValue = nodes.item(i).getFirstChild().getNodeValue();
+	        		String temp = originalNodeValue;
+	        		
 	        		nodes.item(i).getFirstChild().setNodeValue("");
+	        		Set <String> keys  = found.keySet();
+	        		
+	        		for (String key : keys) {
+	        			temp = temp.replace(key, "#"+key+"#");
+	        		}
+	        		
+	        		String [] parts = temp.split("#");
+	        		
+	        		for (String part : parts){
+	        			if (found.containsKey(part)) {
+	    	        		Element elem = doc.createElement("name");
+	    	        		elem.setAttribute("lsid", found.get(part));
+	    	        		elem.setAttribute("src", "gni");
+	    	        		elem.appendChild(doc.createTextNode(part));
+	    	        		nodes.item(i).appendChild(elem);
+	        			} else {
+	        				nodes.item(i).appendChild(
+	        						doc.createTextNode(part));
+	        			}
+	        		}
+/*	        		nodes.item(i).getFirstChild().setNodeValue("");
 	        		Element elem = doc.createElement("name");
 	        		elem.setAttribute("lsid", "bla bla");
 	        		elem.setAttribute("src", "gni");
-	        		elem.appendChild(doc.createTextNode(nodeValue));
+	        		//elem.appendChild(doc.createTextNode(nodeValue));
+	        		elem.appendChild(doc.createTextNode("This is new node"));
 	        		nodes.item(i).appendChild(elem);
+	        		nodes.item(i).appendChild(doc.createTextNode("This is the 2nd node"));*/
+	        		
+	        		break;
 	        	}
 /*	        	System.out.println(nodes.item(i).getNodeName());
 	        	if (nodes.item(i).getFirstChild() != null)
