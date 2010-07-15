@@ -13,11 +13,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -45,9 +49,10 @@ public class GNILookUp {
 	private static FileInputStream fstream = null;
 	private static Set<Object> tagKeys = null;
 	private static final Logger LOGGER = Logger.getLogger(GNILookUp.class);
-	private String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
-	private String gniURL = "http://gni.globalnames.org/name_strings.xml?search_term=";
-	private String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
+	private static String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
+	private String gniURL = ApplicationUtilities.getProperty("GNI");;
+	private static String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
+	private String plaziWebService = ApplicationUtilities.getProperty("PLAZI");
 	private ArrayList <String> tags ;
 	private HashMap<String, String> lsidMap;
 	private ArrayList<String> dictionary;
@@ -70,28 +75,31 @@ public class GNILookUp {
 	
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		new GNILookUp().getTagNames(null, null);
+		new GNILookUp().getTagNames(source1, destination1);
 
 	}
 	
 	public void getTagNames(String source, String destination) {
-		source = source1;
-		destination = destination1;		
+
 		File transformedDirectory  = new File(source1);
 		File [] files = transformedDirectory.listFiles();
 		
 		/* The grand for loop */
 		try {
-			createDictionary();
+			//createDictionary();
+			lsidMap = new HashMap<String, String>();
 			for (File file : files) {
 				tags = new ArrayList<String>();
-				lsidMap = new HashMap<String, String>();				
-				readTags(file);
-				writeMarkUp(file, destination1);
-				saveNames();
+								
+/*				readTags(file);
+				writeMarkUp(file, destination1);*/
+				
+				markUpScientificNames(file, destination1);
+				
 				//remove this break later - now taste for one file
 				//break;
-			}
+			}			
+			saveNames();
 		} catch (Exception exe){
 			exe.printStackTrace();
 			LOGGER.error("Error in write getTagNames ", exe);
@@ -99,6 +107,271 @@ public class GNILookUp {
 
 		
 	}
+/**
+ * This function extracts, validates and marks up scientific names
+ * @param file
+ * @param destination
+ */
+	
+	private void markUpScientificNames(File file, String destination) {
+		try {
+	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder builder = factory.newDocumentBuilder();
+	        Document doc = builder.parse(file);
+	        doc.getDocumentElement().normalize();	        
+	        TransformerFactory tFactory = TransformerFactory.newInstance();
+	        Transformer tFormer = tFactory.newTransformer();
+	        
+			for (Object obj : tagKeys) {
+				String tagName = properties.getProperty((String)obj);
+				if (!tagName.equals(properties.getProperty("discussion"))) {
+					NodeList nodes = doc.getElementsByTagName(tagName);
+					Element element = (Element)nodes.item(0);
+					if (element != null) {
+						String tagValue = element.getFirstChild().getNodeValue();
+/*						LinkedHashSet <String> name = lookUpScientificName(clean(tagValue), plaziWebService);
+						String tempTag = null;
+						for (String tempTagValue : name) {
+						 tempTag = tempTagValue;	
+						}*/
+						String LSID = extractLSID(clean(tagValue), gniURL); 
+						if (LSID != null && !LSID.equals("")) {
+							lsidMap.put(tagValue, LSID);
+							System.out.println("Name found : " + tagValue);
+							LOGGER.info("Name found : " + tagValue);
+							
+							/* Markup the node immediately*/
+			        		element.getFirstChild().setNodeValue("");
+			        		Element elem = doc.createElement("name");
+			        		elem.setAttribute("lsid", LSID);
+			        		elem.setAttribute("src", "gni");
+			        		elem.appendChild(doc.createTextNode(tagValue));
+			        		element.appendChild(elem);
+			        		System.out.println("Written lsid string tag for " + tagValue);
+			        		LOGGER.info("Written lsid string tag for " + tagValue);
+							
+						}
+					}
+				} else {
+					NodeList nodes = doc.getElementsByTagName(tagName);
+					int nodeLength = nodes.getLength();
+					for (int i = 0 ; i < nodeLength; i++) {
+						Element element = (Element)nodes.item(i);
+						if (element != null) {
+	
+							String tagValue = element.getFirstChild().getNodeValue();
+							String discussion = tagValue;
+							System.out.println("Marking up discussion : " + discussion);
+							
+							/* Extract the Scientific names using Plazi Web Service*/
+							LinkedHashSet <String> scientificNames = 
+								lookUpScientificName(discussion, plaziWebService);
+							System.out.println("Plazi returned the following valid names : " +
+									scientificNames);
+							HashMap <String, String> tempLsidMap = new HashMap<String, String>();
+							
+							/* Extract the LSID */
+							for (String name : scientificNames) {
+								String LSID;
+								LSID = extractLSID(name, gniURL);
+								if(LSID != null && !LSID.equals("")) {
+									tempLsidMap.put(name, LSID);
+								}
+							}
+							System.out.println("GNI correctly recognized the following names " +
+									tempLsidMap);
+							/* Insert lsid nodes inside the discussion */
+							
+							String originalNodeValue = nodes.item(i).getFirstChild().getNodeValue();
+			        		String temp = originalNodeValue;
+			        		
+			        		nodes.item(i).getFirstChild().setNodeValue("");
+			        		Set <String> keys  = tempLsidMap.keySet();
+			        		
+			        		for (String key : keys) {
+			        			temp = temp.replace(key, "#"+key+"#");
+			        		}
+			        		
+			        		String [] parts = temp.split("#");
+			        		
+			        		for (String part : parts){
+			        			
+			        			if (tempLsidMap.containsKey(part)) {
+			        				System.out.println("Marking up " + part);
+			    	        		Element elem = doc.createElement("name");
+			    	        		elem.setAttribute("lsid", tempLsidMap.get(part));
+			    	        		elem.setAttribute("src", "gni");
+			    	        		elem.appendChild(doc.createTextNode(part));
+			    	        		nodes.item(i).appendChild(elem);
+			        			} else {
+			        				nodes.item(i).appendChild(
+			        						doc.createTextNode(part));
+			        			}
+			        		}								
+						
+			        		lsidMap.putAll(tempLsidMap);
+						}
+
+					}
+				}
+
+				
+			} 
+			
+	        FileOutputStream flt = new FileOutputStream
+	        (new File(destination+file.getName()));
+	        OutputStreamWriter out = new OutputStreamWriter(flt);
+	        Source source = new DOMSource(doc);
+	        StreamResult result = new StreamResult(out);
+	        tFormer.transform(source, result); 
+	        
+	} catch (Exception exe) {
+		exe.printStackTrace();
+		LOGGER.error("Problem in markUpScientificNames" , exe);
+	}
+  }
+	/**
+	 * This method extracts the valid Scientific Names using Plazi Web Service
+	 * @param discussion
+	 * @param url
+	 * @return
+	 */
+	private LinkedHashSet <String> lookUpScientificName(String discussion, String url) 
+		throws IOException{
+		
+		LinkedHashSet <String> validNames = new LinkedHashSet <String>();
+		OutputStreamWriter outStream = null;
+		try {
+		    // Construct data
+		    String data = URLEncoder.encode("document_text", "UTF-8") 
+		    + "=" + URLEncoder.encode(clean(discussion), "UTF-8");
+		    data += "&" + URLEncoder.encode("omni_fat_instance", "UTF-8") 
+		    + "=" + URLEncoder.encode("Botany.Partha.web", "UTF-8");
+
+		    // Send data
+		    URLConnection conn = new URL(url).openConnection();
+		    conn.setDoOutput(true);
+		    outStream = new OutputStreamWriter(conn.getOutputStream());
+		    outStream.write(data);
+		    outStream.flush();
+
+	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder builder = factory.newDocumentBuilder();
+	        Document doc = builder.parse(conn.getInputStream());
+	        NodeList nodes = doc.getElementsByTagName("dwc:ScientificName");
+	        
+	        int nodeLength = nodes.getLength();
+	        for (int i = 0; i< nodeLength;  i++) {
+	        	Element element = (Element)nodes.item(i);
+	        	String nodeValue = element.getFirstChild().getNodeValue();
+	        	if (nodeValue != null || !nodeValue.equals("")) {
+	        		validNames.add(nodeValue);
+	        	}
+	        		        			        	
+	        }
+		   	    
+		    
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Plazi Web Service had a problem", e);
+		} finally {
+			if (outStream != null) {
+				outStream.close();	
+			}
+
+		}
+		
+		return validNames;
+	}
+	
+
+	/**
+	 * This Method will extract the LSID
+	 * @param tagValue
+	 * @param url
+	 * @return
+	 * @throws Exception
+	 */
+	private String extractLSID(String tagValue, String url) throws Exception {
+		URL gniUrl = new URL(url+URLEncoder.encode(tagValue, "UTF-8") );
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(gniUrl.openStream());
+        NodeList nodes = doc.getElementsByTagName("name");
+        String LSID = "";
+        int nodeLength = nodes.getLength();
+        for (int i = 0; i< nodeLength;  i++) {
+        	Element element = (Element)nodes.item(i);
+        	String nodeValue = element.getFirstChild().getNodeValue();
+        	if (nodeValue.equalsIgnoreCase(tagValue)) {
+        		LSID = element.getNextSibling().getNextSibling().getNextSibling()
+				.getNextSibling().getFirstChild().getNodeValue();
+        		break;
+        		
+        	}
+        }
+        
+        return LSID;
+	}
+	
+	/**
+	 * This method cleans the String from clutter
+	 * @param description
+	 * @return
+	 */
+	private static String clean(String description) {
+		Pattern p = Pattern.compile("[\\W\\d\\s\\e]+");
+		String [] a = p.split(description);
+		StringBuffer sb = new StringBuffer();
+		for (String s : a) {
+			sb.append(s+" ");
+		}
+		return sb.toString().trim();		
+	}
+	
+	/**
+	 * This method saves the discovered scientific names to the database.
+	 */
+	private void saveNames()throws SQLException {
+		
+		PreparedStatement stmt = null;
+		Connection conn = null;
+		
+		try {
+			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+			conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			stmt = conn.prepareStatement("insert into gnilsids(name, lsid, source) values(?,?,?)");
+			
+			Set <String> keys = lsidMap.keySet();
+    		for (String name : keys) {
+    			stmt.setString(1, name);
+    			stmt.setString(2, lsidMap.get(name));
+    			stmt.setString(3, "gni");
+    			try {
+    				stmt.execute();
+    			} catch (Exception exe) {
+    				if (!exe.getMessage().contains("Duplicate")) {
+    					exe.printStackTrace();
+    					LOGGER.error("Excepion in saveNames ", exe);
+    				}
+    			}
+    			
+    		}
+    		
+		} catch(Exception exe) {
+			exe.printStackTrace();
+			LOGGER.error("Excepion in saveNames ", exe);
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null){
+				conn.close();
+			}
+		}
+	}
+	
 	
 	/**
 	 * This method will create a dictionary of common English 
@@ -180,16 +453,6 @@ public class GNILookUp {
 			        		nodes.item(i).appendChild(elem);
 	        			}
 	        		}
-	        		
-/*	        		Set <String> keys = lsidMap.keySet();
-	        		for (String name : keys) {
-	        			discussion = 
-	        				StringEscapeUtils.unescapeXml(
-	        						discussion.replace(name, "<name lsid=\"" +lsidMap.get(name) + 
-	        								"\" src=\"gni\"gt"+name+"lt/name gt"));
-	        		}*/
-
-	        		//nodes.item(i).getFirstChild().setNodeValue(discussion);
 	        		tags.remove(properties.getProperty("discussion"));
 	        	}
 	        }
@@ -208,7 +471,8 @@ public class GNILookUp {
 	}
 	
 	/**
-	 * This method reads the file information into memory and also checks for lsid and valid Sceintific names.
+	 * This method reads the file information into memory and also checks for lsid and 
+	 * valid Scientific names.
 	 * @param file
 	 */
 	private void readTags(File file) {
@@ -275,81 +539,5 @@ public class GNILookUp {
 		}
 
 
-	}
-	
-	/**
-	 * This Method will extract the LSID
-	 * @param tagValue
-	 * @param url
-	 * @return
-	 * @throws Exception
-	 */
-	private String extractLSID(String tagValue, String url) throws Exception {
-		URL gniUrl = new URL(url+tagValue);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(gniUrl.openStream());
-        NodeList nodes = doc.getElementsByTagName("name");
-        String LSID = "";
-        int nodeLength = nodes.getLength();
-        for (int i = 0; i< nodeLength;  i++) {
-        	Element element = (Element)nodes.item(i);
-        	String nodeValue = element.getFirstChild().getNodeValue();
-        	if (nodeValue.equalsIgnoreCase(tagValue)) {
-        		LSID = element.getNextSibling().getNextSibling().getNextSibling()
-				.getNextSibling().getFirstChild().getNodeValue();
-        		break;
-        		
-        	}
-        }
-        
-        return LSID;
-	}
-	
-	/**
-	 * This method cleans the String from clutter
-	 * @param description
-	 * @return
-	 */
-	private static String clean(String description) {
-		Pattern p = Pattern.compile("[\\W\\d\\s\\e]+");
-		String [] a = p.split(description);
-		StringBuffer sb = new StringBuffer();
-		for (String s : a) {
-			sb.append(s+" ");
-		}
-		return sb.toString().trim();		
-	}
-	
-	private void saveNames(){
-		
-		PreparedStatement stmt = null;
-		Connection conn = null;
-		
-		try {
-			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-			conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
-			stmt = conn.prepareStatement("insert into gnilsids(name, lsid, source) values(?,?,?)");
-			
-			Set <String> keys = lsidMap.keySet();
-    		for (String name : keys) {
-    			stmt.setString(1, name);
-    			stmt.setString(2, lsidMap.get(name));
-    			stmt.setString(3, "gni");
-    			try {
-    				stmt.execute();
-    			} catch (Exception exe) {
-    				if (!exe.getMessage().contains("Duplicate")) {
-    					exe.printStackTrace();
-    					LOGGER.error("Excepion in saveNames ", exe);
-    				}
-    			}
-    			
-    		}
-    		
-		} catch(Exception exe) {
-			exe.printStackTrace();
-			LOGGER.error("Excepion in saveNames ", exe);
-		}
 	}
 }
