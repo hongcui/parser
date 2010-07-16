@@ -129,28 +129,32 @@ public class GNILookUp {
 					Element element = (Element)nodes.item(0);
 					if (element != null) {
 						String tagValue = element.getFirstChild().getNodeValue();
-/*						LinkedHashSet <String> name = lookUpScientificName(clean(tagValue), plaziWebService);
-						String tempTag = null;
-						for (String tempTagValue : name) {
-						 tempTag = tempTagValue;	
-						}*/
-						String LSID = extractLSID(clean(tagValue), gniURL); 
-						if (LSID != null && !LSID.equals("")) {
-							lsidMap.put(tagValue, LSID);
-							System.out.println("Name found : " + tagValue);
-							LOGGER.info("Name found : " + tagValue);
-							
-							/* Markup the node immediately*/
-			        		element.getFirstChild().setNodeValue("");
-			        		Element elem = doc.createElement("name");
-			        		elem.setAttribute("lsid", LSID);
-			        		elem.setAttribute("src", "gni");
-			        		elem.appendChild(doc.createTextNode(tagValue));
-			        		element.appendChild(elem);
-			        		System.out.println("Written lsid string tag for " + tagValue);
-			        		LOGGER.info("Written lsid string tag for " + tagValue);
-							
+						if (tagValue != null && !tagValue.equals("")){
+							/*						
+							 * LinkedHashSet <String> name = lookUpScientificName(clean(tagValue), plaziWebService);
+							String tempTag = null;
+							for (String tempTagValue : name) {
+							 tempTag = tempTagValue;	
+							}*/
+							String LSID = extractLSID(clean(tagValue), gniURL); 
+							if (LSID != null && !LSID.equals("")) {
+								lsidMap.put(tagValue, LSID);
+								System.out.println("Name found : " + tagValue);
+								LOGGER.info("Name found : " + tagValue);
+								
+								/* Markup the node immediately*/
+				        		element.getFirstChild().setNodeValue("");
+				        		Element elem = doc.createElement("name");
+				        		elem.setAttribute("lsid", LSID);
+				        		elem.setAttribute("src", "gni");
+				        		elem.appendChild(doc.createTextNode(tagValue));
+				        		element.appendChild(elem);
+				        		System.out.println("Written lsid string tag for " + tagValue);
+				        		LOGGER.info("Written lsid string tag for " + tagValue);
+								
+							}
 						}
+
 					}
 				} else {
 					NodeList nodes = doc.getElementsByTagName(tagName);
