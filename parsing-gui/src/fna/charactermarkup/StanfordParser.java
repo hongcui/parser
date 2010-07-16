@@ -56,7 +56,7 @@ public class StanfordParser {
 				Statement stmt = conn.createStatement();
 				//stmt.execute("create table if not exists marked_pos (sentid MEDIUMINT NOT NULL, source varchar(100) NOT NULL, markedsent TEXT, PRIMARY KEY(sentid))");
 				stmt.execute("create table if not exists "+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				//stmt.execute("delete from "+this.POSTaggedSentence);
+				stmt.execute("delete from "+this.POSTaggedSentence);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -280,11 +280,11 @@ public class StanfordParser {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String posedfile = "Copy of FNAv19posedsentences1.txt";
-		String parsedfile = "Copy of FNAv19parsedsentences1.txt";
+		String posedfile = "FNAv19posedsentences.txt";
+		String parsedfile = "FNAv19parsedsentences.txt";
 		String database = "fnav19_benchmark";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database);
-		//sp.POSTagging();
+		sp.POSTagging();
 		//sp.parsing();
 		sp.extracting();
 	}
