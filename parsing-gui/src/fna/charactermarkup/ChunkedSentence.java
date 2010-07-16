@@ -125,7 +125,8 @@ public class ChunkedSentence {
 	
 	/**
 	 * shorter and wider than ...
-	 * more/less than ...
+	 * more/less smooth than ...
+	 * pretty good now
 	 */
 	private void normalizeThan(){
 		String np = "";
