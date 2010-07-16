@@ -449,6 +449,9 @@ public class SentenceChunker {
 						if(i>=0 && i<text.length()-1){
 							text = text.substring(i+1).trim();
 						}
+						if(text.indexOf(",")>=0){
+							text  = text.substring(text.lastIndexOf(",")+1).trim();
+						}
 						return text;
 					}
 					if(n.getAttribute("text") != null){
