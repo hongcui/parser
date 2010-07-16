@@ -3,6 +3,7 @@ package fna.charactermarkup;
 import java.io.*;
 
 import java.util.regex.*;
+import java.util.ArrayList;
 
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
@@ -15,7 +16,7 @@ import org.jdom.input.SAXBuilder;
 public class Tree2XML {
     private String test=null;
     private String str = "";
-    private static PrintWriter out; 
+    //private static PrintWriter out; 
     /**
      * 
      */
@@ -28,8 +29,8 @@ public class Tree2XML {
         if(test==null){
             return null;
         }
-        out.println();
-        out.println(test);
+        //out.println();
+        //out.println(test);
         String xml = "";
         //step 1: turn all ( to <
         test = test.replaceAll("\\(", "<");
@@ -115,6 +116,9 @@ public class Tree2XML {
             m = p.matcher(part);
         }
         part = part.trim();
+        if(part.lastIndexOf("<") < 0){
+        	return cp;
+        }
         String tag = part.substring(part.lastIndexOf("<"));
         cp = cp.replaceAll(tag+"( |$)", tag+"* ");
         int index = cp.lastIndexOf('*');
@@ -195,25 +199,6 @@ public class Tree2XML {
      * @param args
      */
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
-    	try{
-	        String test="(ROOT  (S (NP      (NP (NN body) (NN ovoid))      (, ,)      (NP        (NP (CD 2-4))        (PP (IN x)          (NP            (NP (CD 1-1.5) (NN mm))            (, ,)            (ADJP (RB not) (JJ winged)))))      (, ,))    (VP (VBZ woolly))    (. .)))";
-	       // test="(ROOT  (NP    (NP      (NP (NNP Ray))      (ADJP (JJ laminae)        (NP (CD 6))))    (: -)    (NP      (NP        (NP (CD 7) (NNS x))        (NP (CD 2/CD-32) (NN mm)))      (, ,)      (PP (IN with)        (NP (CD 2))))    (: -)    (NP      (NP (CD 5) (NNS hairs))      (PP (IN inside)        (NP          (NP (NN opening))          (PP (IN of)            (NP (NN tube))))))    (. .)))";
-	       // test="(S (NP (NP (NN margins) (UCP (NP (JJ entire)) (, ,) (ADJP (JJ dentate)) (, ,) (ADJP (RB pinnately) (JJ lobed)) (, ,) (CC or) (NP (JJ pinnatifid) (NN pinnately))) (NN compound)) (, ,) (NP (JJ spiny)) (, ,)) (VP (JJ tipped) (PP (IN with) (NP (NNS tendrils)))) (. .))";
-	        FileInputStream istream = new FileInputStream("F:\\UA\\RA\\Code\\parsing-gui-charactermarkup\\onelineoutput.txt"); 
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(istream));
-			FileOutputStream ostream = new FileOutputStream("F:\\UA\\RA\\Code\\parsing-gui-charactermarkup\\finalrelationanalysis.txt"); 
-			out = new PrintWriter(ostream);
-			while ((test = stdInput.readLine())!=null){
-				Tree2XML t2x = new Tree2XML(test);
-		        Document doc = t2x.xml();
-		        out.println(doc);
-		        
-			}
-    	}catch (Exception e){
-    		//System.err.println(e);
-			e.printStackTrace();
-        }
     }
 
 }
