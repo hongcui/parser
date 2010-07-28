@@ -16,6 +16,7 @@ import org.jdom.input.SAXBuilder;
 public class Tree2XML {
     private String test=null;
     private String str = "";
+    public static ArrayList<String> adverbs = new ArrayList<String>();
     //private static PrintWriter out; 
     /**
      * 
@@ -26,7 +27,7 @@ public class Tree2XML {
     }
     
     public Document xml(){
-        if(test==null){
+        if(test==null || test.trim().length()==0){
             return null;
         }
         //out.println();
@@ -64,7 +65,7 @@ public class Tree2XML {
 		     ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
 		     doc = builder.build(bais);
 		    } catch (Exception e) {
-		      System.out.print("Problem parsing the xml: \n" + e.toString());
+		      System.out.print("Problem parsing the xml: \n" + xml+"\n"+e.toString());
 		}
 		return doc;
     }
@@ -79,15 +80,21 @@ public class Tree2XML {
         // TODO Auto-generated method stub
         String r = "";
         int count = 0;
-        xml = xml.replaceAll("<[^A-Z/]", "<PUNCT");
+        xml = xml.replaceAll("``", "JJ").replaceAll("<[^A-Z/]", "<PUNCT");
         Pattern p = Pattern.compile("(.*?)<([^<]*?) ([^<]*?)/>(.*)");
         Matcher m = p.matcher(xml);
         while(m.matches()){
             r += m.group(1);
             r +="<"+m.group(2)+" id=\""+count+"\" text=\""+m.group(3)+"\"/>";
             xml = m.group(4);
+            
+            if(m.group(2).compareToIgnoreCase("RB")==0 && !this.adverbs.contains(m.group(3)) && !m.group(3).matches("\\b("+ChunkedSentence.prepositions+")\\b")){
+            	this.adverbs.add(m.group(3));
+            }
             m = p.matcher(xml);
             count++;
+            
+            
         }
         r +=xml;
         return r;

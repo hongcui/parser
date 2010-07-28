@@ -29,6 +29,24 @@ import java.util.regex.Pattern;
  * WHADVP, wh-adverb phrase
  * (QP (IN at) (JJS least) (CD 3/4)))
  * 
+ * 
+ * 
+ * 
+ * 
+ * chunk symbols:
+ 
+QP: q
+SBAR: s
+VP: b[v/o]
+PP: r[p/o]
+VP-PP: t[c/r[p/o]]
+ADJ-PP:t[c/r[p/o]]
+Than: n
+To: w
+NPList: l
+PPList: i
+main subject: z[m/e]
+ * 
  */
 public class SentenceChunker {
 	private Document tree = null;
@@ -59,7 +77,7 @@ public class SentenceChunker {
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
-		this.markedsent = markedsent;
+		this.markedsent = ChunkedSentence.normalizeNumberExp(markedsent);
 		//this.markedsent = markedsent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
 		//in markedsent, each non-<>{}-punctuation mark is surrounded with spaces
 		this.posoftokens = this.markedsent.split("\\s+");
@@ -99,7 +117,7 @@ public class SentenceChunker {
 				Iterator<Element> it = QPs.iterator();
 				while(it.hasNext()){
 					Element QP = it.next();
-					collapseElement(QP, allText(QP));									
+					collapseElement(QP, allText(QP), "q");									
 				}
 				collapseThatClause();
 				collapseNPList();
@@ -180,7 +198,7 @@ public class SentenceChunker {
 			while(it.hasNext()){
 				Element WHNP = it.next();
 				Element SBAR = WHNP.getParentElement();
-				collapseElement(SBAR, allText(SBAR));
+				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -207,7 +225,7 @@ public class SentenceChunker {
 		WordNetWrapper wnw = new WordNetWrapper(theverb);
 		if(theverb.length()<2 || theverb.matches("\\b(\\w+ly|ca)\\b") 
 		   ||wnw.mostlikelyPOS()== null || wnw.mostlikelyPOS().compareTo("verb") !=0){ //text of V is not a word, e.g. "x"
-			collapseElement(VP, "");
+			collapseElement(VP, "", "");
 			return;
 		}
 		
@@ -221,8 +239,8 @@ public class SentenceChunker {
 		}
 		//do extraction here
 		//print(VP, child, "", chaso);
-		String chunk = lVB.getAttributeValue("text")+ " "+firstNP(VP);
-		collapseElement(VP, chunk);
+		String chunk = "v["+lVB.getAttributeValue("text")+ "] o["+firstNP(VP)+"]";
+		collapseElement(VP, chunk, "b");
 	}
 
 	private void extractFromlPPINs(ArrayList<Element> lPPINs) {
@@ -266,7 +284,7 @@ public class SentenceChunker {
 		Element parent = PP.getParentElement();//could be PP, NP, VP, ADJP, or UCP, etc .
 		if(lPPIN.getAttribute("text").getValue().length()<2 ||
 				lPPIN.getAttribute("text").getValue().matches("\\b(\\w+ly|ca|to|than)\\b")){ //text of IN is not a word, e.g. "x"
-			collapseElement(PP, "");
+			collapseElement(PP, "", "");
 			return;
 		}
 		
@@ -294,8 +312,8 @@ public class SentenceChunker {
 				System.out.println("IN text: "+lPPIN.getAttributeValue("text"));
 				System.out.println("child text:"+firstNP(PP));
 			}
-			String chunk = lPPIN.getAttributeValue("text") + " "+firstNP(PP);
-			collapseElement(PP, chunk);
+			String chunk = "p["+lPPIN.getAttributeValue("text") + "] o["+firstNP(PP)+"]";
+			collapseElement(PP, chunk, "r");
 		}else if(ptag.compareTo("VP") == 0){
 			boolean trueVP = false;
 			try{			
@@ -311,10 +329,11 @@ public class SentenceChunker {
 					System.out.println(this.sentindex+": "+this.markedsent);
 					System.out.println("parent is [VP]");
 					System.out.println("VP-IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
-					System.out.println("child text:"+firstNPJJ(PP)); //some VP has no VB in it, but has ADJs
+					System.out.println("child text NPJJ:"+firstNPJJ(PP)); //some VP has no VB in it, but has ADJs
+					System.out.println("child text:"+firstNP(PP));
 				}
-				String chunk = up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")+ " "+firstNPJJ(PP);
-				collapseElement(parent, chunk);
+				String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]]";
+				collapseElement(parent, chunk, "t");
 			}else{
 				if(this.printPP){
 					System.out.println();
@@ -323,8 +342,8 @@ public class SentenceChunker {
 					System.out.println("IN text: "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
 					System.out.println("child text:"+firstNP(PP)); //some VP has no VB in it, but has ADJs
 				}
-				String chunk = lPPIN.getAttributeValue("text")+ " "+firstNPJJ(PP);
-				collapseElement(PP, chunk);
+				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]";
+				collapseElement(PP, chunk, "r");
 			}
 		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("RRC") == 0){
 			/*
@@ -338,10 +357,11 @@ public class SentenceChunker {
 				System.out.println(this.sentindex+": "+this.markedsent);
 				System.out.println("parent is [ADJP/ADVP/RRC]");
 				System.out.println("ADJ-IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
-				System.out.println("child text:"+firstNPJJ(PP));
+				System.out.println("child textNPJJ:"+firstNPJJ(PP));
+				System.out.println("child text:"+firstNP(PP));
 			}
-			String chunk = up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")+" "+firstNPJJ(PP);
-			collapseElement(parent, chunk);
+			String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]]";
+			collapseElement(parent, chunk, "t");
 		}else{
 			if(this.printPP){
 				System.out.println();
@@ -498,9 +518,10 @@ public class SentenceChunker {
 				if(c instanceof Element){
 					String name = ((Element)c).getName();
 					if(name.startsWith("NN")){//TODO: consider also CD(3) and PRP (them): no, let ChunkedSentence fix those cases
-						return allText(((Element)c).getParentElement());
+						Element p = ((Element)c).getParentElement();
+						return checkAgainstMarkedSent(allText(p), lastIdIn(p));
 					}
-					if(name.startsWith("NP") && ((Element)c).getAttributeValue("text") != null){//done: consider also CD(3) and PRP (them)
+					if(name.startsWith("NP") && ((Element)c).getAttributeValue("text") != null){//already collapsed NPs
 						return ((Element)c).getAttributeValue("text");
 					}
 				}
@@ -509,6 +530,49 @@ public class SentenceChunker {
 			ex.printStackTrace();
 		}
 		return "";
+	}
+	/**
+	 * 
+	 * @param e
+	 * @return the last id included in the descendents of p
+	 */
+	private String lastIdIn(Element el){
+		Iterator<Content> it = el.getDescendants();
+		String last = "";
+		while(it.hasNext()){
+			Content c = it.next();
+			if(c instanceof Element){
+				Element e = (Element)c;
+				if(e.getAttributeValue("id")!=null){
+					last = e.getAttributeValue("id");
+				}
+			}
+		}
+		return last;
+	}
+	
+	/**
+	 * the effect of this method is to shrink the np to the last nn/nns, or to nil if np does not contain any nn/nns
+	 * the nil case will then be handled by one of the normalization method in ChunkedSentence
+	 * @param np
+	 * @param idofthelastwordinnp
+	 * @return
+	 */
+	private String checkAgainstMarkedSent(String np, String idofthelastwordinnp){
+		int last = Integer.parseInt(idofthelastwordinnp);
+		String[] words = np.split("\\s+");
+		for(int i = words.length-1; i>=0; i--){//find the last NN as marked in markedsent (e.g. posoftokens)
+			if(!this.posoftokens[last--].startsWith("NN")){
+				words[i] = "";
+			}else{
+				break;
+			}
+		}
+		np = "";
+		for(int i = 0; i < words.length; i++){//find the last NN as marked in markedsent (e.g. posoftokens)
+			np +=words[i]+" ";
+		}
+		return np.replaceAll("\\s+", " ").trim();		
 	}
 	/**
 	 * 
@@ -573,7 +637,8 @@ public class SentenceChunker {
 				if(c instanceof Element){
 					String name = ((Element)c).getName();
 					if(name.startsWith("NN") || name.startsWith("JJ")){//TODO: consider also CD(3) and PRP (them)
-						return allText(((Element)c).getParentElement());
+						Element p = ((Element)c).getParentElement();
+						return checkJJAgainstMarkedSent(allText(p), lastIdIn(p));
 					}
 					
 				}
@@ -582,6 +647,34 @@ public class SentenceChunker {
 			ex.printStackTrace();
 		}
 		return "";
+	}
+	
+	/**
+	 * if np has a noun, cut-off at the last noun
+	 * otherwise, do nothing
+	 * @param npjj
+	 * @param lastid
+	 * @return
+	 */
+	private String checkJJAgainstMarkedSent(String npjj, String lastid){
+		boolean hasN = false;
+		int last = Integer.parseInt(lastid);
+		String[] words = npjj.split("\\s+");
+		for(int i = words.length-1; i>=0; i--){//find the last NN as marked in markedsent (e.g. posoftokens)
+			if(!this.posoftokens[last--].startsWith("NN")){
+				words[i] = "";
+			}else{
+				hasN = true;
+				break;
+			}
+		}
+		if(hasN){
+			npjj = "";
+			for(int i = 0; i < words.length; i++){//find the last NN as marked in markedsent (e.g. posoftokens)
+				npjj +=words[i]+" ";
+			}
+		}
+		return npjj.replaceAll("\\s+", " ").trim();
 	}
 	
 	/*private String firstNPJJ(Element e) {
@@ -644,14 +737,16 @@ public class SentenceChunker {
 	 * @param e
 	 * @return if the element is collapsed successfully
 	 */
-	private void collapseElement(Element e, String chunk) {
+	private void collapseElement(Element e, String chunk, String symbol) {
 		if(e == null){
 			return;
 		}
-		chunk = chunk.trim().replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]");
+		chunk = chunk.trim().replaceAll("\\s*\\w\\[\\]\\s*", "").replaceAll("\\s+", " ").trim(); //remove o[]
+		String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*\\\\b").replaceAll("\\]", "\\\\b(\\\\])*");
 		String text = allText(e);
 		if(chunk.length()>0){
-			text = text.replaceFirst(chunk, "["+chunk+"]"); //this replacement may have no effect on text because the chunk does not consist of consecutive words.
+			text = text.replaceFirst(pattern, symbol+
+					"["+chunk+"]"); //this replacement may have no effect on text because the chunk does not consist of consecutive words.
 		}
 		String id = "";
 		try{
@@ -753,7 +848,7 @@ public class SentenceChunker {
 					//String id = ((Attribute)XPath.selectSingleNode(NP, ".//@id")).getValue();
 					NP.removeContent();
 					Element NNS = new Element("NNS");
-					NNS.setAttribute("text", "["+alltext+"]");
+					NNS.setAttribute("text", "l["+alltext+"]");
 					NNS.setAttribute("id", id);
 					NP.addContent(NNS);
 				}
@@ -835,7 +930,7 @@ public class SentenceChunker {
 					String alltext = allText(PP);
 					PP.removeContent();
 					Element IN = new Element("IN");
-					IN.setAttribute("text", "["+alltext+"]");
+					IN.setAttribute("text", "i["+alltext+"]");
 					IN.setAttribute("id", id);
 					PP.addContent(IN);
 					PP.addContent(NP);
