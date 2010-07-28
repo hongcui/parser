@@ -13,7 +13,7 @@ public class Chunk {
 		this.text = text;	
 	}
 	
-	protected String getText(){
+	public String toString(){
 		return this.text;
 	}
 }

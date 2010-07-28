@@ -56,12 +56,12 @@ public class StanfordParser {
 				Statement stmt = conn.createStatement();
 				//stmt.execute("create table if not exists marked_pos (sentid MEDIUMINT NOT NULL, source varchar(100) NOT NULL, markedsent TEXT, PRIMARY KEY(sentid))");
 				stmt.execute("create table if not exists "+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				stmt.execute("delete from "+this.POSTaggedSentence);
+				//stmt.execute("delete from "+this.POSTaggedSentence);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		tagger = new MyPOSTagger(database);
+		tagger = new MyPOSTagger(conn);
 	}
 	
 	public void POSTagging(){
@@ -74,7 +74,7 @@ public class StanfordParser {
 			PrintStream out = new PrintStream( ostream );
 			
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
-			ResultSet rs = stmt.executeQuery("select * from markedsentence order by source");
+			ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
 			int count = 1;
 			while(rs.next()){
 				//str=rs.getString(3);
@@ -108,6 +108,7 @@ public class StanfordParser {
 			out = new PrintStream( ostream );	
  	  		Runtime r = Runtime.getRuntime();
 	  		//Process p = r.exec("cmd /c stanfordparser.bat");
+ 	  		String cmdtext = "cmd /c stanfordparser.bat >"+this.parsedfile+" 2<&1";
 	  		Process p = r.exec("cmd /c stanfordparser.bat >"+this.parsedfile+" 2<&1");
 	  		//Process p = r.exec("cmd /c cd \"C:\\Program Files\\stanford-parser-2010-02-26\"");
 	  		//String command = "cmd /c java -mx900m -cp \"stanford-parser.jar;\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -sentences newline -tokenized -tagSeparator / englishPCFG.ser.gz \""+this.posedfile.getAbsolutePath()+"\" > "+this.parsedfile.getAbsolutePath();
@@ -187,8 +188,8 @@ public class StanfordParser {
 								System.out.println();
 								System.out.println(i+": "+cs.toString());
 							}
-							//CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
-							//Element statement = cac.annotate();
+							CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
+							Element statement = cac.annotate();
 						}
 						rs.relative(i*-1); //reset the pointer
 					}
@@ -213,8 +214,8 @@ public class StanfordParser {
 							System.out.println();
 							System.out.println(i+": "+cs.toString());
 						}
-						//CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
-						//Element statement = cac.annotate();
+						CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
+						Element statement = cac.annotate();
 					}
 				}
 			}
@@ -284,7 +285,7 @@ public class StanfordParser {
 		String parsedfile = "FNAv19parsedsentences.txt";
 		String database = "fnav19_benchmark";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database);
-		sp.POSTagging();
+		//sp.POSTagging();
 		//sp.parsing();
 		sp.extracting();
 	}
