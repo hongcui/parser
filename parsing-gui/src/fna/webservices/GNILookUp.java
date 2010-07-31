@@ -1,6 +1,7 @@
 package fna.webservices;
 
 /**
+ * This class name-tags the transformation folder and creates a new folder "name-tagged"
  * @author Partha Pratim Sanyal (ppsanyal@email.arizona.edu)
  */
 
@@ -50,7 +51,6 @@ public class GNILookUp {
 	private static FileInputStream fstream = null;
 	private static Set<Object> tagKeys = null;
 	private static final Logger LOGGER = Logger.getLogger(GNILookUp.class);
-	
 	private String gniURL = ApplicationUtilities.getProperty("GNI");
 	private static String plantURL = ApplicationUtilities.getProperty("IPNI");	
 	private String plaziWebService = ApplicationUtilities.getProperty("PLAZI");
