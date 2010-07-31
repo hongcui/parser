@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import fna.parsing.ApplicationUtilities;
@@ -49,10 +50,11 @@ public class GNILookUp {
 	private static FileInputStream fstream = null;
 	private static Set<Object> tagKeys = null;
 	private static final Logger LOGGER = Logger.getLogger(GNILookUp.class);
-	private static String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
-	private String gniURL = ApplicationUtilities.getProperty("GNI");;
-	private static String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
+	
+	private String gniURL = ApplicationUtilities.getProperty("GNI");
+	private static String plantURL = ApplicationUtilities.getProperty("IPNI");	
 	private String plaziWebService = ApplicationUtilities.getProperty("PLAZI");
+	
 	private ArrayList <String> tags ;
 	private HashMap<String, String> lsidMap;
 	private ArrayList<String> dictionary;
@@ -75,13 +77,18 @@ public class GNILookUp {
 	
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
+		String source1 = "D:\\FNA\\FNAV19\\target\\transformed";
+		String destination1 = "D:\\FNA\\FNAV19\\target\\name-tagged\\";
 		new GNILookUp().getTagNames(source1, destination1);
+		
+		//getLSIDFromPlantServer("Illecebrum verticillatum", plantURL);
 
 	}
 	
+
 	public void getTagNames(String source, String destination) {
 
-		File transformedDirectory  = new File(source1);
+		File transformedDirectory  = new File(source);
 		File [] files = transformedDirectory.listFiles();
 		
 		/* The grand for loop */
@@ -94,9 +101,9 @@ public class GNILookUp {
 /*				readTags(file);
 				writeMarkUp(file, destination1);*/
 				
-				markUpScientificNames(file, destination1);
+				markUpScientificNames(file, destination);
 				
-				//remove this break later - now taste for one file
+				//remove this break later - now test for one file
 				//break;
 			}			
 			saveNames();
@@ -136,7 +143,7 @@ public class GNILookUp {
 							for (String tempTagValue : name) {
 							 tempTag = tempTagValue;	
 							}*/
-							String LSID = extractLSID(clean(tagValue), gniURL); 
+							String LSID = extractLSIDfromGNI(clean(tagValue), gniURL); 
 							if (LSID != null && !LSID.equals("")) {
 								lsidMap.put(tagValue, LSID);
 								System.out.println("Name found : " + tagValue);
@@ -173,17 +180,27 @@ public class GNILookUp {
 							System.out.println("Plazi returned the following valid names : " +
 									scientificNames);
 							HashMap <String, String> tempLsidMap = new HashMap<String, String>();
+							HashMap <String, String> tempPlantLsidMap = new HashMap<String, String>();
 							
-							/* Extract the LSID */
+							/* Extract the LSID from GNI and plant */
 							for (String name : scientificNames) {
 								String LSID;
-								LSID = extractLSID(name, gniURL);
+								LSID = extractLSIDfromGNI(name, gniURL);
 								if(LSID != null && !LSID.equals("")) {
 									tempLsidMap.put(name, LSID);
 								}
+								LSID = null;
+								LSID = getLSIDFromPlantServer(name, plantURL);
+								if(LSID != null && !LSID.equals("")) {
+									tempPlantLsidMap.put(name, LSID);
+								}
+								
 							}
 							System.out.println("GNI correctly recognized the following names " +
 									tempLsidMap);
+							System.out.println("IPNI correctly recognized the following names " +
+									tempPlantLsidMap);
+							
 							/* Insert lsid nodes inside the discussion */
 							
 							String originalNodeValue = nodes.item(i).getFirstChild().getNodeValue();
@@ -203,8 +220,14 @@ public class GNILookUp {
 			        			if (tempLsidMap.containsKey(part)) {
 			        				System.out.println("Marking up " + part);
 			    	        		Element elem = doc.createElement("name");
-			    	        		elem.setAttribute("lsid", tempLsidMap.get(part));
-			    	        		elem.setAttribute("src", "gni");
+			    	        		if (tempPlantLsidMap.containsKey(part)) {
+				    	        		elem.setAttribute("lsid", tempLsidMap.get(part)+","+tempPlantLsidMap.get(part));
+				    	        		elem.setAttribute("src", "gni, plant");
+			    	        		} else {
+				    	        		elem.setAttribute("lsid", tempLsidMap.get(part));
+				    	        		elem.setAttribute("src", "gni");
+			    	        		}
+
 			    	        		elem.appendChild(doc.createTextNode(part));
 			    	        		nodes.item(i).appendChild(elem);
 			        			} else {
@@ -296,7 +319,7 @@ public class GNILookUp {
 	 * @return
 	 * @throws Exception
 	 */
-	private String extractLSID(String tagValue, String url) throws Exception {
+	private String extractLSIDfromGNI(String tagValue, String url) throws Exception {
 		URL gniUrl = new URL(url+URLEncoder.encode(tagValue, "UTF-8") );
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -318,6 +341,26 @@ public class GNILookUp {
         return LSID;
 	}
 	
+	public static String getLSIDFromPlantServer(String name, String sourceUrl) throws Exception {
+		URL plantUrl = new URL(sourceUrl+name.replace(" ", "%2520") );
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(plantUrl.openStream());
+        NodeList nodes = doc.getElementsByTagName("dc:title");
+        String LSID = "";
+        int nodeLength = nodes.getLength();
+        for (int i = 0; i< nodeLength;  i++) {
+        	Element element = (Element)nodes.item(i);
+        	String nodeValue = element.getFirstChild().getNodeValue();
+        	System.out.println(nodeValue);
+        	if (nodeValue.equalsIgnoreCase(name)){
+        		NamedNodeMap nm = element.getParentNode().getAttributes();
+        		String LSIDUri = nm.getNamedItem("rdf:about").getNodeValue();
+        		LSID = LSIDUri.substring(LSIDUri.lastIndexOf("/")+1);
+        	}
+        }
+        return LSID;
+	}
 	/**
 	 * This method cleans the String from clutter
 	 * @param description
@@ -495,7 +538,7 @@ public class GNILookUp {
 					Element element = (Element)nodes.item(0);
 					if (element != null) {
 						String tagValue = element.getFirstChild().getNodeValue();
-						String LSID = extractLSID(clean(tagValue), gniURL); 
+						String LSID = extractLSIDfromGNI(clean(tagValue), gniURL); 
 						if (!LSID.equals("")) {
 							lsidMap.put(tagValue, LSID);
 							System.out.println("Name found : " + tagValue);
@@ -517,7 +560,7 @@ public class GNILookUp {
 							for (String word : words) {
 								if (lsidMap.get(word) == null && 
 										!dictionary.contains(word.toLowerCase())){
-									String LSID = extractLSID(clean(word), gniURL); 
+									String LSID = extractLSIDfromGNI(clean(word), gniURL); 
 									if (!LSID.equals("")) {
 										lsidMap.put(word, LSID);
 										System.out.println("Name found : " + word);
