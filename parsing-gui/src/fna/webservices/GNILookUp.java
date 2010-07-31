@@ -190,7 +190,7 @@ public class GNILookUp {
 									tempLsidMap.put(name, LSID);
 								}
 								LSID = null;
-								LSID = getLSIDFromPlantServer(name, plantURL);
+								LSID = getLSIDFromIPNI(name, plantURL);
 								if(LSID != null && !LSID.equals("")) {
 									tempPlantLsidMap.put(name, LSID);
 								}
@@ -341,7 +341,15 @@ public class GNILookUp {
         return LSID;
 	}
 	
-	public static String getLSIDFromPlantServer(String name, String sourceUrl) throws Exception {
+	/**
+	 * This Method looks up names on the IPNI plant server
+	 * @param name
+	 * @param sourceUrl
+	 * @return
+	 * @throws Exception
+	 */
+	
+	private String getLSIDFromIPNI(String name, String sourceUrl) throws Exception {
 		URL plantUrl = new URL(sourceUrl+name.replace(" ", "%2520") );
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
