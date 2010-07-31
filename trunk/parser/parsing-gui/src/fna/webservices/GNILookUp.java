@@ -143,7 +143,7 @@ public class GNILookUp {
 							for (String tempTagValue : name) {
 							 tempTag = tempTagValue;	
 							}*/
-							String LSID = extractLSIDfromGNI(clean(tagValue), gniURL); 
+							String LSID = extractLSIDFromGNI(clean(tagValue), gniURL); 
 							if (LSID != null && !LSID.equals("")) {
 								lsidMap.put(tagValue, LSID);
 								System.out.println("Name found : " + tagValue);
@@ -182,10 +182,10 @@ public class GNILookUp {
 							HashMap <String, String> tempLsidMap = new HashMap<String, String>();
 							HashMap <String, String> tempPlantLsidMap = new HashMap<String, String>();
 							
-							/* Extract the LSID from GNI and plant */
+							/* Extract the LSID from GNI and IPNI */
 							for (String name : scientificNames) {
 								String LSID;
-								LSID = extractLSIDfromGNI(name, gniURL);
+								LSID = extractLSIDFromGNI(name, gniURL);
 								if(LSID != null && !LSID.equals("")) {
 									tempLsidMap.put(name, LSID);
 								}
@@ -319,7 +319,7 @@ public class GNILookUp {
 	 * @return
 	 * @throws Exception
 	 */
-	private String extractLSIDfromGNI(String tagValue, String url) throws Exception {
+	private String extractLSIDFromGNI(String tagValue, String url) throws Exception {
 		URL gniUrl = new URL(url+URLEncoder.encode(tagValue, "UTF-8") );
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -546,7 +546,7 @@ public class GNILookUp {
 					Element element = (Element)nodes.item(0);
 					if (element != null) {
 						String tagValue = element.getFirstChild().getNodeValue();
-						String LSID = extractLSIDfromGNI(clean(tagValue), gniURL); 
+						String LSID = extractLSIDFromGNI(clean(tagValue), gniURL); 
 						if (!LSID.equals("")) {
 							lsidMap.put(tagValue, LSID);
 							System.out.println("Name found : " + tagValue);
@@ -568,7 +568,7 @@ public class GNILookUp {
 							for (String word : words) {
 								if (lsidMap.get(word) == null && 
 										!dictionary.contains(word.toLowerCase())){
-									String LSID = extractLSIDfromGNI(clean(word), gniURL); 
+									String LSID = extractLSIDFromGNI(clean(word), gniURL); 
 									if (!LSID.equals("")) {
 										lsidMap.put(word, LSID);
 										System.out.println("Name found : " + word);
