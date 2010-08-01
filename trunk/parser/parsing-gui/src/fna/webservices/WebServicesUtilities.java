@@ -60,7 +60,13 @@ public class WebServicesUtilities {
 
 		return false;
 	}
-
+	
+	/**
+	 * This function cjecks the name in Zoobank Server
+	 * @param text
+	 * @return
+	 * @throws Exception
+	 */
 	private boolean checkZoobankServer(String text) throws Exception {
 		 Parser parser = new Parser(ApplicationUtilities.getProperty("ZOOBANK") 
 				 + URLEncoder.encode(text));
@@ -76,6 +82,13 @@ public class WebServicesUtilities {
 		 } 
 		 return found;
 	}
+	
+	/**
+	 * This function checks the name in HNS Server
+	 * @param text
+	 * @return
+	 * @throws Exception
+	 */
 	private boolean checkHNSServer(String text) throws Exception {
 		
 		 Parser parser = new Parser(ApplicationUtilities.getProperty("HNS") + text);
@@ -91,6 +104,15 @@ public class WebServicesUtilities {
 		 } 
 		 return found;
 	}
+	
+	/**
+	 * This is an utility ot parse the HTML
+	 * @param text
+	 * @param node
+	 * @param exact
+	 * @return
+	 * @throws Exception
+	 */
 	 protected static boolean processMyNodes (String text, Node node, boolean exact) throws Exception
 	 {
 		 boolean returnValue = false;
@@ -127,6 +149,13 @@ public class WebServicesUtilities {
 	     }
 	     return returnValue;
 	 }
+	 
+	 /**
+	  * This function checks whether the name exists in the given server
+	  * @param text
+	  * @param source
+	  * @return
+	  */
 	public boolean isName(String text, String source) {
 		
 		try {
@@ -144,6 +173,12 @@ public class WebServicesUtilities {
 		return false;
 	}
 	
+	/**
+	 * This function gets the Scientific Name from the designated source server
+	 * @param name
+	 * @param src
+	 * @return
+	 */
 	public ScientificName getNameInfo(String name, String src) {
 		return null;
 	}
