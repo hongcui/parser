@@ -20,9 +20,9 @@ public class GeolocationUtility extends WebServicesUtilities{
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception{
-		String x = "New York";
+		String x = "Tucson";
 		System.out.println(x + 
-				(isPlaceName(x)? " exists" : " doesn't exist!"));
+				(isPlaceName(x, "FallingRain")? " exists" : " doesn't exist!"));
 		
 	}
 	/**
@@ -96,15 +96,16 @@ public class GeolocationUtility extends WebServicesUtilities{
 			return false;
 		}
 		String url = ApplicationUtilities.getProperty("Geonames");
-		String place = "";
-		if(text.length() <= 4) {
-			place = formatText(text);
-		} else if (text.length() > 4){
-			place = formatText(text.substring(0,4));			
+		String place = text.replaceAll(" ", "");
+		
+		if(text.length() <= 5) {
+			place = formatText(place);
+		} else if (text.length() > 5){
+			place = formatText(place.substring(0,place.length()/2+1));			
 		}
 		
 		 Parser parser = new Parser(ApplicationUtilities.getProperty("FallingRain") 
-				 + place.replaceAll(" ", ""));
+				 + place);
 		 boolean found = false;
 		 TagNameFilter filter = new TagNameFilter ("A");
 		 org.htmlparser.util.NodeList list = parser.parse(filter);	 
