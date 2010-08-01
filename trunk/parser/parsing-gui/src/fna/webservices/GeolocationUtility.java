@@ -107,9 +107,7 @@ public class GeolocationUtility extends WebServicesUtilities{
 				 + place.replaceAll(" ", ""));
 		 boolean found = false;
 		 TagNameFilter filter = new TagNameFilter ("A");
-		 org.htmlparser.util.NodeList list = parser.parse(filter);
-		 
-		 
+		 org.htmlparser.util.NodeList list = parser.parse(filter);	 
 		 
 		 for (int i = 0; i< list.size(); i++ ) {
 			 found = processMyNodes(text, list.elementAt(i), true);
