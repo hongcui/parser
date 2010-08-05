@@ -182,15 +182,10 @@ public class WebServicesUtilities {
 	 */
 	public static ScientificName getNameInfo(String name, String src) throws Exception {
 		/* Implemented only for Zoobank server */
-		
-		 String nameToSearch = name;
+
 		 ScientificName scientificName = new ScientificName();
-/*		 if (name != null && name.contains(" ")) {
-			 nameToSearch = nameToSearch.substring(0, nameToSearch.indexOf(" "));
-		 }*/
-		 
 		 String url = ApplicationUtilities.getProperty("ZOOBANK") 
-		 + URLEncoder.encode(nameToSearch)+"%25";
+		 + URLEncoder.encode(name)+"%25";
 		 Parser parser = new Parser(url);
 		 TagNameFilter filter = new TagNameFilter ("A");
 		 NodeList list = parser.parse (filter);
@@ -232,16 +227,23 @@ public class WebServicesUtilities {
 		 return scientificName;		
 	}
 	
-	protected static String getHref (String text, Node node) throws Exception
+	/**
+	 * This function extracts the href from the matching name anchor tag
+	 * @param text
+	 * @param node
+	 * @return
+	 * @throws Exception
+	 */
+	private static String getHref (String text, Node node) throws Exception
 	 {
-		 String returnValue = "";
 		 if (node instanceof TagNode) {
 	         TagNode tag = (TagNode)node;
 	         if (tag.getParent().getParent().getText().
 	        		 contains("ctl00_ContentPlaceHolder_ActResults")) {
 		         if(tag.getFirstChild().getText().equals("b")) {
 		        	 String []terms = tag.toPlainTextString().split(" ");
-			         String name =  terms[1] + " " + terms[0].substring(0, terms[0].indexOf(","));
+			         String name =  terms[1] + " " + 
+			         	terms[0].substring(0, terms[0].indexOf(","));
 			         if (name.equalsIgnoreCase(text)) {
 			        	 return "http://www.zoobank.org/?lsid="+
 			        		 tag.getAttribute("href").substring(1);
@@ -250,7 +252,7 @@ public class WebServicesUtilities {
 	         }
 
 	     }
-	     return returnValue;
+	     return "";
 	 }
 	/**
 	 * This function annotates a text segment using the src name server 
