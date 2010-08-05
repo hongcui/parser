@@ -23,10 +23,11 @@ public class WebServicesUtilities {
 	 */
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
-		String text = "Probolomyrmecinae"; //"Probolomyrmecini";
-		System.out.println("\n" + text + " is "+ 
+		String text = "Chromis abrupta"; //"Probolomyrmecini";
+/*		System.out.println("\n" + text + " is "+ 
 				(new WebServicesUtilities().isName(text) == true ? "present " : "absent ") 
-				+"in " + ApplicationUtilities.getProperty("HNS") );
+				+"in " + ApplicationUtilities.getProperty("HNS") );*/
+		getNameInfo(text, null);
 	}
 	
 	/**
@@ -179,10 +180,78 @@ public class WebServicesUtilities {
 	 * @param src
 	 * @return
 	 */
-	public ScientificName getNameInfo(String name, String src) {
-		return null;
+	public static ScientificName getNameInfo(String name, String src) throws Exception {
+		/* Implemented only for Zoobank server */
+		
+		 String nameToSearch = name;
+		 ScientificName scientificName = new ScientificName();
+/*		 if (name != null && name.contains(" ")) {
+			 nameToSearch = nameToSearch.substring(0, nameToSearch.indexOf(" "));
+		 }*/
+		 
+		 String url = ApplicationUtilities.getProperty("ZOOBANK") 
+		 + URLEncoder.encode(nameToSearch)+"%25";
+		 Parser parser = new Parser(url);
+		 TagNameFilter filter = new TagNameFilter ("A");
+		 NodeList list = parser.parse (filter);
+		 String href = "";
+		 for (int i = 0 ; i < list.size(); i++){
+			 href = getHref(name, list.elementAt(i));
+			 if (!href.equals("")) {
+				 break;
+			 }
+		 }
+		 
+		 if (!href.equals("")) {
+			 Parser nameParser = new Parser(href);
+			 TagNameFilter nameFilter = new TagNameFilter("span");
+			 NodeList nodelist = nameParser.parse (nameFilter);
+			 
+			 for (int i = 0 ; i < nodelist.size(); i++){
+				 TagNode node = (TagNode)nodelist.elementAt(i);
+				 String id = node.getAttribute("id");
+				 if (id != null) {
+					 if (id.equals("ctl00_ContentPlaceHolder_LabelFullName")) {
+						 System.out.println(node.toPlainTextString());
+						 scientificName.setName(node.toPlainTextString());
+					 }
+					 
+					 if (id.equals("ctl00_ContentPlaceHolder_LabelAuthorship")) {
+						 System.out.println(node.toPlainTextString());
+						 scientificName.setAuthor(node.toPlainTextString());
+					 }
+					 
+					 if (id.equals("ctl00_ContentPlaceHolder_LabelPublishedIn")) {
+						 System.out.println(node.toPlainTextString());
+						 scientificName.setFirstPublished(node.toPlainTextString());
+					 }
+				 }
+				 
+			 }
+		 }		 
+		 return scientificName;		
 	}
 	
+	protected static String getHref (String text, Node node) throws Exception
+	 {
+		 String returnValue = "";
+		 if (node instanceof TagNode) {
+	         TagNode tag = (TagNode)node;
+	         if (tag.getParent().getParent().getText().
+	        		 contains("ctl00_ContentPlaceHolder_ActResults")) {
+		         if(tag.getFirstChild().getText().equals("b")) {
+		        	 String []terms = tag.toPlainTextString().split(" ");
+			         String name =  terms[1] + " " + terms[0].substring(0, terms[0].indexOf(","));
+			         if (name.equalsIgnoreCase(text)) {
+			        	 return "http://www.zoobank.org/?lsid="+
+			        		 tag.getAttribute("href").substring(1);
+			         }
+		         }
+	         }
+
+	     }
+	     return returnValue;
+	 }
 	/**
 	 * This function annotates a text segment using the src name server 
 	 * @param segment
