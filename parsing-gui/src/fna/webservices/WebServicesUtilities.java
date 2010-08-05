@@ -27,7 +27,7 @@ public class WebServicesUtilities {
 /*		System.out.println("\n" + text + " is "+ 
 				(new WebServicesUtilities().isName(text) == true ? "present " : "absent ") 
 				+"in " + ApplicationUtilities.getProperty("HNS") );*/
-		getNameInfo(text, null);
+		getNameInfo(text, ApplicationUtilities.getProperty("ZOOBANK"));
 	}
 	
 	/**
@@ -184,8 +184,7 @@ public class WebServicesUtilities {
 		/* Implemented only for Zoobank server */
 
 		 ScientificName scientificName = new ScientificName();
-		 String url = ApplicationUtilities.getProperty("ZOOBANK") 
-		 + URLEncoder.encode(name)+"%25";
+		 String url = src + URLEncoder.encode(name)+"%25";
 		 Parser parser = new Parser(url);
 		 TagNameFilter filter = new TagNameFilter ("A");
 		 NodeList list = parser.parse (filter);
