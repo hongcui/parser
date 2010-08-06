@@ -3,6 +3,8 @@ package fna.webservices;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
@@ -263,15 +265,27 @@ public class WebServicesUtilities {
 		return null;
 	}
 	
-	/**
-	 * This function returns a list of names mentioned in segment in its 
-	 * original order that are recognized by src name server.
-	 * @param segment
-	 * @param source
-	 * @return
-	 */
-	public ArrayList<String> names(String segment, String source){
-		return null;
+    /**
+     * This function returns a list of names mentioned in the segment
+     * @param segment
+     * @param source
+     * @param type
+     * @return
+     * @throws Exception
+     */
+	public Set<String> names(String segment, String source, String type) throws Exception {
+		/*Implemented using Plazi Web Service*/
+		/** The following types can be selected for search :
+		 * 	Ants&Spiders 
+			Ants&Spiders-OCR
+			Ants&Spiders-RdE
+			Botany
+			Botany.Partha.web
+			Botany.web
+			Default
+			Default.web (Default)
+		 */
+		return GNILookUp.lookUpScientificName(segment, source, type);
 	}
 	
 	/**
