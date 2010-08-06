@@ -176,7 +176,8 @@ public class GNILookUp {
 							
 							/* Extract the Scientific names using Plazi Web Service*/
 							LinkedHashSet <String> scientificNames = 
-								lookUpScientificName(discussion, plaziWebService);
+								lookUpScientificName(discussion, plaziWebService, 
+										"Botany.Partha.web");
 							System.out.println("Plazi returned the following valid names : " +
 									scientificNames);
 							HashMap <String, String> tempLsidMap = new HashMap<String, String>();
@@ -263,7 +264,8 @@ public class GNILookUp {
 	 * @param url
 	 * @return
 	 */
-	private LinkedHashSet <String> lookUpScientificName(String discussion, String url) 
+	public static LinkedHashSet <String> lookUpScientificName(String discussion, 
+			String url, String select) 
 		throws IOException{
 		
 		LinkedHashSet <String> validNames = new LinkedHashSet <String>();
@@ -273,7 +275,7 @@ public class GNILookUp {
 		    String data = URLEncoder.encode("document_text", "UTF-8") 
 		    + "=" + URLEncoder.encode(clean(discussion), "UTF-8");
 		    data += "&" + URLEncoder.encode("omni_fat_instance", "UTF-8") 
-		    + "=" + URLEncoder.encode("Botany.Partha.web", "UTF-8");
+		    + "=" + URLEncoder.encode(select, "UTF-8");
 
 		    // Send data
 		    URLConnection conn = new URL(url).openConnection();
