@@ -14,7 +14,7 @@ public class test1 {
 /*       Scanner s = new Scanner("In addition to the species treated here");
        while (s.hasNext())
        System.out.println(s.next());*/
-		HashMap <String, String> hm  = new HashMap<String, String>();
+/*		HashMap <String, String> hm  = new HashMap<String, String>();
 		
 		hm.put("1", "dhcb");
 		
@@ -24,7 +24,9 @@ public class test1 {
 		
 		hm.putAll(hm1);
 		
-		System.out.println(hm);
+		System.out.println(hm);*/
+		String x = "Partha Pratim";
+		System.out.println(x.substring(0, x.indexOf(" ")));
 		
 		
 	}
