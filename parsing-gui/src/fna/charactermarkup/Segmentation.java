@@ -14,7 +14,7 @@ public class Segmentation {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 
 	public Segmentation(String database) {
 		// TODO Auto-generated constructor stub
@@ -139,7 +139,7 @@ public class Segmentation {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new Segmentation("benchmark_learningcurve_treatiseh_test_19");
+		new Segmentation("benchmark_learningcurve_fnav19_test_24");
 	}
 
 }

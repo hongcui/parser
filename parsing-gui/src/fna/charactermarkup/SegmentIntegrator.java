@@ -286,7 +286,7 @@ public class SegmentIntegrator {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new SegmentIntegrator("benchmark_learningcurve_fnav19_test_24");
+		new SegmentIntegrator("benchmark_learningcurve_treatiseh_test_19");
 	}
 
 }

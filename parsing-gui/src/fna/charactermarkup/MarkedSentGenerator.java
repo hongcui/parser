@@ -14,7 +14,7 @@ public class MarkedSentGenerator {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "";
+	static protected String password = "root";
 	
 	public MarkedSentGenerator(String database) {
 		// TODO Auto-generated constructor stub
