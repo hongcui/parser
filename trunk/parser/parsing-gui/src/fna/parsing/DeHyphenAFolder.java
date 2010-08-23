@@ -102,7 +102,7 @@ public class DeHyphenAFolder {
 	    private void createWordTable(){
 	        try{
 	            Statement stmt = conn.createStatement();
-	            String query = "create table if not exists "+tablename+" (word varchar(50) unique not null primary key, count int)";
+	            String query = "create table if not exists "+tablename+" (word varchar(150) unique not null primary key, count int)";
 	            stmt.execute(query);
 	            stmt.execute("delete from "+tablename);
 	        }catch(Exception e){
@@ -296,8 +296,8 @@ public class DeHyphenAFolder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DeHyphenAFolder dhaf = new DeHyphenAFolder(null, "X:\\DATA\\BHL", 
-		"clausemarkup", "markedupdatasets", null, "bhl_clause", null);
+		DeHyphenAFolder dhaf = new DeHyphenAFolder(null, "X:\\DATA\\Plazi\\2ndFetchFromPlazi\\target-taxonX-fish", 
+		"descriptions", "markedupdatasets", null, "plazi_fish_clause", null);
 		dhaf.dehyphen();
 
 	}
