@@ -16,7 +16,7 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import edu.stanford.nlp.parser.lexparser.*;
+
 
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -135,7 +135,7 @@ public class CondenseMarkedsent {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new CondenseMarkedsent("benchmark_learningcurve_treatiseh_test_19");
+		new CondenseMarkedsent("benchmark_learningcurve_fnav19_test_24");
 	}
 
 }
