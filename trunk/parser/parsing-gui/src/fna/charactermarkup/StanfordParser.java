@@ -57,6 +57,7 @@ public class StanfordParser {
 				//stmt.execute("create table if not exists marked_pos (sentid MEDIUMINT NOT NULL, source varchar(100) NOT NULL, markedsent TEXT, PRIMARY KEY(sentid))");
 				stmt.execute("create table if not exists "+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
 				//stmt.execute("delete from "+this.POSTaggedSentence);
+				stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -67,28 +68,30 @@ public class StanfordParser {
 	public void POSTagging(){
 		try{
 			Statement stmt = conn.createStatement();
-			Statement stmt1 = conn.createStatement();
 			Statement stmt2 = conn.createStatement();
-			Statement stmt3 = conn.createStatement();
 			FileOutputStream ostream = new FileOutputStream(posedfile); 
 			PrintStream out = new PrintStream( ostream );
 			
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
-			ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
+			//stmt.execute("alter table markedsentence add rmarkedsent text");
+			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by (source+0) ");////sort as numbers
+			//ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
 			int count = 1;
 			while(rs.next()){
 				//str=rs.getString(3);
-				String src = rs.getString(1);
-				String str = rs.getString(2);
+				String src = rs.getString("source");
+				String str = rs.getString("markedsent");
 				//TODO: may need to fix "_"
-				str = tagger.POSTag(str);
+				str = tagger.POSTag(str, src);
 	       		//stmt2.execute("insert into marked_pos values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+str+"')");
 	       		stmt2.execute("insert into "+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
-	       		//System.out.println("POSed sentence "+rs.getString(1)+ " inserted");
+	       		stmt2.close();
+	       		//System.out.println(str);
 	       		out.println(str);
 	       		count++;
 	       		//sentmapping.put(""+count, src);
 			}
+			rs.close();
 			out.close();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -155,70 +158,79 @@ public class StanfordParser {
 	       // test="(S (NP (NP (NN margins) (UCP (NP (JJ entire)) (, ,) (ADJP (JJ dentate)) (, ,) (ADJP (RB pinnately) (JJ lobed)) (, ,) (CC or) (NP (JJ pinnatifid) (NN pinnately))) (NN compound)) (, ,) (NP (JJ spiny)) (, ,)) (VP (JJ tipped) (PP (IN with) (NP (NNS tendrils)))) (. .))";
 	        FileInputStream istream = new FileInputStream(this.parsedfile); 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(istream));
-			ArrayList docs = new ArrayList();
 			String line = "";
 			String text = "";
 			int i = 0;
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by source");
+			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from markedsentence order by (source+0)"); //+0 so sort as numbers
+			//ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by source");
 			Pattern ptn = Pattern.compile("^Parsing \\[sent\\. (\\d+) len\\. \\d+\\]:(.*)");
+			Matcher m = null;
+			Tree2XML t2x = null;
+			Document doc = null;
+			CharacterAnnotatorChunked cac = null;
 			while ((line = stdInput.readLine())!=null){
 				if(line.startsWith("Loading") || line.startsWith("X:") || line.startsWith("Parsing file")|| line.startsWith("Parsed") ){continue;}
 				if(line.trim().length()>1){
-					Matcher m = ptn.matcher(line);
+					m = ptn.matcher(line);
 					if(m.matches()){
 						i = Integer.parseInt((String)m.group(1));
 					}else{
 						text += line.replace(System.getProperty("line.separator"), ""); 
 					}
 				}else{
+					if(i != 359 && i !=484 && i != 1264 && i !=1782){
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
-					Tree2XML t2x = new Tree2XML(text);
-					Document doc = t2x.xml();
-					Document doccp = (Document)doc.clone();
+					t2x = new Tree2XML(text);
+					doc = t2x.xml();
+					//Document doccp = (Document)doc.clone();
 					if(rs.relative(i)){
-						String sent = rs.getString("markedsent");
+						String sent = rs.getString("rmarkedsent");
 						String src = rs.getString("source");
 						//System.out.println(sent);
-						if(!sent.matches(".*?[_–-]\\s*[<{a-z].*") && !sent.matches(".*?\\band/or\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
+						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
 							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
-							SentenceChunker ex = new SentenceChunker(i, doc, sent);
+							SentenceChunker ex = new SentenceChunker(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
 							if(this.debug){
 								System.out.println();
 								System.out.println(i+": "+cs.toString());
 							}
-							CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
-							Element statement = cac.annotate();
+							cac = new CharacterAnnotatorChunked(conn);
+							cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs); //src: 100.txt-18
 						}
 						rs.relative(i*-1); //reset the pointer
+					}
 					}
 					text = "";
 					i = 0;
 				}
 			}
+		
 			if(text.trim().compareTo("") != 0){ //last tree
 				text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
-				Tree2XML t2x = new Tree2XML(text);
-				Document doc = t2x.xml();
-				Document doccp = (Document)doc.clone();
+				t2x = new Tree2XML(text);
+				doc = t2x.xml();
+				//Document doccp = (Document)doc.clone();
 				if(rs.relative(i)){
-					String sent = rs.getString("markedsent");
+					String sent = rs.getString("rmarkedsent");
 					String src = rs.getString("source");
 					//System.out.println(sent);
 					if(!sent.matches(".*?[_–-]\\s*[<{a-z].*") && !sent.matches(".*?\\band/or\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
 						sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
-						SentenceChunker ex = new SentenceChunker(i, doc, sent);
+						SentenceChunker ex = new SentenceChunker(i, doc, sent, conn);
 						ChunkedSentence cs = ex.chunkIt();
 						if(this.debug){
 							System.out.println();
 							System.out.println(i+": "+cs.toString());
 						}
-						CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(i, src, cs, doccp, this.sosm);
-						Element statement = cac.annotate();
+						cac = new CharacterAnnotatorChunked(conn);
+						cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs);
 					}
 				}
 			}
+			
+			rs.close();
     	}catch (Exception e){
     		//System.err.println(e);
 			e.printStackTrace();

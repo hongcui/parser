@@ -7,13 +7,14 @@ package fna.charactermarkup;
  * @author hongcui
  *
  */
-public class ChunkNPList extends Chunk {
+public class ChunkVP extends Chunk {
 
 	/**
 	 * @param text
 	 */
-	public ChunkNPList(String text) {
+	public ChunkVP(String text) {
 		super(text);
+		// TODO Auto-generated constructor stub
 	}
 
 }

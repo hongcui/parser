@@ -6,7 +6,7 @@ package fna.charactermarkup;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
-
+import java.sql.Connection;
 import fna.parsing.state.WordNetWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -49,6 +49,7 @@ main subject: z[m/e]
  * 
  */
 public class SentenceChunker {
+	private Connection conn = null;
 	private Document tree = null;
 	private Document treecp = null;
 	private String markedsent = null;
@@ -73,7 +74,8 @@ public class SentenceChunker {
 	/**
 	 * 
 	 */
-	public SentenceChunker(int index, Document parsingTree, String markedsent) {
+	public SentenceChunker(int index, Document parsingTree, String markedsent, Connection conn) {
+		this.conn = conn;
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
@@ -112,24 +114,24 @@ public class SentenceChunker {
 			//hide complex number patterns should already be hidden before the tree was produced			
 			try{
 				Element root = tree.getRootElement();
-				//collapse QPs
+				/*collapse QPs: QPs often break a semantic unit, don't chunk it.
 				List<Element> QPs = QPpath.selectNodes(root);
 				Iterator<Element> it = QPs.iterator();
 				while(it.hasNext()){
 					Element QP = it.next();
 					collapseElement(QP, allText(QP), "q");									
-				}
-				collapseThatClause();
+				}*/
+
 				collapseNPList();
 				collapsePPList();
 				
 				//get All PP/IN
 				List<Element> PPINs = PPINpath.selectNodes(root);
 				do{
-					//PPINs = XPath.selectNodes(root, "//PP/IN");
-					PPINs = PPINpath.selectNodes(root);
-					it = PPINs.iterator();
 					ArrayList<Element> lPPINs = new ArrayList<Element>();
+					//PPINs = XPath.selectNodes(root, "//PP/IN");
+					PPINs = sortById(PPINpath.selectNodes(root));
+					Iterator<Element> it = PPINs.iterator();
 					while(it.hasNext()){
 						Element PPIN = it.next();
 						//List<Element> temp = XPath.selectNodes(PPIN, "//PP/IN");
@@ -139,34 +141,17 @@ public class SentenceChunker {
 						}
 					}
 					extractFromlPPINs(lPPINs);
-				}while (PPINs.size() > 0);	
-				
-				//get All PP/TO
-				/*List<Element> PPTOs = PPTOpath.selectNodes(root);
-				do{
-					PPTOs = PPTOpath.selectNodes(root);
-					it = PPTOs.iterator();
-					ArrayList<Element> lPPTOs = new ArrayList<Element>();
-					while(it.hasNext()){
-						Element PPTO = it.next();
-						List<Element> temp = PPINpath.selectNodes(PPTO.getParentElement());
-						if(temp.size() == 0){
-							lPPTOs.add(PPTO);
-						}
-					}
-					extractFromlPPTOs(lPPTOs);
-				}while (PPTOs.size() > 0);
-				*/
+				}while (PPINs.size() > 0+0);	
 				
 				//get remaining VBs
 				List<Element> VBs = Vpath.selectNodes(root);
 				do{
 					VBs = Vpath.selectNodes(root);
-					it = VBs.iterator();
+					Iterator<Element> it = VBs.iterator();
 					ArrayList<Element> lVBs = new ArrayList<Element>();
 					while(it.hasNext()){
 						Element VB = it.next();
-						if(Vpath.selectNodes(VB).size() == 0){
+						if(Vpath.selectNodes(VB).size() == 0 && VB.getChild("PP") == null){ //VP/PP should have been processed in PPINs
 							lVBs.add(VB);
 						}
 					}
@@ -177,11 +162,52 @@ public class SentenceChunker {
 				e.printStackTrace();
 			}
 		//}
-		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent);
+		collapseThatClause();
+		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.conn);
 		return cs;
 	}
 	
-	
+	/**
+	 * sort the list by the element id in ascending order
+	 * @param selectNodes
+	 * @return
+	 * 
+	 * procedure bubbleSort( A : list of sortable items ) defined as:
+  n := length( A )
+  do
+    newn := 0
+    for each i in 0 to n - 2  inclusive do:
+      if A[ i ] > A[ i + 1 ] then
+        swap( A[ i ], A[ i + 1 ] )
+        newn := i + 1
+      end if
+    end for
+    n := newn
+  while n > 1
+end procedure
+
+
+	 */
+	private List<Element> sortById(List<Element> selectNodes) {
+		// TODO Auto-generated method stub
+		int n = selectNodes.size();
+		do{
+			int newn = 0;
+			for(int i = 0; i <= n-2; i++){
+				int id1 = Integer.parseInt(selectNodes.get(i).getAttributeValue("id"));
+				int id2 = Integer.parseInt(selectNodes.get(i+1).getAttributeValue("id"));
+				if(id1 > id2){
+					Element t = selectNodes.get(i);
+					selectNodes.set(i, selectNodes.get(i+1));
+					selectNodes.set(i+1, t);
+				}
+			}
+			n = newn;
+		}while (n > 1);
+		
+		return selectNodes;
+	}
+
 	/**
 	 * (SBAR
               (WHNP (WDT that))
@@ -198,6 +224,9 @@ public class SentenceChunker {
 			while(it.hasNext()){
 				Element WHNP = it.next();
 				Element SBAR = WHNP.getParentElement();
+				if(SBAR.getName().compareTo("SBAR") !=0){
+					SBAR = SBAR.getParentElement();
+				}
 				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
@@ -239,8 +268,13 @@ public class SentenceChunker {
 		}
 		//do extraction here
 		//print(VP, child, "", chaso);
-		String chunk = "v["+lVB.getAttributeValue("text")+ "] o["+firstNP(VP)+"]";
-		collapseElement(VP, chunk, "b");
+		String np = firstNP(VP).trim();
+		if(np.length()>0){
+			String chunk = "v["+lVB.getAttributeValue("text")+ "] o["+np+"]";
+			collapseElement(VP, chunk, "b");
+		}else{
+			collapseElement(VP, "", "");
+		}
 	}
 
 	private void extractFromlPPINs(ArrayList<Element> lPPINs) {
@@ -332,8 +366,10 @@ public class SentenceChunker {
 					System.out.println("child text NPJJ:"+firstNPJJ(PP)); //some VP has no VB in it, but has ADJs
 					System.out.println("child text:"+firstNP(PP));
 				}
-				String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]]";
-				collapseElement(parent, chunk, "t");
+				//String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]]";
+				//collapseElement(parent, chunk, "t");
+				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]";
+				collapseElement(PP, chunk, "r");
 			}else{
 				if(this.printPP){
 					System.out.println();
@@ -360,8 +396,10 @@ public class SentenceChunker {
 				System.out.println("child textNPJJ:"+firstNPJJ(PP));
 				System.out.println("child text:"+firstNP(PP));
 			}
-			String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]]";
-			collapseElement(parent, chunk, "t");
+			//String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]]";
+			//collapseElement(parent, chunk, "t");
+			String chunk = "p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]";
+			collapseElement(PP, chunk, "r");
 		}else{
 			if(this.printPP){
 				System.out.println();
@@ -371,84 +409,7 @@ public class SentenceChunker {
 		}
 		
 	}
-	/*
-	private void extractFromlPPTO(Element lPPTO) {
-		
-		Element PP = lPPTO.getParentElement();
-
-		Element parent = PP.getParentElement();//could be PP, NP, VP, ADJP, or UCP, etc .
-		if(lPPTO.getAttribute("text").getValue().compareTo("to") != 0){ //text of TO must be "to"
-			collapseElement(PP, "");
-			return;
-		}
-		
-		String ptag = parent==null? "" : parent.getName(); //parent is null when it is collaped in a previous run.
-		
-		
-		if(ptag.compareTo("NP") == 0 ||ptag.compareTo("NX") == 0|| ptag.compareTo("S") == 0 || 
-				ptag.compareTo("FRAG") == 0 || ptag.compareTo("UCP") == 0 ||
-				ptag.compareTo("PRN") == 0 ||ptag.compareTo("WHNP") == 0 ||
-				ptag.compareTo("PP") == 0 ||ptag.compareTo("ROOT") == 0 || ptag.compareTo("") == 0){		
-
-			if(this.printPPTO){
-				System.out.println();
-				System.out.println(this.sentindex+": "+this.markedsent);
-				System.out.println("parent is [NP/S/FRAG/UCP/PRN/WHNP/PP/ROOT]");
-				//System.out.println("IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text"));
-				System.out.println("IN text: "+lPPTO.getAttributeValue("text"));
-				System.out.println("child text:"+firstDirectNP(PP));
-			}
-			String chunk = lPPTO.getAttributeValue("text") + " "+firstDirectNP(PP);
-			collapseElement(PP, chunk);
-		}else if(ptag.compareTo("VP") == 0){
-			boolean trueVP = false;
-			try{			
-				if(XPath.selectSingleNode(parent, ".//VBD|.//VBG|.//VBN|.//VBP|.//VBZ|.//VB") != null){
-					trueVP = true;
-				}
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			if(trueVP){
-				if(this.printPPTO){
-					System.out.println();
-					System.out.println(this.sentindex+": "+this.markedsent);
-					System.out.println("parent is [VP]");
-					System.out.println("VP-IN text: "+up2Text(parent, PP)+" "+lPPTO.getAttributeValue("text")); // decurrent /as/ wings
-					System.out.println("child text:"+firstDirectNP(PP)); //some VP has no VB in it, but has ADJs
-				}
-				String chunk = up2Text(parent, PP)+" "+lPPTO.getAttributeValue("text")+ " "+firstDirectNP(PP);
-				collapseElement(parent, chunk);
-			}else{
-				if(this.printPPTO){
-					System.out.println();
-					System.out.println(this.sentindex+": "+this.markedsent);
-					System.out.println("parent is [VP]");
-					System.out.println("IN text: "+lPPTO.getAttributeValue("text")); // decurrent /as/ wings
-					System.out.println("child text:"+firstDirectNP(PP)); //some VP has no VB in it, but has ADJs
-				}
-				String chunk = lPPTO.getAttributeValue("text")+ " "+firstNPJJ(PP);
-				collapseElement(PP, chunk);
-			}
-		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("RRC") == 0){
-			if(this.printPPTO){
-				System.out.println();
-				System.out.println(this.sentindex+": "+this.markedsent);
-				System.out.println("parent is [ADJP/ADVP/RRC]");
-				System.out.println("ADJ-IN text: "+up2Text(parent, PP)+" "+lPPTO.getAttributeValue("text")); // decurrent /as/ wings
-				System.out.println("child text:"+firstDirectNP(PP));
-			}
-			String chunk = up2Text(parent, PP)+" "+lPPTO.getAttributeValue("text")+" "+firstDirectNP(PP);
-			collapseElement(parent, chunk);
-		}else{
-			if(this.printPPTO){
-				System.out.println();
-				System.out.println(this.sentindex+": "+this.markedsent);
-				System.out.println("parent is [?]");
-			}
-		}
-		
-	}*/
+	
 	/**
 	 * 
 	 * @param parent
@@ -798,8 +759,8 @@ public class SentenceChunker {
 			while(it.hasNext()){
 				Element CC = (Element)it.next();
 				Element NP = CC.getParentElement();
-				//List<Element> children = NP.getChildren();
-				Iterator<Content> itc = NP.getDescendants();
+				
+				
 				//all children must be either NP or NN/NNS, except for one CC, and
 				//all NP child must have a child NN/NNS
 				boolean isList = true;
@@ -810,7 +771,33 @@ public class SentenceChunker {
 				if(CCs.size() > 1){
 					isList = false;
 				}
-				//Iterator<Element> itc = children.iterator();
+				List<Element> children = NP.getChildren();
+				//if(children.get(children.size()-2).getName().compareTo("CC") != 0){ //second to the last element must be CC
+				//	isList = false;
+				//} //basal and cauline leaves=> two NN after CC
+				Iterator<Element> itc = children.iterator();
+				while(itc.hasNext()){
+					Element e = itc.next();
+					if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT)\\b")){
+						isList=false;
+					}
+					List<Element> echildren = e.getChildren();
+					if(echildren.size()>0){
+						if(!echildren.get(echildren.size()-1).getName().matches("\\b(NN|NNS)\\b")){
+							isList=false;
+						}
+					}
+					if(XPath.selectSingleNode(e, ".//ADJP")!=null ||XPath.selectSingleNode(e, ".//PP")!=null){
+						isList=false;
+					}
+				}
+				
+				String alltext = allText(NP);
+				if(alltext.matches(".*?\\b("+ChunkedSentence.prepositions+"|"+ChunkedSentence.units+")\\b.*")){
+					isList=false;
+				}
+				
+				/*Iterator<Content> itc = NP.getDescendants();
 				Element last = null;
 				while(itc.hasNext()){
 					Content c = itc.next();
@@ -818,7 +805,7 @@ public class SentenceChunker {
 						Element e = (Element)c;
 						last = e;
 						String ename = e.getName();
-						if(!ename.matches("\\b(NP|NN|NNS|CC|PUNCT|DT|CD)\\b")){
+						if(!ename.matches("\\b(NP|NN|NNS|CC|JJ|PUNCT|DT|CD)\\b")){
 							isList=false;
 						}
 						if(ename.compareTo("NP") == 0 && e.getChild("NN")==null && e.getChild("NNS") ==null){
@@ -829,12 +816,12 @@ public class SentenceChunker {
 				if(!last.getName().matches("\\b(NN|NNS)\\b")){//the last word must be a noun
 					isList = false;
 				}
+				*/
 				if(isList){//collapse the NP
-					String alltext = allText(NP);
 					Iterator<Content> cit = NP.getDescendants();
 					String id = "";
 					if(this.printNPlist){
-						System.out.println("NPList: "+alltext);
+						System.out.println("NPList "+this.sentindex+":"+alltext);
 					}
 					while(cit.hasNext()){
 						Content c = cit.next();
