@@ -32,10 +32,15 @@ public class Type4Transformer extends Thread {
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	private File source = new File(Registry.SourceDirectory);
 	//File target = new File(Registry.TargetDirectory);
+
+	//File target = new File("Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\target-taxonX-ants-trash");
+	//private String tableprefix = "plazi_ants";
+
 	//target folder
 	File target = new File(Registry.TargetDirectory);
 	//private String tableprefix = "plazi_ants";
 	
+
 	private XMLOutputter outputter = null;
 	// this is the dataprfix from general tab
 	private String dataprefix = null;
