@@ -1,11 +1,20 @@
+/**
+ * 
+ */
 package fna.charactermarkup;
 
-public class Count extends Chunk {
+/**
+ * @author hongcui
+ *
+ */
+public class ChunkOR extends Chunk {
+
 	/**
 	 * @param text
 	 */
-	public Count(String text) {
+	public ChunkOR(String text) {
 		super(text);
 		// TODO Auto-generated constructor stub
 	}
+
 }
