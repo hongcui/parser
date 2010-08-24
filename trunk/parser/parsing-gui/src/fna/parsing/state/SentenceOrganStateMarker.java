@@ -9,9 +9,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +28,12 @@ public class SentenceOrganStateMarker {
 	private String password ="termspassword";
 	private Connection conn = null;
 	private boolean marked = false;
+	private int fixedcount  =0;
+	
+	private Hashtable<String, String> adjnounsent = null;
+	private String adjnounslist = "";
+	private String organnames = null;
+	private String statenames = null;
 	/**
 	 * 
 	 */
@@ -36,7 +44,7 @@ public class SentenceOrganStateMarker {
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists markedsentence (source varchar(100) NOT NULL PRIMARY KEY, markedsent varchar(2000))");
+				stmt.execute("create table if not exists markedsentence (source varchar(100) NOT NULL Primary Key, markedsent text, rmarkedsent text)");
 				ResultSet rs = stmt.executeQuery("select * from markedsentence");
 				if(rs.next()){this.marked = true;}
 				stmt.execute("update sentence set charsegment =''");
@@ -44,13 +52,64 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
+		//preparing...
+		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
+		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select source, tag, originalsent from sentence");
+			while(rs.next()){
+				String source = rs.getString("source");
+				String sent = rs.getString("tag")+"##"+rs.getString("originalsent");
+				sentences.put(source, sent);
+			}
+			
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT distinct modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
+			while(rs.next()){
+				String modifier = rs.getString(1).replaceAll("\\[.*?\\]", "").trim();
+				adjnouns.add(modifier);
+			}
+			
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("SELECT source, tag, modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
+			while(rs.next()){
+				String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim();
+				adjnounsent.put(rs.getString("tag"), modifier);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Collections.sort(adjnouns);
+		for(int i = adjnouns.size()-1; i>=0; i--){
+			this.adjnounslist +=adjnouns.get(i)+"|";
+		}
+		this.adjnounslist = "[<{]*"+this.adjnounslist.replaceFirst("\\|$", "").replaceAll("\\|+", "|").replaceAll("\\|", "[}>]*|[<{]*").replaceAll(" ", "[}>]* [<{]*")+"[}>]*";
+		this.organnames = collectOrganNames();
+		this.statenames = collectStateNames();
 	}
 	
 	protected Hashtable markSentences(){
 		if(this.marked){
 			loadMarked();
 		}else{
-			mark();
+			Enumeration<String> en = sentences.keys();
+			while(en.hasMoreElements()){
+				String source = en.nextElement();
+				String sent = (String)sentences.get(source); 
+				String tag = sent.substring(0, sent.indexOf("##"));
+				sent = sent.replace(tag+"##", "").trim();
+				String taggedsent = markASentence(source, tag.trim(), sent);
+				sentences.put(source, taggedsent); 
+				try{
+					Statement stmt1 = conn.createStatement();
+					stmt1.execute("insert into markedsentence (source, markedsent) values('"+source+"', '"+taggedsent+"')");
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				//System.out.println(source+" marked");
+			}
 		}
 		return sentences;
 	}
@@ -69,62 +128,59 @@ public class SentenceOrganStateMarker {
 		}
 	}
 	
-	/**
-	 * mark [o] and [c]: organs and characters
-	 */
-	protected void mark(){
-		Hashtable adjnounsent = new Hashtable();
-		ArrayList adjnouns = new ArrayList();
-		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, originalsent from sentence");
-			while(rs.next()){
-				String source = rs.getString("source");
-				String sent = rs.getString("originalsent");
-				sentences.put(source, sent);
-			}
-			
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT distinct modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
-			while(rs.next()){
-				adjnouns.add(rs.getString("modifier"));
-			}
-			
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT source, modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
-			while(rs.next()){
-				String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim();
-				adjnounsent.put(rs.getString("source"), modifier);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
+	public String markASentence(String source, String tag, String sent) {
+		String taggedsent = markthis(source, sent, organnames, "<", ">");
+		taggedsent = markthis(source, taggedsent, statenames, "{", "}");
+		taggedsent = taggedsent.replaceAll("[<{]or[}>]", "or"); //make sure to/or are left untagged
+		taggedsent = taggedsent.replaceAll("[<{]to[}>]", "to");
+		//taggedsent = fixInner(adjnounslist, taggedsent);
+		//if(adjnounsent.containsKey(source) || taggedsent.matches(".*? of [<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*")){
+		if((adjnounsent.containsKey(tag) && taggedsent.matches(".*?[<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*")) || taggedsent.matches(".*? of [<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*")){
+			taggedsent = fixInner(taggedsent);
+		//	taggedsent = fixAdjNouns(adjnouns, (String)adjnounsent.get(source), taggedsent);
 		}
-		
-		String organnames = collectOrganNames();
-		String statenames = collectStateNames();
-		
-		Enumeration<String> en = sentences.keys();
-		while(en.hasMoreElements()){
-			String source = en.nextElement();
-			String sent = (String)sentences.get(source); 
-			String taggedsent = markthis(source, sent, organnames, "<", ">");
-			taggedsent = markthis(source, taggedsent, statenames, "{", "}");
-			taggedsent = taggedsent.replaceAll("[<{]or[}>]", "or"); //make sure to/or are left untagged
-			taggedsent = taggedsent.replaceAll("[<{]to[}>]", "to");
-			if(adjnounsent.containsKey(source)){
-				taggedsent = fixAdjNouns(adjnouns, (String)adjnounsent.get(source), taggedsent);
-			}
-			sentences.put(source, taggedsent); 
-			try{
-				Statement stmt1 = conn.createStatement();
-				stmt1.execute("insert into markedsentence values('"+source+"', '"+taggedsent+"')");
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			System.out.println(source+" marked");
-		}
-
+ 		return taggedsent;
 	}
+	
+	/**
+	 * mark Inner as organ for sent such as inner red.
+	 * @param adjnouns
+	 * @param taggedsent
+	 * @return
+	 */
+	private String fixInner(String taggedsent) {
+		String fixed = "";
+		boolean needfix = false;
+		boolean changed = true;
+		//Pattern p =Pattern.compile("(.*?)(\\s*(?:[ <{]*\\b(?:"+adjnounslist+")\\b[}> ]*)+\\s*)(.*)");
+		Pattern p =Pattern.compile("(.*?)((?:^| )(?:(?:\\{|<\\{)*\\b(?:"+adjnounslist+")\\b(?:\\}>|\\})*) )(.*)");
+		Matcher m = p.matcher(taggedsent);
+		
+		while(m.matches() && changed){
+			changed = false;
+			String before = m.group(1);
+			String inner = m.group(2);
+			String after = m.group(3);
+			if(!before.trim().endsWith(">") &&!after.trim().startsWith("<")){//mark inner as organ
+				inner = inner.trim().replaceAll("[<{}>]", "").replaceAll("\\s+", "> <").replaceAll("<and>", "and").replaceAll("<or>", "or");
+				inner = "<"+inner+">";
+				needfix = true;
+				changed = true;
+			}
+			//fixed +=before+" "+inner+" ";
+			fixed = before+" "+inner+" "+after; //{outer} {pistillate}
+			//taggedsent = after;
+			//m = p.matcher(taggedsent);
+			m = p.matcher(fixed);
+		}
+		//fixed +=taggedsent;
+		if(needfix){
+			System.out.println("fixed "+fixedcount+": "+fixed);
+			fixedcount++;
+		}
+		return fixed.replaceAll("\\s+", " ");
+	}
+
 	/**
 	 * retag {caline} 10 to <caline> 10 when an adjnoun does not follow an organ or proceeds  an organ.
 	 * @param adjnouns
@@ -137,10 +193,10 @@ public class SentenceOrganStateMarker {
 		return taggedsent;
 	}
 
-	protected String markthis(String source, String sent, String parts, String leftmark, String rightmark) {
+	public static String markthis(String source, String sent, String parts, String leftmark, String rightmark) {
 		//remove ()
 		sent = sent.replaceAll("\\(.*?\\)", "");
-		sent = sent.replaceAll("(?<=\\w)\\s+(?=[,.;:])", "");
+		sent = sent.replaceAll("(?<=\\w)\\s+(?=[,\\.;:])", "");
 
 		sent = sent.replaceAll("_", "-");
 		
@@ -163,10 +219,16 @@ public class SentenceOrganStateMarker {
 			m = p.matcher(taggedsent);			
 		}
 		tsent +=taggedsent;
-		tsent = tsent.replaceAll("\\}-\\{", "_"); // => {oblong}-{ovate} :  {oblong_ovate}
+		tsent = tsent.replaceAll("\\}-\\{", "-"); // => {oblong}-{ovate} :  {oblong-ovate}
 		tsent = tsent.replaceAll("\\s*,\\s*", " , ");
 		tsent = tsent.replaceAll("\\s*\\.\\s*", " . ");
-				
+		tsent = tsent.replaceAll("\\s*;\\s*", " ; ");
+		tsent = tsent.replaceAll("\\s*:\\s*", " : ");
+		tsent = tsent.replaceAll("\\s*\\]\\s*", " ] ");
+		tsent = tsent.replaceAll("\\s*\\[\\s*", " [ ");
+		//tsent = tsent.replaceAll("\\s*\\)\\s*", " ) ");
+		//tsent = tsent.replaceAll("\\s*\\(\\s*", " ( ");
+		tsent = tsent.replaceAll("\\s+", " ").trim();		
 		return tsent;
 	}
 	
@@ -181,7 +243,7 @@ public class SentenceOrganStateMarker {
 		}catch (Exception e){
 				e.printStackTrace();
 		}
-		return statestring.replaceFirst("\\|", "").replaceAll("\\|+", "|");
+		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceFirst("\\|", "").replaceAll("\\|+", "|");
 	}
 	
 	protected String collectOrganNames(){

@@ -148,7 +148,7 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 		segment = segment.replaceAll("[{}]", "");//remove all {}
 		String statestr = toPatternString(states);
 		if(statestr.compareTo("") != 0){
-		    return markthis(null, segment, statestr, "{", "}"); //retag segment with known states
+		    return SentenceOrganStateMarker.markthis(null, segment, statestr, "{", "}"); //retag segment with known states
 		}else{
 		    return segment;
 		}
