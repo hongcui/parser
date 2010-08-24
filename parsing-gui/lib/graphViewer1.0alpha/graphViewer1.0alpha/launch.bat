@@ -1,0 +1,1 @@
+java -classpath "colt.jar;commons-collections-3.1.jar;swt.jar;gv.jar;jung-1.5.4.jar" swt/visualization/SWTPluggableRendererDemo
