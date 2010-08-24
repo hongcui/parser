@@ -9,12 +9,13 @@ import java.util.regex.Pattern;
 
 public class WordNetWrapper {
 	Hashtable<String, Integer> pos = new Hashtable<String, Integer>();
+	public boolean formchange = false;
 	
 	public WordNetWrapper(String word){
 		String command = "wn " + word + " -over";
 		String output = "";
 		String s = null;
-		String ptnpos = "Overview of (\\w+) "+word;
+		String ptnpos = "Overview of (\\w+) (\\w+)";
 		Pattern ppos = Pattern.compile(ptnpos);
 		String ptncount = "^\\d+\\. \\((\\d+)\\) .*";
 		Pattern pcount = Pattern.compile(ptncount);
@@ -38,6 +39,9 @@ public class WordNetWrapper {
 						count = 0;
 					}
 					tag = mpos.group(1);
+					if(mpos.group(2).compareToIgnoreCase(word) != 0){
+						this.formchange = true;
+					}
 				}
 				if(mcount.find()){
 					count += Integer.parseInt(mcount.group(1));
@@ -78,7 +82,7 @@ public class WordNetWrapper {
 			String k = en.nextElement();
 			Integer count = pos.get(k);
 			int c = count.intValue();
-			if(c>max){
+			if(c>=max){
 				max = c;
 				tag = k;
 			}
@@ -87,7 +91,7 @@ public class WordNetWrapper {
 	}
 	
 	public static void main(String[] args) {
-		WordNetWrapper wnw = new WordNetWrapper("part"); 
+		WordNetWrapper wnw = new WordNetWrapper("arrays"); 
 		System.out.println(wnw.isAdj());
 		System.out.println(wnw.isAdv());
 		System.out.println(wnw.isN());
