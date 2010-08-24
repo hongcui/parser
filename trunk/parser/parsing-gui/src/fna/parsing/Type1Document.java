@@ -265,7 +265,9 @@ public class Type1Document {
 				out.write(line);
 				out.newLine();
 				out.flush();
-			} else if (i==1){
+			}else if(!text1.equals("") || !comboText.equals("")){ //one has value, may be a comments, don't save
+				//do nothing
+			}else if (i==1){//both are empty
 				//pathName = null;
 				throw new ParsingException("No details to save");
 			}

@@ -271,7 +271,7 @@ public class MainForm {
 					}
 
 					try {
-						mainDb.savePrefixData(dataPrefixCombo.getText().trim());
+						mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 					} catch (Exception exe) {
 						LOGGER.error("Error saving dataprefix", exe);
 						exe.printStackTrace();
@@ -514,7 +514,7 @@ public class MainForm {
 				saveProject(); 
 				saveFlag = false;
 				try {
-					mainDb.savePrefixData(dataPrefixCombo.getText().trim());
+					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 				} catch (Exception exe) {
 					exe.printStackTrace();
@@ -1549,7 +1549,7 @@ public class MainForm {
 	
 	private void startTransformation() {
 		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
-		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText());
+		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		vt.start();
 	}
 	
@@ -1560,7 +1560,7 @@ public class MainForm {
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
 		Type3PreMarkup preMarkUp = 
 			new Type3PreMarkup(listener, shell.getDisplay(), 
-					null, dataPrefixCombo.getText(), new ArrayList());
+					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(), new ArrayList());
 		preMarkUp.start();
 	}
 	
@@ -1568,7 +1568,7 @@ public class MainForm {
 		ProcessListener listener = 
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
-		Type4Transformer transformer = new Type4Transformer(listener, dataPrefixCombo.getText());
+		Type4Transformer transformer = new Type4Transformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		transformer.start();
 	}
 	private void clearTransformation() {
@@ -1630,13 +1630,13 @@ public class MainForm {
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
-				databasename, shell.getDisplay(), markUpPerlLog, dataPrefixCombo.getText());
+				databasename, shell.getDisplay(), markUpPerlLog, dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		vd.start();
 	}
 	
 	private void startFinalize() {
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
-		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText());
+		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		vf.start();
 	}
 	
@@ -1659,7 +1659,7 @@ public class MainForm {
 		}
 
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
-		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, null);
+		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, this.dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		vm.update();
 	}
 	
@@ -1755,7 +1755,7 @@ public class MainForm {
 			messageText.append(ApplicationUtilities.getProperty("popup.error.source"));
 		} 
 		
-		if (dataPrefixCombo != null && dataPrefixCombo.getText().trim().equals("")) {
+		if (dataPrefixCombo != null && dataPrefixCombo.getText().replaceAll("-", "_").trim().equals("")) {
 			
 			messageText.append(ApplicationUtilities.getProperty("popup.error.dataset"));
 			

@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class WordNetWrapper {
 	Hashtable<String, Integer> pos = new Hashtable<String, Integer>();
 	
-	WordNetWrapper(String word){
+	public WordNetWrapper(String word){
 		String command = "wn " + word + " -over";
 		String output = "";
 		String s = null;

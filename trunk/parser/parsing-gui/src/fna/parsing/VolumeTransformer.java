@@ -66,7 +66,7 @@ public class VolumeTransformer extends Thread {
 		this.dataPrefix = dataPrefix;
 		this.errors = new Hashtable();
 		this.taxontable = dataPrefix.trim()+"_"	+ ApplicationUtilities.getProperty("taxontable");
-		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
+		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("authortable");
 		this.publicationtable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
 		vtDbA = new VolumeTransformerDbAccess(dataPrefix);
 		

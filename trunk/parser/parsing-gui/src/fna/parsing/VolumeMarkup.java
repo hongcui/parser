@@ -86,7 +86,7 @@ public class VolumeMarkup {
 		listener.clear();
 		
 		List<String> tagList = new ArrayList<String>();
-		VolumeMarkupDbAccessor vmDba = new VolumeMarkupDbAccessor();
+		VolumeMarkupDbAccessor vmDba = new VolumeMarkupDbAccessor(this.dataPrefix);
 		try {
 			vmDba.updateData(tagList);
 		} catch (Exception e) {
