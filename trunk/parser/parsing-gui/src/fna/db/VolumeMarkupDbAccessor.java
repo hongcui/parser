@@ -37,7 +37,7 @@ public class VolumeMarkupDbAccessor {
 	 */
     private static final Logger LOGGER = Logger.getLogger(VolumeMarkupDbAccessor.class);
     private static String url = ApplicationUtilities.getProperty("database.url");
-	private static String tablePrefix = MainForm.dataPrefixCombo.getText();
+	private String tablePrefix = null ;
     static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -47,12 +47,13 @@ public class VolumeMarkupDbAccessor {
 			e.printStackTrace();
 		}
 	}
-	public static void main(String[] args)throws Exception {
-		// TODO Auto-generated method stub
-		//System.out.println(DriverManager.getConnection(url));
-	}
+    
+    public VolumeMarkupDbAccessor(String dataPrefix){
+    	this.tablePrefix = dataPrefix;
+    }
 	
- public void updateData(List <String> tagList) throws  ParsingException, SQLException {
+	
+    public void updateData(List <String> tagList) throws  ParsingException, SQLException {
 	 
 	 Connection conn = null;
 	 PreparedStatement stmt = null;
@@ -92,4 +93,8 @@ public class VolumeMarkupDbAccessor {
 		}
 	 
  }
+    public static void main(String[] args)throws Exception {
+		// TODO Auto-generated method stub
+		//System.out.println(DriverManager.getConnection(url));
+	}
 }
