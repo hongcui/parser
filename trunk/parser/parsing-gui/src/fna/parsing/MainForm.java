@@ -1009,8 +1009,8 @@ public class MainForm {
 			public void widgetSelected(final SelectionEvent e) {
 				loadTags();
 				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
-					statusOfMarkUp[5] = true;
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
+					statusOfMarkUp[6] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
 					exe.printStackTrace();
@@ -1562,8 +1562,8 @@ public class MainForm {
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
-		Type3PreMarkup preMarkUp = 
-			new Type3PreMarkup(listener, shell.getDisplay(), 
+		Type3Transformation preMarkUp = 
+			new Type3Transformation(listener, shell.getDisplay(), 
 					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(), new ArrayList());
 		preMarkUp.start();
 	}
