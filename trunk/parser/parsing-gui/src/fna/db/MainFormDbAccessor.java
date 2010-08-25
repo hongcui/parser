@@ -159,7 +159,15 @@ public class MainFormDbAccessor {
 		}
 	}
 	
-	public void loadTagsTableData(Table tagTable) throws ParsingException, SQLException {
+	/**
+	 * 
+	 * @param tagTable
+	 * @return # of records loaded
+	 * @throws ParsingException
+	 * @throws SQLException
+	 */
+	
+	public int loadTagsTableData(Table tagTable) throws ParsingException, SQLException {
 		
 		PreparedStatement stmt = null;
 		Connection conn = null;
@@ -182,6 +190,7 @@ public class MainFormDbAccessor {
 				TableItem item = new TableItem(tagTable, SWT.NONE);
 			    item.setText(new String[]{++i+"", sentid,"", tag, sentence});
 			}
+			return i;
 
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:loadTagsTableData", exe);
