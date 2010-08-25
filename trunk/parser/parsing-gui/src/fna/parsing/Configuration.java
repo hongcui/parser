@@ -96,7 +96,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type1.setText("Type 1");
+		type1.setText("Type 1: Word Document with Semantic-Based Styles");
 		
 		Button type2 = new Button(group_1, SWT.RADIO);
 		type2.setBounds(10, 166, 90, 16);
@@ -108,7 +108,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type2.setText("Type 2");
+		type2.setText("Type 2: Document with Display Styles");
 		
 		Button type3 = new Button(group_1, SWT.RADIO);
 		type3.setBounds(10, 307, 90, 16);
@@ -126,7 +126,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type3.setText("Type 3");
+		type3.setText("Type 3: OCRed Text");
 		
 		Label label_1 = new Label(group_1, SWT.NONE);
 		label_1.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
@@ -145,7 +145,7 @@ public class Configuration {
 		
 		Button btnType = new Button(group_1, SWT.RADIO);
 		btnType.setBounds(10, 451, 71, 16);
-		btnType.setText("Type 4");
+		btnType.setText("Type 4: XML Documents");
 		btnType.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
 				shell.setVisible(false);
