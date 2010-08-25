@@ -143,7 +143,7 @@ public class CharacterLearner  implements Learn2Parse{
 		parseSentences();//create StateGroups 
 		bootstrap();//infer characters
 		
-		DeHyphenizerCorrected dh = new DeHyphenizerCorrected(database, this.tablePrefix+"_learnedstates", "state", "count", "_", this.tablePrefix);
+		DeHyphenizerCorrected dh = new DeHyphenizerCorrected(database, this.tablePrefix+"_learnedstates", "state", "count", "_", this.tablePrefix, this.glossary);
 		dh.deHyphen();
 		this.statespatterns = collectStateNames(); //create character patterns
 	}
