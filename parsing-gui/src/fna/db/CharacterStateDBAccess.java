@@ -51,8 +51,8 @@ public class CharacterStateDBAccess {
 				conn = DriverManager.getConnection(url);
 				String tablePrefix = MainForm.dataPrefixCombo.getText();
 				
-				String sql = "SELECT distinct category FROM " + tablePrefix+
-						"_character order by category";
+				//String sql = "SELECT distinct category FROM " + tablePrefix+"_character order by category";
+				String sql = "SELECT distinct category FROM fnaglossary order by category";
 				stmt = conn.prepareStatement(sql);
 				
 				rset = stmt.executeQuery();
