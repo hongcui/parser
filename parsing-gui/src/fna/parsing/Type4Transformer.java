@@ -45,7 +45,7 @@ public class Type4Transformer extends Thread {
 	// this is the dataprfix from general tab
 	private String dataprefix = null;
 	private ProcessListener listener;
-	protected static final Logger LOGGER = Logger.getLogger(Type3PreMarkup.class);
+	protected static final Logger LOGGER = Logger.getLogger(Type3Transformation.class);
 	/**
 	 * 
 	 */
