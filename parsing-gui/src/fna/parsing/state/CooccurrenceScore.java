@@ -7,15 +7,15 @@ import java.util.*;
  * @author hongcui
  *
  */
-public class CoocurrenceScore {
+public class CooccurrenceScore {
 	private Hashtable<Integer, Integer> scores = null; //value->count
 	private HashSet<String> sources = new HashSet<String>();
 
-		CoocurrenceScore(){
+		CooccurrenceScore(){
 			scores = new Hashtable<Integer, Integer>();
 		}
 		
-		CoocurrenceScore(int value, String source){
+		CooccurrenceScore(int value, String source){
 			scores = new Hashtable<Integer, Integer>();
 			scores.put(new Integer(value), new Integer(1));
 			sources.add(source);

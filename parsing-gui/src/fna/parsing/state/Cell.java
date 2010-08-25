@@ -5,7 +5,7 @@ import java.util.*;
 public class Cell implements Comparator<Object>{
 	private int r = -1; //row index
 	private int c = -1; //colume index
-	private CoocurrenceScore score = null;
+	private CooccurrenceScore score = null;
 	
 	Cell(){
 		
@@ -16,7 +16,7 @@ public class Cell implements Comparator<Object>{
 		this.c = c;
 	}
 
-	Cell(int r, int c, CoocurrenceScore score){
+	Cell(int r, int c, CooccurrenceScore score){
 		this.r = r;
 		this.c = c;
 		this.score = score;
@@ -29,7 +29,7 @@ public class Cell implements Comparator<Object>{
 	public int getCindex(){
 		return c;
 	}
-	public CoocurrenceScore getScore(){
+	public CooccurrenceScore getScore(){
 		return score;
 	}
 	

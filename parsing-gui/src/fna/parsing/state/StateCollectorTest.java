@@ -1,5 +1,7 @@
 package fna.parsing.state;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
@@ -21,23 +23,24 @@ import java.io.*;
 public class StateCollectorTest extends StateCollector {
 
 		
-	public StateCollectorTest(String database) {
-		super(database);
+	public StateCollectorTest(Connection conn, String tableprefix) {
+		super(conn, tableprefix);
 		//statematrix.save2MySQL(database, "termsuser", "termspassword");
 		
 	}
 	
-	public StateCollectorTest(String database, ArrayList<String> knownstates) {
-		super(database, knownstates);
+	public StateCollectorTest(Connection conn, String tableprefix, ArrayList<String> knownstates) {
+		super(conn, tableprefix, knownstates);
 		
 	}
 
-	protected void saveStates(String database){
-		statematrix.save2MySQL(database, "termsuser", "termspassword");
+	public void saveStates(){
+		statematrix.save2MySQL(this.conn, this.tableprefix, "termsuser", "termspassword");
 	}
 	
-	protected void grouping(){
-		statematrix.Grouping();
+	public void grouping4GraphML(){
+		Object groups = statematrix.Grouping();
+		statematrix.output2GraphML(groups);
 	}
 			
 	/**
@@ -184,10 +187,23 @@ public class StateCollectorTest extends StateCollector {
 		sct.saveStates("onto_foc_corpus");
 		*/
 		//to use the result from unsupervisedclausemarkup, change wordpos table to wordroles (word, semanticroles) where semanticroles in (c, os, op)
-		StateCollectorTest sct = new StateCollectorTest("fnav19_benchmark"); /*using learned semanticroles only*/
-		sct.collect("fnav19_benchmark");
-		//sct.saveStates("fnav19_benchmark");
-		sct.grouping();
+		Connection conn = null;
+		String database="";
+		String username="";
+		String password="";
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}	
+		StateCollectorTest sct = new StateCollectorTest(conn, "fnav19"); /*using learned semanticroles only*/
+		sct.collect();
+		sct.saveStates();
+		sct.grouping4GraphML();
 	}
 
 }
