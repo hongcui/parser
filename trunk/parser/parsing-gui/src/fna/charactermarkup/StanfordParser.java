@@ -36,7 +36,7 @@ public class StanfordParser {
 	private File parsedfile = null;
 	private String POSTaggedSentence = "POSedSentence";
 	private MyPOSTagger tagger = null;
-	private SentenceOrganStateMarker sosm = null;
+	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 	private boolean debug = true;
 	/**
@@ -47,7 +47,6 @@ public class StanfordParser {
 		this.posedfile = new File(posedfile); 
 		this.parsedfile = new File(parsedfile);
 		this.database = database;
-		this.sosm = new SentenceOrganStateMarker(this.database);
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -62,6 +61,7 @@ public class StanfordParser {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		//this.sosm = new SentenceOrganStateMarker(this.database);
 		tagger = new MyPOSTagger(conn);
 	}
 	
