@@ -3,6 +3,7 @@
  */
 package fna.parsing.state;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -22,8 +23,8 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	/**
 	 * @param database
 	 */
-	public StateCollectorBootstrapper(String database) {
-		super(database);
+	public StateCollectorBootstrapper(Connection conn, String tableprefix) {
+		super(conn, tableprefix);
 		this.segments = new Hashtable<String, String>(); 
 		this.states = new HashSet<String>();
 		
@@ -33,9 +34,9 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	 * @param database
 	 * @param knownstates
 	 */
-	public StateCollectorBootstrapper(String database,
+	public StateCollectorBootstrapper(Connection conn, String tableprefix,
 			ArrayList<String> knownstates) {
-		super(database, knownstates);
+		super(conn,tableprefix, knownstates);
 		this.segments = new Hashtable<String, String>(); 
 		this.states = new HashSet<String>();
 		
@@ -190,9 +191,9 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		StateCollectorBootstrapper sct = new StateCollectorBootstrapper("onto_foc_corpus"); /*using learned semanticroles only*/
-		sct.collect("onto_foc_corpus");
-		sct.saveStates("onto_foc_corpus");
+		/*StateCollectorBootstrapper sct = new StateCollectorBootstrapper("onto_foc_corpus", "");
+		sct.collect();
+		sct.saveStates();*/
 	}
 
 }

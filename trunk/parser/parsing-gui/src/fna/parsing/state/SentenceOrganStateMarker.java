@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fna.charactermarkup.*;
 
 /**
  * @author hongcui
@@ -24,8 +25,6 @@ import java.util.regex.Pattern;
  */
 public class SentenceOrganStateMarker {
 	private Hashtable<String, String> sentences = new Hashtable<String, String>();
-	private String username="termsuser";
-	private String password ="termspassword";
 	private Connection conn = null;
 	private boolean marked = false;
 	private int fixedcount  =0;
@@ -34,31 +33,29 @@ public class SentenceOrganStateMarker {
 	private String adjnounslist = "";
 	private String organnames = null;
 	private String statenames = null;
+	private String tableprefix = null;
 	/**
 	 * 
 	 */
-	public SentenceOrganStateMarker(String database) {
+	public SentenceOrganStateMarker(Connection conn, String tableprefix) {
+		this.tableprefix = tableprefix;
+		this.conn = conn;
 		try{
-			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
-				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists markedsentence (source varchar(100) NOT NULL Primary Key, markedsent text, rmarkedsent text)");
-				ResultSet rs = stmt.executeQuery("select * from markedsentence");
+				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (source varchar(100) NOT NULL Primary Key, markedsent text, rmarkedsent text)");
+				ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
 				if(rs.next()){this.marked = true;}
-				stmt.execute("update sentence set charsegment =''");
-			}
+				stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+
 		//preparing...
 		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
 		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, tag, originalsent from sentence");
+			ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
 			while(rs.next()){
 				String source = rs.getString("source");
 				String sent = rs.getString("tag")+"##"+rs.getString("originalsent");
@@ -66,14 +63,14 @@ public class SentenceOrganStateMarker {
 			}
 			
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT distinct modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
+			rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence s where modifier != \"\" and tag like \"[%\"");
 			while(rs.next()){
 				String modifier = rs.getString(1).replaceAll("\\[.*?\\]", "").trim();
 				adjnouns.add(modifier);
 			}
 			
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT source, tag, modifier FROM sentence s where modifier != \"\" and tag like \"[%\"");
+			rs = stmt.executeQuery("SELECT source, tag, modifier FROM "+this.tableprefix+"_sentence s where modifier != \"\" and tag like \"[%\"");
 			while(rs.next()){
 				String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim();
 				adjnounsent.put(rs.getString("tag"), modifier);
@@ -104,7 +101,7 @@ public class SentenceOrganStateMarker {
 				sentences.put(source, taggedsent); 
 				try{
 					Statement stmt1 = conn.createStatement();
-					stmt1.execute("insert into markedsentence (source, markedsent) values('"+source+"', '"+taggedsent+"')");
+					stmt1.execute("insert into "+this.tableprefix+"_markedsentence (source, markedsent) values('"+source+"', '"+taggedsent+"')");
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -117,7 +114,7 @@ public class SentenceOrganStateMarker {
 	protected void loadMarked() {
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence");
+			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence");
 			while(rs.next()){
 				String source = (String)rs.getString("source");
 				String taggedsent = (String)rs.getString("markedsent"); 
@@ -236,9 +233,13 @@ public class SentenceOrganStateMarker {
 		String statestring = "";
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select word from wordroles where semanticrole ='c'");
+			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
+			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c'");
 			while(rs.next()){
-				statestring += "|"+rs.getString("word"); 
+				String w = rs.getString("word");
+				if(!w.matches("\\W+") && !w.matches("("+ChunkedSentence.stop+")") &&!w.matches("("+ChunkedSentence.prepositions+")")){
+					statestring += "|"+ w; 
+				}
 			}
 		}catch (Exception e){
 				e.printStackTrace();
@@ -266,7 +267,8 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs;
-		rs = stmt.executeQuery("select word from wordroles where semanticrole in ('op', 'os')");
+		rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n')");
+		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os')");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
 		}
@@ -282,7 +284,7 @@ public class SentenceOrganStateMarker {
 			tags.append(tag+"|");
 		}*/
 		
-		rs = stmt.executeQuery("select modifier, tag from sentence where tag  like '[%]'"); //inner [tepal]
+		rs = stmt.executeQuery("select modifier, tag from "+this.tableprefix+"_sentence where tag  like '[%]'"); //inner [tepal]
 		while(rs.next()){
 			String m = rs.getString("modifier");
 			m = m.replaceAll("\\[^\\[*\\]", ""); 
@@ -313,7 +315,20 @@ public class SentenceOrganStateMarker {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker("fnav19_benchmark");
+		Connection conn = null;
+		String database="";
+		String username="";
+		String password="";
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19");
 		sosm.markSentences();
 
 	}

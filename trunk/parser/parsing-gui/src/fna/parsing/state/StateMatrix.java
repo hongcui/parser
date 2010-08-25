@@ -41,31 +41,53 @@ public class StateMatrix {
 	private ArrayList<State> states = null;
 	private ArrayList<Cell> matrix = null;
 	private int edgeCount = 0;
+	private Connection conn = null;
+	private String tableprefix = null;
 	//private Hashtable<State, Hashtable<State, CoocurrenceScore>> matrix = null;
 	
-	StateMatrix(){
+	StateMatrix(Connection conn, String tableprefix){
 		states = new ArrayList<State>();
 		matrix = new ArrayList<Cell>();
-		//matrix = new Hashtable<State, Hashtable<State, CoocurrenceScore>>();
+		this.tableprefix = tableprefix;
+		this.conn = conn;
+		Statement stmt = null;
+		try{
+			stmt = conn.createStatement();
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("delete from "+tableprefix+"_terms");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("delete from "+tableprefix+"_grouped_terms");
+			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+			stmt.execute("delete from "+tableprefix+"_group_decisions");
+		}catch(Exception e){
+			e.printStackTrace();
+		}		
 	}
 
 	/**
 	 * empty matrix with the knownstates as the row and column
 	 * @param knownstates
 	 */
-	StateMatrix(Set<State> knownstates){
-		//matrix = new Hashtable<State, Hashtable<State, CoocurrenceScore>>();
+	StateMatrix(Connection conn, String tableprefix, Set<State> knownstates){
 		Iterator<State> it = knownstates.iterator();
-		//Hashtable<State, CoocurrenceScore> row = new Hashtable<State, CoocurrenceScore>();
 		while(it.hasNext()){
 			State s = (State)it.next();
 			states.add(s);
-			//row.put(s, null);
 		}
-		/*it = knownstates.iterator();
-		while(it.hasNext()){
-			matrix.put((State)it.next(), row);
-		}*/
+		this.conn = conn;
+		Statement stmt = null;
+		this.tableprefix = tableprefix;
+		try{
+			stmt = conn.createStatement();
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("delete from "+tableprefix+"_terms");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			//stmt.execute("delete from terms");
+			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+			//stmt.execute("delete from terms");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	private ArrayList<State> getStates(){
@@ -99,8 +121,8 @@ public class StateMatrix {
 			states.add(s2);
 			int i1 = states.indexOf(s1);
 			int i2 = states.indexOf(s2);
-			Cell s1s2 = new Cell(i1, i2, new CoocurrenceScore(score, source));
-			Cell s2s1 = new Cell(i2, i1, new CoocurrenceScore(score, source));
+			Cell s1s2 = new Cell(i1, i2, new CooccurrenceScore(score, source));
+			Cell s2s1 = new Cell(i2, i1, new CooccurrenceScore(score, source));
 			matrix.add(s1s2);
 			matrix.add(s2s1);
 		}
@@ -111,8 +133,8 @@ public class StateMatrix {
 			states.add(newstate);
 			int i1 = states.indexOf(existstate);
 			int i2 = states.indexOf(newstate);
-			Cell en = new Cell(i1, i2, new CoocurrenceScore(score, source));
-			Cell ne = new Cell(i2, i1, new CoocurrenceScore(score, source));
+			Cell en = new Cell(i1, i2, new CooccurrenceScore(score, source));
+			Cell ne = new Cell(i2, i1, new CooccurrenceScore(score, source));
 			matrix.add(en);
 			matrix.add(ne);
 		}
@@ -124,20 +146,20 @@ public class StateMatrix {
 			int cellindex = matrix.indexOf(c);
 			if(cellindex >=0){
 				Cell e = matrix.get(cellindex);
-				CoocurrenceScore cs = e.getScore();
+				CooccurrenceScore cs = e.getScore();
 				cs.updateBy(score, source);
 			}else{
-				matrix.add(new Cell(i1, i2, new CoocurrenceScore(score, source)));
+				matrix.add(new Cell(i1, i2, new CooccurrenceScore(score, source)));
 			}
 			
 			c = new Cell(i2, i1, null);
 			cellindex = matrix.indexOf(c);
 			if(cellindex >=0){
 				Cell e = matrix.get(cellindex);
-				CoocurrenceScore cs = e.getScore();
+				CooccurrenceScore cs = e.getScore();
 				cs.updateBy(score, source);
 			}else{
-				matrix.add(new Cell(i2, i1, new CoocurrenceScore(score, source)));
+				matrix.add(new Cell(i2, i1, new CooccurrenceScore(score, source)));
 			}
 		}
 		
@@ -154,19 +176,23 @@ public class StateMatrix {
 		return null;
 	}
 	
-	public void save2MySQL(String database, String username, String password){
-		Connection conn = null;
+	public CooccurrenceScore cooccurScore(String str1, String str2){
+		State state1 = this.getStateByName(str1);
+		State state2 = this.getStateByName(str2);
+		int i = states.indexOf(state1);
+		int j = states.indexOf(state2);
+		Cell c = new Cell(i, j, null);
+		if(matrix.contains(c)){
+			c = matrix.get(matrix.indexOf(c));
+			return c.getScore();//"[]" is an empty score
+		}else{
+			return null;
+		}		
+	}
+	
+	public void save2MySQL(Connection conn, String tableprefix, String username, String password){
 		try{
-			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
-				conn = DriverManager.getConnection(URL);
-				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
-				stmt.execute("delete from terms");
-			}
-		
-		
+			Statement stmt = conn.createStatement();
 			Collections.sort(matrix, new Cell());
 			StringBuffer sb = new StringBuffer("");
 			Cell c = null;
@@ -180,31 +206,30 @@ public class StateMatrix {
 						//Statement stmt = conn.createStatement();
 						//ResultSet rs = stmt.executeQuery("select term from terms where term = '"+s1.getName()+"' and cooccurTerm='"+s2.getName()+"'");
 						Cell data = matrix.get(matrix.indexOf(c));
-						CoocurrenceScore score = data.getScore();//"[]" is an empty score
+						CooccurrenceScore score = data.getScore();//"[]" is an empty score
 						String values = "'"+s1.getName()+"','";
 
 						String src = score.getSourcesAsString();
 						src = src.length() >=2000? src.substring(0, 1999) : src;
 						values +=s2.getName()+"',"+score.getSources().size()+",'"+src+"'";
-
-						Statement stmt = conn.createStatement();
-						stmt.execute("insert into terms values("+values+")");
+						stmt.execute("insert into "+tableprefix+"_terms values("+values+")");
 					}
-				}
-				
+				}				
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
-	}
+	}	
+
 	/**
 	 * group cooccured nodes into groups, using JUNG libary.
 	 * 
 	 */
-	public void Grouping(){
+	public Object Grouping(){
 		//construct the graph
-		Graph<State, MyLink> g = new UndirectedSparseMultigraph<State, MyLink>();
+		Graph<State, MyLink> g = new UndirectedSparseMultigraph<State, MyLink>();		
+		//state as node
 		Iterator<Cell> it = this.matrix.iterator();
 		while(it.hasNext()){
 			Cell c = it.next();
@@ -285,41 +310,36 @@ public class StateMatrix {
 		System.out.println("Voltage Clustering");
 		VoltageClusterer vc = new VoltageClusterer(g, 50);
 		Collection clusters = vc.cluster(50);
-		printGroups(clusters);
-	}
-
-	private void printGroups(Collection groups) {
-		Iterator<Set> sets = groups.iterator();
-		int gcount = 0;
-		while(sets.hasNext()){
-			Set states = (Set)sets.next();
-			System.out.println("Group "+gcount+ ":");
-			Iterator<Set> sit = states.iterator();
-			while(sit.hasNext()){
-				State s = (State)sit.next();
-				System.out.print("state "+s.getName()+ "\t");
-			}
-			System.out.println(" ");
-			gcount++;
-		}
-	}
-	private void printGroups(Set groups) {
-		Iterator<Set> sets = groups.iterator();
-		int gcount = 0;
-		while(sets.hasNext()){
-			Set states = (Set)sets.next();
-			System.out.println("Group "+gcount+ ":");
-			Iterator<Set> sit = states.iterator();
-			while(sit.hasNext()){
-				State s = (State)sit.next();
-				System.out.print("state "+s.getName()+ "\t");
-			}
-			System.out.println(" ");
-			gcount++;
-		}
+		saveClusters(clusters);
+		return clusters;
 	}
 	
-	
+	private void saveClusters(Collection clusters){
+		int gcount = 1;
+		Iterator<Set> sets = clusters.iterator();
+		while(sets.hasNext()){
+			Set states = (Set)sets.next();
+			Iterator<State> sit = states.iterator();
+			StringBuffer statestring = new StringBuffer();
+			while(sit.hasNext()){
+				State s = sit.next();
+				statestring.append("'"+s.getName()+"', ");				
+			}
+			String stategroup = statestring.toString().replaceFirst(", $", "");
+			try{
+				Statement stmt = conn.createStatement();
+				String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
+				this.tableprefix+"_terms where term in ("+stategroup+
+				"))";
+				stmt.execute(q);
+				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId)");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			gcount++;	
+		}
+			
+	}
 	
 	public String toString(){
 		Collections.sort(matrix, new Cell());
@@ -342,6 +362,11 @@ public class StateMatrix {
 			}
 		}
 		return sb.toString();
+	}
+
+	public void output2GraphML(Object groups) {
+		GraphMLOutputter gmo = new GraphMLOutputter(groups, this);
+		gmo.output();
 	}
 					 
 }

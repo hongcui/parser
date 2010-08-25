@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.parsing;
 //
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,6 +68,8 @@ import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.GraphNode;
 import fna.parsing.character.LearnedTermsReport;
 import fna.parsing.character.ManipulateGraphML;
+import fna.parsing.state.StateCollectorBootstrapper;
+import fna.parsing.state.StateCollectorTest;
 
 import org.eclipse.swt.custom.ScrolledComposite;
 /**
@@ -1214,7 +1218,7 @@ public class MainForm {
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Group grpDeleteAnyTerm = new Group(composite_8, SWT.NONE);
-		grpDeleteAnyTerm.setText("Delete any term that you think doesn't co-occur");
+		grpDeleteAnyTerm.setText("Delete any term that you think doesn't belong to this group");
 		grpDeleteAnyTerm.setBounds(0, 0, 451, 234);
 		
 		termsScrolledComposite = new ScrolledComposite(grpDeleteAnyTerm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -1678,9 +1682,30 @@ public class MainForm {
 
 	private void loadTagTable() {
 		tagTable.removeAll();
-		
+
 		try {
-			 mainDb.loadTagsTableData(tagTable);
+			 if(mainDb.loadTagsTableData(tagTable)==0){
+				 //StateCollectorBootstrapper sct = new StateCollectorBootstrapper(ApplicationUtilities.getProperty("database.name"), MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*TODO: debug*/
+					Connection conn = null;
+					String database=ApplicationUtilities.getProperty("database.name");
+					String username=ApplicationUtilities.getProperty("database.username");
+					String password=ApplicationUtilities.getProperty("database.password");
+					try{
+						if(conn == null){
+							Class.forName("com.mysql.jdbc.Driver");
+							String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+							conn = DriverManager.getConnection(URL);
+						}
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				 
+				 
+				 StateCollectorTest sct = new StateCollectorTest(conn, this.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*using learned semanticroles only*/
+				 sct.collect();
+				 sct.saveStates();
+				 sct.grouping4GraphML();
+			 }
 		} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
 				exe.printStackTrace();
