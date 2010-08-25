@@ -97,7 +97,7 @@ public class LearnedTermsReport {
 			//make another table with learned singular organ names.
 			createLearnedStructureTable();
 			DeHyphenizerCorrected dh = new DeHyphenizerCorrected(ApplicationUtilities.getProperty("database.name"), 
-					otablename, "structure", null, "_", MainForm.dataPrefixCombo.getText());
+					otablename, "structure", null, "_", MainForm.dataPrefixCombo.getText().replaceAll("-", "_"), null);//TODO: replace last null with glossary
 			dh.deHyphen();
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport constructor", e);
