@@ -91,7 +91,7 @@ public class CharacterStateDBAccess {
 			
 			conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select * from " + tablePrefix +"_grouped_foc_terms " +
+			String sql = "select * from " + tablePrefix +"_grouped_terms " +
 					"where groupId=" + group+ " order by frequency desc";
 			
 			pstmt = conn.prepareStatement(sql);
@@ -179,14 +179,14 @@ public class CharacterStateDBAccess {
 		
 		Connection conn = null;
 		PreparedStatement pstmt = null; 
-		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_foc_terms where groupId=?";
+		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_terms where groupId=?";
 		try {
 			conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, terms.get(1).getGroupId());
 			pstmt.execute();
 			
-			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_foc_terms values(?,?,?,?,?,?)";
+			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_terms values(?,?,?,?,?,?)";
 			
 			pstmt = conn.prepareStatement(sql);
 			
