@@ -57,7 +57,7 @@ public class StateMatrix {
 			stmt.execute("delete from "+tableprefix+"_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			stmt.execute("delete from "+tableprefix+"_grouped_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, decision varchar(200), primary key(groupId))");
 			stmt.execute("delete from "+tableprefix+"_group_decisions");
 		}catch(Exception e){
 			e.printStackTrace();
@@ -79,7 +79,7 @@ public class StateMatrix {
 		this.tableprefix = tableprefix;
 		try{
 			stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), keep varchar(200), primary key(term, cooccurTerm))");
 			stmt.execute("delete from "+tableprefix+"_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			//stmt.execute("delete from terms");
