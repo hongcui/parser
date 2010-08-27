@@ -5547,10 +5547,11 @@ while(defined ($file=readdir(IN))){
 	$text =~ s#>#g; greater than #g; #remove >
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
-  	$text = hideBrackets($text);
-  	#$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
-  	#$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
-  	#$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
+  	
+  	#$text = hideBrackets($text);#not fully tested yet
+  	$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
+  	$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
+  	$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
   	$text =~ s#(\w)([:;\.])(\w)#$1$2 $3#g; #absent;blade => absent; blade
