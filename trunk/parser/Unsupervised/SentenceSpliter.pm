@@ -80,6 +80,7 @@ sub get_sentences {
 	my $marked_text = first_sentence_breaking($text);
 	my $fixed_marked_text = remove_false_end_of_sentence($marked_text);
 	$fixed_marked_text = split_unsplit_stuff($fixed_marked_text);
+	$fixed_marked_text =~ s#($EOS\s*)+#$EOS#g;
 	my @sentences = split(/$EOS/,$fixed_marked_text);
 	#my $cleaned_sentences = clean_sentences(\@sentences);
 	#return $cleaned_sentences;

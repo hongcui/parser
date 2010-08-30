@@ -642,7 +642,7 @@ sub addheuristicsnouns{
 		              #            $sth->execute();
 	    		      update($1, $2, "*", "wordpos", 0);
 	    		      #populate singularpluralpair table with Ns
-	    		      if($pn =~ /\[s\]$/ && $w =~ /\[p\]$/){
+	    		      if($pn=~/\w/ && $w=~/\w/ && ($pn =~ /\[s\]$/ && $w =~ /\[p\]$/)){
 	    		      		my $sg = $pn;
 	    		      		my $pl = $w;
 	    		      		$pn =~ s#\w\w\w\[s\]$##g;
@@ -5552,6 +5552,7 @@ while(defined ($file=readdir(IN))){
   	$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
   	$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
   	$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
+  	
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
   	$text =~ s#(\w)([:;\.])(\w)#$1$2 $3#g; #absent;blade => absent; blade
