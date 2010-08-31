@@ -409,8 +409,8 @@ public class MainForm {
 					}
 
 				}	
-				
-				if (statusOfMarkUp[6]) {
+				//changed from 6 to 5
+				if (statusOfMarkUp[5]) {
 					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))){
 						// set the decisions combo
 						setCharacterTabDecisions();
@@ -1009,8 +1009,8 @@ public class MainForm {
 			public void widgetSelected(final SelectionEvent e) {
 				loadTags();
 				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					statusOfMarkUp[6] = true;
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
+					statusOfMarkUp[5] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
 					exe.printStackTrace();
