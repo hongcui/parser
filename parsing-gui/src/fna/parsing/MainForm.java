@@ -393,7 +393,9 @@ public class MainForm {
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.six.name"))
-							&& !tabName.equals(ApplicationUtilities.getProperty("tab.seven.name"))) {
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.seven.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.character"))
+					) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
 								ApplicationUtilities.getProperty("tab.seven.name"), 
@@ -1014,7 +1016,7 @@ public class MainForm {
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
-					statusOfMarkUp[6] = true;
+					//statusOfMarkUp[6] = true;
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
