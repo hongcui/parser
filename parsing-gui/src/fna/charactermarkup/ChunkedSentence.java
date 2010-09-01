@@ -890,7 +890,7 @@ public class ChunkedSentence {
 	private Chunk getNextNumerics() {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
-		if(t.matches(".*?"+MyPOSTagger.numberpattern+"(-("+this.counts+")\\b|$)")){ //ends with a number
+		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-("+this.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
 			t = this.chunkedtokens.get(this.pointer);

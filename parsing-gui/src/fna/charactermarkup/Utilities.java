@@ -123,11 +123,11 @@ public class Utilities {
 			}
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select category from fnaglossaryfixed where term ='"+w+"'");
+				ResultSet rs = stmt.executeQuery("select category from fnaglossary where term ='"+w+"'");
 				while(rs.next()){
 					String cat = rs.getString("category");
 					if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
-						ch += rs.getString("category")+"_or_";
+						ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
 					}
 				}
 				rs.close();

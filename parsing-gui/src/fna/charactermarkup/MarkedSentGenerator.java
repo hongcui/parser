@@ -29,7 +29,7 @@ public class MarkedSentGenerator {
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists markedsentence (source varchar(100) NOT NULL, markedsent varchar(2000), PRIMARY KEY(source))");
+				stmt.execute("create table if not exists markedsentence (source varchar(100) NOT NULL, markedsent text, rmarkedsent text, PRIMARY KEY(source))");
 				stmt.execute("delete from markedsentence");
 				markedsentgen();
 			}
