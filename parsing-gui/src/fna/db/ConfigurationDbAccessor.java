@@ -37,7 +37,10 @@ public class ConfigurationDbAccessor {
 	static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-		} catch (ClassNotFoundException e) {
+			Connection conn = DriverManager.getConnection(url);
+			Statement stmt = conn.createStatement();
+			stmt.execute("create table if not exists configtags (tagname varchar(200), marker varchar(100), startStyle varchar(100), primary key (tagname))");
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in ConfigurationDbAccessor" + e);
 			e.printStackTrace();
