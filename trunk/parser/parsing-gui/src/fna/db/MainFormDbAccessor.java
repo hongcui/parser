@@ -177,7 +177,7 @@ public class MainFormDbAccessor {
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' order by sentence";
+			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' or isnull(tag) order by sentence";
 			stmt = conn.prepareStatement(sql);
 			
 			int i = 0;
