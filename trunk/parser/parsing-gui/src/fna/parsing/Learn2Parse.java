@@ -5,11 +5,14 @@ package fna.parsing;
 
 import java.util.ArrayList;
 
+import org.jdom.Element;
+
 /**
  * @author Hong Updates
  *
  */
 public interface Learn2Parse {
-	public ArrayList<String> getMarkedDescription(String source);
+	public Object getMarkedDescription(String source); //maybe ArrayList<String> or Element
+
 
 }
