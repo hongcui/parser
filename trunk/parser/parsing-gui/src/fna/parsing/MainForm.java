@@ -1014,6 +1014,8 @@ public class MainForm {
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
+					statusOfMarkUp[6] = true;
+					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
 					exe.printStackTrace();
