@@ -109,9 +109,9 @@ public class StateCollector  {
 				Statement stmt = conn.createStatement();
 				stmt.execute("create table if not exists "+this.tableprefix+"_learnedstates (state varchar(100) NOT NULL PRIMARY KEY, count int(4))");
 				stmt.execute("delete from "+this.tableprefix+"_learnedstates");
-				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (source varchar(100) NOT NULL PRIMARY KEY, markedsent varchar(2000))");
-				ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
-				if(rs.next()){this.marked = true;}
+				//stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (source varchar(100) NOT NULL PRIMARY KEY, markedsent text, rmarkedsent text)");
+				//ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
+				//if(rs.next()){this.marked = true;}
 				stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 			
 		}catch(Exception e){

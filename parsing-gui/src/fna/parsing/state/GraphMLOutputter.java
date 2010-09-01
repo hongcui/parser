@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -21,8 +22,6 @@ import fna.parsing.Registry;
  *
  */
 public class GraphMLOutputter {
-	private Iterator<Set> sets = null;
-	private StateMatrix matrix = null;
 	private static String nl = System.getProperty("line.separator");
 	public static String header = "<?xml version='1.0' encoding='UTF-8' standalone='no'?> " +nl+
 			"<graphml xmlns='http://graphml.graphdrawing.org/xmlns' " +nl+
@@ -36,14 +35,15 @@ public class GraphMLOutputter {
 	/**
 	 * 
 	 */
-	public GraphMLOutputter(Object nodegroups, StateMatrix matrix) {
-		
-		if(nodegroups instanceof Collection){
-			this.sets = ((Collection)nodegroups).iterator();
-		}else if(nodegroups instanceof Set){
-			this.sets = ((Set)nodegroups).iterator();
+	public GraphMLOutputter() {
+		//empty up the folder
+
+		String path = Registry.TargetDirectory;
+		File dir = new File(path, ApplicationUtilities.getProperty("CHARACTER-STATES"));
+		File[] files = dir.listFiles();
+		for(int i = 0; i<files.length; i++){
+			files[i].delete();
 		}
-		this.matrix = matrix;
 		
 	}
 	/**
@@ -51,55 +51,43 @@ public class GraphMLOutputter {
 	 * @param sets
 	 */
 
-	public void output(){		
+	public void output(ArrayList<ArrayList> groups){		
 		int gcount = 1;
-		
+		Iterator<ArrayList> sets = groups.iterator();
 		while(sets.hasNext()){
 			String graphXML = GraphMLOutputter.header+nl;
-			Set states = (Set)sets.next();
+			ArrayList<ArrayList> group = (ArrayList)sets.next();
 			System.out.println("Group "+gcount+ ":");
-			Iterator<State> sit = states.iterator();
 			Hashtable<String, String> nodes = new Hashtable<String, String>();
-			//output nodes
 			int nid = 1;
-			//<node id='3'>
-			//<data key='name'>stem</data>
-			//</node>
-			while(sit.hasNext()){
-				State s = sit.next();
-				String name = s.getName();
-				graphXML += "<node id='"+nid+"'><data key='name'>"+name+"</data></node>"+nl;
-				nodes.put(nid+"", name);
-				nid++;
-				//System.out.print("state "+s.getName()+ "\t");
+			for(int i = 0; i < group.size()-1; i++){
+				String t1 =(String)((ArrayList)group.get(i)).get(0);
+				String t2 =(String)((ArrayList)group.get(i)).get(1);
+				String t1id = nodes.get(t1);
+				String t2id = nodes.get(t2);
+				int w  =Integer.parseInt((String)((ArrayList)group.get(i)).get(2));
+				if(t1id==null){
+					t1id = nid+"";
+					graphXML += "<node id='"+t1id+"'><data key='name'>"+t1+"</data></node>"+nl;
+					nodes.put(t1, nid+"");
+					nid++;
+				}
+				if(t2id==null){
+					t2id = nid+"";
+					graphXML += "<node id='"+t2id+"'><data key='name'>"+t2+"</data></node>"+nl;
+					nodes.put(t2, nid+"");
+					nid++;
+				}
+				graphXML +="<edge source='"+t1id+"' target='"+t2id+"' weight='"+normalize(w)+"'/>"+nl;
 			}
 			
-			//output edges
-			int edgecount = 1;
-			int totalv = 0;
-			for(int i = 1; i < nid; i++){
-				for(int j = i+1; j < nid; j++){
-					String str1 = nodes.get(i+"");
-					String str2 = nodes.get(j+"");
-					CooccurrenceScore score = matrix.cooccurScore(str1, str2);
-					if(score!=null){
-						int v = score.valueSum();
-						if(v!=0){
-							//<edge source='4' target='3'/>
-							totalv += v;
-							graphXML +="<edge source='"+i+"' target='"+j+"' weight='"+normalize(v, totalv, edgecount)+"'/>"+nl;
-							edgecount++;
-						}
-					}
-				}
-			}
 			graphXML+="</graph>"+nl+"</graphml>";
 			output2file(gcount, graphXML);
 			gcount++;
 		}
 	}
 		
-	private float normalize(int v, int total, int count) {
+	private float normalize(int v) {
 		// TODO Auto-generated method stub
 		return 1;
 	}
