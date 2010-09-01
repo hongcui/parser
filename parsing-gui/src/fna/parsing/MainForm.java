@@ -494,7 +494,10 @@ public class MainForm {
 				loadProject();
 				// code for setting the text of the combo to the last accessed goes here - Partha
 				try {
-					MainForm.dataPrefixCombo.setText(mainDb.getLastAccessedDataSet());
+					String t = mainDb.getLastAccessedDataSet();
+					String prefix = t==null? "" : t;
+					
+					MainForm.dataPrefixCombo.setText(prefix);
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.saveStatus("general", combo.getText(), true);
 					statusOfMarkUp[0] = true;
@@ -1640,7 +1643,20 @@ public class MainForm {
 	
 	private void startFinalize() {
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
-		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		Connection conn = null;
+		String database=ApplicationUtilities.getProperty("database.name");
+		String username=ApplicationUtilities.getProperty("database.username");
+		String password=ApplicationUtilities.getProperty("database.password");
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn);
 		vf.start();
 	}
 	
@@ -1686,25 +1702,26 @@ public class MainForm {
 		try {
 			 if(mainDb.loadTagsTableData(tagTable)==0){
 				 //StateCollectorBootstrapper sct = new StateCollectorBootstrapper(ApplicationUtilities.getProperty("database.name"), MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*TODO: debug*/
-					Connection conn = null;
-					String database=ApplicationUtilities.getProperty("database.name");
-					String username=ApplicationUtilities.getProperty("database.username");
-					String password=ApplicationUtilities.getProperty("database.password");
-					try{
-						if(conn == null){
-							Class.forName("com.mysql.jdbc.Driver");
-							String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
-							conn = DriverManager.getConnection(URL);
-						}
-					}catch(Exception e){
-						e.printStackTrace();
+				Connection conn = null;
+				String database=ApplicationUtilities.getProperty("database.name");
+				String username=ApplicationUtilities.getProperty("database.username");
+				String password=ApplicationUtilities.getProperty("database.password");
+				try{
+					if(conn == null){
+						Class.forName("com.mysql.jdbc.Driver");
+						String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+						conn = DriverManager.getConnection(URL);
 					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 				 
 				 
 				 StateCollectorTest sct = new StateCollectorTest(conn, this.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*using learned semanticroles only*/
 				 sct.collect();
 				 sct.saveStates();
 				 sct.grouping4GraphML();
+				 conn.close();
 			 }
 		} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
