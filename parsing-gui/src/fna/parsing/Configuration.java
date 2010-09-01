@@ -96,7 +96,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type1.setText("Type 1: Word Document with Semantic-Based Styles");
+		type1.setText("Type 1:");
 		
 		Button type2 = new Button(group_1, SWT.RADIO);
 		type2.setBounds(10, 166, 90, 16);
@@ -108,7 +108,7 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type2.setText("Type 2: Document with Display Styles");
+		type2.setText("Type 2:");
 		
 		Button type3 = new Button(group_1, SWT.RADIO);
 		type3.setBounds(10, 307, 90, 16);
@@ -126,26 +126,29 @@ public class Configuration {
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
-		type3.setText("Type 3: OCRed Text");
+		type3.setText("Type 3:");
 		
 		Label label_1 = new Label(group_1, SWT.NONE);
 		label_1.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
-				ApplicationUtilities.getProperty("application.logo")));
+				ApplicationUtilities.getProperty("image.type2")));
 		label_1.setBounds(106, 167, 611, 127);
+		label_1.setToolTipText("Word Document with Display Styles");
 		
 		Label label_2 = new Label(group_1, SWT.NONE);
 		label_2.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
-				ApplicationUtilities.getProperty("application.logo")));
+				ApplicationUtilities.getProperty("image.type1")));
 		label_2.setBounds(106, 30, 611, 121);
+		label_2.setToolTipText("Word Document with Semantic_Based Styles");
 		
 		Label label_3 = new Label(group_1, SWT.NONE);
 		label_3.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
-				ApplicationUtilities.getProperty("application.logo")));
+				ApplicationUtilities.getProperty("image.type3")));
 		label_3.setBounds(106, 308, 611, 127);
+		label_3.setToolTipText("OCRed Text");
 		
 		Button btnType = new Button(group_1, SWT.RADIO);
 		btnType.setBounds(10, 451, 71, 16);
-		btnType.setText("Type 4: XML Documents");
+		btnType.setText("Type 4:");
 		btnType.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
 				shell.setVisible(false);
@@ -164,8 +167,8 @@ public class Configuration {
 		Label label_4 = new Label(group_1, SWT.NONE);
 		label_4.setBounds(106, 451, 611, 117);
 		label_4.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
-				ApplicationUtilities.getProperty("application.logo")));
-	
+				ApplicationUtilities.getProperty("image.type4")));
+		label_4.setToolTipText("XML Documents with Text Morphological Descriptions");
 		shell.open();
 		shell.layout();
 		while (!shell.isDisposed()) {
