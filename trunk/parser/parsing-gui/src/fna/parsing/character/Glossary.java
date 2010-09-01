@@ -51,12 +51,12 @@ public class Glossary {
 						g=true;
 					}
 				}
+				stmt.execute("create table if not exists "+tablename1+" (id int not null auto_increment primary key, term1 varchar(100), type varchar(10), term2 varchar(100))");
+				stmt.execute("delete from "+tablename1);				
 				if(!g){
 					stmt.execute("create table "+tablename+" (id int not null auto_increment primary key, term varchar(100), category varchar(100), limitation varchar(200), status varchar(50), definition varchar(2000))");
 					populateTable(glossfile);//TODO: if tablename exist, do not populate it again
 				}				
-				stmt.execute("create table if not exists "+tablename1+" (id int not null auto_increment primary key, term1 varchar(100), type varchar(10), term2 varchar(100))");
-				stmt.execute("delete from "+tablename1);				
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner constructor" + e);
