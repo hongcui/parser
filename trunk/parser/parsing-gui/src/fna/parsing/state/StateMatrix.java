@@ -53,9 +53,9 @@ public class StateMatrix {
 		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			stmt.execute("delete from "+tableprefix+"_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			stmt.execute("delete from "+tableprefix+"_grouped_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, decision varchar(200), primary key(groupId))");
 			stmt.execute("delete from "+tableprefix+"_group_decisions");
@@ -79,9 +79,9 @@ public class StateMatrix {
 		this.tableprefix = tableprefix;
 		try{
 			stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), keep varchar(200), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
 			stmt.execute("delete from "+tableprefix+"_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
 			//stmt.execute("delete from terms");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 			//stmt.execute("delete from terms");
@@ -212,7 +212,7 @@ public class StateMatrix {
 						String src = score.getSourcesAsString();
 						src = src.length() >=2000? src.substring(0, 1999) : src;
 						values +=s2.getName()+"',"+score.getSources().size()+",'"+src+"'";
-						stmt.execute("insert into "+tableprefix+"_terms values("+values+")");
+						stmt.execute("insert into "+tableprefix+"_terms (term, cooccurTerm, frequency, sourceFiles) values("+values+")");
 					}
 				}				
 			}
@@ -364,9 +364,37 @@ public class StateMatrix {
 		return sb.toString();
 	}
 
-	public void output2GraphML(Object groups) {
-		GraphMLOutputter gmo = new GraphMLOutputter(groups, this);
-		gmo.output();
+	public void output2GraphML() {
+		GraphMLOutputter gmo = new GraphMLOutputter();
+		//from saved grouped_terms
+		ArrayList<ArrayList> groups = new ArrayList<ArrayList>();
+		int gnumber = 0;		
+		try{
+			Statement stmt = conn.createStatement();
+			String q = "select groupId from "+this.tableprefix+"_grouped_terms order by groupId desc";
+			ResultSet rs = stmt.executeQuery(q);
+			if(rs.next()){
+				gnumber = rs.getInt("groupId");
+			}				
+			for(int i = 1; i<=gnumber; i++){
+				q = "select term, cooccurTerm, frequency from "+this.tableprefix+"_grouped_terms where groupId='"+i+"'";
+				rs = stmt.executeQuery(q);
+				ArrayList<ArrayList> group = new ArrayList<ArrayList>();
+				while(rs.next()){
+					ArrayList<String> row = new ArrayList<String>();
+					row.add(rs.getString("term"));
+					row.add(rs.getString("cooccurTerm"));
+					row.add(rs.getString("frequency"));				
+					group.add(row);
+				}
+				rs.close();
+				groups.add(group);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}			
+		
+		gmo.output(groups);
 	}
 					 
 }

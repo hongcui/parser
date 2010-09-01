@@ -43,8 +43,9 @@ public class SentenceOrganStateMarker {
 		try{
 				Statement stmt = conn.createStatement();
 				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (source varchar(100) NOT NULL Primary Key, markedsent text, rmarkedsent text)");
-				ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
-				if(rs.next()){this.marked = true;}
+				stmt.execute("delete from "+this.tableprefix+"_markedsentence");
+				//ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
+				//if(rs.next()){this.marked = true;}
 				stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 		}catch(Exception e){
 			e.printStackTrace();
@@ -233,8 +234,8 @@ public class SentenceOrganStateMarker {
 		String statestring = "";
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
-			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c'");
+			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
+			ResultSet rs = stmt.executeQuery("select word from wordroles where semanticrole ='c'");
 			while(rs.next()){
 				String w = rs.getString("word");
 				if(!w.matches("\\W+") && !w.matches("("+ChunkedSentence.stop+")") &&!w.matches("("+ChunkedSentence.prepositions+")")){
@@ -267,8 +268,8 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs;
-		rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n')");
-		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os')");
+		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n')");
+		rs = stmt.executeQuery("select word from wordroles where semanticrole in ('op', 'os')");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
 		}

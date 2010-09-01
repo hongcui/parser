@@ -39,8 +39,8 @@ public class StateCollectorTest extends StateCollector {
 	}
 	
 	public void grouping4GraphML(){
-		Object groups = statematrix.Grouping();
-		statematrix.output2GraphML(groups);
+		statematrix.Grouping();
+		statematrix.output2GraphML();
 	}
 			
 	/**
