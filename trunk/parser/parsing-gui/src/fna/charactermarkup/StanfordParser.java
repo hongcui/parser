@@ -19,6 +19,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.Learn2Parse;
+import fna.parsing.VolumeFinalizer;
 import fna.parsing.state.SentenceOrganStateMarker;
 
 
@@ -26,7 +28,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
  * @author hongcui
  *
  */
-public class StanfordParser {
+public class StanfordParser implements Learn2Parse{
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
@@ -36,33 +38,33 @@ public class StanfordParser {
 	private File parsedfile = null;
 	private String POSTaggedSentence = "POSedSentence";
 	private MyPOSTagger tagger = null;
+	private String tableprefix = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 	private boolean debug = true;
 	/**
 	 * 
 	 */
-	public StanfordParser(String posedfile, String parsedfile, String database) {
+	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix) {
 		// TODO Auto-generated constructor stub
 		this.posedfile = new File(posedfile); 
 		this.parsedfile = new File(parsedfile);
 		this.database = database;
+		this.tableprefix = tableprefix;
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				//stmt.execute("create table if not exists marked_pos (sentid MEDIUMINT NOT NULL, source varchar(100) NOT NULL, markedsent TEXT, PRIMARY KEY(sentid))");
-				stmt.execute("create table if not exists "+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				//stmt.execute("delete from "+this.POSTaggedSentence);
+				stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
 				stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		//this.sosm = new SentenceOrganStateMarker(this.database);
-		tagger = new MyPOSTagger(conn);
+		tagger = new MyPOSTagger(conn, this.tableprefix);
 	}
 	
 	public void POSTagging(){
@@ -74,7 +76,7 @@ public class StanfordParser {
 			
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
 			//stmt.execute("alter table markedsentence add rmarkedsent text");
-			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by (source+0) ");////sort as numbers
+			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by (source+0) ");////sort as numbers
 			//ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
 			int count = 1;
 			while(rs.next()){
@@ -84,13 +86,13 @@ public class StanfordParser {
 				//TODO: may need to fix "_"
 				str = tagger.POSTag(str, src);
 	       		//stmt2.execute("insert into marked_pos values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+str+"')");
-	       		stmt2.execute("insert into "+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
-	       		stmt2.close();
+	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		//System.out.println(str);
 	       		out.println(str);
 	       		count++;
 	       		//sentmapping.put(""+count, src);
 			}
+			stmt2.close();
 			rs.close();
 			out.close();
 		}catch(Exception e){
@@ -111,39 +113,85 @@ public class StanfordParser {
 			out = new PrintStream( ostream );	
  	  		Runtime r = Runtime.getRuntime();
 	  		//Process p = r.exec("cmd /c stanfordparser.bat");
- 	  		String cmdtext = "cmd /c stanfordparser.bat >"+this.parsedfile+" 2<&1";
-	  		Process p = r.exec("cmd /c stanfordparser.bat >"+this.parsedfile+" 2<&1");
+ 	  		//String cmdtext = "stanfordparser.bat >"+this.parsedfile+" 2<&1";
+ 	  		//String cmdtext = "cmd /c stanfordparser.bat";	  		
+	  		String cmdtext = "java -mx900m -cp \"C:/stanford-parser-2010-08-20/stanford-parser.jar;\" edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
+	  				"-sentences newline -tokenized -tagSeparator / C:/stanford-parser-2010-08-20/englishPCFG.ser.gz  "+
+	  				this.posedfile;
+	  		Process proc = r.exec(cmdtext);
+          
+		    ArrayList<String> headings = new ArrayList<String>();
+	  	    ArrayList<String> trees = new ArrayList<String>();
+	  
+            // any error message?
+            StreamGobbler errorGobbler = new 
+                StreamGobbler(proc.getErrorStream(), "ERROR", headings, trees);            
+            
+            // any output?
+            StreamGobbler outputGobbler = new 
+                StreamGobbler(proc.getInputStream(), "OUTPUT", headings, trees);
+                
+            // kick them off
+            errorGobbler.start();
+            outputGobbler.start();
+                                    
+            // any error???
+            int exitVal = proc.waitFor();
+            System.out.println("ExitValue: " + exitVal);
+
+
 	  		//Process p = r.exec("cmd /c cd \"C:\\Program Files\\stanford-parser-2010-02-26\"");
 	  		//String command = "cmd /c java -mx900m -cp \"stanford-parser.jar;\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -sentences newline -tokenized -tagSeparator / englishPCFG.ser.gz \""+this.posedfile.getAbsolutePath()+"\" > "+this.parsedfile.getAbsolutePath();
 	  		//p = r.exec(command);
 	  		
-	  		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			
+	  		
+	  	    /*BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));			
 			BufferedReader errInput = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			
+			int h = 1;
+			int t = 1;
 			// read the errors from the command
 			String e = "";
 			while ((e = errInput.readLine()) != null) {
 				System.out.println(e);
-				//Matcher m = ptn.matcher(e);
-				//if(m.matches()){
-				//	e = "["+(String) sentmapping.get(m.group(1))+"]";
-				//}
-				//out.println(e);
+				if(e.startsWith("Parsing [sent.")){
+            		headings.add(e);
+            		System.out.println(h+" add heading: "+e);
+            		h++;
+            	}
 			}
 			// read the output from the command
 			String s = "";
+			StringBuffer sb = new StringBuffer();
 			while ((s = stdInput.readLine()) != null) {
 				System.out.println(s);
-				//Matcher m = ptn.matcher(s);
-				//if(m.matches()){
-				//	s = "["+(String) sentmapping.get(m.group(1))+"]";
-				//}
-				//out.println(s);
-				
+				if(s.startsWith("(ROOT") || s.startsWith("Sentence too long")){
+        			if(sb.toString().trim().length()>0){
+        				trees.add(sb.toString());
+        				System.out.println(t+" add tree: "+sb.toString());
+        				t++;
+        			}
+        			sb = new StringBuffer();
+        			sb.append(s+System.getProperty("line.separator"));
+        		}else if(s.matches("^\\s*\\(.*")){
+        			sb.append(s+System.getProperty("line.separator"));
+        		}
 			}
-			
-			
+			trees.add(sb.toString());
+			*/
+			//format
+            if(headings.size() != trees.size()){
+            	System.err.println("Error reading parsing results");
+            	System.exit(2);
+            }
+            StringBuffer sb = new StringBuffer();
+            for(int i = 0; i<headings.size(); i++){
+            	sb.append(headings.get(i)+System.getProperty("line.separator"));
+            	sb.append(trees.get(i)+System.getProperty("line.separator"));
+            }
+            PrintWriter pw = new PrintWriter(new FileOutputStream(this.parsedfile));
+            pw.print(sb.toString());
+            pw.flush();
+            pw.close();			
 	  	}catch(Exception e){
 	  		e.printStackTrace();
 	  	}
@@ -162,13 +210,16 @@ public class StanfordParser {
 			String text = "";
 			int i = 0;
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from markedsentence order by (source+0)"); //+0 so sort as numbers
+			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by (source+0)"); //+0 so sort as numbers
 			//ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by source");
 			Pattern ptn = Pattern.compile("^Parsing \\[sent\\. (\\d+) len\\. \\d+\\]:(.*)");
 			Matcher m = null;
 			Tree2XML t2x = null;
 			Document doc = null;
 			CharacterAnnotatorChunked cac = null;
+			String file ="";
+			int count = 0;
+			Element description = new Element("description");
 			while ((line = stdInput.readLine())!=null){
 				if(line.startsWith("Loading") || line.startsWith("X:") || line.startsWith("Parsing file")|| line.startsWith("Parsed") ){continue;}
 				if(line.trim().length()>1){
@@ -179,7 +230,7 @@ public class StanfordParser {
 						text += line.replace(System.getProperty("line.separator"), ""); 
 					}
 				}else{
-					if(i != 359 && i !=484 && i != 1264 && i !=1782){
+					if(i != 359 && i !=484 && i != 1264 && i !=1782 && text.startsWith("(ROOT")){
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -187,6 +238,10 @@ public class StanfordParser {
 					if(rs.relative(i)){
 						String sent = rs.getString("rmarkedsent");
 						String src = rs.getString("source");
+						String thisfile = src.replaceFirst("-\\d+$", "");
+						int thiscount = Integer.parseInt(src.replaceFirst("\\.txt-.*$", ""));
+						
+						
 						//System.out.println(sent);
 						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
 							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
@@ -196,8 +251,23 @@ public class StanfordParser {
 								System.out.println();
 								System.out.println(i+": "+cs.toString());
 							}
-							cac = new CharacterAnnotatorChunked(conn);
-							cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs); //src: 100.txt-18
+							cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
+							Element statement = cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs); //src: 100.txt-18
+							if(thisfile.compareTo(file)!=0){
+								if(description.getChildren().size()!=0){ //not empty
+									//plug description in XML document
+									//write the XML to final
+									//call MainForm to display
+									VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+									description = new Element("description");
+									if(this.debug){
+										System.out.println(count+".xml written");
+									}
+								}
+							}
+							description.addContent(statement);
+							file = thisfile;
+							count = thiscount;
 						}
 						rs.relative(i*-1); //reset the pointer
 					}
@@ -206,8 +276,8 @@ public class StanfordParser {
 					i = 0;
 				}
 			}
-		
-			if(text.trim().compareTo("") != 0){ //last tree
+			VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+			/*if(text.trim().compareTo("") != 0){ //last tree
 				text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 				t2x = new Tree2XML(text);
 				doc = t2x.xml();
@@ -224,11 +294,17 @@ public class StanfordParser {
 							System.out.println();
 							System.out.println(i+": "+cs.toString());
 						}
-						cac = new CharacterAnnotatorChunked(conn);
-						cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs);
+						cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
+						Element statement = cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs);
+						description.addContent(statement);
+						//plug description in XML document
+						//write the XML to final
+						//call MainForm to display
+						int filecount = Integer.parseInt(src.replaceFirst("\\.txt-\\.*$", ""));
+						VolumeFinalizer.replaceWithAnnotated(description, filecount, "/treatment/description", "FINAL", false);
 					}
 				}
-			}
+			}*/
 			
 			rs.close();
     	}catch (Exception e){
@@ -289,6 +365,11 @@ public class StanfordParser {
     	matcher.reset();
     	return(str1);
 	}*/
+	
+	
+	public ArrayList<String> getMarkedDescription(String source){
+		return null;
+	}
 	/**
 	 * @param args
 	 */
@@ -296,7 +377,7 @@ public class StanfordParser {
 		String posedfile = "FNAv19posedsentences.txt";
 		String parsedfile = "FNAv19parsedsentences.txt";
 		String database = "fnav19_benchmark";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19");
 		//sp.POSTagging();
 		//sp.parsing();
 		sp.extracting();

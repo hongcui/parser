@@ -34,13 +34,15 @@ public class MyPOSTagger {
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	private boolean numbertranslated = false;
 	private boolean printList = true;
+	private String tableprefix = null;
 	
 
 	/**
 	 * 
 	 */
-	public MyPOSTagger(Connection conn) {
+	public MyPOSTagger(Connection conn, String tableprefix) {
 		this.conn = conn;
+		this.tableprefix = tableprefix;
 	}
 	
 	/**
@@ -73,7 +75,7 @@ public class MyPOSTagger {
 				Statement stmt3 = conn.createStatement();
 				
 				//stmt.execute("update markedsentence set markedsent='"+str+"' where source='"+src+"'");
-				stmt.execute("update markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");				
+				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");				
 	            //Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
 	            Pattern pattern3 = Pattern.compile(this.numberpattern);
 				//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
@@ -122,12 +124,12 @@ public class MyPOSTagger {
 	        	   }else if(word.endsWith(">")){
 	        		   pos = "<";
 	        	   }
-	        	   word = word.replaceAll("[<>{}]", "");
+	        	   word = word.replaceAll("[<>{}]", "").trim();
 	        	   String p = "";
-	        	   if(!word.matches("\\W")){
-		        	   ResultSet rs1 = stmt1.executeQuery("select * from wordpos4parser where word='"+word+"'");
+	        	   if(word.length()>0 && !word.matches("\\W") && !word.matches("("+ChunkedSentence.prepositions+")") &&!word.matches("("+ChunkedSentence.stop+")")){
+		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_wordpos where word='"+word+"'");
 		       		   if(rs1.next()){
-		       			   p = rs1.getString(2);
+		       			   p = rs1.getString("pos");
 		       		   }
 	        	   }
 	       		   

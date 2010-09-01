@@ -32,18 +32,20 @@ public class CharacterAnnotatorChunked {
 	private String senttag = "";
 	private String sentmod = "";
 	protected Connection conn = null;
+	private String tableprefix = null;
 	/*static protected String username = "root";
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
 	private boolean inbrackets = false;
-	
+	private String text  = null;
 
 	
 	/**
 	 * 
 	 */
-	public CharacterAnnotatorChunked(Connection conn) {
+	public CharacterAnnotatorChunked(Connection conn, String tableprefix) {
 		this.conn = conn;
+		this.tableprefix = tableprefix;
 	}
 	
 	public Element annotate(int sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
@@ -52,10 +54,11 @@ public class CharacterAnnotatorChunked {
 		this.cs = cs;
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select modifier, tag from sentence where source ='"+sentsrc+"'");
+			ResultSet rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
 			if(rs.next()){
 				this.senttag = rs.getString(2).trim();
 				this.sentmod = rs.getString(1).trim();
+				this.text = rs.getString(3).trim();
 			}
 		}
 		catch(Exception e){
@@ -75,6 +78,9 @@ public class CharacterAnnotatorChunked {
 		}
 				
 		annotateByChunk(cs, false);
+		Element text = new Element("text");
+		text.addContent(this.text);
+		this.statement.addContent(text);
 		XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
 		System.out.println(xo.outputString(this.statement));
 		return this.statement;
@@ -169,6 +175,7 @@ public class CharacterAnnotatorChunked {
 				}
 			}
 		}
+
 	}
 	/**
 	 * 3 times n[...than...]
@@ -679,7 +686,7 @@ public class CharacterAnnotatorChunked {
 				for(int j = 0; j<organsafterOf.size(); j++){
 					String a = organsafterOf.get(i).getAttributeValue("name");
 					String pattern = a+"[ ]+of[ ]+[0-9]+.*"+b+"[,\\.]"; //consists-of
-					ResultSet rs  = stmt.executeQuery("select * from sentence where originalsent rlike '"+pattern+"'" );
+					ResultSet rs  = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where originalsent rlike '"+pattern+"'" );
 					if(rs.next()){
 						result = "consists of";
 						break;
@@ -901,7 +908,7 @@ public class CharacterAnnotatorChunked {
 		boolean result = false;
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from sentence where modifier ='"+w+"'");
+			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier ='"+w+"'");
 			if(rs.next()){
 				result = true;
 			}
