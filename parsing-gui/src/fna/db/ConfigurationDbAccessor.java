@@ -40,6 +40,10 @@ public class ConfigurationDbAccessor {
 			Connection conn = DriverManager.getConnection(url);
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists configtags (tagname varchar(200), marker varchar(100), startStyle varchar(100), primary key (tagname))");
+			stmt.execute("DROP TABLE IF EXISTS `type4startparagraph`");
+			stmt.execute("CREATE TABLE type4startparagraph (`tagid` int(5) NOT NULL AUTO_INCREMENT, `paragraph` mediumtext CHARACTER SET utf8, `docformat` varchar(50) DEFAULT NULL, PRIMARY KEY (`tagid`))");
+			stmt.execute("DROP TABLE IF EXISTS `ocrstartparagraph`");
+			stmt.execute("CREATE TABLE `ocrstartparagraph` (`tagid` int(5) NOT NULL AUTO_INCREMENT, `paragraph` mediumtext, PRIMARY KEY (`tagid`) )");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in ConfigurationDbAccessor" + e);
