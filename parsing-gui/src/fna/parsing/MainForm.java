@@ -1569,8 +1569,8 @@ public class MainForm {
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
-		Type3Transformation preMarkUp = 
-			new Type3Transformation(listener, shell.getDisplay(), 
+		Type3Transformer preMarkUp = 
+			new Type3Transformer(listener, shell.getDisplay(), 
 					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(), new ArrayList());
 		preMarkUp.start();
 	}

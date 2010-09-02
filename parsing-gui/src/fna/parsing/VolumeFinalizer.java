@@ -113,24 +113,35 @@ public class VolumeFinalizer extends Thread {
 	}
 	/**
 	 * 2010
-	 * @param description
-	 * @param count: file name 2.xml
+	 * @param adescription: character-annotated
+	 * @param baseroot:root element of the base XML
 	 * @param xpath
-	 * @param targetstring
-	 * @param flatten
 	 */
-	public static void replaceWithAnnotated(Element adescription, int count, String xpath, String targetstring, boolean flatten) {
-		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
-		int total = source.listFiles().length;
-
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+	public static void replaceWithAnnotated(Element adescription, Element baseroot, String xpath) {
 
 		try {
-			SAXBuilder builder = new SAXBuilder();
-			System.out.println("finalizing "+count);
-			listener.progress(40+(count*60/total));
-			File file = new File(source, count + ".xml");
-			Document doc = builder.build(file);
+			//Element root = doc.getRootElement();	
+			List<Element> content = adescription.getContent();
+			//get the element index of the unannotated counterpart 	
+			Element description = (Element) XPath.selectSingleNode(
+					baseroot, xpath);			
+			int index = baseroot.indexOf(description);
+			
+			// replace
+			if (index >= 0) {
+				//System.out.println(fileindex+".xml has "+xpath+" element replaced");
+				baseroot.setContent(index, adescription);
+			}
+			baseroot.detach();
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
+			throw new ParsingException("Failed to output the final result.", e);
+		}
+	}
+
+	/*public static void replaceWithAnnotated(Element adescription, Document doc, String descId, String xpath, boolean flatten) {
+		try{
 			Element root = doc.getRootElement();	
 			List<Element> content = adescription.getContent();
 			//get the element index of the unannotated counterpart 	
@@ -140,20 +151,42 @@ public class VolumeFinalizer extends Thread {
 			
 			// replace
 			if (index >= 0) {
-				System.out.println(count+".xml has "+xpath+" element replaced");
+				//System.out.println(fileindex+".xml has "+xpath+" element replaced");
 				root.setContent(index, adescription);
 			}
 			root.detach();
 			
-			File result = new File(target, count + ".xml");
-			ParsingUtil.outputXML(root, result);
-
-			listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
+			//outputFinalXML(target, root);
 		} catch (Exception e) {
 			e.printStackTrace();
 			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
 			throw new ParsingException("Failed to output the final result.", e);
 		}
+	}*/
+	public static Element getBaseRoot(int fileindex){
+		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
+		int total = source.listFiles().length;
+		try {
+			SAXBuilder builder = new SAXBuilder();
+			System.out.println("finalizing "+fileindex);
+			listener.progress(40+(fileindex*60/total));
+			File file = new File(source, fileindex + ".xml");
+			Document doc = builder.build(file);
+			Element root = doc.getRootElement();
+			root.detach();
+			return root;
+		}catch (Exception e) {
+			e.printStackTrace();
+			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
+			throw new ParsingException("Failed to output the final result.", e);
+		}
+	}
+
+	public static void outputFinalXML(Element root, int fileindex, String targetstring) {
+		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		File result = new File(target, fileindex + ".xml");
+		ParsingUtil.outputXML(root, result);
+		listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
 	}
 
 
