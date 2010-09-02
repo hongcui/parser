@@ -218,6 +218,12 @@ public class SentenceOrganStateMarker {
 		}
 		tsent +=taggedsent;
 		tsent = tsent.replaceAll("\\}-\\{", "-"); // => {oblong}-{ovate} :  {oblong-ovate}
+		/*p = Pattern.compile("(.*?<[^>]*) ([^<]*>.*)");//<floral cup> => <floral-cup>
+		m = p.matcher(tsent);
+		while(m.matches()){
+			tsent = m.group(1)+"-"+m.group(2);
+			m = p.matcher(tsent);
+		}*/
 		tsent = tsent.replaceAll("\\s*,\\s*", " , ");
 		tsent = tsent.replaceAll("\\s*\\.\\s*", " . ");
 		tsent = tsent.replaceAll("\\s*;\\s*", " ; ");
@@ -252,7 +258,7 @@ public class SentenceOrganStateMarker {
 		StringBuffer tags = new StringBuffer();
 		try{
 		Statement stmt = conn.createStatement();
-		//organNameFromGloss(tags, stmt);
+		organNameFromGloss(tags, stmt);
 		organNameFromSentences(tags, stmt);
 		organNameFromPlNouns(tags, stmt);
 	
@@ -270,6 +276,11 @@ public class SentenceOrganStateMarker {
 		ResultSet rs;
 		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n')");
 		rs = stmt.executeQuery("select word from wordroles where semanticrole in ('op', 'os')");
+		while(rs.next()){
+			tags.append(rs.getString("word").trim()+"|");
+		}
+		
+		rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n') and word not in (select word from wordroles where semanticrole in ('op', 'os'))");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
 		}
@@ -306,9 +317,10 @@ public class SentenceOrganStateMarker {
 			throws SQLException {
 		ResultSet rs = stmt.executeQuery("select distinct term from fnaglossary where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT')");
 		while(rs.next()){
-			String tag = rs.getString("term");
-			if(tag == null){continue;}
-			tags.append(tag+"|");
+			String term = rs.getString("term").trim();
+			if(term == null){continue;}
+			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+			tags.append(term+"|");
 		}
 	}
 
