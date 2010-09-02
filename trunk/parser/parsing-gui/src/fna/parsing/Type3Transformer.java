@@ -144,7 +144,7 @@ public class Type3Transformer extends Thread {
 			/* Show on the table - show from transformed folder --
 			 * put a listener progress here
 			 * .*/
-			listener.info((i+1) + "", fname);
+			listener.info((i+1) + "", fname.replaceAll("\\..*$", "")+".xml");
 			listener.progress((90* i)/files.length );
 		}
 		
@@ -167,7 +167,8 @@ public class Type3Transformer extends Thread {
 		Type3PreMarkupDbAccessor dba = new Type3PreMarkupDbAccessor();
 		ArrayList<String> desIDs = dba.selectRecords("paraID", dataprefix.trim()+"_paragraphbootstrap", "paraID like '"+fname+"%'");
 		
-		ArrayList<String> allPs = dba.selectRecords("paraID, remark", dataprefix.trim()+"_paragraphs", "paraID like '"+fname+"%'");
+		//ArrayList<String> allPs = dba.selectRecords("paraID, remark", dataprefix.trim()+"_paragraphs", "paraID like '"+fname+"%'");
+		ArrayList<String> allPs = dba.selectRecords("paraID, paragraph", dataprefix.trim()+"_paragraphs", "paraID like '"+fname+"%'");
 		//put in to a hashtable
 		Hashtable<String, String> paras = new Hashtable<String, String>();
 		
@@ -189,30 +190,29 @@ public class Type3Transformer extends Thread {
 				if(parts.length==1){
 					pIDattr = pID;
 					morph.setAttribute("pid", pIDattr); //use attribute pid to allow annotated descriptions to be put back in
-					morph.setText(parts[0]);
+					morph.setText(parts[0].replaceAll("(&lt;|&gt;|\\{|\\})", "").replaceAll("&amp;", "and"));
 					doc.addContent(morph);	
 				}else{
 					Element nonmorph = new Element("nonMorph");
 					nonmorph.setAttribute("pid", pID+"_0");
-					nonmorph.setText(parts[0]);
+					nonmorph.setText(parts[0].replaceAll("(&lt;|&gt;|\\{|\\})", "").replaceAll("&amp;", "and"));
 					doc.addContent(nonmorph);
 					pIDattr = pID+"_1";
 					morph.setAttribute("pid", pID+"_1");
-					morph.setText(parts[1]);
+					morph.setText(parts[1].replaceAll("(&lt;|&gt;|\\{|\\})", "").replaceAll("&amp;", "and"));
 					doc.addContent(morph);				
 					if(parts.length==3){
 						nonmorph = new Element("nonMorph");
 						nonmorph.setAttribute("pid", pID+"_2");
-						nonmorph.setText(parts[2]);
+						nonmorph.setText(parts[2].replaceAll("(&lt;|&gt;|\\{|\\})", "").replaceAll("&amp;", "and"));
 						doc.addContent(nonmorph);
 					}
 				}
-				write2file(desfolder, pIDattr+".txt", morph.getText());
-				
+				write2file(desfolder, pIDattr+".txt", morph.getText());				
 			}else{
 				Element nonmorph = new Element("nonMorph");
 				nonmorph.setAttribute("pid", pID);
-				nonmorph.setText(paras.get(pID));
+				nonmorph.setText(paras.get(pID).replaceAll("(&lt;|&gt;|\\{|\\})", "").replaceAll("&amp;", "and"));
 				doc.addContent(nonmorph);
 			}
 		}
