@@ -48,7 +48,7 @@ public class CharacterAnnotatorChunked {
 		this.tableprefix = tableprefix;
 	}
 	
-	public Element annotate(int sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
+	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
 		this.statement = new Element("statement");
 		this.statement.setAttribute("id", "s"+sentindex);
 		this.cs = cs;
@@ -228,7 +228,7 @@ public class CharacterAnnotatorChunked {
 		}
 		String object = null;
 		ArrayList<Element> structures = null;
-		if(parts[1].length()>0){
+		if(parts.length>1 && parts[1].length()>0){
 			if(parts[1].indexOf("(")>=0){
 				while(parts[1].indexOf(" to ")>=0){
 					object = parts[1].replaceFirst(".* to ", "");

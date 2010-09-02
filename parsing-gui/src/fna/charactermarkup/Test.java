@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -33,9 +35,14 @@ public class Test {
 	 * 
 	 */
 	public Test() {
-		String text="that [is {often}] {concealed} r[p[by] {large} o[(trichomes)]];";
-		ArrayList<String> tokens = breakText(text);
-		
+		String tsent = "<a b> a b <a b c> {a b} <a> <b>";
+		Pattern p = Pattern.compile("(.*?<[^>]*) ([^<]*>.*)");//<floral cup> => <floral-cup>
+		Matcher m = p.matcher(tsent);
+		while(m.matches()){
+			tsent = m.group(1)+"-"+m.group(2);
+			m = p.matcher(tsent);
+		}
+		System.out.println(tsent);
 	}
 
 	private ArrayList<String> breakText(String text) {

@@ -179,7 +179,7 @@ public class StanfordParser implements Learn2Parse{
 			trees.add(sb.toString());
 			*/
 			//format
-            if(headings.size() != trees.size()){
+            if(headings.size()+1 != trees.size()+1){
             	System.err.println("Error reading parsing results");
             	System.exit(2);
             }
@@ -217,8 +217,9 @@ public class StanfordParser implements Learn2Parse{
 			Tree2XML t2x = null;
 			Document doc = null;
 			CharacterAnnotatorChunked cac = null;
-			String file ="";
-			int count = 0;
+			String pdescID ="";
+			int pfileindex = 0;
+			Element baseroot = null;
 			Element description = new Element("description");
 			while ((line = stdInput.readLine())!=null){
 				if(line.startsWith("Loading") || line.startsWith("X:") || line.startsWith("Parsing file")|| line.startsWith("Parsed") ){continue;}
@@ -238,13 +239,19 @@ public class StanfordParser implements Learn2Parse{
 					if(rs.relative(i)){
 						String sent = rs.getString("rmarkedsent");
 						String src = rs.getString("source");
-						String thisfile = src.replaceFirst("-\\d+$", "");
-						int thiscount = Integer.parseInt(src.replaceFirst("\\.txt-.*$", ""));
-						
+						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
+						int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
+						if(baseroot ==null){
+							baseroot = VolumeFinalizer.getBaseRoot(thisfileindex);
+						}
 						
 						//System.out.println(sent);
 						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
-							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
+							if(!sent.matches(".*?[;\\.]\\s*$")){
+								sent = sent+".";
+							}
+							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ").trim();
+							
 							SentenceChunker ex = new SentenceChunker(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
 							if(this.debug){
@@ -252,22 +259,33 @@ public class StanfordParser implements Learn2Parse{
 								System.out.println(i+": "+cs.toString());
 							}
 							cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
-							Element statement = cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs); //src: 100.txt-18
-							if(thisfile.compareTo(file)!=0){
+							//Element statement = cac.annotate(src.replaceAll("^\\d+\\.txt", ""), src, cs); //src: 100.txt-18
+							Element statement = cac.annotate(src, src, cs); //src: 100.txt-18
+							
+							if(thisdescID.compareTo(pdescID)!=0){
 								if(description.getChildren().size()!=0){ //not empty
 									//plug description in XML document
 									//write the XML to final
 									//call MainForm to display
-									VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+									//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+									
+									placeDescription(description, pdescID, baseroot);
 									description = new Element("description");
 									if(this.debug){
 										System.out.println(count+".xml written");
 									}
 								}
 							}
+							
+							if(thisfileindex != pfileindex){
+								if(pfileindex !=0){
+									VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
+									baseroot = VolumeFinalizer.getBaseRoot(thisfileindex);
+								}								
+							}
 							description.addContent(statement);
-							file = thisfile;
-							count = thiscount;
+							pdescID = thisdescID;
+							pfileindex = thisfileindex;
 						}
 						rs.relative(i*-1); //reset the pointer
 					}
@@ -276,7 +294,9 @@ public class StanfordParser implements Learn2Parse{
 					i = 0;
 				}
 			}
-			VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+			placeDescription(description, pdescID, baseroot);
+			VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
+			//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
 			/*if(text.trim().compareTo("") != 0){ //last tree
 				text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 				t2x = new Tree2XML(text);
@@ -315,8 +335,23 @@ public class StanfordParser implements Learn2Parse{
 	
 
 
+	/**
+	 * depending on the type of descriptionID, call different replaceWithAnnotated methods in VolumeFinalizer
+	 * @param description
+	 * @param dID: may be 1.txt or 1.txtp436_1.txt
+	 */
 	
-	
+	private void placeDescription(Element description, String dID, Element baseroot) {
+		// TODO Auto-generated method stub
+		if(dID.indexOf(".txtp")>=0){
+			String pid = dID.replaceFirst("\\.txt$", "");
+			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description[@pid=\""+pid+"\"]");			
+		}else{
+			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description");
+		}
+		
+	}
+
 	/*protected String reversecondense(String str) { 
 		StringBuffer sb2 = new StringBuffer();
     	Pattern pattern12 = Pattern.compile("<[a-zA-Z_ ]+>");
