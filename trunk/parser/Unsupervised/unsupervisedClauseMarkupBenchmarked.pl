@@ -372,7 +372,7 @@ normalizetags(); ##normalization is the last step : turn all tags and modifiers 
 print stdout "Done:\n";
 
 #test 4/15/09 true modifiers
-listtruemodifiers();
+#listtruemodifiers();
 
 
 #5/10/09 
@@ -498,13 +498,13 @@ $test->execute() or die $test->errstr."\n";
 
 my ($create, $del);
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence varchar(2000), originalsent varchar(2000), lead varchar(50), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence varchar(2000), originalsent varchar(2000), lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_sentence');
 $del->execute();
 
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(50) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, primary key (word, pos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, primary key (word, pos)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_wordpos');
 $del->execute();
@@ -514,7 +514,7 @@ $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_sentInFile');
 $del->execute();
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(50) not null unique primary key, count int, istypemodifier tinyint) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(200) not null unique primary key, count int, istypemodifier tinyint) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_modifiers');
 $del->execute();
@@ -524,23 +524,23 @@ $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_isA');
 $del->execute();
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(50) not null primary key, flag varchar(50)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(200) not null primary key, flag varchar(200)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_unknownwords');
 $del->execute();
 
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(50), plural varchar(50), primary key (singular, plural)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(200), plural varchar(200), primary key (singular, plural)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_singularplural');
 $del->execute();
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(50), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(200), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_discounted');
 $del->execute();
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(100), substructure varchar(100), count int, primary key (structure, substructure)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_substructure');
 $del->execute();
@@ -4972,10 +4972,10 @@ sub updatePOS{
 	}
 	
 	#update certaintyl = sum (certaintyu)
-	$sth = $dbh->prepare("select sum(certaintyu) from ".$prefix."_wordpos where word=\"$word\"");
+	$sth = $dbh->prepare("select sum(certaintyu) from ".$prefix."_wordpos where word='$word'");
     $sth->execute();
 	($certaintyl) = $sth->fetchrow_array();
-	$sth = $dbh->prepare("update ".$prefix."_wordpos set certaintyl=$certaintyl where word=\"$word\"");
+	$sth = $dbh->prepare("update ".$prefix."_wordpos set certaintyl=$certaintyl where word='$word'");
     $sth->execute();
 	print "\t: total occurance of [$word] =$certaintyl\n" if $debug;
   return $new;
@@ -5161,7 +5161,7 @@ sub checkposinfo{
 	    return @results;
 	}
 	#select pos from wordpos
-	$stmt = "select pos, role, certaintyu, certaintyl from ".$prefix."_wordpos where word=\"$word\" order by certaintyu/certaintyl desc";
+	$stmt = "select pos, role, certaintyu, certaintyl from ".$prefix."_wordpos where word='$word' order by certaintyu/certaintyl desc";
 	$sth = $dbh->prepare($stmt);
 	$sth->execute();
 	if($sth->rows ==0){
@@ -5545,6 +5545,9 @@ while(defined ($file=readdir(IN))){
 	$text =~ s#<.*?>##g; #remove html tags
 	$text =~ s#<#g; less than #g; #remove <
 	$text =~ s#>#g; greater than #g; #remove >
+	
+	$text =~ s#^\s*\d+[a-z].\s*##; #remove 2a. (key marks)
+	
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
   	
@@ -5595,6 +5598,7 @@ while(defined ($file=readdir(IN))){
     	
     	my $line = $sentences[$_];
     	my $oline = $sentcopy[$_];
+    	$oline =~ s#\[DOT\]#.#g;
     	$line =~ s#'# #g; #remove all ' to avoid escape problems
     	$oline =~ s#'# #g;
     	@words = getfirstnwords($line, $N); # "w1 w2 w3"
@@ -5618,6 +5622,7 @@ while(defined ($file=readdir(IN))){
     	if(length($oline) >=2000 ){#EOL
     		$oline = $line;
     	}
+    	
     	$stmt = "insert into ".$prefix."_sentence(sentid, source, sentence, originalsent, lead, status) values($SENTID,'$source' ,'$line','$oline','$lead', '$status')";
 		$sth = $dbh->prepare($stmt);
     	$sth->execute() or die $sth->errstr."\n SQL Statement: ".$stmt."\n";
