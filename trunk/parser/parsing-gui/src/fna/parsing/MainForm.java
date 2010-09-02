@@ -171,6 +171,8 @@ public class MainForm {
 	private static Rectangle frequencyLabel = new Rectangle(370, 20, 35, 15);
 	/* This HashMap will hold all the group info temporarily*/
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
+	/* This HashMap will hold all the group info of removed terms*/
+	private static HashMap <String, CharacterGroupBean> removedTermsGroups = new HashMap <String, CharacterGroupBean> ();
 	/* This HashMap will hold all processed groups information */
 	private static TreeMap <String, String> processedGroups = new TreeMap<String, String> ();	
 	/* This table is for showing contextual sentences */
@@ -1457,7 +1459,7 @@ public class MainForm {
 			}
 		});
 
-		final TabItem glossaryTabItem = new TabItem(tabFolder, SWT.NONE);
+/*		final TabItem glossaryTabItem = new TabItem(tabFolder, SWT.NONE);
 		glossaryTabItem.setText(ApplicationUtilities.getProperty("tab.eight.name"));
 
 		final Composite composite_7 = new Composite(tabFolder, SWT.NONE);
@@ -1481,7 +1483,7 @@ public class MainForm {
 			}
 		});
 		reportGlossaryButton.setBounds(654, 385, 100, 23);
-		reportGlossaryButton.setText("Report");
+		reportGlossaryButton.setText("Report");*/
 
 		final Label logoLabel = new Label(shell, SWT.NONE);
 		String ls = System.getProperty("line.separator");
@@ -1569,8 +1571,8 @@ public class MainForm {
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
-		Type3Transformer preMarkUp = 
-			new Type3Transformer(listener, shell.getDisplay(), 
+		Type3Transformation preMarkUp = 
+			new Type3Transformation(listener, shell.getDisplay(), 
 					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(), new ArrayList());
 		preMarkUp.start();
 	}
@@ -1875,7 +1877,8 @@ public class MainForm {
 			showTerms();
 			//restore edges if they were removed but the group was not processed (saved)
 			restoreUnsavedEdges();
-			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));	
+			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));
+			createRemainingTermsGroup(termsGroup,removedTermsGroup);
 		} else {
 			/* Load it from memory! */
 			termsGroup = null;
@@ -2151,5 +2154,21 @@ public class MainForm {
 		}
 		
 		
+	}
+	
+	private void createRemainingTermsGroup(Group coOccuredTerms, 
+			Group deletedTerms){
+		//removedTermsGroups
+		Set <String>
+		keys = groupInfo.keySet();
+		for (String key : keys){
+			CharacterGroupBean charGrpBean = groupInfo.get(key);
+			ArrayList <CoOccurrenceBean> cooccurrences = charGrpBean.getCooccurrences();
+			for (CoOccurrenceBean  bean : cooccurrences) {
+				if (bean.getTerm1().getParentGroup().equals(deletedTerms)){
+					System.out.println(bean.getTerm1().getTermText().getText());
+				}
+			}
+		}
 	}
 }
