@@ -128,19 +128,19 @@ public class Configuration {
 		});
 		type3.setText("Type 3:");
 		
-		Label label_1 = new Label(group_1, SWT.BORDER);
+		Label label_1 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_1.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type2")));
 		label_1.setBounds(106, 167, 611, 127);
 		label_1.setToolTipText("Word Document with Display Styles");
 		
-		Label label_2 = new Label(group_1, SWT.BORDER);
+		Label label_2 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_2.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type1")));
 		label_2.setBounds(106, 30, 611, 121);
 		label_2.setToolTipText("Word Document with Semantic_Based Styles");
 		
-		Label label_3 = new Label(group_1, SWT.BORDER);
+		Label label_3 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_3.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type3")));
 		label_3.setBounds(106, 308, 611, 127);
@@ -164,7 +164,7 @@ public class Configuration {
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
 		
-		Label label_4 = new Label(group_1, SWT.BORDER);
+		Label label_4 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_4.setBounds(106, 451, 611, 117);
 		label_4.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type4")));
