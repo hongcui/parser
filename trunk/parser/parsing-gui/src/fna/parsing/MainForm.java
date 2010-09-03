@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -426,7 +427,8 @@ public class MainForm {
 						contextTable.removeAll();
 						//load processed groups table;
 						loadProcessedGroups();
-
+						
+						//createRemainingTermsGroup();
 					}
 				}
 
@@ -1878,7 +1880,7 @@ public class MainForm {
 			//restore edges if they were removed but the group was not processed (saved)
 			restoreUnsavedEdges();
 			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));
-			createRemainingTermsGroup(termsGroup,removedTermsGroup);
+			
 		} else {
 			/* Load it from memory! */
 			termsGroup = null;
@@ -2156,19 +2158,41 @@ public class MainForm {
 		
 	}
 	
-	private void createRemainingTermsGroup(Group coOccuredTerms, 
-			Group deletedTerms){
+	private void createRemainingTermsGroup(){
 		//removedTermsGroups
+		//1. Check if there are terms remaining - a function that returns true/false
+		//2. Create a new group with the number one more than the existing groups.
+		//3. Create an xml for the group in 2
+		//4. Prepare the GUI for displaying the terms : 
+		//      a) Ignore repeated terms 
+		//      b)Ignore if terms were reinserted in some existing groups
+		//5. Save operation - call the same function as before but create a termsdatabean and pass it along.
+		//6. Go to 1
+		System.out.println("remaining terms :");
+		while(true){
+			
+		}
+	}
+	
+	/**
+	 * This function checks if there are terms remaining that are not yet grouped.
+	 * @return
+	 */
+	
+	private boolean isTermsNotGrouped(){
+		boolean returnValue = false;
 		Set <String>
 		keys = groupInfo.keySet();
 		for (String key : keys){
 			CharacterGroupBean charGrpBean = groupInfo.get(key);
 			ArrayList <CoOccurrenceBean> cooccurrences = charGrpBean.getCooccurrences();
 			for (CoOccurrenceBean  bean : cooccurrences) {
-				if (bean.getTerm1().getParentGroup().equals(deletedTerms)){
-					System.out.println(bean.getTerm1().getTermText().getText());
+				if ((!bean.getTerm1().isTogglePosition()) || (!bean.getTerm2().isTogglePosition()) ){
+					returnValue = true;
+					break;
 				}
 			}
 		}
+		return returnValue;
 	}
 }
