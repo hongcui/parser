@@ -51,8 +51,8 @@ public class GraphMLOutputter {
 	 * @param sets
 	 */
 
-	public void output(ArrayList<ArrayList> groups){		
-		int gcount = 1;
+	public void output(ArrayList<ArrayList> groups, int initialgroupnumber){		
+		int gcount = initialgroupnumber;
 		Iterator<ArrayList> sets = groups.iterator();
 		while(sets.hasNext()){
 			String graphXML = GraphMLOutputter.header+nl;
