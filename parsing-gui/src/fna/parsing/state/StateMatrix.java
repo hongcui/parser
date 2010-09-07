@@ -394,7 +394,7 @@ public class StateMatrix {
 			e.printStackTrace();
 		}			
 		
-		gmo.output(groups);
+		gmo.output(groups, 1);
 	}
 					 
 }
