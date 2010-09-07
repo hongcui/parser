@@ -173,7 +173,7 @@ public class MainForm {
 	/* This HashMap will hold all the group info temporarily*/
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
 	/* This HashMap will hold all the group info of removed terms*/
-	private static HashMap <String, CharacterGroupBean> removedTermsGroups = new HashMap <String, CharacterGroupBean> ();
+	private static ArrayList <TermsDataBean> removedTermsGroups;
 	/* This HashMap will hold all processed groups information */
 	private static TreeMap <String, String> processedGroups = new TreeMap<String, String> ();	
 	/* This table is for showing contextual sentences */
@@ -2160,6 +2160,7 @@ public class MainForm {
 	
 	private void createRemainingTermsGroup(){
 		//removedTermsGroups
+		//0. Copy and create a removed terms list
 		//1. Check if there are terms remaining - a function that returns true/false
 		//2. Create a new group with the number one more than the existing groups.
 		//3. Create an xml for the group in 2
@@ -2171,6 +2172,27 @@ public class MainForm {
 		System.out.println("remaining terms :");
 		while(true){
 			
+		}
+	}
+	
+	private ArrayList<TermsDataBean> createRemovedTermsList(){
+		ArrayList<TermsDataBean> removedTerms = new ArrayList<TermsDataBean>();
+		Set <String>
+		keys = groupInfo.keySet();
+		for (String key : keys){
+			CharacterGroupBean charGrpBean = groupInfo.get(key);
+			ArrayList <CoOccurrenceBean> cooccurrences = charGrpBean.getCooccurrences();
+			TermsDataBean tBean = new TermsDataBean();
+			for (CoOccurrenceBean  bean : cooccurrences) {
+				if ((!bean.getTerm1().isTogglePosition()))
+					tBean.setTerm1(bean.getTerm1().getTermText().getText());
+			    }
+					
+					|| (!bean.getTerm2().isTogglePosition()) ){
+					returnValue = true;
+					break;
+				}
+			}
 		}
 	}
 	
