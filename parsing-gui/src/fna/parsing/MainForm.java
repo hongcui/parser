@@ -69,6 +69,7 @@ import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.GraphNode;
 import fna.parsing.character.LearnedTermsReport;
 import fna.parsing.character.ManipulateGraphML;
+import fna.parsing.state.GraphMLOutputter;
 import fna.parsing.state.StateCollectorBootstrapper;
 import fna.parsing.state.StateCollectorTest;
 
@@ -2175,8 +2176,98 @@ public class MainForm {
 		}
 	}
 	
-	private ArrayList<TermsDataBean> createRemovedTermsList(){
-		ArrayList<TermsDataBean> removedTerms = new ArrayList<TermsDataBean>();
+	private void showRemovedTerms(){
+		
+		int newGroupNumber = groupsCombo.getItemCount()+1;
+		String newGroup = "Group_" + newGroupNumber;
+		groupsCombo.add(newGroup);
+		String groupName = newGroup;
+		groupsCombo.setText(newGroup);
+		/*Generate the graph XML*/
+		ArrayList <ArrayList> group = new ArrayList<ArrayList>();
+		
+		/* Create the co-occurences for the new group*/
+		ArrayList <CoOccurrenceBean> newCooccurrences = new ArrayList<CoOccurrenceBean>();
+		
+		termsGroup = null;
+		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
+		termsGroup.setLayoutData(new RowData());
+		termsScrolledComposite.setContent(termsGroup);
+		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		removedTermsGroup = null;
+		removedTermsGroup = new Group(removedScrolledComposite, SWT.NONE);
+		removedTermsGroup.setLayoutData(new RowData());
+		removedScrolledComposite.setContent(removedTermsGroup);
+		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		//ArrayList<CoOccurrenceBean> cooccurrences = (ArrayList<CoOccurrenceBean>)charGrpBean.getCooccurrences();
+		
+		if(newCooccurrences.size() > 5) {
+			
+			/* If the number of rows is more than what is displayed, resize the group*/
+			RowData rowdata = (RowData)termsGroup.getLayoutData();
+			rowdata.height = newCooccurrences.size() * 36;
+			termsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        Rectangle rect = termsGroup.getBounds();
+	        rect.height = newCooccurrences.size() * 36;
+	        termsGroup.setBounds(rect);
+			
+			
+			rowdata = (RowData)removedTermsGroup.getLayoutData();
+			rowdata.height = newCooccurrences.size() * 36;
+			removedTermsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        rect = removedTermsGroup.getBounds();
+	        rect.height = newCooccurrences.size() * 36;
+	        removedTermsGroup.setBounds(rect);
+		}
+		
+		Set <String>
+		keys = groupInfo.keySet();
+		for (String key : keys){
+			CharacterGroupBean existingGrpBean = groupInfo.get(key);
+			ArrayList <CoOccurrenceBean> cooccurrences = existingGrpBean.getCooccurrences();
+			for (CoOccurrenceBean  bean : cooccurrences) {
+				ArrayList<String> terms = new ArrayList<String>();
+/*				if (rect.x == 10) {
+					rect.x = 40;
+				} else {
+					rect.x = 210;
+				}*/
+				if (!bean.getTerm1().isTogglePosition()) {
+					//tBean.setTerm1(bean.getTerm1().getTermText().getText());					
+					bean.getTerm1().setParentGroup(termsGroup);
+					//bean.getTerm1().setTermGroup(termsGroup);
+					bean.getTerm1().setDeletedGroup(removedTermsGroup);
+					bean.getTerm1().setTogglePosition(true);
+					terms.add(bean.getTerm1().getTermText().getText());
+					
+			    } else if(!bean.getTerm2().isTogglePosition()){
+					bean.getTerm1().setParentGroup(termsGroup);
+					//bean.getTerm1().setTermGroup(termsGroup);
+					bean.getTerm1().setDeletedGroup(removedTermsGroup);
+					bean.getTerm1().setTogglePosition(true);
+					terms.add(bean.getTerm2().getTermText().getText());
+			    }
+				newCooccurrences.add(bean);
+				if(terms.size()!= 0) {
+					group.add(terms);
+				}
+				//cooccurrences.remove(bean);
+				//bean.getTerm1().getTermGroup()
+			}
+
+		}
+		
+		GraphMLOutputter gml = new GraphMLOutputter();
+		gml.output(group, newGroupNumber);
+		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		CharacterGroupBean charGrpBean = new CharacterGroupBean(newCooccurrences,newGroup,false);
+		groupInfo.put(newGroup, charGrpBean);
+		
+	}		
+/*		ArrayList<TermsDataBean> removedTerms = new ArrayList<TermsDataBean>();
 		Set <String>
 		keys = groupInfo.keySet();
 		for (String key : keys){
@@ -2192,9 +2283,9 @@ public class MainForm {
 					returnValue = true;
 					break;
 				}
-			}
-		}
-	}
+			}*/
+		//}
+	//}
 	
 	/**
 	 * This function checks if there are terms remaining that are not yet grouped.
