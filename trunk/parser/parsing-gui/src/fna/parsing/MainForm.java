@@ -188,6 +188,10 @@ public class MainForm {
 	/* This will all the groups removed edges from the graph */
 	private static HashMap<String, ArrayList<String>> removedEdges 
 		= new HashMap<String, ArrayList<String>>();
+	/* This variable stores the number of groups produced initially. This is needed to check whether
+	 * remaining terms group can be generated.
+	 */
+	private static int noOfTermGroups = 0;
 	
 	//-----------------------------------Character Tab Variables ---END-------------------------------//
 	
@@ -954,8 +958,6 @@ public class MainForm {
 		final Composite composite_6 = new Composite(tabFolder, SWT.NONE);
 		tagTabItem.setControl(composite_6);
 		/* Changing the "unknown removal checked box to RADIO*/
-	    //tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER);
-		//final Group group = new Group(, SWT.RADIO);
 		tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER);
 	
 	    tagTable.addListener(SWT.Selection, new Listener() {
@@ -1021,7 +1023,6 @@ public class MainForm {
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
-					//statusOfMarkUp[6] = true;
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
@@ -1164,7 +1165,7 @@ public class MainForm {
 				try {
 					
 					/*Save the decision first */
-					charDb.saveDecision(cooccurrences.get(1).getGroupNo(), comboDecision.getText());
+					charDb.saveDecision(cooccurrences.get(0).getGroupNo(), comboDecision.getText());
 					
 					/*Save the rest of the Character tab */
 					for (CoOccurrenceBean cbean : cooccurrences) {
@@ -1175,13 +1176,13 @@ public class MainForm {
 						tbean.setSourceFiles(cbean.getSourceFiles());
 						
 						/* The fun starts here! try and save the terms that are there in parentTermGroup*/
-						if(cbean.getTerm1().isTogglePosition()) {
+						if(cbean.getTerm1() != null && cbean.getTerm1().isTogglePosition()) {
 							tbean.setTerm1(cbean.getTerm1().getTermText().getText());
 						} else {
 							tbean.setTerm1("");
 						}
 						
-						if(cbean.getTerm2().isTogglePosition()){
+						if(cbean.getTerm2() != null && cbean.getTerm2().isTogglePosition()){
 							tbean.setTerm2(cbean.getTerm2().getTermText().getText());
 						} else {
 							tbean.setTerm2("");
@@ -1207,6 +1208,28 @@ public class MainForm {
 					item.setText(groupName);
 				}				
 
+				/** Logic for remaining terms goes here */
+				if (noOfTermGroups <= getNumberOfGroupsSaved() && isTermsNotGrouped()) {
+					int choice = ApplicationUtilities.showPopUpWindow(
+							ApplicationUtilities.getProperty("popup.charstates.info"),
+							ApplicationUtilities.getProperty("popup.header.info") + " : " +
+							ApplicationUtilities.getProperty("popup.header.character"), 
+							SWT.YES | SWT.NO | SWT.CANCEL);
+					
+				    switch (choice) {
+				    case SWT.OK:
+				    case SWT.YES:
+				    	showRemainingTerms();
+				    	break;
+				    case SWT.CANCEL:
+				    case SWT.NO:
+				    case SWT.RETRY:
+				    case SWT.ABORT:
+				    case SWT.IGNORE:
+				    default : //Do Nothing! :-)
+				    }
+
+				}
 			}
 		});
 		
@@ -1288,57 +1311,62 @@ public class MainForm {
 					for (i = 0, j = size-1, k = size-1; i < size/2; i++, j--, k-=2){
 						CoOccurrenceBean beanFirst = cbeans[i];
 						CoOccurrenceBean beanLast = cbeans[j];
-						
-						/* Swap coordinates of radio button */
-						tempCoordinates = beanFirst.getContextButton().getBounds();
-						beanFirst.getContextButton().setBounds(beanLast.getContextButton().getBounds());
-						beanLast.getContextButton().setBounds(tempCoordinates);
-						
-						/* Swap Frequencies */						
-						tempCoordinates = null;
-						tempCoordinates = beanFirst.getFrequency().getBounds();
-						beanFirst.getFrequency().setBounds(beanLast.getFrequency().getBounds());
-						beanLast.getFrequency().setBounds(tempCoordinates);
-						
-						/* Swap Group 1 */
-						if (toSort) {
-							/*Sort Ascending*/
-							tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
-							tempCoordinates.y += k * standardIncrement;
-							beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
+						if(beanFirst.getTerm1() != null && beanFirst.getTerm2() != null) {
+							/* Swap coordinates of radio button */
+							tempCoordinates = beanFirst.getContextButton().getBounds();
+							beanFirst.getContextButton().setBounds(beanLast.getContextButton().getBounds());
+							beanLast.getContextButton().setBounds(tempCoordinates);
 							
-							tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
-							tempCoordinates.y -= k * standardIncrement;						
-							beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
+							/* Swap Frequencies */						
+							tempCoordinates = null;
+							tempCoordinates = beanFirst.getFrequency().getBounds();
+							beanFirst.getFrequency().setBounds(beanLast.getFrequency().getBounds());
+							beanLast.getFrequency().setBounds(tempCoordinates);
 							
-							/* Swap Group 2 */
-							tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
-							tempCoordinates.y += k * standardIncrement;
-							beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
 							
-							tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
-							tempCoordinates.y -= k * standardIncrement;						
-							beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
-							
-						} else {
-							/* Sort Descending*/
-							/* Swap Group 1 */
-							tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
-							tempCoordinates.y -= k * standardIncrement;
-							beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
-							
-							tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
-							tempCoordinates.y += k * standardIncrement;						
-							beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
-							
-							/* Swap Group 2 */
-							tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
-							tempCoordinates.y -= k * standardIncrement;
-							beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
-							
-							tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
-							tempCoordinates.y += k * standardIncrement;						
-							beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
+							if (toSort) {
+								/*Sort Ascending*/
+									/* Swap Group 1 */
+									tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
+									tempCoordinates.y += k * standardIncrement;
+									beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
+									
+									tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
+									tempCoordinates.y -= k * standardIncrement;						
+									beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
+									
+									/* Swap Group 2 */
+									tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
+									tempCoordinates.y += k * standardIncrement;
+									beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
+									
+									tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
+									tempCoordinates.y -= k * standardIncrement;						
+									beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
+
+								
+							} else {
+								/* Sort Descending*/
+								/* Swap Group 1 */
+									tempCoordinates = beanFirst.getTerm1().getTermGroup().getBounds();
+									tempCoordinates.y -= k * standardIncrement;
+									beanFirst.getTerm1().getTermGroup().setBounds(tempCoordinates);
+									
+									tempCoordinates = beanLast.getTerm1().getTermGroup().getBounds();
+									tempCoordinates.y += k * standardIncrement;						
+									beanLast.getTerm1().getTermGroup().setBounds(tempCoordinates);
+									
+									/* Swap Group 2 */
+									tempCoordinates = beanFirst.getTerm2().getTermGroup().getBounds();
+									tempCoordinates.y -= k * standardIncrement;
+									beanFirst.getTerm2().getTermGroup().setBounds(tempCoordinates);
+									
+									tempCoordinates = beanLast.getTerm2().getTermGroup().getBounds();
+									tempCoordinates.y += k * standardIncrement;						
+									beanLast.getTerm2().getTermGroup().setBounds(tempCoordinates);
+
+
+							}
 						}
 						
 					}
@@ -1366,6 +1394,17 @@ public class MainForm {
 		btnViewGraphVisualization.setBounds(457, 0, 159, 25);
 		btnViewGraphVisualization.setText("View Graph Visualization");
 		btnViewGraphVisualization.setToolTipText("Click to view the graph visualization of the terms that have co-occurred");
+		
+		/*Removed terms test*/
+		Button btnRemovedTerms = new Button(composite_8, SWT.NONE);
+		btnRemovedTerms.setBounds(622, 0, 105, 25);
+		btnRemovedTerms.setText("Removed Terms");
+		btnRemovedTerms.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				showRemainingTerms();
+			}
+		});
+		
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+
@@ -1712,13 +1751,10 @@ public class MainForm {
 			 if(mainDb.loadTagsTableData(tagTable)==0){
 				 //StateCollectorBootstrapper sct = new StateCollectorBootstrapper(ApplicationUtilities.getProperty("database.name"), MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*TODO: debug*/
 				Connection conn = null;
-				String database=ApplicationUtilities.getProperty("database.name");
-				String username=ApplicationUtilities.getProperty("database.username");
-				String password=ApplicationUtilities.getProperty("database.password");
 				try{
 					if(conn == null){
 						Class.forName("com.mysql.jdbc.Driver");
-						String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+						String URL = ApplicationUtilities.getProperty("database.url");
 						conn = DriverManager.getConnection(URL);
 					}
 				}catch(Exception e){
@@ -1852,6 +1888,8 @@ public class MainForm {
 		File directory = new File(Registry.TargetDirectory+"\\"+
 				ApplicationUtilities.getProperty("CHARACTER-STATES"));
 		File [] files = directory.listFiles();
+		/**Update the global variable with number of groups**/
+		noOfTermGroups = files.length;
 		
 		String [] fileNames = new String[files.length];
 		int count = 0, removedEdgesSize = removedEdges.size();
@@ -1860,6 +1898,8 @@ public class MainForm {
 			sortedBy[count] = true;
 			fileNames[count] = group.getName().substring(0, group.getName().indexOf(".xml"));
 			if (removedEdgesSize == 0){
+				/* RemovedEdges HashMap is intialized to store removed edges when
+				 *  the user interacts with the terms*/
 				removedEdges.put(fileNames[count], new ArrayList<String>());
 			}
 			
@@ -1925,26 +1965,30 @@ public class MainForm {
 					cbean.getContextButton().setParent(termsGroup);
 					cbean.getContextButton().setSelection(false);
 					cbean.getFrequency().setParent(termsGroup);
-					
-					if (cbean.getTerm1().isTogglePosition()) {
-						cbean.getTerm1().getTermGroup().setParent(termsGroup);
-						cbean.getTerm1().setParentGroup(termsGroup);
-						cbean.getTerm1().setDeletedGroup(removedTermsGroup);
-					} else {
-						cbean.getTerm1().getTermGroup().setParent(removedTermsGroup);
-						cbean.getTerm1().setParentGroup(termsGroup);
-						cbean.getTerm1().setDeletedGroup(removedTermsGroup);
+					if (cbean.getTerm1() != null){
+						if (cbean.getTerm1().isTogglePosition()) {
+							cbean.getTerm1().getTermGroup().setParent(termsGroup);
+							cbean.getTerm1().setParentGroup(termsGroup);
+							cbean.getTerm1().setDeletedGroup(removedTermsGroup);
+						} else {
+							cbean.getTerm1().getTermGroup().setParent(removedTermsGroup);
+							cbean.getTerm1().setParentGroup(termsGroup);
+							cbean.getTerm1().setDeletedGroup(removedTermsGroup);
+						}
 					}
-					
-					if (cbean.getTerm2().isTogglePosition()) {
-						cbean.getTerm2().getTermGroup().setParent(termsGroup);
-						cbean.getTerm2().setParentGroup(termsGroup);
-						cbean.getTerm2().setDeletedGroup(removedTermsGroup);
-					} else {
-						cbean.getTerm2().getTermGroup().setParent(removedTermsGroup);
-						cbean.getTerm2().setParentGroup(termsGroup);
-						cbean.getTerm2().setDeletedGroup(removedTermsGroup);
+
+					if (cbean.getTerm2() != null) {
+						if (cbean.getTerm2().isTogglePosition()) {
+							cbean.getTerm2().getTermGroup().setParent(termsGroup);
+							cbean.getTerm2().setParentGroup(termsGroup);
+							cbean.getTerm2().setDeletedGroup(removedTermsGroup);
+						} else {
+							cbean.getTerm2().getTermGroup().setParent(removedTermsGroup);
+							cbean.getTerm2().setParentGroup(termsGroup);
+							cbean.getTerm2().setDeletedGroup(removedTermsGroup);
+						}
 					}
+
 				}
 			}
 			
@@ -2003,8 +2047,10 @@ public class MainForm {
 				
 		try {
 			terms = charDb.getTerms(groupsCombo.getText());
-			int groupId = ((TermsDataBean)terms.get(1)).getGroupId();
-			decision = charDb.getDecision(groupId);
+			if(terms.size() != 0) {
+					int groupId = ((TermsDataBean)terms.get(0)).getGroupId();
+					decision = charDb.getDecision(groupId);
+			}
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve co-occurring terms" , exe);
@@ -2031,7 +2077,6 @@ public class MainForm {
 		}
 		
 		if (terms.size() != 0) {
-
 			
 			for (final TermsDataBean tbean : terms) {
 				CoOccurrenceBean cbean = new CoOccurrenceBean();
@@ -2117,16 +2162,18 @@ public class MainForm {
 		String group = groupsCombo.getText();
 		if (!groupInfo.get(group).isSaved()) {
 			ArrayList <String> edges = removedEdges.get(group);
-			
-			for (String edgeNodes : edges){
-				String [] nodes = edgeNodes.split(",");
-				if(nodes[0] != null && !nodes[0].equals("") && nodes[1] != null && !nodes[1].equals("") ) {
-					ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
-							Registry.TargetDirectory+
-								ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
-				}
+			if (edges != null) {
+				for (String edgeNodes : edges){
+					String [] nodes = edgeNodes.split(",");
+					if(nodes[0] != null && !nodes[0].equals("") && nodes[1] != null && !nodes[1].equals("") ) {
+						ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
+								Registry.TargetDirectory+
+									ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
+					}
 
+				}
 			}
+	
 		}
 	}
 
@@ -2159,36 +2206,29 @@ public class MainForm {
 		
 	}
 	
-	private void createRemainingTermsGroup(){
-		//removedTermsGroups
-		//0. Copy and create a removed terms list
-		//1. Check if there are terms remaining - a function that returns true/false
-		//2. Create a new group with the number one more than the existing groups.
-		//3. Create an xml for the group in 2
-		//4. Prepare the GUI for displaying the terms : 
-		//      a) Ignore repeated terms 
-		//      b)Ignore if terms were reinserted in some existing groups
-		//5. Save operation - call the same function as before but create a termsdatabean and pass it along.
-		//6. Go to 1
-		System.out.println("remaining terms :");
-		while(true){
-			
-		}
-	}
+	//removedTermsGroups
+	//0. Copy and create a removed terms list
+	//1. Check if there are terms remaining - a function that returns true/false
+	//2. Create a new group with the number one more than the existing groups.
+	//3. Create an xml for the group in 2
+	//4. Prepare the GUI for displaying the terms : 
+	//      a) Ignore repeated terms 
+	//      b)Ignore if terms were reinserted in some existing groups
+	//5. Save operation - call the same function as before but create a termsdatabean and pass it along.
+	//6. Go to 1
 	
-	private void showRemovedTerms(){
-		
-		int newGroupNumber = groupsCombo.getItemCount()+1;
-		String newGroup = "Group_" + newGroupNumber;
-		groupsCombo.add(newGroup);
-		String groupName = newGroup;
-		groupsCombo.setText(newGroup);
-		/*Generate the graph XML*/
-		ArrayList <ArrayList> group = new ArrayList<ArrayList>();
-		
-		/* Create the co-occurences for the new group*/
-		ArrayList <CoOccurrenceBean> newCooccurrences = new ArrayList<CoOccurrenceBean>();
-		
+	/**
+	 * This function creates remaining terms group for the character tab.
+	 */
+	private void showRemainingTerms() {
+		ArrayList<TermsDataBean> terms = null;
+		term1.y = 10;
+		term2.y = 10;
+		contextRadio.y = 20;
+		frequencyLabel.y = 20;
+		ArrayList<CoOccurrenceBean> cooccurrences = new ArrayList<CoOccurrenceBean>();
+		String decision = "";
+
 		termsGroup = null;
 		termsGroup = new Group(termsScrolledComposite, SWT.NONE);
 		termsGroup.setLayoutData(new RowData());
@@ -2201,91 +2241,235 @@ public class MainForm {
 		removedScrolledComposite.setContent(removedTermsGroup);
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
-		//ArrayList<CoOccurrenceBean> cooccurrences = (ArrayList<CoOccurrenceBean>)charGrpBean.getCooccurrences();
 		
-		if(newCooccurrences.size() > 5) {
+		int newGroupNumber = groupsCombo.getItemCount()+1;
+		String newGroup = "Group_" + newGroupNumber;
+		groupsCombo.add(newGroup);
+		groupsCombo.setText(newGroup);
+		groupsCombo.select(groupsCombo.getItemCount()-1);
+		/*Generate the graph XML*/
+		ArrayList <ArrayList> groups = null;
+		/* Create the arraylist to create new terms list*/
+		terms = getRemovedTerms(newGroupNumber);	
+		/* Create the arraylist for Graph Visualization*/
+		groups = createGraphML(terms);
+		/* Create the GraphML */
+		new GraphMLOutputter(false).output(groups, newGroupNumber);
+		/* Create an entry in the removedEdges hashmap for the new group*/
+		removedEdges.put(newGroup, new ArrayList<String>());
+		/* Add an entry to the sort order */
+		boolean [] newSortedBy = new boolean [sortedBy.length+1];
+		for(int i = 0 ; i< sortedBy.length; i++) {
+			newSortedBy[i] = sortedBy[i];
+		}
+		sortedBy = newSortedBy;
+
+		if (terms.size() > 5) {
 			
-			/* If the number of rows is more than what is displayed, resize the group*/
 			RowData rowdata = (RowData)termsGroup.getLayoutData();
-			rowdata.height = newCooccurrences.size() * 36;
+			rowdata.height = terms.size() * 36;
 			termsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
 	        Rectangle rect = termsGroup.getBounds();
-	        rect.height = newCooccurrences.size() * 36;
+	        rect.height = terms.size() * 36;
 	        termsGroup.setBounds(rect);
 			
 			
 			rowdata = (RowData)removedTermsGroup.getLayoutData();
-			rowdata.height = newCooccurrences.size() * 36;
+			rowdata.height = terms.size() * 36;
 			removedTermsGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
 	        rect = removedTermsGroup.getBounds();
-	        rect.height = newCooccurrences.size() * 36;
+	        rect.height = terms.size() * 36;
 	        removedTermsGroup.setBounds(rect);
+			
 		}
 		
-		Set <String>
-		keys = groupInfo.keySet();
-		for (String key : keys){
-			CharacterGroupBean existingGrpBean = groupInfo.get(key);
-			ArrayList <CoOccurrenceBean> cooccurrences = existingGrpBean.getCooccurrences();
-			for (CoOccurrenceBean  bean : cooccurrences) {
-				ArrayList<String> terms = new ArrayList<String>();
-/*				if (rect.x == 10) {
-					rect.x = 40;
-				} else {
-					rect.x = 210;
-				}*/
-				if (!bean.getTerm1().isTogglePosition()) {
-					//tBean.setTerm1(bean.getTerm1().getTermText().getText());					
-					bean.getTerm1().setParentGroup(termsGroup);
-					//bean.getTerm1().setTermGroup(termsGroup);
-					bean.getTerm1().setDeletedGroup(removedTermsGroup);
-					bean.getTerm1().setTogglePosition(true);
-					terms.add(bean.getTerm1().getTermText().getText());
+		if (terms.size() != 0) {
+			
+			for (final TermsDataBean tbean : terms) {
+				CoOccurrenceBean cbean = new CoOccurrenceBean();
+				if (!(tbean.getTerm1() == null) && !tbean.getTerm1().equals("")) {
 					
-			    } else if(!bean.getTerm2().isTogglePosition()){
-					bean.getTerm1().setParentGroup(termsGroup);
-					//bean.getTerm1().setTermGroup(termsGroup);
-					bean.getTerm1().setDeletedGroup(removedTermsGroup);
-					bean.getTerm1().setTogglePosition(true);
-					terms.add(bean.getTerm2().getTermText().getText());
-			    }
-				newCooccurrences.add(bean);
-				if(terms.size()!= 0) {
-					group.add(terms);
-				}
-				//cooccurrences.remove(bean);
-				//bean.getTerm1().getTermGroup()
-			}
+				Group term1Group = new Group(termsGroup, SWT.NONE);
+				term1Group.setToolTipText(tbean.getTerm1());
+				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
+				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
 
+				}
+				
+				if (!(tbean.getTerm2() == null) && !tbean.getTerm2().equals("")) {
+					Group term2Group = new Group(termsGroup, SWT.NONE);	
+					term2Group.setToolTipText(tbean.getTerm2());
+					term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
+					cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
+				}
+				
+				cbean.setGroupNo(tbean.getGroupId());
+				cbean.setSourceFiles(tbean.getSourceFiles());
+				cbean.setKeep(tbean.getKeep());
+				
+				final Button button = new Button(termsGroup, SWT.RADIO);
+				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
+				button.setToolTipText("Select to see the context sentences");
+				button.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						if (button.getSelection()) {
+							contextTable.removeAll();
+							try {
+								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
+								
+								for (ContextBean cbean : contexts){
+									TableItem item = new TableItem(contextTable, SWT.NONE);
+									item.setText(new String[]{cbean.getSourceText(), cbean.getSentence()});
+								}								
+								
+							} catch (Exception exe) {
+								LOGGER.error("Couldnt retrieve sentences terms" , exe);
+								exe.printStackTrace();
+							}
+							
+						}
+
+					}
+				});
+
+				cbean.setContextButton(button);
+				if (decision != null && !decision.equals("")){
+					comboDecision.setText(decision);
+				}
+				
+				Label label = new Label(termsGroup, SWT.NONE);
+				label.setBounds(frequencyLabel.x, frequencyLabel.y, frequencyLabel.width, frequencyLabel.height);
+				label.setText(tbean.getFrequency()+ "");
+				label.setToolTipText("Frequency of co-occurrence");
+				cbean.setFrequency(label);
+				cooccurrences.add(cbean);
+				
+				term1.y += standardIncrement;
+				term2.y += standardIncrement;
+				contextRadio.y += standardIncrement;
+				frequencyLabel.y += standardIncrement;
+			}
 		}
 		
-		GraphMLOutputter gml = new GraphMLOutputter();
-		gml.output(group, newGroupNumber);
 		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		CharacterGroupBean charGrpBean = new CharacterGroupBean(newCooccurrences,newGroup,false);
-		groupInfo.put(newGroup, charGrpBean);
+		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), false);
+		groupInfo.put(groupsCombo.getText(), charGrpBean);
 		
-	}		
-/*		ArrayList<TermsDataBean> removedTerms = new ArrayList<TermsDataBean>();
+		/* Save the newly formed group to db*/
+		try {
+			charDb.saveTerms(terms);
+		} catch(Exception exe){
+			exe.printStackTrace();
+		}
+	}
+	
+	private ArrayList<ArrayList> createGraphML(ArrayList<TermsDataBean> terms) {
+		ArrayList<ArrayList> group = new ArrayList<ArrayList>();
+		ArrayList<ArrayList> groups = new ArrayList<ArrayList>();
+		for (TermsDataBean tbean : terms){
+			ArrayList coTerms = new ArrayList();
+			if(tbean.getTerm1() != null) {
+				coTerms.add(tbean.getTerm1());
+			} else {
+				coTerms.add("");
+			}
+			if(tbean.getTerm2() != null) {
+				coTerms.add(tbean.getTerm2());
+			} else {
+				coTerms.add("");
+			}
+			if(coTerms.size() != 0){
+				groups.add(coTerms);
+			}
+		}
+		group.add(groups);
+		return group;
+	}
+	
+	private ArrayList<TermsDataBean> getRemovedTerms(int groupNo) {
+		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();
+
+			/* This is the first time a new remaining terms group has been generated */
+			Set <String> keys = groupInfo.keySet();
+			for (String key : keys){	
+				CharacterGroupBean charBean = groupInfo.get(key);
+				if (charBean.isSaved()){
+					terms.addAll(getTermsInformation (charBean, groupNo));
+				}
+				
+			}			
+
+		
+		return terms;
+	}
+	
+	private ArrayList <TermsDataBean> getTermsInformation (CharacterGroupBean charGroupBean, int groupNo){
+		
+		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();	
+		ArrayList <CoOccurrenceBean> cooccurrences = charGroupBean.getCooccurrences();
+		
+		for (CoOccurrenceBean  bean : cooccurrences) {
+			
+			TermsDataBean tbean = new TermsDataBean();
+			tbean.setFrequency(Integer.parseInt(bean.getFrequency().getText()));
+			tbean.setSourceFiles(bean.getSourceFiles());
+			tbean.setGroupId(groupNo);
+			if(bean.getTerm1() != null) {
+				if (!bean.getTerm1().isTogglePosition()) {
+					tbean.setTerm1(bean.getTerm1().getTermText().getText());
+					/* Remove the term from the original group of removed terms*/
+					bean.setTerm1(null);
+					
+			    } else {
+			    	tbean.setTerm1("");
+			    }
+			} else {
+		    	tbean.setTerm1("");
+		    }
+
+			if (bean.getTerm2() != null){
+				if(!bean.getTerm2().isTogglePosition()){
+					tbean.setTerm2(bean.getTerm2().getTermText().getText());
+					/* Remove the term from the original group of removed terms*/
+					bean.setTerm2(null);
+					
+			    } else {
+			    	tbean.setTerm2("");
+			    }
+			} else {
+		    	tbean.setTerm2("");
+		    }
+
+			if (tbean.getTerm1() != null && tbean.getTerm2() != null) {
+				if (!tbean.getTerm1().equals("")|| 
+						!tbean.getTerm2().equals("")) {
+					terms.add(tbean);
+				}
+			}
+			
+		}
+		
+		return terms;
+	}
+	
+	/**
+	 * This function checks how 
+	 * many groups were saved
+	 * @return
+	 */  	
+	private int getNumberOfGroupsSaved(){
+		int returnValue = 0;
 		Set <String>
 		keys = groupInfo.keySet();
 		for (String key : keys){
 			CharacterGroupBean charGrpBean = groupInfo.get(key);
-			ArrayList <CoOccurrenceBean> cooccurrences = charGrpBean.getCooccurrences();
-			TermsDataBean tBean = new TermsDataBean();
-			for (CoOccurrenceBean  bean : cooccurrences) {
-				if ((!bean.getTerm1().isTogglePosition()))
-					tBean.setTerm1(bean.getTerm1().getTermText().getText());
-			    }
-					
-					|| (!bean.getTerm2().isTogglePosition()) ){
-					returnValue = true;
-					break;
-				}
-			}*/
-		//}
-	//}
+			if(charGrpBean.isSaved()) {
+				returnValue ++;
+			}
+		}
+		return returnValue;
+	}
 	
 	/**
 	 * This function checks if there are terms remaining that are not yet grouped.
@@ -2300,10 +2484,14 @@ public class MainForm {
 			CharacterGroupBean charGrpBean = groupInfo.get(key);
 			ArrayList <CoOccurrenceBean> cooccurrences = charGrpBean.getCooccurrences();
 			for (CoOccurrenceBean  bean : cooccurrences) {
-				if ((!bean.getTerm1().isTogglePosition()) || (!bean.getTerm2().isTogglePosition()) ){
-					returnValue = true;
-					break;
+				if((bean.getTerm1() != null && !bean.getTerm1().isTogglePosition()) ||
+						(bean.getTerm2() != null && !bean.getTerm2().isTogglePosition())){
+						returnValue = true;
+						break;
+				    } 
 				}
+			if(returnValue) {
+				break;
 			}
 		}
 		return returnValue;
