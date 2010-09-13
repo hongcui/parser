@@ -1396,14 +1396,14 @@ public class MainForm {
 		btnViewGraphVisualization.setToolTipText("Click to view the graph visualization of the terms that have co-occurred");
 		
 		/*Removed terms test*/
-		Button btnRemovedTerms = new Button(composite_8, SWT.NONE);
+/*		Button btnRemovedTerms = new Button(composite_8, SWT.NONE);
 		btnRemovedTerms.setBounds(622, 0, 105, 25);
 		btnRemovedTerms.setText("Removed Terms");
 		btnRemovedTerms.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				showRemainingTerms();
 			}
-		});
+		});*/
 		
 		btnViewGraphVisualization.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -2390,7 +2390,6 @@ public class MainForm {
 	private ArrayList<TermsDataBean> getRemovedTerms(int groupNo) {
 		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();
 
-			/* This is the first time a new remaining terms group has been generated */
 			Set <String> keys = groupInfo.keySet();
 			for (String key : keys){	
 				CharacterGroupBean charBean = groupInfo.get(key);
