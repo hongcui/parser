@@ -1311,7 +1311,10 @@ public class MainForm {
 					for (i = 0, j = size-1, k = size-1; i < size/2; i++, j--, k-=2){
 						CoOccurrenceBean beanFirst = cbeans[i];
 						CoOccurrenceBean beanLast = cbeans[j];
-						if(beanFirst.getTerm1() != null && beanFirst.getTerm2() != null) {
+						if(beanFirst.getTerm1() != null 
+								&& beanFirst.getTerm2() != null
+								&& beanLast.getTerm1() != null
+								&& beanLast.getTerm2() != null) {
 							/* Swap coordinates of radio button */
 							tempCoordinates = beanFirst.getContextButton().getBounds();
 							beanFirst.getContextButton().setBounds(beanLast.getContextButton().getBounds());
