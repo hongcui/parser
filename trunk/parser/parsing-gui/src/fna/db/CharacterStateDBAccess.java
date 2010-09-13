@@ -177,13 +177,16 @@ public class CharacterStateDBAccess {
 	
 	public boolean saveTerms(ArrayList<TermsDataBean> terms) throws SQLException {
 		
+		if(terms == null || terms.size()==0) {
+			return false;
+		}
 		Connection conn = null;
 		PreparedStatement pstmt = null; 
 		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_terms where groupId=?";
 		try {
 			conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, terms.get(1).getGroupId());
+			pstmt.setInt(1, terms.get(0).getGroupId());
 			pstmt.execute();
 			
 			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_terms values(?,?,?,?,?,?)";
@@ -192,10 +195,10 @@ public class CharacterStateDBAccess {
 			
 			for (TermsDataBean tbean : terms) {
 				pstmt.setInt(1, tbean.getGroupId());
-				pstmt.setString(2, tbean.getTerm1());
-				pstmt.setString(3, tbean.getTerm2());
+				pstmt.setString(2, tbean.getTerm1()==null?"":tbean.getTerm1());
+				pstmt.setString(3, tbean.getTerm2()==null?"":tbean.getTerm2());
 				pstmt.setInt(4, tbean.getFrequency());
-				pstmt.setString(5, tbean.getKeep());
+				pstmt.setString(5, tbean.getKeep()==null?"":tbean.getKeep());
 				
 				String [] files = tbean.getSourceFiles();
 				String sourceFile = "";

@@ -46,6 +46,10 @@ public class GraphMLOutputter {
 		}
 		
 	}
+	
+	public GraphMLOutputter(boolean cleanUp){
+		
+	}
 	/**
 	 * output groups as a GraphML document, with nodes and links
 	 * @param sets
@@ -60,25 +64,38 @@ public class GraphMLOutputter {
 			System.out.println("Group "+gcount+ ":");
 			Hashtable<String, String> nodes = new Hashtable<String, String>();
 			int nid = 1;
-			for(int i = 0; i < group.size()-1; i++){
+			for(int i = 0; i < group.size(); i++){
 				String t1 =(String)((ArrayList)group.get(i)).get(0);
 				String t2 =(String)((ArrayList)group.get(i)).get(1);
-				String t1id = nodes.get(t1);
-				String t2id = nodes.get(t2);
-				int w  =Integer.parseInt((String)((ArrayList)group.get(i)).get(2));
-				if(t1id==null){
-					t1id = nid+"";
-					graphXML += "<node id='"+t1id+"'><data key='name'>"+t1+"</data></node>"+nl;
-					nodes.put(t1, nid+"");
-					nid++;
+				String t1id = null, t2id = null;
+				if (t1 != null && !t1.equals("")) {
+					t1id = nodes.get(t1);
+					if(t1id==null){
+						t1id = nid+"";
+						graphXML += "<node id='"+t1id+"'><data key='name'>"+t1+"</data></node>"+nl;
+						nodes.put(t1, nid+"");
+						nid++;
+					}
 				}
-				if(t2id==null){
-					t2id = nid+"";
-					graphXML += "<node id='"+t2id+"'><data key='name'>"+t2+"</data></node>"+nl;
-					nodes.put(t2, nid+"");
-					nid++;
+				
+				if (t2 != null && !t2.equals("")) {
+					t2id = nodes.get(t2);
+					if(t2id==null){
+						t2id = nid+"";
+						graphXML += "<node id='"+t2id+"'><data key='name'>"+t2+"</data></node>"+nl;
+						nodes.put(t2, nid+"");
+						nid++;
+					}
 				}
-				graphXML +="<edge source='"+t1id+"' target='"+t2id+"' weight='"+normalize(w)+"'/>"+nl;
+				
+				
+				/* We are not using weights so no need to have this */
+				int w  = 0;//Integer.parseInt((String)((ArrayList)group.get(i)).get(2));
+
+				if (t1id != null && t2id != null) {
+					graphXML +="<edge source='"+t1id+"' target='"+t2id+"' weight='"+normalize(w)+"'/>"+nl;
+				}
+				
 			}
 			
 			graphXML+="</graph>"+nl+"</graphml>";

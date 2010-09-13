@@ -96,20 +96,21 @@ public class ApplicationUtilities {
 	}
 	
 
-	public static void showPopUpWindow(String message , String messageHeader, int type) {
+	public static int showPopUpWindow(String message , String messageHeader, int type) {
 		
+		int returnVal = 0;
 		try {
 			final Display display = Display.getDefault();
 			shell = new Shell(display);
 			MessageBox messageBox = new MessageBox(shell, type);
 			messageBox.setMessage(message);
 			messageBox.setText(messageHeader);
-			messageBox.open();	 
+			returnVal = messageBox.open();	 
 		} catch (Exception exe) {
 			LOGGER.error("couldn't open file in ApplicationUtilities:showPopUpWindow", exe);
 			exe.printStackTrace();
 		}
-		
+		return returnVal;
 	}
 	
 	public static String longestCommonSubstring(String first, String second) {
