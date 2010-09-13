@@ -2515,7 +2515,7 @@ public class MainForm {
 	
 	/**
 	 * This function checks if there are terms remaining that are not yet grouped.
-	 * @return
+	 * @return boolean
 	 */
 	
 	private boolean isTermsNotGrouped(){
