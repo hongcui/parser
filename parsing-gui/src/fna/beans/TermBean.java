@@ -108,10 +108,19 @@ public class TermBean {
 								cbean.getFrequency().setVisible(false);
 								cbean.getContextButton().setVisible(false);
 							}
-							/* solving the visibility problem*/
 							
 							break;
 						}
+					}
+					/* Visibility problem for remaining terms - radio and frequency label shouldn't be visible*/
+					if(cbean.getTerm1() == null && cbean.getTerm2().termGroup.getParent() != parentGroup){
+						cbean.getFrequency().setVisible(false);
+						cbean.getContextButton().setVisible(false);
+						break;
+					} else if (cbean.getTerm2() == null && cbean.getTerm1().termGroup.getParent() != parentGroup){
+						cbean.getFrequency().setVisible(false);
+						cbean.getContextButton().setVisible(false);
+						break;
 					}
 
 				}
@@ -163,6 +172,14 @@ public class TermBean {
 					}
 				}				
 
+				/* Visibility problem for remaining terms - radio and frequency label shouldn't be visible*/
+				if(cbean.getTerm1() == null && cbean.getTerm2().termGroup.getParent() == parentGroup){
+					cbean.getFrequency().setVisible(true);
+					cbean.getContextButton().setVisible(true);
+				} else if (cbean.getTerm2() == null && cbean.getTerm1().termGroup.getParent() == parentGroup) {
+					cbean.getFrequency().setVisible(true);
+					cbean.getContextButton().setVisible(true);
+				}
 			}
 			
 		}
