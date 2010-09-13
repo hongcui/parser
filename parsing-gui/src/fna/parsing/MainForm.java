@@ -192,6 +192,8 @@ public class MainForm {
 	 * remaining terms group can be generated.
 	 */
 	private static int noOfTermGroups = 0;
+	/* Show information to the user after the first time pop up message while grouping the remaining terms */
+	private static boolean charStatePopUp = true;
 	
 	//-----------------------------------Character Tab Variables ---END-------------------------------//
 	
@@ -1210,11 +1212,22 @@ public class MainForm {
 
 				/** Logic for remaining terms goes here */
 				if (noOfTermGroups <= getNumberOfGroupsSaved() && isTermsNotGrouped()) {
-					int choice = ApplicationUtilities.showPopUpWindow(
-							ApplicationUtilities.getProperty("popup.charstates.info"),
-							ApplicationUtilities.getProperty("popup.header.info") + " : " +
-							ApplicationUtilities.getProperty("popup.header.character"), 
-							SWT.YES | SWT.NO | SWT.CANCEL);
+					int choice = 0;
+					if(charStatePopUp){
+						choice = ApplicationUtilities.showPopUpWindow(
+								ApplicationUtilities.getProperty("popup.charstates.info"),
+								ApplicationUtilities.getProperty("popup.header.info") + " : " +
+								ApplicationUtilities.getProperty("popup.header.character"), 
+								SWT.YES | SWT.NO | SWT.CANCEL);
+						charStatePopUp = false;
+					} else {
+						choice = ApplicationUtilities.showPopUpWindow(
+								ApplicationUtilities.getProperty("popup.char.cont"),
+								ApplicationUtilities.getProperty("popup.header.info") + " : " +
+								ApplicationUtilities.getProperty("popup.header.character"), 
+								SWT.YES | SWT.NO | SWT.CANCEL);
+					}
+
 					
 				    switch (choice) {
 				    case SWT.OK:
@@ -1868,6 +1881,9 @@ public class MainForm {
 		return errorFlag;
 	}
 	
+	/**
+	 * This function will set the decisions for the character tab
+	 */
 	private void setCharacterTabDecisions() {
 		ArrayList<String> decisions = new ArrayList<String> ();
 		
@@ -1887,6 +1903,9 @@ public class MainForm {
 		comboDecision.setText(strDecisions[0]);
 	}
 	
+	/**
+	 * This function will prepare the character tab for display of co-occured terms
+	 */
 	private void setCharactertabGroups() {
 		File directory = new File(Registry.TargetDirectory+"\\"+
 				ApplicationUtilities.getProperty("CHARACTER-STATES"));
@@ -1915,6 +1934,9 @@ public class MainForm {
 		
 	}
 	
+	/***
+	 * This function loads the character tab with the co-occurred terms
+	 */
 	private void loadTerms() {
 		String groupName = groupsCombo.getText();
 		CharacterGroupBean charGrpBean = groupInfo.get(groupName);
@@ -2367,6 +2389,11 @@ public class MainForm {
 		}
 	}
 	
+	/***
+	 * This function creates the graph for the remaining character tab terms
+	 * @param terms
+	 * @return
+	 */
 	private ArrayList<ArrayList> createGraphML(ArrayList<TermsDataBean> terms) {
 		ArrayList<ArrayList> group = new ArrayList<ArrayList>();
 		ArrayList<ArrayList> groups = new ArrayList<ArrayList>();
@@ -2390,6 +2417,11 @@ public class MainForm {
 		return group;
 	}
 	
+	/***
+	 * This function will get all the removed terms and form the pool
+	 * @param groupNo
+	 * @return
+	 */
 	private ArrayList<TermsDataBean> getRemovedTerms(int groupNo) {
 		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();
 
@@ -2405,7 +2437,13 @@ public class MainForm {
 		
 		return terms;
 	}
-	
+	/**
+	 * This is a helper internal function that gets the specific removed 
+	 * terms information from the character tab's removed terms'
+	 * @param charGroupBean
+	 * @param groupNo
+	 * @return
+	 */
 	private ArrayList <TermsDataBean> getTermsInformation (CharacterGroupBean charGroupBean, int groupNo){
 		
 		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();	
