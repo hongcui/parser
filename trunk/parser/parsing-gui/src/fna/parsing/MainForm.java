@@ -2051,6 +2051,7 @@ public class MainForm {
 	
 	private void showTerms() {
 		ArrayList<TermsDataBean> terms = null;
+		boolean saved = false;
 		term1.y = 10;
 		term2.y = 10;
 		contextRadio.y = 20;
@@ -2154,6 +2155,7 @@ public class MainForm {
 				cbean.setContextButton(button);
 				if (decision != null && !decision.equals("")){
 					comboDecision.setText(decision);
+					saved = true;
 				}
 				
 				Label label = new Label(termsGroup, SWT.NONE);
@@ -2172,7 +2174,7 @@ public class MainForm {
 		
 		termsScrolledComposite.setMinSize(termsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), false);
+		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), saved);
 		groupInfo.put(groupsCombo.getText(), charGrpBean);
 	}
 
