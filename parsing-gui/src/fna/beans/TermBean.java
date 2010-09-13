@@ -108,6 +108,8 @@ public class TermBean {
 								cbean.getFrequency().setVisible(false);
 								cbean.getContextButton().setVisible(false);
 							}
+							/* solving the visibility problem*/
+							
 							break;
 						}
 					}
