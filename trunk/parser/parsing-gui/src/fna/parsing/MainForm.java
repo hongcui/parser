@@ -92,6 +92,7 @@ public class MainForm {
 	}
 	private Combo combo;
 	
+	
 	private Combo modifierListCombo;
 	private Table finalizerTable;
 	private Table markupTable;
