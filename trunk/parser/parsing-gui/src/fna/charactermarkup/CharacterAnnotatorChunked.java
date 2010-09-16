@@ -151,12 +151,15 @@ public class CharacterAnnotatorChunked {
 				this.unassignedmodifiers = "";
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkValue){
-				ArrayList<Element> chars = this.processSimpleCharacterState("size["+ck.toString().replaceAll("[{()}]", "")+"]", this.subjects);
+				ArrayList<Element> chars = this.processSimpleCharacterState(ck.toString().replaceFirst("\\] (?=\\d)","] size[").replaceAll("(\\w+\\[|\\]|\\(|\\)|\\{|\\})", "")+"]", this.subjects);//m[usually] 1.5-2
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkComparativeValue){
-				ArrayList<Element> chars = processComparativeValue(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]", ""), this.subjects);
+				ArrayList<Element> chars = processComparativeValue(ck.toString(), this.subjects);
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkTHAN){
+				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]", ""), this.subjects);
+				updateLatestElements(chars);
+			}else if(ck instanceof ChunkTHANC){//n[(longer) than {wide}] .
 				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]", ""), this.subjects);
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkBracketed){
@@ -184,35 +187,50 @@ public class CharacterAnnotatorChunked {
        1–3 times {pinnately} {lobed}
        1–2 times shape[{shape~list~pinnately~lobed~or~divided}]
        4 times longer than wide
-	 * @param replaceFirst
+       
+       
+       
+	 * @param content: 0.5–0.6+ times a[type[bodies]]
 	 * @param subjects2
 	 * @return
 	 */
 	private ArrayList<Element> processComparativeValue(String content,
 			ArrayList<Element> parents) {
-		String v = content.replaceAll("(?<="+ChunkedSentence.times+").*$", "");
-		String n = content.replace(v, "").trim();
-		if(n.indexOf("n[")>=0){//1.5–2.5 times n[{longer} than (throat)]
-			content = "n["+content.replace("n[", "");
-			this.processTHAN(content, parents);
-		}else if(n.indexOf("o[")>=0){
-			this.processSimpleCharacterState("a[size["+v.replace(" times", "")+"]]", parents);
-			ArrayList<Element> structures = this.processObject(n);
-			this.createRelationElements("times", parents, structures, this.unassignedmodifiers);
-			this.unassignedmodifiers = null;
-		}else if(n.indexOf("a[")>=0){ //characters:1–3 times {pinnately} {lobed}
-			n = n.replaceFirst("a\\[", "").replaceFirst("\\]$", "");
-			n = "a[m["+v+"] "+n+"]";
-			this.processSimpleCharacterState(n, parents);
+		if(content.startsWith("n[")){
+			content = content.replaceFirst("^n\\[", "").replaceFirst("\\]", "").trim();
 		}
-		
-
-		
+		String v = content.replaceAll("("+ChunkedSentence.times+").*$", "").trim(); // v holds numbers
+		String n = content.replace(v, "").trim(); //n holds times....
+		if(n.indexOf("n[")>=0){//1.5–2.5 times n[{longer} than (throat)]
+			//content = "n["+content.replace("n[", "");
+			content = v.replaceFirst("\\] (?=\\d)", "] size[")+"] constraint["+n.replaceFirst("n\\[", ""); //m[usually] 1.5-2
+			return this.processTHAN(content, parents);
+		}else if(n.indexOf("type[")>=0){//size[{longer}] constraint[than (object}]
+			//this.processSimpleCharacterState("a[size["+v.replace(" times", "")+"]]", parents);
+			//ArrayList<Element> structures = this.processObject(n);
+			//this.createRelationElements("times", parents, structures, this.unassignedmodifiers);
+			//this.unassignedmodifiers = null;
+			//return structures;
+			n = "constraint["+n.replaceFirst("type\\[", "(").replaceFirst("\\]", ")").replaceAll("a\\[", ""); //times a[type[bodies]] => constraint[times (bodies)]
+			content = "size["+v+"] "+n;
+			return this.processTHAN(content, parents);			
+		}else if(n.indexOf("o[")>=0){//ca .3.5 times length r[p[of] o[(throat)]]
+			n = "constraint["+n.replaceAll("o\\[", ""); //times o[(bodies)] => constraint[times (bodies)]
+			content = "size["+v+"] "+n;
+			return this.processTHAN(content, parents);	
+		}
+		else if(n.indexOf("a[")>=0){ //characters:1–3 times {pinnately} {lobed}
+			String times = n.substring(0, n.indexOf(' '));
+			n = n.substring(n.indexOf(' ')+1);
+			n = n.replaceFirst("a\\[", "").replaceFirst("\\]$", "");
+			n = "m["+v+" "+times+"] "+n;
+			return this.processSimpleCharacterState(n, parents);
+		}
 		return null;
 	}
 
 	/**
-	 * size[{longer}] constraint[than (object}]";
+	 * size[{longer}] constraint[than (object)]";
 	 * @param replaceFirst
 	 * @param subjects2
 	 * @return
@@ -227,27 +245,34 @@ public class CharacterAnnotatorChunked {
 			charas = this.processSimpleCharacterState(parts[0].trim(), parents);
 		}
 		String object = null;
-		ArrayList<Element> structures = null;
+		ArrayList<Element> structures = new ArrayList<Element>();
 		if(parts.length>1 && parts[1].length()>0){
 			if(parts[1].indexOf("(")>=0){
-				while(parts[1].indexOf(" to ")>=0){
-					object = parts[1].replaceFirst(".* to ", "");
+				String ostr = parts[1];
+				while(ostr.indexOf('(')>=0){
+					object = ostr.substring(ostr.indexOf('('), ostr.indexOf(')')+1);
+					object = "o["+object+"]";
+					ostr = ostr.substring(ostr.indexOf(')')+1);
+					//while(parts[1].indexOf(" to ")>=0){
+					//	object = parts[1].replaceFirst(".* to ", "");
+					//}
+				
+					if(object != null){
+						structures.addAll(this.processObject(object));
+					}
 				}
-			}
-			if(object != null){
-				structures = this.processObject(object);
-			}
-			Iterator<Element> it = charas.iterator();
-			while(it.hasNext()){
-				Element e = it.next();
-				this.addAttribute(e, "constraint", parts[1].replaceFirst("\\]$", ""));
-				if(object!=null){
-					this.addAttribute(e, "constraintids", this.listStructureIds(structures));//TODO: check: some constraints are without constraintids
+				Iterator<Element> it = charas.iterator();
+				while(it.hasNext()){
+					Element e = it.next();
+					this.addAttribute(e, "constraint", parts[1].replaceAll("(\\(|\\)|\\w*\\[|\\])", ""));
+					if(object!=null){
+						this.addAttribute(e, "constraintids", this.listStructureIds(structures));//TODO: check: some constraints are without constraintids
+					}
 				}
+				
 			}
-			
 		}
-		if(structures != null){
+		if(structures.size() > 0){
 			return structures;
 		}else{
 			return charas;
@@ -419,7 +444,9 @@ public class CharacterAnnotatorChunked {
 	 */
 	private void updateLatestElements(ArrayList<Element> elements) {
 		this.latestelements = new ArrayList<Element>();
-		latestelements.addAll(elements);
+		if(elements != null){
+			latestelements.addAll(elements);
+		}
 	}
 
 	/**
@@ -437,6 +464,11 @@ public class CharacterAnnotatorChunked {
 		
 		String c = content.substring(0, content.indexOf("r["));
 		String r = content.replace(c, "");
+		if(r.lastIndexOf("o[")<0){ //#{usually} {arising} r[p[in]]# {distal} 1/2
+			//failed parse
+			cs.setPointer2NextComma();
+			return;
+		}
 		String p = r.substring(0, r.lastIndexOf("o["));//{often} {dispersed} r[p[with] o[aid  r[p[from] o[(pappi)]]]] 
 		String o = r.replace(p, "");
 		String[] mc = c.split("\\]\\s*");
@@ -786,6 +818,7 @@ public class CharacterAnnotatorChunked {
 			//determine character/modifier
 			ArrayList<Element> list = new ArrayList<Element>();
 			list.add(e);
+			//process text reminding in organ
 			processCharacterText(organ, list, null); //characters created here are final and all the structures will have, therefore they shall stay local and not visible from outside
 			results.add(e); //results only adds e
 			this.statement.addContent(e);
@@ -842,6 +875,12 @@ public class CharacterAnnotatorChunked {
 	private String createCharacterElement(ArrayList<Element> parents,
 			ArrayList<Element> results, String modifiers, String cvalue, String cname, String char_type) {
 		Element character = new Element("character");
+		if(cname.compareTo("size")==0){
+			String value = cvalue.replaceFirst("("+ChunkedSentence.units+")", "").trim(); //5-10 mm
+			String unit = cvalue.replace(value, "").trim();
+			if(unit.length()>0){character.setAttribute("unit", unit);}
+			cvalue = value;
+		}
 		if(this.inbrackets){character.setAttribute("note", "in_bracket");}
 		if(char_type.length() >0){
 			character.setAttribute("char_type", char_type);
@@ -917,7 +956,7 @@ public class CharacterAnnotatorChunked {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 
 	/**
