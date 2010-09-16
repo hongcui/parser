@@ -139,45 +139,6 @@ public class StanfordParser implements Learn2Parse{
             int exitVal = proc.waitFor();
             System.out.println("ExitValue: " + exitVal);
 
-
-	  		//Process p = r.exec("cmd /c cd \"C:\\Program Files\\stanford-parser-2010-02-26\"");
-	  		//String command = "cmd /c java -mx900m -cp \"stanford-parser.jar;\" edu.stanford.nlp.parser.lexparser.LexicalizedParser -sentences newline -tokenized -tagSeparator / englishPCFG.ser.gz \""+this.posedfile.getAbsolutePath()+"\" > "+this.parsedfile.getAbsolutePath();
-	  		//p = r.exec(command);
-	  		
-	  		
-	  	    /*BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));			
-			BufferedReader errInput = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			int h = 1;
-			int t = 1;
-			// read the errors from the command
-			String e = "";
-			while ((e = errInput.readLine()) != null) {
-				System.out.println(e);
-				if(e.startsWith("Parsing [sent.")){
-            		headings.add(e);
-            		System.out.println(h+" add heading: "+e);
-            		h++;
-            	}
-			}
-			// read the output from the command
-			String s = "";
-			StringBuffer sb = new StringBuffer();
-			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
-				if(s.startsWith("(ROOT") || s.startsWith("Sentence too long")){
-        			if(sb.toString().trim().length()>0){
-        				trees.add(sb.toString());
-        				System.out.println(t+" add tree: "+sb.toString());
-        				t++;
-        			}
-        			sb = new StringBuffer();
-        			sb.append(s+System.getProperty("line.separator"));
-        		}else if(s.matches("^\\s*\\(.*")){
-        			sb.append(s+System.getProperty("line.separator"));
-        		}
-			}
-			trees.add(sb.toString());
-			*/
 			//format
             if(headings.size()+1 != trees.size()+1){
             	System.err.println("Error reading parsing results");
@@ -256,7 +217,7 @@ public class StanfordParser implements Learn2Parse{
 							ChunkedSentence cs = ex.chunkIt();
 							if(this.debug){
 								System.out.println();
-								System.out.println(i+": "+cs.toString());
+								System.out.println(src+"["+i+"]: "+cs.toString());
 							}
 							cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
 							//Element statement = cac.annotate(src.replaceAll("^\\d+\\.txt", ""), src, cs); //src: 100.txt-18
@@ -272,7 +233,7 @@ public class StanfordParser implements Learn2Parse{
 									placeDescription(description, pdescID, baseroot);
 									description = new Element("description");
 									if(this.debug){
-										System.out.println(count+".xml written");
+										System.out.println(pfileindex+".xml written");
 									}
 								}
 							}
@@ -295,37 +256,7 @@ public class StanfordParser implements Learn2Parse{
 				}
 			}
 			placeDescription(description, pdescID, baseroot);
-			VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
-			//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
-			/*if(text.trim().compareTo("") != 0){ //last tree
-				text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
-				t2x = new Tree2XML(text);
-				doc = t2x.xml();
-				//Document doccp = (Document)doc.clone();
-				if(rs.relative(i)){
-					String sent = rs.getString("rmarkedsent");
-					String src = rs.getString("source");
-					//System.out.println(sent);
-					if(!sent.matches(".*?[_–-]\\s*[<{a-z].*") && !sent.matches(".*?\\band/or\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
-						sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
-						SentenceChunker ex = new SentenceChunker(i, doc, sent, conn);
-						ChunkedSentence cs = ex.chunkIt();
-						if(this.debug){
-							System.out.println();
-							System.out.println(i+": "+cs.toString());
-						}
-						cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
-						Element statement = cac.annotate(Integer.parseInt(src.replaceAll("^\\d+\\.txt-", ""))+1, src, cs);
-						description.addContent(statement);
-						//plug description in XML document
-						//write the XML to final
-						//call MainForm to display
-						int filecount = Integer.parseInt(src.replaceFirst("\\.txt-\\.*$", ""));
-						VolumeFinalizer.replaceWithAnnotated(description, filecount, "/treatment/description", "FINAL", false);
-					}
-				}
-			}*/
-			
+			VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");			
 			rs.close();
     	}catch (Exception e){
     		//System.err.println(e);
@@ -351,55 +282,6 @@ public class StanfordParser implements Learn2Parse{
 		}
 		
 	}
-
-	/*protected String reversecondense(String str) { 
-		StringBuffer sb2 = new StringBuffer();
-    	Pattern pattern12 = Pattern.compile("<[a-zA-Z_ ]+>");
-    	Matcher matcher = pattern12.matcher(str);
-    	while ( matcher.find()){
-    		int k=matcher.start()+1;
-			int l=matcher.end()-1;
-			String org=str.subSequence(k,l).toString();
-			if(org.contains("_has_")){
-				String org1=org.subSequence(0,org.indexOf("_")).toString();
-				String org2=org.subSequence(org.lastIndexOf("_")+1,org.length()).toString();
-				matcher.appendReplacement(sb2, "<"+org1+"> <"+org2+">");
-			}
-    	}
-    	matcher.appendTail(sb2);
-		str=sb2.toString();
-		matcher.reset();
-    	StringBuffer sb1 = new StringBuffer();
-		Pattern pattern11 = Pattern.compile("[{][\\w±\\+\\–\\-\\.:=/\\_]+[}]");
-		matcher = pattern11.matcher(str);
-		while ( matcher.find()){
-			int k=matcher.start()+1;
-			int l=matcher.end()-1;
-			String state=str.subSequence(k,l).toString();
-			Pattern pattern13 = Pattern.compile("_");
-			Matcher matcher1 = pattern13.matcher(state);
-			state = matcher1.replaceAll("} or {");
-			matcher1.reset();
-			matcher.appendReplacement(sb1, state);
-		}
-		matcher.appendTail(sb1);
-		str=sb1.toString();
-		matcher.reset();
-		return(str);
-	}
-	
-	protected String plaintextextractor(String str) {
-		String str1 = "";
-		Pattern pattern1 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
-    	Matcher matcher = pattern1.matcher(str);
-    	while ( matcher.find()){
-    		int i=matcher.start();
-    		int j=matcher.end();
-    		str1=str1.concat(str.subSequence(i,j).toString());
-    	}
-    	matcher.reset();
-    	return(str1);
-	}*/
 	
 	
 	public ArrayList<String> getMarkedDescription(String source){
