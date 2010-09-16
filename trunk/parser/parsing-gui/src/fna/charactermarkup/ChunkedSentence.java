@@ -688,6 +688,18 @@ public class ChunkedSentence {
 			if(token.length()==0){
 				continue;
 			}
+			if(token.matches("^\\w+\\[")){ //modifier +  a chunk
+				scs = scs.trim().length()>0? scs.trim()+"]" + token : token;
+				String type = checkType(pointer);
+				try{
+					Class c = Class.forName("fna.charactermarkup."+type);
+					Constructor cons = c.getConstructor(String.class);
+					pointer++;
+					return (Chunk)cons.newInstance(scs.trim());
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
 			if(token.matches(".*?"+MyPOSTagger.numberpattern+"$")){ //0. sentence ends with a number, the . is not separated by a space
 				pointer=i+0;
 				chunk = getNextNumerics();
@@ -716,7 +728,7 @@ public class ChunkedSentence {
 			//add to a state chunk until a) a preposition b) a punct mark or c)another state is encountered
 			if(role.compareTo("<") !=0){
 				if(Utilities.isAdv(token, adverbs)){
-					scs = scs.trim()+ "] m["+token+" ";
+					scs = scs.trim().length()>0? scs.trim()+ "] m["+token+" " : "m ["+token;
 				}else if(token.matches(".*[,;:\\.\\[].*") || token.matches("\\b("+this.prepositions+"|or|and)\\b") || token.compareTo("-LRB-/-LRB-")==0){
 					this.pointer = i;
 					if(scs.matches(".*?\\w{2,}\\[.*")){//must have character[
@@ -903,8 +915,13 @@ public class ChunkedSentence {
 				numerics += t+ " ";
 				pointer++;
 				numerics = numerics.replaceAll("[{()}]", "");
-				numerics +=nextChunk().toString();
-				return new ChunkComparativeValue(numerics);
+				Chunk c = nextChunk();
+				numerics +=c.toString();
+				if(c instanceof ChunkTHANC){
+					return new ChunkValue(numerics);
+				}else{
+					return new ChunkComparativeValue(numerics);
+				}
 			}
 			/*if(found && this.chunkedtokens.get(i).matches("^("+this.per+")\\b.*?")){
 				numerics += this.chunkedtokens.get(i)+ " ";
@@ -1096,6 +1113,19 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		}
 
 		return result;
+	}
+	
+	/**
+	 * when parsing fails at certain point, forward the pointer to the next comma
+	 */
+	public void setPointer2NextComma() {
+		// TODO Auto-generated method stub
+		for(; this.pointer<this.chunkedtokens.size(); pointer++){
+			if(this.chunkedtokens.get(pointer).matches("(,|\\.|;|:)")){
+				break;
+			}
+		}
+		
 	}
 
 	
