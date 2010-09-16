@@ -26,7 +26,12 @@ public class CharStateHandler {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * 
+	 * @param plaincharset : styles 2[10] mm diam.
+	 * @param state: <styles> 2[10] mm {diam}.
+	 * @return: characters marked up in XML format <character name="" value="">
+	 */
 	public static String characterstate(String plaincharset, String state){
 		new CharStateHandler();
 		String innertagstate = "";
