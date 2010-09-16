@@ -609,7 +609,11 @@ public class ParseSimpleseg {
 		matcher.reset();
 		return(str);
 	}
-	
+	/**
+	 * keep []
+	 * @param str
+	 * @return
+	 */
 	protected String plaintextextractornum(String str) {
 		String str1 = "";
 		Pattern pattern1 = Pattern.compile("[\\w±\\+\\[\\]\\(\\)\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
@@ -622,7 +626,11 @@ public class ParseSimpleseg {
     	matcher.reset();
     	return(str1);
 	}
-	
+	/**
+	 * strip out all <{}>
+	 * @param str
+	 * @return
+	 */
 	protected String plaintextextractor(String str) {
 		String str1 = "";
 		Pattern pattern1 = Pattern.compile("[\\w±\\+\\–\\-\\—°²\\.:=/\\s½\"¼;x´\\×\\*µ%“”\\_,]+");
