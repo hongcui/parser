@@ -58,7 +58,7 @@ public class VolumeExtractor extends Thread {
 
 	private int count;
 
-	private Element treatment;
+	protected Element treatment;
 
 	private XMLOutputter outputter;
 	
