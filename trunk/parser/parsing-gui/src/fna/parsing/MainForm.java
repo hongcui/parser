@@ -25,8 +25,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
@@ -125,10 +123,6 @@ public class MainForm {
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
 	/* This will determine how many tabs to show */
 	private String type = "";
-		/**
-	 * Launch the application
-	 * @param args
-	 */
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	private CharacterStateDBAccess charDb = new CharacterStateDBAccess();
@@ -895,8 +889,47 @@ public class MainForm {
 		final TabItem tabItem_3 = new TabItem(tabFolder_1, SWT.NONE);
 		tabItem_3.setText("Others");
 
-		final Composite composite_9 = new Composite(tabFolder_1, SWT.NONE);
-		tabItem_3.setControl(composite_9);
+		final Composite composite_1 = new Composite(tabFolder_1, SWT.NONE);
+		tabItem_3.setControl(composite_1);
+
+		final Button saveButton = new Button(composite_1, SWT.NONE);
+		saveButton.setText("Save");
+		saveButton.setBounds(656, 378, 98, 25);
+
+		final Group group = new Group(composite_1, SWT.NONE);
+		group.setBounds(10, 10, 736, 352);
+
+		final ScrolledComposite scrolledComposite = new ScrolledComposite(group, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite.setBounds(0, 40,736, 312);
+
+		final Group termRoleGroup = new Group(scrolledComposite, SWT.NONE);
+		String [] otherItems = {"Structure", "Descriptor", "Verb", "Other"};
+		//// Terms and Roles _ mark up tab
+		final Label term1Label = new Label(termRoleGroup, SWT.NONE);
+		term1Label.setText("Term 1");
+		term1Label.setBounds(10, 21, 114, 15);
+
+		final Combo combo_1 = new Combo(termRoleGroup, SWT.NONE);
+		combo_1.setBounds(179, 18, 139, 23);		
+		combo_1.setItems(otherItems);
+
+		final Label term1Label_1 = new Label(termRoleGroup, SWT.NONE);
+		term1Label_1.setBounds(10, 61, 114, 15);
+		term1Label_1.setText("Term 1");
+
+		final Combo combo_1_1 = new Combo(termRoleGroup, SWT.NONE);
+		combo_1_1.setBounds(179, 53, 139, 23);
+		termRoleGroup.setSize(736, 312);
+		scrolledComposite.setContent(termRoleGroup);
+		/////////
+		
+		final Label termLabel = new Label(group, SWT.NONE);
+		termLabel.setText("Term");
+		termLabel.setBounds(10, 21, 120, 15);
+
+		final Label roleLabel = new Label(group, SWT.NONE);
+		roleLabel.setText("Role");
+		roleLabel.setBounds(180, 21, 93, 15);
 
 		
 
