@@ -21,6 +21,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -52,7 +53,8 @@ public class VolumeMarkupDbAccessor {
     	this.tablePrefix = dataPrefix;
     }
 	
-	
+    public VolumeMarkupDbAccessor(){}
+    
     public void updateData(List <String> tagList) throws  ParsingException, SQLException {
 	 
 	 Connection conn = null;
@@ -93,6 +95,43 @@ public class VolumeMarkupDbAccessor {
 		}
 	 
  }
+	
+	public ArrayList<String> getDescriptorWords() throws SQLException {
+		
+		ArrayList<String> words = new ArrayList<String>();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("select word from wordpos where pos=?");
+			stmt.setString(1, "b");
+			rset = stmt.executeQuery();
+			if (rset != null) {
+				while(rset.next()){
+					words.add(rset.getString("word"));
+				}	
+			}			
+		} catch (SQLException exe) {
+			LOGGER.error("Error in getting words as descriptors: " +
+					"mainFormDbAccessor.getDescriptorWords", exe);
+		} finally {
+			if(rset != null) {
+				rset.close();
+			}
+			
+			if(stmt != null) {
+				stmt.close();
+			}
+			
+			if(conn != null){
+				conn.close();
+			}
+		}
+		
+		return words;
+	}
+	
     public static void main(String[] args)throws Exception {
 		// TODO Auto-generated method stub
 		//System.out.println(DriverManager.getConnection(url));
