@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -617,5 +618,33 @@ public class MainFormDbAccessor {
 			
 		}
 		
+	}
+
+	public void removeDescriptorData(List<String> words) throws SQLException {
+		Connection conn = null;
+		PreparedStatement pstmt = null ;
+		try {
+			conn = DriverManager.getConnection(url);
+			pstmt = conn.prepareStatement("delete from wordpos where pos=? and word=?");
+			for (String word : words) {
+				pstmt.setString(1, "b");
+				pstmt.setString(2, word);
+				pstmt.addBatch();
+			}
+			pstmt.executeBatch();
+			
+		} catch (SQLException exe){
+			LOGGER.error("Exception in RemoveDescriptorData", exe);
+			exe.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}			
+			
+		}
 	}
 }
