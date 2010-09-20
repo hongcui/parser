@@ -80,6 +80,9 @@ import org.eclipse.swt.custom.ScrolledComposite;
 //
 public class MainForm {
 
+	private ProgressBar markupProgressBar;
+	private Table markupTable;
+	private Table markupTable_1;
 	static {
 		//Set the Log File path
 		try {
@@ -94,7 +97,6 @@ public class MainForm {
 	
 	private Combo modifierListCombo;
 	private Table finalizerTable;
-	private Table markupTable;
 	private Table transformationTable;
 	
 	private Table verificationTable;
@@ -105,7 +107,6 @@ public class MainForm {
 	private Text configurationText;
 	private TabItem generalTabItem;
 	private StyledText contextStyledText;
-	private ProgressBar markupProgressBar;
 	private ProgressBar extractionProgressBar;
 	private ProgressBar verificationProgressBar;
 	private ProgressBar transformationProgressBar;
@@ -132,7 +133,6 @@ public class MainForm {
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	private CharacterStateDBAccess charDb = new CharacterStateDBAccess();
 	public static Text markUpPerlLog;
-	
 	/*Character Tab variables-----------------------------------------------------------------------------------*/
 	/* This combo is the decision combo in Character tab */
 	private static Combo comboDecision;
@@ -778,11 +778,11 @@ public class MainForm {
 			});
 			
 		}
-		
-
 
 		final TabItem transformationTabItem = new TabItem(tabFolder, SWT.NONE);
 		transformationTabItem.setText(ApplicationUtilities.getProperty("tab.four.name"));
+
+		/* Mark Up Tab !*/
 
 		final TabItem markupTabItem = new TabItem(tabFolder, SWT.NONE);
 		markupTabItem.setText(ApplicationUtilities.getProperty("tab.five.name"));
@@ -790,31 +790,52 @@ public class MainForm {
 		final Composite composite_4 = new Composite(tabFolder, SWT.NONE);
 		markupTabItem.setControl(composite_4);
 
-		markupTable = new Table(composite_4, SWT.CHECK | SWT.BORDER);
-		markupTable.setBounds(10, 10, 744, 228);
+		final TabFolder tabFolder_1 = new TabFolder(composite_4, SWT.NONE);
+		tabFolder_1.setBounds(0, 0, 795, 441);
+
+		final TabItem tabItem_1 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_1.setText("Structure");
+
+		final Composite composite_2 = new Composite(tabFolder_1, SWT.NONE);
+		tabItem_1.setControl(composite_2);
+
+		markupTable = new Table(composite_2, SWT.CHECK | SWT.BORDER);
+		markupTable.setBounds(10, 10, 744, 209);
 		markupTable.setLinesVisible(true);
 		markupTable.setHeaderVisible(true);
 		
+		/* Introduce new tabs here for markup tab*/
+		final TableColumn transformationNumberColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
+		transformationNumberColumnTableColumn_1_1_1.setWidth(81);
+		transformationNumberColumnTableColumn_1_1_1.setText("Count");
 
-		final TableColumn transformationNumberColumnTableColumn_1_1 = new TableColumn(markupTable, SWT.NONE);
-		transformationNumberColumnTableColumn_1_1.setWidth(81);
-		transformationNumberColumnTableColumn_1_1.setText("Count");
+		final TableColumn transformationNameColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
+		transformationNameColumnTableColumn_1_1_1.setWidth(418);
+		transformationNameColumnTableColumn_1_1_1.setText("Structure Name");
 
-		final TableColumn transformationNameColumnTableColumn_1_1 = new TableColumn(markupTable, SWT.NONE);
-		transformationNameColumnTableColumn_1_1.setWidth(418);
-		transformationNameColumnTableColumn_1_1.setText("Structure Name");
+		final TableColumn transformationFileColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
+		transformationFileColumnTableColumn_1_1_1.setWidth(215);
+		transformationFileColumnTableColumn_1_1_1.setText("New column");
 
-		final TableColumn transformationFileColumnTableColumn_1_1 = new TableColumn(markupTable, SWT.NONE);
-		transformationFileColumnTableColumn_1_1.setWidth(215);
+		markUpPerlLog = new Text(composite_2, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
+		markUpPerlLog.setBounds(10, 235, 744, 125);
+		markUpPerlLog.setEnabled(false);
 
-		final Button startMarkupButton = new Button(composite_4, SWT.NONE);
-		startMarkupButton.addSelectionListener(new SelectionAdapter() {
+		markupProgressBar = new ProgressBar(composite_2, SWT.NONE);
+		markupProgressBar.setBounds(10, 375, 532, 17);
+		markupProgressBar.setVisible(false);
+
+		final Button startMarkupButton_1 = new Button(composite_2, SWT.NONE);
+		startMarkupButton_1.setBounds(545, 370, 100, 23);
+		startMarkupButton_1.setText("Start");
+		startMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				startMarkup();
 				
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
 					statusOfMarkUp[4] = true;
+					//loadOthersTab();
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
 					exe.printStackTrace();
@@ -822,11 +843,11 @@ public class MainForm {
 				
 			}
 		});
-		startMarkupButton.setBounds(548, 385, 100, 23);
-		startMarkupButton.setText("Start");
 
-		final Button removeMarkupButton = new Button(composite_4, SWT.NONE);
-		removeMarkupButton.addSelectionListener(new SelectionAdapter() {
+		final Button removeMarkupButton_1 = new Button(composite_2, SWT.NONE);
+		removeMarkupButton_1.setBounds(650, 370, 100, 23);
+		removeMarkupButton_1.setText("Remove");
+	    removeMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeMarkup();
 				/*try { You don't need to run markup again ater removal!
@@ -838,20 +859,46 @@ public class MainForm {
 				
 			}
 		});
-		removeMarkupButton.setBounds(654, 385, 100, 23);
-		removeMarkupButton.setText("Remove");
 
-		markupProgressBar = new ProgressBar(composite_4, SWT.NONE);
-		markupProgressBar.setVisible(false);
-		markupProgressBar.setBounds(10, 388, 532, 17);
+		final TabItem tabItem_2 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_2.setText("Descriptors");
+
+		final Composite composite_7 = new Composite(tabFolder_1, SWT.NONE);
+		tabItem_2.setControl(composite_7);
+
+		markupTable_1 = new Table(composite_7, SWT.CHECK | SWT.BORDER);
+		markupTable_1.setBounds(10, 21, 747, 341);
+		markupTable_1.setLinesVisible(true);
+		markupTable_1.setHeaderVisible(true);
+
+		final TableColumn transformationNumberColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
+		transformationNumberColumnTableColumn_1_1_1_1.setWidth(81);
+		transformationNumberColumnTableColumn_1_1_1_1.setText("Count");
+
+		final TableColumn transformationNameColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
+		transformationNameColumnTableColumn_1_1_1_1.setWidth(418);
+		transformationNameColumnTableColumn_1_1_1_1.setText("Structure Name");
+
+		final TableColumn transformationFileColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
+		transformationFileColumnTableColumn_1_1_1_1.setWidth(215);
+		transformationFileColumnTableColumn_1_1_1_1.setText("New column");
+
+		final Button removeButton = new Button(composite_7, SWT.NONE);
+		removeButton.setText("Remove");
+		removeButton.setBounds(664, 368, 91, 25);
+		removeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				removeDescriptor();
+			}
+		});
+
+		final TabItem tabItem_3 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_3.setText("Others");
+
+		final Composite composite_9 = new Composite(tabFolder_1, SWT.NONE);
+		tabItem_3.setControl(composite_9);
+
 		
-		markUpPerlLog = new Text(composite_4, SWT.BORDER | SWT.MULTI| SWT.WRAP | SWT.V_SCROLL);
-		markUpPerlLog.setBounds(10, 266, 744, 113);
-		markUpPerlLog.setEnabled(false);
-		
-		Label lblPerlMessages = new Label(composite_4, SWT.NONE);
-		lblPerlMessages.setBounds(10, 245, 100, 15);
-		lblPerlMessages.setText("Status Messages :");
 
 		final Composite composite_3 = new Composite(tabFolder, SWT.NONE);
 		transformationTabItem.setControl(composite_3);
@@ -1555,6 +1602,44 @@ public class MainForm {
 
 	}
 	
+	private void removeDescriptor(){
+		
+		List<String> removedTags = new ArrayList<String>();
+		List<String> newList = new ArrayList<String>();
+		boolean toRemove = false;
+		TableItem [] items = markupTable_1.getItems();
+		for (TableItem item : items) {
+			if (item.getChecked()) {
+				removedTags.add(item.getText(1));
+				toRemove = true;
+			} else {
+				newList.add(item.getText(1));
+			}
+		}
+		
+		// remove the tag from the database
+		if(toRemove) {
+			try {
+				mainDb.removeDescriptorData(removedTags);
+			} catch (Exception exe) {
+				LOGGER.error("Exception encountered in removing tags from database in MainForm:removeMarkup", exe);
+				exe.printStackTrace();
+			}
+		} else {
+			ApplicationUtilities.showPopUpWindow("You have not selected anything for removal. " +
+					"\nPlease select atleast one row.", 
+					"Nothing Selected!", SWT.ICON_ERROR);
+		}
+		markupTable_1.removeAll();
+		int count = 1;
+		for (String word : newList) {
+			TableItem item = new TableItem(markupTable_1, SWT.NONE);
+			item.setText(new String [] {count+"", word});
+			count++;
+		}
+
+	}
+
 	private void browseConfigurationDirectory() {
         DirectoryDialog directoryDialog = new DirectoryDialog(shell);
         directoryDialog.setMessage("Please select a directory and click OK");
@@ -1701,29 +1786,27 @@ public class MainForm {
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
-				databasename, shell.getDisplay(), markUpPerlLog, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+				databasename, shell.getDisplay(), markUpPerlLog, 
+				dataPrefixCombo.getText().replaceAll("-", "_").trim(), markupTable_1);
 		vd.start();
 	}
 	
 	private void startFinalize() {
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
 		Connection conn = null;
-		String database=ApplicationUtilities.getProperty("database.name");
-		String username=ApplicationUtilities.getProperty("database.username");
-		String password=ApplicationUtilities.getProperty("database.password");
 		try{
 			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
-				conn = DriverManager.getConnection(URL);
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
+			VolumeFinalizer vf = new VolumeFinalizer(listener, 
+					dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn);
+			vf.start();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		VolumeFinalizer vf = new VolumeFinalizer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn);
-		vf.start();
+
 	}
-	
 	private void removeMarkup() {
 		// gather removed tag
 		List<String> removedTags = new ArrayList<String>();
@@ -1745,7 +1828,7 @@ public class MainForm {
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, this.dataPrefixCombo.getText().replaceAll("-", "_").trim());
 		vm.update();
-	}
+	}	
 	
 	private void loadTags() {
 		loadTagTable();

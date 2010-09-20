@@ -11,15 +11,21 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
+import fna.db.MainFormDbAccessor;
+import fna.db.VolumeMarkupDbAccessor;
 import fna.parsing.character.*;
 
 //import fna.parsing.finalizer.Output;
@@ -50,15 +56,19 @@ public class VolumeDehyphenizer extends Thread {
     private Text perlLog;
     private String dataPrefix;
     private DeHyphenAFolder dhf;
+    private Table descriptorTable;
+    private VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor();
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Display display, Text perlLog, String dataPrefix) {
+    		String todofoldername, String database, 
+    		Display display, Text perlLog, String dataPrefix, Table descriptorTable) {
         this.listener = listener;
         //this.database = database;
         /** Synchronizing UI and background process **/
         this.display = display;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
+        this.descriptorTable = descriptorTable;
         //this.tablename = dataPrefix+"_allwords";
         
         this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
@@ -95,8 +105,31 @@ public class VolumeDehyphenizer extends Thread {
 		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix);
 		vm.markup();
 		listener.setProgressBarVisible(false);
+		loadStructureTab();
     }
     
+	private void loadStructureTab() {
+		
+		display.syncExec(new Runnable() {
+			public void run() {
+				ArrayList <String> words = null;
+				try {
+					words = vmdb.getDescriptorWords();
+				} catch (Exception exe){
+					LOGGER.error("unable to load structures tab in Markup : MainForm", exe);
+					exe.printStackTrace();
+				}
+				int count = 1;
+				if (words != null) {
+					for (String word : words){
+						TableItem item = new TableItem(descriptorTable, SWT.NONE);
+						item.setText(new String [] {count+"", word});
+						count++;
+					}
+				}
+			}});
+	}
+	
 	public void showPerlMessage(final String message) {
 		display.syncExec(new Runnable() {
 			public void run() {
