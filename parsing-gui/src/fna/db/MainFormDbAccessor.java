@@ -647,4 +647,43 @@ public class MainFormDbAccessor {
 			
 		}
 	}
+	
+	public ArrayList<String> getUnknownWords()throws SQLException {
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		ArrayList<String> unknownWords = new ArrayList<String>();
+		try{
+			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("select word from unknownwords " +
+					"where flag = ?");
+			stmt.setString(1, "unknown");
+			rset = stmt.executeQuery();
+			if(rset != null) {
+				while(rset.next()) {
+					unknownWords.add(rset.getString("word"));
+				}
+			}
+		} catch (Exception exe) {
+			LOGGER.error("Error getting unknown words",exe);
+			exe.printStackTrace();
+		} finally {
+			
+			if (rset != null) {
+				rset.close();
+			}
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+			
+		}		
+		
+		return unknownWords;
+	}
 }
