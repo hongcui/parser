@@ -820,7 +820,7 @@ public class MainForm {
 		markupProgressBar.setVisible(false);
 
 		final Button startMarkupButton_1 = new Button(composite_2, SWT.NONE);
-		startMarkupButton_1.setBounds(545, 370, 100, 23);
+		startMarkupButton_1.setBounds(545, 370, 71, 23);
 		startMarkupButton_1.setText("Start");
 		startMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -839,7 +839,7 @@ public class MainForm {
 		});
 
 		final Button removeMarkupButton_1 = new Button(composite_2, SWT.NONE);
-		removeMarkupButton_1.setBounds(650, 370, 100, 23);
+		removeMarkupButton_1.setBounds(688, 370, 62, 23);
 		removeMarkupButton_1.setText("Remove");
 	    removeMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -854,6 +854,14 @@ public class MainForm {
 			}
 		});
 
+		final Button saveButton_1 = new Button(composite_2, SWT.NONE);
+		saveButton_1.setText("Save");
+		saveButton_1.setBounds(622, 370, 60, 23);
+		saveButton_1.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveStructureTerms(markupTable, Registry.MARKUP_ROLE_O);
+			}
+		});
 		final TabItem tabItem_2 = new TabItem(tabFolder_1, SWT.NONE);
 		tabItem_2.setText("Descriptors");
 
@@ -879,10 +887,19 @@ public class MainForm {
 
 		final Button removeButton = new Button(composite_7, SWT.NONE);
 		removeButton.setText("Remove");
-		removeButton.setBounds(664, 368, 91, 25);
+		removeButton.setBounds(580, 370, 91, 25);
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeDescriptor();
+			}
+		});
+
+		final Button saveButton_2 = new Button(composite_7, SWT.NONE);
+		saveButton_2.setText("Save");
+		saveButton_2.setBounds(675, 370, 82, 25);
+		saveButton_2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveStructureTerms(markupTable_1, Registry.MARKUP_ROLE_B);
 			}
 		});
 
@@ -894,7 +911,7 @@ public class MainForm {
 
 		final Button saveButton = new Button(composite_1, SWT.NONE);
 		saveButton.setText("Save");
-		saveButton.setBounds(656, 378, 98, 25);
+		saveButton.setBounds(650, 375, 98, 25);
 
 		final Group group = new Group(composite_1, SWT.NONE);
 		group.setBounds(10, 10, 736, 352);
@@ -1634,7 +1651,22 @@ public class MainForm {
 		label.setBounds(569, 485, 253, 71);
 
 	}
-	
+	/**
+	 * This function saves the terms from the Structure tab under markup tab - to the wordroles table
+	 */
+	private void saveStructureTerms(Table table, String role) {
+		ArrayList <String> structureTerms = new ArrayList<String>();
+		TableItem [] items = table.getItems();
+		for (TableItem item : items) {
+			structureTerms.add(item.getText(1));
+		}
+		try {
+			mainDb.saveStructureTerms(structureTerms, role);
+		} catch (Exception exe) {
+			exe.printStackTrace();
+		}
+		
+	}
 	private void removeDescriptor(){
 		
 		List<String> removedTags = new ArrayList<String>();
@@ -1650,8 +1682,8 @@ public class MainForm {
 			}
 		}
 		
-		// remove the tag from the database
-		if(toRemove) {
+		// remove the tag from the database (No need to remove from database now!)
+/*		if(toRemove) {
 			try {
 				mainDb.removeDescriptorData(removedTags);
 			} catch (Exception exe) {
@@ -1662,7 +1694,7 @@ public class MainForm {
 			ApplicationUtilities.showPopUpWindow("You have not selected anything for removal. " +
 					"\nPlease select atleast one row.", 
 					"Nothing Selected!", SWT.ICON_ERROR);
-		}
+		}*/
 		markupTable_1.removeAll();
 		int count = 1;
 		for (String word : newList) {
