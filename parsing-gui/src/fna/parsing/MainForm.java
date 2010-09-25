@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -51,6 +52,7 @@ import fna.beans.CharacterGroupBean;
 import fna.beans.CoOccurrenceBean;
 import fna.beans.ContextBean;
 import fna.beans.TermBean;
+import fna.beans.TermRoleBean;
 import fna.beans.TermsDataBean;
 import fna.db.CharacterStateDBAccess;
 import fna.db.MainFormDbAccessor;
@@ -78,6 +80,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 //
 public class MainForm {
 
+	private Combo combo_1_1_1;
 	private ProgressBar markupProgressBar;
 	private Table markupTable;
 	private Table markupTable_1;
@@ -113,6 +116,18 @@ public class MainForm {
 	private Combo tagListCombo;
 	public static Combo dataPrefixCombo;
 
+	/* This Group belongs to Markup Tab -> Others tab*/
+	private Group termRoleGroup;
+	/* This ScrolledComposite to MarkUpTab -> Others tab*/
+	private ScrolledComposite scrolledComposite;
+	/* This rectangle will hold the latest coordinates of the Markup -Others tab term*/
+	private static Rectangle otherTerm = new Rectangle(25, 20, 115, 15);
+	/* This rectangle will hold the latest coordinates of the Markup - Others tab combo*/
+	private static Rectangle otherCombo = new Rectangle (195, 20, 140, 25);
+	/* This String array holds all the roles for the Markup/Others tab */
+	private static String [] otherRoles = {"Structure", "Descriptor", "Verb", "Other"};
+	/* This ArrayList will hold all the group info of removed terms*/
+	private static ArrayList <TermRoleBean> markUpTermRoles = new ArrayList<TermRoleBean>();
 	
 	private StyledText glossaryStyledText;
 	public Shell shell;
@@ -167,8 +182,6 @@ public class MainForm {
 	private static Rectangle frequencyLabel = new Rectangle(370, 20, 35, 15);
 	/* This HashMap will hold all the group info temporarily*/
 	private static HashMap <String, CharacterGroupBean> groupInfo = new HashMap <String, CharacterGroupBean> ();
-	/* This HashMap will hold all the group info of removed terms*/
-	private static ArrayList <TermsDataBean> removedTermsGroups;
 	/* This HashMap will hold all processed groups information */
 	private static TreeMap <String, String> processedGroups = new TreeMap<String, String> ();	
 	/* This table is for showing contextual sentences */
@@ -912,43 +925,44 @@ public class MainForm {
 		final Button saveButton = new Button(composite_1, SWT.NONE);
 		saveButton.setText("Save");
 		saveButton.setBounds(650, 375, 98, 25);
+		saveButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveOtherTerms();
+			}
+		});
 
 		final Group group = new Group(composite_1, SWT.NONE);
 		group.setBounds(10, 10, 736, 352);
 
-		final ScrolledComposite scrolledComposite = new ScrolledComposite(group, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite = new ScrolledComposite(group, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		scrolledComposite.setBounds(0, 40,736, 312);
+		scrolledComposite.setLayout(new RowLayout(SWT.HORIZONTAL));
 
-		final Group termRoleGroup = new Group(scrolledComposite, SWT.NONE);
-		String [] otherItems = {"Structure", "Descriptor", "Verb", "Other"};
-		//// Terms and Roles _ mark up tab
-		final Label term1Label = new Label(termRoleGroup, SWT.NONE);
-		term1Label.setText("Term 1");
-		term1Label.setBounds(10, 21, 114, 15);
-
-		final Combo combo_1 = new Combo(termRoleGroup, SWT.NONE);
-		combo_1.setBounds(179, 18, 139, 23);		
-		combo_1.setItems(otherItems);
-
-		final Label term1Label_1 = new Label(termRoleGroup, SWT.NONE);
-		term1Label_1.setBounds(10, 61, 114, 15);
-		term1Label_1.setText("Term 1");
-
-		final Combo combo_1_1 = new Combo(termRoleGroup, SWT.NONE);
-		combo_1_1.setBounds(179, 53, 139, 23);
+		termRoleGroup = new Group(scrolledComposite, SWT.NONE);
+		termRoleGroup.setLayoutData(new RowData());			
 		termRoleGroup.setSize(736, 312);
-		scrolledComposite.setContent(termRoleGroup);
+		scrolledComposite.setContent(termRoleGroup);    
+		
+		//// Terms and Roles _ mark up tab
+		
+/*		addOtherTermsRow("Partha");
+		addOtherTermsRow("Pratim");
+		addOtherTermsRow("Sanyal");
+		addOtherTermsRow("Manohar");
+		addOtherTermsRow("Balaji");
+		addOtherTermsRow("Rahul");
+		addOtherTermsRow("scsdcc");*/
+		
+
 		/////////
 		
 		final Label termLabel = new Label(group, SWT.NONE);
 		termLabel.setText("Term");
-		termLabel.setBounds(10, 21, 120, 15);
+		termLabel.setBounds(25, 20, 120, 15);
 
 		final Label roleLabel = new Label(group, SWT.NONE);
 		roleLabel.setText("Role");
-		roleLabel.setBounds(180, 21, 93, 15);
-
-		
+		roleLabel.setBounds(195, 20, 93, 15);
 
 		final Composite composite_3 = new Composite(tabFolder, SWT.NONE);
 		transformationTabItem.setControl(composite_3);
@@ -1651,8 +1665,93 @@ public class MainForm {
 		label.setBounds(569, 485, 253, 71);
 
 	}
+	
+	/* This function saves the Other terms from the markup tab 
+	 * to database after user assigns a role to each one of them*/
+	private void saveOtherTerms() {
+		
+		HashMap<String, String> otherTerms = new HashMap<String, String> ();
+		for (TermRoleBean  tbean : markUpTermRoles) {
+			String word = tbean.getTermLabel().getText();
+			String role = tbean.getRoleCombo().getText();
+			if (!role.equalsIgnoreCase("Other")) {
+				if(role.equalsIgnoreCase("Structure")) {
+					otherTerms.put(word, Registry.MARKUP_ROLE_O);
+				}
+				
+				if(role.equalsIgnoreCase("Descriptor")) {
+					otherTerms.put(word, Registry.MARKUP_ROLE_B);
+				}
+				
+				if(role.equalsIgnoreCase("Verb")) {
+					otherTerms.put(word, Registry.MARKUP_ROLE_VERB);
+				}
+			}
+		}
+		
+		try {
+			mainDb.saveOtherTerms(otherTerms);
+		} catch (Exception exe){
+			LOGGER.error("Error in saving other terms from Markup-Others to database", exe);
+			exe.printStackTrace();
+		}
+	}
+	/* This function is called after the Markup is run to load the Others tab;*/ 
+	
+	public void showOtherTerms() {
+		ArrayList<String> otherTerms = null;
+		try {
+			otherTerms = mainDb.getUnknownWords();
+		} catch (Exception exe) {
+			LOGGER.error("Exception in getting unknown words", exe);
+			exe.printStackTrace();
+		}
+		
+		if (otherTerms != null) {
+	        for (String term : otherTerms) {
+	        	addOtherTermsRow(term);
+	        }
+	        
+			RowData rowdata = (RowData)termRoleGroup.getLayoutData();
+			rowdata.height += 40;
+			termRoleGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        Rectangle rect = termRoleGroup.getBounds();
+	        rect.height += 40;
+	        termRoleGroup.setBounds(rect); 
+	        scrolledComposite.setMinSize(termRoleGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		}
+
+	}
+	
+	/* This function adds a row to the Markup - Others tab*/
+	private void addOtherTermsRow(String term){
+		if (markUpTermRoles.size() > 7) {
+			RowData rowdata = (RowData)termRoleGroup.getLayoutData();
+			rowdata.height += 40;
+			termRoleGroup.setLayoutData(new RowData(rowdata.width, rowdata.height));
+	        Rectangle rect = termRoleGroup.getBounds();
+	        rect.height += 40;
+	        termRoleGroup.setBounds(rect);
+		}
+		
+		Combo tempCombo = new Combo(termRoleGroup, SWT.NONE);	
+		tempCombo.setItems(otherRoles);
+		tempCombo.select(0);
+		tempCombo.setBounds(otherCombo.x , otherCombo.y, otherCombo.width, otherCombo.height);
+		otherCombo.y += 40;
+	    
+	    Label tempLabel = new Label(termRoleGroup, SWT.NONE);
+	    tempLabel.setText(term);
+	    tempLabel.setBounds(otherTerm.x, otherTerm.y, otherTerm.width, otherTerm.height);
+	    otherTerm.y += 40;
+	    
+	    TermRoleBean tbean = new TermRoleBean(tempLabel, tempCombo);
+	    markUpTermRoles.add(tbean);
+	}
+	
 	/**
-	 * This function saves the terms from the Structure tab under markup tab - to the wordroles table
+	 * This function saves the terms from the Structure tab 
+	 * under markup tab - to the wordroles table
 	 */
 	private void saveStructureTerms(Table table, String role) {
 		ArrayList <String> structureTerms = new ArrayList<String>();
@@ -1667,6 +1766,10 @@ public class MainForm {
 		}
 		
 	}
+/**
+ * In the Markup - Descriptor Tab, this function 
+ * is used to remove any term selected by the user 
+ */
 	private void removeDescriptor(){
 		
 		List<String> removedTags = new ArrayList<String>();
@@ -1852,7 +1955,7 @@ public class MainForm {
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
 				databasename, shell.getDisplay(), markUpPerlLog, 
-				dataPrefixCombo.getText().replaceAll("-", "_").trim(), markupTable_1);
+				dataPrefixCombo.getText().replaceAll("-", "_").trim(), markupTable_1, this);
 		vd.start();
 	}
 	
