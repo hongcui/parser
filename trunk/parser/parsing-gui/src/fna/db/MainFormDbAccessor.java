@@ -686,4 +686,43 @@ public class MainFormDbAccessor {
 		
 		return unknownWords;
 	}
+	
+	/** 
+	 * This function will save terms from the Markup - (Structure tab) to database
+	 * @param terms
+	 */
+	public void saveStructureTerms
+		(ArrayList<String> terms, String role)throws SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("Insert into wordroles values (?,?)");
+			for (String term : terms) {
+				stmt.setString(1, term);
+				stmt.setString(2, role);				
+				try {
+					stmt.execute();
+				} catch (Exception exe) {
+				 if (!exe.getMessage().contains("Duplicate entry")) {
+					 throw exe;
+				 }
+				}			
+			}
+			//stmt.executeBatch();
+		} catch (Exception exe) {
+			LOGGER.error("Error saving structure names from markup tab",exe);
+			exe.printStackTrace();
+		} finally {
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+			
+		}		
+	}
 }
