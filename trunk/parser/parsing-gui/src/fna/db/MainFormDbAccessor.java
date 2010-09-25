@@ -22,7 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -429,6 +431,44 @@ public class MainFormDbAccessor {
 	return recent;
  }
 
+	public void saveOtherTerms(HashMap<String, String> otherTerms) 
+		throws SQLException{
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.prepareStatement("insert into wordroles values (?,?)");
+			Set<String> keys = otherTerms.keySet();
+			for(String key : keys) {
+				try {
+					stmt.setString(1, key);
+					stmt.setString(2, otherTerms.get(key));
+					stmt.execute();
+					System.out.println(key + " " + otherTerms.get(key)+ " inserted");
+				} catch (Exception exe){
+					 if (!exe.getMessage().contains("Duplicate entry")) {
+						 throw exe;
+					 }
+				}
+			}
+			
+		} catch (Exception exe) {
+			LOGGER.error("Error saving other terms from markup - others tab",exe);
+			exe.printStackTrace();
+		} finally {
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+			
+		}
+	}
+	
 	public void savePrefixData(String prefix) 
 	throws ParsingException, SQLException{
 	
