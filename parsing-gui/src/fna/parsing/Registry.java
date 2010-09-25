@@ -23,5 +23,7 @@ public class Registry {
 	public static final String MARKUP_ROLE_O = "o";
 	
 	public static final String MARKUP_ROLE_B = "b";
+	
+	public static final String MARKUP_ROLE_VERB = "v";
 
 }
