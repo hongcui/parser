@@ -57,11 +57,12 @@ public class VolumeDehyphenizer extends Thread {
     private String dataPrefix;
     private DeHyphenAFolder dhf;
     private Table descriptorTable;
+    private MainForm mainForm;
     private VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor();
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, 
-    		Display display, Text perlLog, String dataPrefix, Table descriptorTable) {
+    		Display display, Text perlLog, String dataPrefix, Table descriptorTable, MainForm mainForm) {
         this.listener = listener;
         //this.database = database;
         /** Synchronizing UI and background process **/
@@ -69,6 +70,7 @@ public class VolumeDehyphenizer extends Thread {
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
         this.descriptorTable = descriptorTable;
+        this.mainForm = mainForm;
         //this.tablename = dataPrefix+"_allwords";
         
         this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
@@ -106,8 +108,16 @@ public class VolumeDehyphenizer extends Thread {
 		vm.markup();
 		listener.setProgressBarVisible(false);
 		loadStructureTab();
+		loadOthersTab();
     }
     
+    private void loadOthersTab() {
+    	display.syncExec(new Runnable() {
+    		public void run() {
+    			mainForm.showOtherTerms();
+    		}
+    	});
+    }
 	private void loadStructureTab() {
 		
 		display.syncExec(new Runnable() {
