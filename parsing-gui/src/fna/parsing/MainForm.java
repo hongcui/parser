@@ -1133,6 +1133,7 @@ public class MainForm {
 		loadTagButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				loadTags();
+				groupInfo.clear();
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
