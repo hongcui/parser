@@ -1176,7 +1176,7 @@ public class MainForm {
 		applyToAllButton.setBounds(513, 385, 110, 23);
 		
 		///////////////// New Tab!!????????????/////////////////////////
-		/* Character State tab */
+		/* Character State tab *///
 		TabItem tbtmCharacterStates = new TabItem(tabFolder, SWT.NONE);
 		tbtmCharacterStates.setText(ApplicationUtilities.getProperty("tab.character"));
 		
