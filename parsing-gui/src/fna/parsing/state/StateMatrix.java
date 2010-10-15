@@ -53,9 +53,11 @@ public class StateMatrix {
 		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			//stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
 			stmt.execute("delete from "+tableprefix+"_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			//stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
 			stmt.execute("delete from "+tableprefix+"_grouped_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, decision varchar(200), primary key(groupId))");
 			stmt.execute("delete from "+tableprefix+"_group_decisions");
@@ -207,13 +209,16 @@ public class StateMatrix {
 						//ResultSet rs = stmt.executeQuery("select term from terms where term = '"+s1.getName()+"' and cooccurTerm='"+s2.getName()+"'");
 						Cell data = matrix.get(matrix.indexOf(c));
 						CooccurrenceScore score = data.getScore();//"[]" is an empty score
-						String values = "'"+s1.getName()+"','";
-
+						//String values = "'"+s1.getName()+"','";
+						
 						String src = score.getSourcesAsString();
 						src = src.length() >=2000? src.substring(0, 1999) : src;
-						values +=s2.getName()+"',"+score.getSources().size()+",'"+src+"'";
-						stmt.execute("insert into "+tableprefix+"_terms (term, cooccurTerm, frequency, sourceFiles) values("+values+")");
-					}
+						//values +=s2.getName()+"',"+score.getSources().size()+",'"+src+"'";
+						String othervalues = score.getSources().size()+",'"+src+"'";
+						String[] pair = {s1.getName(), s2.getName()};
+						Arrays.sort(pair);
+						insertIntoTermsTable(pair, othervalues);
+						}
 				}				
 			}
 		}catch(Exception e){
@@ -221,6 +226,21 @@ public class StateMatrix {
 		}
 		
 	}	
+
+	private void insertIntoTermsTable(String[] pair, String othervalues) {
+		// TODO Auto-generated method stub
+		try{
+			Statement stmt = conn.createStatement();
+			//check to see if the pair exist in terms table
+			ResultSet rs = stmt.executeQuery("select * from "+tableprefix+"_terms where term='"+pair[0]+"' and cooccurTerm='"+pair[1]+"'");
+			if(!rs.next()){
+				stmt.execute("insert into "+tableprefix+"_terms (term, cooccurTerm, frequency, sourceFiles) values('"+pair[0]+"','"+pair[1]+"',"+othervalues+")");
+			}
+			stmt.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * group cooccured nodes into groups, using JUNG libary.
