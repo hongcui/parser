@@ -352,7 +352,7 @@ public class StateMatrix {
 				this.tableprefix+"_terms where term in ("+stategroup+
 				"))";
 				stmt.execute(q);
-				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId)");
+				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where groupId=0");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -396,7 +396,7 @@ public class StateMatrix {
 			if(rs.next()){
 				gnumber = rs.getInt("groupId");
 			}				
-			for(int i = 1; i<=gnumber; i++){
+			for(int i = 0; i<=gnumber; i++){
 				q = "select term, cooccurTerm, frequency from "+this.tableprefix+"_grouped_terms where groupId='"+i+"'";
 				rs = stmt.executeQuery(q);
 				ArrayList<ArrayList> group = new ArrayList<ArrayList>();
