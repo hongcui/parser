@@ -14,7 +14,7 @@ public class HideCommas {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "root";
+	static protected String password = "";
 	
 	public HideCommas(String database) {
 		// TODO Auto-generated constructor stub
@@ -76,12 +76,14 @@ public class HideCommas {
                    			//System.out.println(inputStr);
                    			if(inputStr.toString().indexOf(">",j)>0)
                    				matcher2=matcher2.region(j,inputStr.toString().indexOf(">",j)+1);
-                   			else if(inputStr.toString().indexOf(" .",j)>0)
+                   			else
+                   				matcher2=matcher2.region(j,inputStr.toString().length());
+                   			/*else if(inputStr.toString().indexOf(" .",j)>0)
                    				matcher2=matcher2.region(j,inputStr.toString().indexOf(" .",j));
                    			else if(inputStr.toString().indexOf(";",j)>0)
                    				matcher2=matcher2.region(j,inputStr.toString().indexOf(";",j));
                    			else
-                   				matcher2=matcher2.region(j,inputStr.toString().indexOf(":",j));
+                   				matcher2=matcher2.region(j,inputStr.toString().indexOf(":",j));*/
                    			if(matcher2.find()){
                    				int flag=0;
                    				Pattern pattern3 = Pattern.compile("(?<![{]),(?![}])");
@@ -102,12 +104,13 @@ public class HideCommas {
                                 if (flag==1){
                                     matcher.reset();
                                     matcher = pattern1.matcher(inputStr);
-                                    if(inputStr.toString().indexOf(" .",matcher2.end())>0)
+                                    matcher=matcher.region(matcher2.end(),inputStr.toString().length());
+                                    /*if(inputStr.toString().indexOf(" .",matcher2.end())>0)
                                     	matcher=matcher.region(matcher2.end(),inputStr.toString().indexOf(" .",matcher2.end()));
                                     else if(inputStr.toString().indexOf(";",matcher2.end())>0)
                                     	matcher=matcher.region(matcher2.end(),inputStr.toString().indexOf(";",matcher2.end()));
                                     else
-                                    	matcher=matcher.region(matcher2.end(),inputStr.toString().indexOf(":",matcher2.end()));
+                                    	matcher=matcher.region(matcher2.end(),inputStr.toString().indexOf(":",matcher2.end()));*/
                                 }
                                 matcher3.reset();
                    			}
@@ -132,7 +135,7 @@ public class HideCommas {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        	e.printStackTrace();
         }
 	}
 	
@@ -177,13 +180,13 @@ public class HideCommas {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        	e.printStackTrace();
         }
 	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new HideCommas("benchmark_learningcurve_fnav19_test_24");
+		new HideCommas("fnav19_benchmark");
 	}
 
 }
