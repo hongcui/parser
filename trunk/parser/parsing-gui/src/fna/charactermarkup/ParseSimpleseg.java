@@ -14,7 +14,7 @@ public class ParseSimpleseg {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
-	static protected String password = "root";
+	static protected String password = "";
 	
 	public ParseSimpleseg() {
 		// TODO Auto-generated constructor stub
@@ -58,7 +58,7 @@ public class ParseSimpleseg {
 			PrintStream out = new PrintStream( ostream ); 
         	ResultSet rs = stmt.executeQuery("select * from segments");
         	while(rs.next()){
-        		FileOutputStream ostream1 = new FileOutputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
+        		FileOutputStream ostream1 = new FileOutputStream("F:\\UA\\RA\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
         		PrintStream out1 = new PrintStream( ostream1 );
 				out1.println("<?xml version=\"1.0\" encoding=\"iso8859-1\"?>");
 		
@@ -476,6 +476,10 @@ public class ParseSimpleseg {
 	                	matcher1.reset();
 	                	if(innertagstate!=""){
 	                		StringBuffer sb = new StringBuffer();
+	                		ResultSet rs4 = stmt3.executeQuery("select * from singularplural where plural='"+organ1+"'");
+            				while(rs4.next()){
+            					organ1 = rs4.getString(1);
+            				}
 	                		if(organ1.compareTo("n")==0)
 	                			organ1 = "chromosome_count";
 	                		Pattern pattern9 = Pattern.compile("<structure name=\""+organ1+"\" id=\"o1\">");
@@ -646,7 +650,7 @@ public class ParseSimpleseg {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new ParseSimpleseg("benchmark_learningcurve_fnav19_test_24");
+		new ParseSimpleseg("fnav19_benchmark");
 	}
 
 }
