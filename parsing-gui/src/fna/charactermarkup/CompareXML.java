@@ -83,8 +83,10 @@ public class CompareXML {
 				for (int j = 0; j < testfilename.length; j++) {
 					if(ansfilename[i].compareTo(testfilename[j])==0){
 						SAXBuilder builder = new SAXBuilder();
+						System.out.println(ansfilename[i]);
 						Document anskey = builder.build("F:\\UA\\RA\\AnsKey_Benchmark_sentence\\"+ansfilename[i]);
 						Element ansroot = anskey.getRootElement();
+						ansroot = ansroot.getChild("statement");
 						Document testcase = builder.build("F:\\UA\\RA\\TestCase_Benchmark_sentence\\"+testfilename[j]);
 						Element testroot = testcase.getRootElement();
 						structexactmatch = 0;
@@ -304,10 +306,10 @@ public class CompareXML {
 				}
 			}
 		}
-		System.out.println("structperfmatch:"+structperfmatch);
+	/*	System.out.println("structperfmatch:"+structperfmatch);
 		System.out.println("structexactmatch:"+structexactmatch);
 		System.out.println("structpartmatch:"+structpartmatch);
-		System.out.println("structnomatch:"+structnomatch);
+		System.out.println("structnomatch:"+structnomatch);*/
 	}
 	
 	/**
@@ -447,10 +449,10 @@ public class CompareXML {
 					}
 				}
 			}
-			System.out.println("charperfmatch:"+charperfmatch);
+		/*	System.out.println("charperfmatch:"+charperfmatch);
 			System.out.println("charexactmatch:"+charexactmatch);
 			System.out.println("charpartmatch:"+charpartmatch);
-			System.out.println("charnomatch:"+charnomatch);
+			System.out.println("charnomatch:"+charnomatch);*/
 		}
 	}
 	
@@ -606,10 +608,10 @@ public class CompareXML {
 				}
 			}
 		}
-		System.out.println("relperfmatch:"+relperfmatch);
+	/*	System.out.println("relperfmatch:"+relperfmatch);
 		System.out.println("relexactmatch:"+relexactmatch);
 		System.out.println("relpartmatch:"+relpartmatch);
-		System.out.println("relnomatch:"+relnomatch);
+		System.out.println("relnomatch:"+relnomatch);*/
 	}
 	
 	/**
@@ -631,31 +633,63 @@ public class CompareXML {
 			pexactst = (float)structexactmatch/totmachinest;
 			ppartialst = (float)structpartmatch/totmachinest;
 			preasonst = (float)(structexactmatch+structpartmatch)/totmachinest;
+						
+			if(totmachinech == 0){
+				pperfch = 0;
+				pexactch = 0;
+				ppartialch = 0;
+				preasonch = 0;
+			}
+			else{
+				pperfch = (float)charperfmatch/totmachinech;
+				pexactch = (float)charexactmatch/totmachinech;
+				ppartialch = (float)charpartmatch/totmachinech;
+				preasonch = (float)(charexactmatch+charpartmatch)/totmachinech;
+			}
 			
-			pperfch = (float)charperfmatch/totmachinech;
-			pexactch = (float)charexactmatch/totmachinech;
-			ppartialch = (float)charpartmatch/totmachinech;
-			preasonch = (float)(charexactmatch+charpartmatch)/totmachinech;
-			
-			pperfrel = (float)relperfmatch/totmachinerel;
-			pexactrel = (float)relexactmatch/totmachinerel;
-			ppartialrel = (float)relpartmatch/totmachinerel;
-			preasonrel = (float)(relexactmatch+relpartmatch)/totmachinerel;
+			if(totmachinerel == 0){
+				pperfrel = 0;
+				pexactrel = 0;
+				ppartialrel = 0;
+				preasonrel = 0;
+			}
+			else{
+				pperfrel = (float)relperfmatch/totmachinerel;
+				pexactrel = (float)relexactmatch/totmachinerel;
+				ppartialrel = (float)relpartmatch/totmachinerel;
+				preasonrel = (float)(relexactmatch+relpartmatch)/totmachinerel;
+			}
 			
 			rperfst = (float)structperfmatch/tothumanst;
 			rexactst = (float)structexactmatch/tothumanst;
 			rpartialst = (float)structpartmatch/tothumanst;
 			rreasonst = (float)(structexactmatch+structpartmatch)/tothumanst;
 			
-			rperfch = (float)charperfmatch/tothumanch;
-			rexactch = (float)charexactmatch/tothumanch;
-			rpartialch = (float)charpartmatch/tothumanch;
-			rreasonch = (float)(charexactmatch+charpartmatch)/tothumanch;
+			if(tothumanch == 0){
+				rperfch = 0;
+				rexactch = 0;
+				rpartialch = 0;
+				rreasonch = 0;
+			}
+			else{
+				rperfch = (float)charperfmatch/tothumanch;
+				rexactch = (float)charexactmatch/tothumanch;
+				rpartialch = (float)charpartmatch/tothumanch;
+				rreasonch = (float)(charexactmatch+charpartmatch)/tothumanch;
+			}
 			
-			rperfrel = (float)relperfmatch/tothumanrel;
-			rexactrel = (float)relexactmatch/tothumanrel;
-			rpartialrel = (float)relpartmatch/tothumanrel;
-			rreasonrel = (float)(relexactmatch+relpartmatch)/tothumanrel;
+			if(tothumanrel == 0){
+				rperfrel = 0;
+				rexactrel = 0;
+				rpartialrel = 0;
+				rreasonrel = 0;
+			}
+			else{
+				rperfrel = (float)relperfmatch/tothumanrel;
+				rexactrel = (float)relexactmatch/tothumanrel;
+				rpartialrel = (float)relpartmatch/tothumanrel;
+				rreasonrel = (float)(relexactmatch+relpartmatch)/tothumanrel;
+			}
 	
 			stmt.execute("insert into precisionrecall values('"+source+"','"+pperfst+"','"+pexactst+"','"+ppartialst+"','"+preasonst+"','"+pperfch+"','"+pexactch+"','"+ppartialch+"','"+preasonch+"','"+pperfrel+"','"+pexactrel+"','"+ppartialrel+"','"+preasonrel+"'," +
 					"'"+rperfst+"','"+rexactst+"','"+rpartialst+"','"+rreasonst+"','"+rperfch+"','"+rexactch+"','"+rpartialch+"','"+rreasonch+"','"+rperfrel+"','"+rexactrel+"','"+rpartialrel+"','"+rreasonrel+"')");
