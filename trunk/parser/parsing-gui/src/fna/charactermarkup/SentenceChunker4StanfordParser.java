@@ -48,7 +48,7 @@ PPList: i
 main subject: z[m/e]
  * 
  */
-public class SentenceChunker {
+public class SentenceChunker4StanfordParser {
 	private Connection conn = null;
 	private Document tree = null;
 	private Document treecp = null;
@@ -67,19 +67,19 @@ public class SentenceChunker {
 	private static XPath NNpath = null;
 	private int sentindex = -1;
 	private Pattern p = Pattern.compile("(.*?)((?:\\w+ )+)\\2(.*)");
-	private boolean printVB = true;
-	private boolean printPP = true;
-	private boolean printNPlist = true;
+	private boolean printVB = false;
+	private boolean printPP = false;
+	private boolean printNPlist = false;
 	//private boolean printPPTO = true;
 	/**
 	 * 
 	 */
-	public SentenceChunker(int index, Document parsingTree, String markedsent, Connection conn) {
+	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, Connection conn) {
 		this.conn = conn;
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
-		this.markedsent = ChunkedSentence.normalizeNumberExp(markedsent);
+		this.markedsent = NumericalHandler.normalizeNumberExp(markedsent);
 		//this.markedsent = markedsent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
 		//in markedsent, each non-<>{}-punctuation mark is surrounded with spaces
 		this.posoftokens = this.markedsent.split("\\s+");
@@ -97,11 +97,11 @@ public class SentenceChunker {
 		}		
 		
 		try{
-			SentenceChunker.QPpath = XPath.newInstance(QPpathstr);
-			SentenceChunker.PPINpath = XPath.newInstance(PPINpathstr);
+			SentenceChunker4StanfordParser.QPpath = XPath.newInstance(QPpathstr);
+			SentenceChunker4StanfordParser.PPINpath = XPath.newInstance(PPINpathstr);
 			//SentenceChunker.PPTOpath = XPath.newInstance(PPTOpathstr);
-			SentenceChunker.Vpath = XPath.newInstance(Vpathstr);
-			SentenceChunker.NNpath = XPath.newInstance(NNpathstr);			
+			SentenceChunker4StanfordParser.Vpath = XPath.newInstance(Vpathstr);
+			SentenceChunker4StanfordParser.NNpath = XPath.newInstance(NNpathstr);			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -310,6 +310,9 @@ end procedure
 	private void extractFromlPPIN(Element lPPIN) {
 		
 		Element PP = lPPIN.getParentElement();
+		if(PP == null){ //TODO:(IN except) (IN among)
+			return;
+		}
 
 		//String chaso = getOrganFrom(child);
 		//both child and parent must contain an organ name to extract a relation

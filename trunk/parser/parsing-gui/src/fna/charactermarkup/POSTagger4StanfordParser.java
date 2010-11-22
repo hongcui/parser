@@ -24,15 +24,13 @@ import java.util.regex.Pattern;
  * @author hongcui
  *
  */
-public class MyPOSTagger {
+public class POSTagger4StanfordParser {
 	static protected Connection conn = null;
 	static protected String username = "root";
 	static protected String password = "root";
-	static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
 	private ArrayList<String> chunkedtokens = null;
 	private ArrayList<String> charactertokensReversed = null;
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
-	private boolean numbertranslated = false;
 	private boolean printList = true;
 	private String tableprefix = null;
 	
@@ -40,7 +38,7 @@ public class MyPOSTagger {
 	/**
 	 * 
 	 */
-	public MyPOSTagger(Connection conn, String tableprefix) {
+	public POSTagger4StanfordParser(Connection conn, String tableprefix) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
 	}
@@ -51,7 +49,7 @@ public class MyPOSTagger {
 			  * str is markedsent
 
 	 */
-		public String POSTag(String str, String src){
+		protected String POSTag(String str, String src){
 			//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
 			if(str.indexOf(" -{")>=0){
 				str = str.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
@@ -77,7 +75,7 @@ public class MyPOSTagger {
 				//stmt.execute("update markedsentence set markedsent='"+str+"' where source='"+src+"'");
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");				
 	            //Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
-	            Pattern pattern3 = Pattern.compile(this.numberpattern);
+	            Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
 				//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
 				//Pattern pattern5 = Pattern.compile("[\\d±\\+\\–\\-\\—°²:½/¼\"“”\\_´\\×µ%\\*\\{\\}\\[\\]=]+");
 				Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");

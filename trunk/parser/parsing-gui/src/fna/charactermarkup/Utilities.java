@@ -72,6 +72,9 @@ public class Utilities {
 	
 	public static boolean isAdv(String word, ArrayList<String> adverbs) {
 		word = word.replaceAll("[<>{}\\]\\[]", "").trim();
+		if(word.matches("not")){
+			return true;
+		}
 		if(!word.matches(".*?[a-z]+.*")){
 			return false;
 		}
@@ -123,7 +126,7 @@ public class Utilities {
 			}
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select category from fnaglossary where term ='"+w+"'");
+				ResultSet rs = stmt.executeQuery("select category from fnaglossaryfixed where term ='"+w+"'");
 				while(rs.next()){
 					String cat = rs.getString("category");
 					if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){

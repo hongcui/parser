@@ -1,6 +1,6 @@
 package fna.charactermarkup;
 
-public class ChunkComparativeValue extends Chunk {
+public class ChunkComparativeValue extends ChunkNumericals {
 
 	public ChunkComparativeValue(String text) {
 		super(text);

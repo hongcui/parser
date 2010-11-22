@@ -1,6 +1,6 @@
 package fna.charactermarkup;
 
-public class ChunkCount extends Chunk {
+public class ChunkCount extends ChunkNumericals {
 	/**
 	 * @param text
 	 */

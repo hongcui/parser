@@ -7,12 +7,12 @@ package fna.charactermarkup;
  * @author hongcui
  *
  */
-public class ChunkBasedCount extends ChunkNumericals {
+public class ChunkNumericals extends Chunk {
 
 	/**
 	 * @param text
 	 */
-	public ChunkBasedCount(String text) {
+	public ChunkNumericals(String text) {
 		super(text);
 		// TODO Auto-generated constructor stub
 	}
