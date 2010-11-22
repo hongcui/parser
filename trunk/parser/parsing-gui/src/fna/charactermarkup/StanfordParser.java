@@ -28,7 +28,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
  * @author hongcui
  *
  */
-public class StanfordParser implements Learn2Parse{
+public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
@@ -37,7 +37,7 @@ public class StanfordParser implements Learn2Parse{
 	private File posedfile = null;
 	private File parsedfile = null;
 	private String POSTaggedSentence = "POSedSentence";
-	private MyPOSTagger tagger = null;
+	private POSTagger4StanfordParser tagger = null;
 	private String tableprefix = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
@@ -64,7 +64,7 @@ public class StanfordParser implements Learn2Parse{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		tagger = new MyPOSTagger(conn, this.tableprefix);
+		tagger = new POSTagger4StanfordParser(conn, this.tableprefix);
 	}
 	
 	public void POSTagging(){
@@ -192,7 +192,7 @@ public class StanfordParser implements Learn2Parse{
 						text += line.replace(System.getProperty("line.separator"), ""); 
 					}
 				}else{
-					if(i != 359 && i !=484 && i != 1264 && i !=1782 && text.startsWith("(ROOT")){
+					if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -205,19 +205,19 @@ public class StanfordParser implements Learn2Parse{
 						if(baseroot ==null){
 							baseroot = VolumeFinalizer.getBaseRoot(thisfileindex);
 						}
-						
 						//System.out.println(sent);
-						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
+						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*") &&!sent.matches(".*?× .*") &&!sent.matches(".*?\\+×.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
 							if(!sent.matches(".*?[;\\.]\\s*$")){
 								sent = sent+".";
 							}
 							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ").trim();
 							
-							SentenceChunker ex = new SentenceChunker(i, doc, sent, conn);
+							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
 							if(this.debug){
 								System.out.println();
-								System.out.println(src+"["+i+"]: "+cs.toString());
+								System.out.println(i+"["+src+"]: "+cs.toString());
+
 							}
 							cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
 							//Element statement = cac.annotate(src.replaceAll("^\\d+\\.txt", ""), src, cs); //src: 100.txt-18
