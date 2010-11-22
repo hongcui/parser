@@ -175,12 +175,22 @@ public class CharStateHandler {
         			Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
                 	Matcher matcher3 = pattern18.matcher(extract);
                 	String unit="";
+                	
+                	/*if ( matcher3.find()){
+                		unit = extract.substring(matcher3.start(), matcher3.end());
+                	}
+                	if(unit.length()>0) extract = matcher3.replaceAll("#");
+                	if(extract.indexOf("#")<0) extract +="#";*/
                 	if ( matcher3.find()){
                 		unit = extract.substring(matcher3.start(), matcher3.end());
                 	}
-                	extract = matcher3.replaceAll("#");
+                	extract = matcher3.replaceAll("#");                	
                 	matcher3.reset();
-                	innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\"size\" from=\""+extract.substring(0, extract.indexOf('-')).trim()+"\" from_unit=\""+unit.trim()+"\" to=\""+extract.substring(extract.indexOf('-')+1,extract.indexOf('#')).trim()+"\" to_unit=\""+unit.trim()+"\"/>");
+                	String from = extract.substring(0, extract.indexOf('-')).trim();
+                	String to = extract.substring(extract.indexOf('-')+1,extract.indexOf('#')).trim();
+                	boolean upperrestricted = ! to.endsWith("+");
+                	to = to.replaceFirst("\\+$", "").trim();
+                	innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\"size\" from=\""+from+"\" from_unit=\""+unit.trim()+"\" to=\""+to+"\" to_unit=\""+unit.trim()+"\" upper_restricted=\""+upperrestricted+"\"/>");
         			toval = extract.substring(0, extract.indexOf('-'));
         			fromval = extract.substring(extract.indexOf('-')+1,extract.indexOf('#'));
                 	sizect+=1;
@@ -344,11 +354,14 @@ public class CharStateHandler {
         	matcher2.reset();
         
         	int countct = 0;
+        	//Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	matcher2 = pattern15.matcher(plaincharset);
         	plaincharset = matcher2.replaceAll("#");
         	matcher2.reset();     	
-        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+        	//Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+        	//add \\. to allow 0.5-0.6+
+        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./]+[+]?[\\]]?)*|[±]?[\\d\\./]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	matcher2 = pattern16.matcher(plaincharset);
         	while ( matcher2.find()){
         		i=matcher2.start();
@@ -616,6 +629,7 @@ public class CharStateHandler {
 		catch (Exception e)
         {
     		System.err.println(e);
+    		e.printStackTrace();
         }
 		return(innertagstate);
 	}
@@ -625,6 +639,18 @@ public class CharStateHandler {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		String str1 = "0.5-0.6+"; 		String str2 = "0.5-0.6+";	
+		System.out.println(CharStateHandler.characterstate(str1, str2));
+		
+		str1 = "0.5-0.6+ cm"; 	 str2 = "0.5-0.6+ cm";	
+		System.out.println(CharStateHandler.characterstate(str1, str2));
+		
+		str1 = "1/3-1/2"; 	 str2 = "1/3-1/2";	
+		System.out.println(CharStateHandler.characterstate(str1, str2));
+		
+		str1 = "[5-]8+"; 	 str2 = "[5-]8+";	
+		System.out.println(CharStateHandler.characterstate(str1, str2));
+		
 	}
 
 }
