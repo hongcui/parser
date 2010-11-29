@@ -80,7 +80,7 @@ public class Tree2XML {
         // TODO Auto-generated method stub
         String r = "";
         int count = 0;
-        xml = xml.replaceAll("``", "JJ").replaceAll("<[^A-Z/]", "<PUNCT");
+        xml = xml.replaceAll("``", "JJ").replaceAll("<[^A-Z/ ]+", "<PUNCT");
         Pattern p = Pattern.compile("(.*?)<([^<]*?) ([^<]*?)/>(.*)");
         Matcher m = p.matcher(xml);
         while(m.matches()){

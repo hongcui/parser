@@ -21,7 +21,8 @@ import org.jdom.output.*;
  */
 public class NumericalHandler  {
 
-	static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
+	//static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
+	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?![a-z{}])";
 
 	
 	public NumericalHandler() {
@@ -35,7 +36,7 @@ public class NumericalHandler  {
 	public static String normalizeNumberExp(String sentence) {
 		sentence = sentence.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
 		String norm = "";
-		Pattern p = Pattern.compile("(.*?)("+NumericalHandler.numberpattern+")(.*)");
+		/*Pattern p = Pattern.compile("(.*?)("+NumericalHandler.numberpattern+")(.*)");
 		Matcher m = p.matcher(sentence);
 		while(m.matches()){
 			sentence  = m.group(3);
@@ -43,7 +44,8 @@ public class NumericalHandler  {
 			norm += " "+m.group(2).replaceAll("\\s+", "")+" ";
 			m = p.matcher(sentence);
 		}
-		norm += sentence;
+		norm += sentence;*/
+		norm = sentence;
 		norm = norm.trim().replaceFirst("(?<=[0-9])\\.$", " .").replaceAll("\\[","-LRB-/-LRB-").replaceAll("\\]","-RRB-/-RRB-");
 		return norm;
 	}
