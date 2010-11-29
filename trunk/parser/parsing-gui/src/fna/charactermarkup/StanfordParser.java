@@ -179,7 +179,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Document doc = null;
 			CharacterAnnotatorChunked cac = null;
 			String pdescID ="";
-			int pfileindex = 0;
+			int order = 0+0;
+			//int pfileindex = 0;
+			String pfileindex = "";
 			Element baseroot = null;
 			Element description = new Element("description");
 			while ((line = stdInput.readLine())!=null){
@@ -192,7 +194,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						text += line.replace(System.getProperty("line.separator"), ""); 
 					}
 				}else{
-					if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
+					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
+					if(text.startsWith("(ROOT")){
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -201,9 +204,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						String sent = rs.getString("rmarkedsent");
 						String src = rs.getString("source");
 						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
-						int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
+						//int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
+						String thisfileindex = src.replaceFirst("\\.txt.*$", "");
 						if(baseroot ==null){
-							baseroot = VolumeFinalizer.getBaseRoot(thisfileindex);
+							order++;
+							baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
 						}
 						//System.out.println(sent);
 						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*") &&!sent.matches(".*?× .*") &&!sent.matches(".*?\\+×.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
@@ -211,6 +216,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								sent = sent+".";
 							}
 							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ").trim();
+							sent = sent.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");//2 . 5 => 2.5
 							
 							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
@@ -238,10 +244,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								}
 							}
 							
-							if(thisfileindex != pfileindex){
-								if(pfileindex !=0){
+							//if(thisfileindex != pfileindex){
+							if(thisfileindex.compareTo(pfileindex) !=0){
+								//if(pfileindex !=0){
+								if(pfileindex.length() !=0){
+									order++;
 									VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
-									baseroot = VolumeFinalizer.getBaseRoot(thisfileindex);
+									baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
 								}								
 							}
 							description.addContent(statement);
@@ -291,12 +300,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String posedfile = "FNAv19posedsentences.txt";
-		String parsedfile = "FNAv19parsedsentences.txt";
-		String database = "fnav19_benchmark";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19");
-		//sp.POSTagging();
-		//sp.parsing();
+		//String posedfile = "FNAv19posedsentences.txt";
+		//String parsedfile = "FNAv19parsedsentences.txt";
+		String posedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_posedsentences_copy.txt";
+		String parsedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_parsedsentences.txt";
+		String database = "markedupdatasets";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fna_v19");
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 	}
 }

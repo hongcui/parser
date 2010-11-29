@@ -3,6 +3,7 @@
  */
 package fna.charactermarkup;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.sql.ResultSet;
@@ -51,6 +52,7 @@ public class POSTagger4StanfordParser {
 	 */
 		protected String POSTag(String str, String src){
 			//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
+			str = str.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");
 			if(str.indexOf(" -{")>=0){
 				str = str.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
 			}
@@ -78,28 +80,38 @@ public class POSTagger4StanfordParser {
 	            Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
 				//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
 				//Pattern pattern5 = Pattern.compile("[\\d±\\+\\–\\-\\—°²:½/¼\"“”\\_´\\×µ%\\*\\{\\}\\[\\]=]+");
-				Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");
-				Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])");
+				//Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");
+				Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?![a-z])");
+				//Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])"); //condense multiple 0s.
+				Pattern pattern6 = Pattern.compile("(?<=\\s)[0\\s]+(?=\\s)");
 				//Pattern pattern5 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
 	           //[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
+				
+				
+				String strcp = str;
 				Matcher	 matcher1 = pattern3.matcher(str);
-	           str = matcher1.replaceAll(" 0 ");
-	           matcher1.reset();
+	           //str = matcher1.replaceAll(" 0 ");
+				str = matcher1.replaceAll("0");
+				matcher1.reset();
 	           
 	           /*matcher1 = pattern4.matcher(str);
 	           str = matcher1.replaceAll("0");
 	           matcher1.reset();*/
 	           
-	           matcher1 = pattern5.matcher(str);
+	           matcher1 = pattern5.matcher(str);//single numbers
 	           str = matcher1.replaceAll("0");
 	           matcher1.reset();
 	           
 	           matcher1 = pattern6.matcher(str);
-	           str = matcher1.replaceAll(" 0 ");
+	           str = matcher1.replaceAll("0");
 	           matcher1.reset();
 	           //3 -{many} => {3-many}
 	           str = str.replaceAll("0\\s+-", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
 	           
+	           if(strcp.compareTo(str)!=0){
+	        	   System.out.println("orig sent==>"+ strcp);
+	        	   System.out.println("3-ed sent==>"+ str);
+	           }
 	           //str = str.replaceAll("}>", "/NN").replaceAll(">}", "/NN").replaceAll(">", "/NN").replaceAll("}", "/JJ").replaceAll("[<{]", "");
 	           
 	           
@@ -361,7 +373,30 @@ public class POSTagger4StanfordParser {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		//File posedfile = new File(posedfile); 
+		//File parsedfile = new File("");
+		String database = "markedupdatasets";
+		String tableprefix = "fna_v19";
+		String POSTaggedSentence="POSedSentence";
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+				Statement stmt = conn.createStatement();
+				stmt.execute("create table if not exists "+tableprefix+"_"+POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				stmt.execute("delete from "+tableprefix+"_"+POSTaggedSentence);
+				stmt.close();
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix);
+		
+		String str="<Cypselae> {tan} , {subcylindric} , {subterete} to 5-{angled} , 8–10 {mm} , {indistinctly} 8–10-{ribbed}";
+		String src="364.txt-15";
+		
+		tagger.POSTag(str, src);
 	}
 
 }
