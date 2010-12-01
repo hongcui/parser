@@ -45,6 +45,24 @@ public class CompareXML {
 	private static int tothumanst = 0;
 	private static int tothumanch = 0;
 	private static int tothumanrel = 0;
+	private static int dscstructexactmatch = 0;
+	private static int dscstructpartmatch = 0;
+	private static int dscstructnomatch = 0;
+	private static int dscstructperfmatch = 0;
+	private static int dsccharexactmatch = 0;
+	private static int dsccharpartmatch = 0;
+	private static int dsccharnomatch = 0;
+	private static int dsccharperfmatch = 0;
+	private static int dscrelexactmatch = 0;
+	private static int dscrelpartmatch = 0;
+	private static int dscrelnomatch = 0;
+	private static int dscrelperfmatch = 0;
+	private static int dsctotmachinest = 0;
+	private static int dsctotmachinech = 0;
+	private static int dsctotmachinerel = 0;
+	private static int dsctothumanst = 0;
+	private static int dsctothumanch = 0;
+	private static int dsctothumanrel = 0;
 	
 	public void collect(String database){
 		CompareXML.database = database;
@@ -57,7 +75,7 @@ public class CompareXML {
 				stmt.execute("create table if not exists precisionrecall (source varchar(100) NOT NULL, pperfst Float(5,2), pexactst Float(5,2), ppartialst Float(5,2), preasonst Float(5,2), " +
 						"pperfch Float(5,2), pexactch Float(5,2), ppartialch Float(5,2), preasonch Float(5,2), pperfrel Float(5,2), pexactrel Float(5,2), ppartialrel Float(5,2), preasonrel Float(5,2), " +
 						"rperfst Float(5,2), rexactst Float(5,2), rpartialst Float(5,2), rreasonst Float(5,2), rperfch Float(5,2), rexactch Float(5,2), rpartialch Float(5,2), rreasonch Float(5,2), " +
-						"rperfrel Float(5,2), rexactrel Float(5,2), rpartialrel Float(5,2), rreasonrel Float(5,2), PRIMARY KEY(source))");
+						"rperfrel Float(5,2), rexactrel Float(5,2), rpartialrel Float(5,2), rreasonrel Float(5,2), sentprecision Float(5,2),sentrecall Float(5,2), PRIMARY KEY(source))");
 				stmt.execute("delete from precisionrecall");
 			}
 		}
@@ -68,6 +86,7 @@ public class CompareXML {
 	
 	public CompareXML() {
 		try{
+			
 			//Pass the database whose sentence are to  be evaluated
 			collect("fnav19_benchmark");
 			
@@ -115,6 +134,9 @@ public class CompareXML {
 					}
 				}
 			}
+			
+			dsccalcprecisionrecall();
+			
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -124,7 +146,7 @@ public class CompareXML {
 	 * Performs comparison between the <structure> elements present in machine & human annotated sentence.  
 	 * @param ansroot
 	 * @param testroot
-	 */
+	 */	
 	public void validatestruct(Element ansroot, Element testroot) {
 		String exact = "";
 		String ansexact = "";
@@ -132,173 +154,75 @@ public class CompareXML {
 		List testli = testroot.getChildren("structure");
 		totmachinest = testli.size();
 		tothumanst = ansli.size();
-		if (ansli.size() == testli.size()){
-			for(int i = 0; i < testli.size(); i++){
-				Element ans = (Element)ansli.get(i);
-				Element test = (Element)testli.get(i);
-				if (test.getAttributeValue("name").compareTo(ans.getAttributeValue("name"))==0){
-					if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-						if (test.getAttributeValue("constraint").compareTo(ans.getAttributeValue("constraint"))==0){
-							structexactmatch++;
-							structperfmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-						else if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-					}
-					else{
-						if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-							structexactmatch++;
-							structperfmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
+		for(int i = 0; i < testli.size(); i++){
+			Element test = (Element)testli.get(i);
+			for(int j = 0; j < ansli.size(); j++){
+				Element ans = (Element)ansli.get(j);
+				if(!ansexact.contains(ans.getAttributeValue("id"))){
+					if (test.getAttributeValue("name").compareTo(ans.getAttributeValue("name"))==0){
+						if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
+							if (test.getAttributeValue("constraint").compareTo(ans.getAttributeValue("constraint"))==0){
+								structexactmatch++;
+								structperfmatch++;
+								exact += test.getAttributeValue("id");
+								ansexact += ans.getAttributeValue("id");
+								break;
+							}
 						}
 						else{
-							structnomatch++;
-						}
-					}
-				}
-				else if (ans.getAttributeValue("name").contains(test.getAttributeValue("name"))|test.getAttributeValue("name").contains(ans.getAttributeValue("name"))){
-					if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-						if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-					}
-					else{
-						if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-						else{
-							structnomatch++;
+							if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
+								structexactmatch++;
+								structperfmatch++;
+								exact += test.getAttributeValue("id");
+								ansexact += ans.getAttributeValue("id");
+								break;
+							}
 						}
 					}
 				}
 			}
-			if (structnomatch > 1){
-				for(int i = 0; i < testli.size(); i++){
-					int flag = 0;
-					Element test = (Element)testli.get(i);
-					if(!exact.contains(test.getAttributeValue("id"))){
-						for(int j = 0; j < ansli.size(); j++){
-							Element ans = (Element)ansli.get(j);
-							if(i!=j && !ansexact.contains(ans.getAttributeValue("id"))){
-								if (ans.getAttributeValue("name").contains(test.getAttributeValue("name")) | test.getAttributeValue("name").contains(ans.getAttributeValue("name"))){
-									if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-										if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-											structpartmatch++;
-											structnomatch--;
-											exact += test.getAttributeValue("id");
-											ansexact += ans.getAttributeValue("id");
-											break;
-										}
-									}
-									else{
-										if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-											structpartmatch++;
-											structnomatch--;
-											exact += test.getAttributeValue("id");
-											ansexact += ans.getAttributeValue("id");
-											break;
-										}
-									}
+		}
+		for(int i = 0; i < testli.size(); i++){
+			Element test = (Element)testli.get(i);
+			if(!exact.contains(test.getAttributeValue("id"))){
+				for(int j = 0; j < ansli.size(); j++){
+					Element ans = (Element)ansli.get(j);
+					if(!ansexact.contains(ans.getAttributeValue("id"))){
+						if (test.getAttributeValue("name").compareTo(ans.getAttributeValue("name"))==0){
+							if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
+								if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
+									structpartmatch++;
+									exact += test.getAttributeValue("id");
+									ansexact += ans.getAttributeValue("id");
+									break;
 								}
 							}
 						}
 					}
 				}
 			}
-		}	
-		else{
-			int len = 0;
-			len = (ansli.size() < testli.size()) ? ansli.size():testli.size();
-			for(int i = 0; i < len; i++){
-				Element ans = (Element)ansli.get(i);
-				Element test = (Element)testli.get(i);
-				if (test.getAttributeValue("name").compareTo(ans.getAttributeValue("name"))==0){
-					if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-						if (test.getAttributeValue("constraint").compareTo(ans.getAttributeValue("constraint"))==0){
-							structexactmatch++;
-							structperfmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-						else if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-					}
-					else{
-						if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-							structexactmatch++;
-							structperfmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-						else{
-							structnomatch++;
-						}
-					}
-				}
-				else if (ans.getAttributeValue("name").contains(test.getAttributeValue("name"))|test.getAttributeValue("name").contains(ans.getAttributeValue("name"))){
-					if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-						if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-					}
-					else{
-						if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-							structpartmatch++;
-							exact += test.getAttributeValue("id");
-							ansexact += ans.getAttributeValue("id");
-						}
-						else{
-							structnomatch++;
-						}
-					}
-				}
-			}
-			if(structexactmatch+structpartmatch == len){
-				structnomatch = (ansli.size() < testli.size()) ? testli.size()-len:ansli.size()-len;
-			}
-			else{
-				structnomatch += (ansli.size() < testli.size()) ? testli.size()-len:ansli.size()-len;
-				for(int i = 0; i < testli.size(); i++){
-					int flag = 0;
-					Element test = (Element)testli.get(i);
-					if(!exact.contains(test.getAttributeValue("id"))){
-						for(int j = 0; j < ansli.size(); j++){
-							Element ans = (Element)ansli.get(j);
-							if(i!=j && !ansexact.contains(ans.getAttributeValue("id"))){
-								if (ans.getAttributeValue("name").contains(test.getAttributeValue("name")) | test.getAttributeValue("name").contains(ans.getAttributeValue("name"))){
-									if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
-										if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
-											structpartmatch++;
-											structnomatch--;
-											exact += test.getAttributeValue("id");
-											ansexact += ans.getAttributeValue("id");
-											break;
-										}
-									}
-									else{
-										if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
-											structpartmatch++;
-											structnomatch--;
-											exact += test.getAttributeValue("id");
-											ansexact += ans.getAttributeValue("id");
-											break;
-										}
-									}
+		}
+		for(int i = 0; i < testli.size(); i++){
+			Element test = (Element)testli.get(i);
+			if(!exact.contains(test.getAttributeValue("id"))){
+				for(int j = 0; j < ansli.size(); j++){
+					Element ans = (Element)ansli.get(j);
+					if(!ansexact.contains(ans.getAttributeValue("id"))){
+						if (ans.getAttributeValue("name").contains(test.getAttributeValue("name"))|test.getAttributeValue("name").contains(ans.getAttributeValue("name"))){
+							if (test.getAttribute("constraint")!=null && ans.getAttribute("constraint")!=null){
+								if (test.getAttributeValue("constraint").contains(ans.getAttributeValue("constraint"))|ans.getAttributeValue("constraint").contains(test.getAttributeValue("constraint"))){
+									structpartmatch++;
+									exact += test.getAttributeValue("id");
+									ansexact += ans.getAttributeValue("id");
+									break;
+								}
+							}
+							else{
+								if(test.getAttribute("constraint")==null && ans.getAttribute("constraint")==null){
+									structpartmatch++;
+									exact += test.getAttributeValue("id");
+									ansexact += ans.getAttributeValue("id");
+									break;
 								}
 							}
 						}
@@ -626,7 +550,8 @@ public class CompareXML {
 			float rperfst, rexactst, rpartialst, rreasonst;
 			float rperfch, rexactch, rpartialch, rreasonch;
 			float rperfrel, rexactrel, rpartialrel, rreasonrel;
-			
+			float sentprecision, sentrecall;
+						
 			Statement stmt = conn.createStatement();
 			
 			pperfst = (float)structperfmatch/totmachinest;
@@ -691,13 +616,87 @@ public class CompareXML {
 				rreasonrel = (float)(relexactmatch+relpartmatch)/tothumanrel;
 			}
 	
+			sentprecision = pexactst+ppartialst+pexactch+ppartialch+pexactrel+ppartialrel;
+			sentrecall = rexactst+rpartialst+rexactch+rpartialch+rexactrel+rpartialrel;
+			
 			stmt.execute("insert into precisionrecall values('"+source+"','"+pperfst+"','"+pexactst+"','"+ppartialst+"','"+preasonst+"','"+pperfch+"','"+pexactch+"','"+ppartialch+"','"+preasonch+"','"+pperfrel+"','"+pexactrel+"','"+ppartialrel+"','"+preasonrel+"'," +
-					"'"+rperfst+"','"+rexactst+"','"+rpartialst+"','"+rreasonst+"','"+rperfch+"','"+rexactch+"','"+rpartialch+"','"+rreasonch+"','"+rperfrel+"','"+rexactrel+"','"+rpartialrel+"','"+rreasonrel+"')");
+					"'"+rperfst+"','"+rexactst+"','"+rpartialst+"','"+rreasonst+"','"+rperfch+"','"+rexactch+"','"+rpartialch+"','"+rreasonch+"','"+rperfrel+"','"+rexactrel+"','"+rpartialrel+"','"+rreasonrel+"','"+sentprecision+"','"+sentrecall+"')");
+			
+			dscstructexactmatch += structexactmatch;
+			dscstructpartmatch += structpartmatch;
+			dscstructnomatch += structnomatch;
+			dscstructperfmatch += structperfmatch;
+			dsccharexactmatch += charexactmatch;
+			dsccharpartmatch += charpartmatch;
+			dsccharnomatch += charnomatch;
+			dsccharperfmatch += charperfmatch;
+			dscrelexactmatch += relexactmatch;
+			dscrelpartmatch += relpartmatch;
+			dscrelnomatch += relnomatch;
+			dscrelperfmatch += relperfmatch;
+			dsctotmachinest += totmachinest;
+			dsctotmachinech += totmachinech;
+			dsctotmachinerel += totmachinerel;
+			dsctothumanst += tothumanst;
+			dsctothumanch += tothumanch;
+			dsctothumanrel += tothumanrel;
+			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Performs Precision & Recall calculations for Perfect match, exact match, partial match, reasonable match
+	 * of the entire description
+	 * @param source
+	 */
+	public void dsccalcprecisionrecall(){
+		
+		float dscpperfst, dscpexactst, dscppartialst, dscpreasonst;
+		float dscpperfch, dscpexactch, dscppartialch, dscpreasonch;
+		float dscpperfrel, dscpexactrel, dscppartialrel, dscpreasonrel;
+		float dscrperfst, dscrexactst, dscrpartialst, dscrreasonst;
+		float dscrperfch, dscrexactch, dscrpartialch, dscrreasonch;
+		float dscrperfrel, dscrexactrel, dscrpartialrel, dscrreasonrel;
+		
+		dscpperfst = (float)dscstructperfmatch/dsctotmachinest;
+		dscpexactst = (float)dscstructexactmatch/dsctotmachinest;
+		dscppartialst = (float)dscstructpartmatch/dsctotmachinest;
+		dscpreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctotmachinest;
+					
+		dscpperfch = (float)dsccharperfmatch/dsctotmachinech;
+		dscpexactch = (float)dsccharexactmatch/dsctotmachinech;
+		dscppartialch = (float)dsccharpartmatch/dsctotmachinech;
+		dscpreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctotmachinech;
+		
+		dscpperfrel = (float)dscrelperfmatch/dsctotmachinerel;
+		dscpexactrel = (float)dscrelexactmatch/dsctotmachinerel;
+		dscppartialrel = (float)dscrelpartmatch/dsctotmachinerel;
+		dscpreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctotmachinerel;
+		
+		dscrperfst = (float)dscstructperfmatch/dsctothumanst;
+		dscrexactst = (float)dscstructexactmatch/dsctothumanst;
+		dscrpartialst = (float)dscstructpartmatch/dsctothumanst;
+		dscrreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctothumanst;
+		
+		dscrperfch = (float)dsccharperfmatch/dsctothumanch;
+		dscrexactch = (float)dsccharexactmatch/dsctothumanch;
+		dscrpartialch = (float)dsccharpartmatch/dsctothumanch;
+		dscrreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctothumanch;
+		
+		dscrperfrel = (float)dscrelperfmatch/dsctothumanrel;
+		dscrexactrel = (float)dscrelexactmatch/dsctothumanrel;
+		dscrpartialrel = (float)dscrelpartmatch/dsctothumanrel;
+		dscrreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctothumanrel;
+		System.out.println( "dscpperfst "+dscpperfst+"\n"+"dscpexactst "+dscpexactst+"\n"+"dscppatialst "+ dscppartialst+"\n"+"dscpreasonst "+dscpreasonst+"\n"+
+				"dscpperfch "+dscpperfch+"\n"+"dscpexactch "+ dscpexactch+"\n"+"dscppartialch "+ dscppartialch+"\n"+"dscpreasonch "+ dscpreasonch+"\n"+
+				"dscpperfrel "+dscpperfrel+"\n"+"dscpexactrel "+ dscpexactrel+"\n"+"dscppartialrel "+dscppartialrel+"\n"+"dscpreasonrel "+ dscpreasonrel+"\n"+
+				"dscrperfst "+dscrperfst+"\n"+ "dscrexactst "+dscrexactst+"\n"+ "dscrpartialst "+dscrpartialst+"\n"+ "dscrreasonst "+dscrreasonst+"\n"+
+				"dscrperfch "+dscrperfch+"\n"+ "dscrexactch "+dscrexactch+"\n"+ "dscrpartialch "+dscrpartialch+"\n"+ "dscrreasonch "+dscrreasonch+"\n"+
+				"dscrperfrel "+dscrperfrel+"\n"+ "dscrexactrel "+dscrexactrel+"\n"+ "dscrpartialrel "+dscrpartialrel+"\n"+ "dscrreasonrel "+dscrreasonrel);
+		
+	}
 	
 	
 	/**
