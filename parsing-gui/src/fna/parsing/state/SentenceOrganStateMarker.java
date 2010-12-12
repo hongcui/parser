@@ -56,10 +56,12 @@ public class SentenceOrganStateMarker {
 		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
+			//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
+			ResultSet rs = stmt.executeQuery("select source, tag, sentence from "+this.tableprefix+"_sentence");
 			while(rs.next()){
 				String source = rs.getString("source");
-				String sent = rs.getString("tag")+"##"+rs.getString("originalsent");
+				//String sent = rs.getString("tag")+"##"+rs.getString("originalsent");
+				String sent = rs.getString("tag")+"##"+rs.getString("sentence");
 				sentences.put(source, sent);
 			}
 			
@@ -192,8 +194,12 @@ public class SentenceOrganStateMarker {
 	}
 
 	public static String markthis(String source, String sent, String parts, String leftmark, String rightmark) {
+		//no need if select sentence (vs. originalsent)
 		//remove ()
-		sent = sent.replaceAll("\\(.*?\\)", "");
+		//sent = sent.replaceAll("\\(.*?\\)", "");
+		//remove (text)
+		//sent = sent.replaceAll("\\(\\s+(?![\\d\\–\\-\\—]).*?(?<![\\d\\–\\-\\—])\\s+\\)", "");
+		
 		sent = sent.replaceAll("(?<=\\w)\\s+(?=[,\\.;:])", "");
 
 		sent = sent.replaceAll("_", "-");
@@ -329,9 +335,9 @@ public class SentenceOrganStateMarker {
 	 */
 	public static void main(String[] args) {
 		Connection conn = null;
-		String database="";
-		String username="";
-		String password="";
+		String database="fnav19_benchmark";
+		String username="root";
+		String password="root";
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
