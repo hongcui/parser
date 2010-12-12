@@ -3,16 +3,16 @@
  */
 package fna.charactermarkup;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
+//import java.sql.ResultSet;
+//import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.*;
 
 import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.xpath.*;
-import org.jdom.output.*;
+//import org.jdom.input.*;
+//import org.jdom.xpath.*;
+//import org.jdom.output.*;
 
 /**
  * @author hongcui
@@ -22,7 +22,7 @@ import org.jdom.output.*;
 public class NumericalHandler  {
 
 	//static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
-	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?![a-z{}])";
+	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×\\+°²½/¼\\*/%]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
 
 	
 	public NumericalHandler() {
@@ -51,7 +51,11 @@ public class NumericalHandler  {
 	}
 	
 	public static String originalNumForm(String token){
-		return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
+		if(token.matches(".*[a-z].*?")){
+			return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "(").replaceAll("-\\s*RRB-/-RRB\\s*-", ")");
+		}else{
+			return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
+		}
 	}
 	public static boolean isNumerical(String token){
 		if(token.matches(".*?\\d+\\+?%?$")){
@@ -70,12 +74,22 @@ public class NumericalHandler  {
 	 */
 	//public static ArrayList<Element> characterstate(String plaincharset, String state){
 	public static ArrayList<Element> parseNumericals(String plaincharset, String cname){	
-		new CharStateHandler();
+		//new CharStateHandler();
 		ArrayList<Element> innertagstate = new ArrayList<Element>();
 		try{
 			int i,j;
 			plaincharset = plaincharset.replaceAll("\\([\\s]?|\\[[\\s]?", "[");
 			plaincharset = plaincharset.replaceAll("[\\s]?\\)|[\\s]?\\]", "]");
+			Pattern p1 = Pattern.compile("(.*?\\b(\\d+))\\s*\\[\\+\\](.*)");
+			Matcher m = p1.matcher(plaincharset);
+			if(m.matches()){
+				//4-5[+] => 4-5[-5+]
+				plaincharset = m.group(1)+"[-"+m.group(2)+"+]"+m.group(3);
+				m = p1.matcher(plaincharset);
+			}
+			
+			
+			
 			//System.out.println("plain:"+plaincharset);
 			//System.out.println("state:"+state);
 			Pattern pattern19 = Pattern.compile("[±]?[\\[]?[\\d\\s\\.]+[\\]]?[\\s]?[\\[]?[\\–\\-]+[\\]]?[\\s]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[\\s]?[dcmµ]?[m]?[\\s]?[xX\\×]+[\\s]?[\\[]?[\\d\\s\\.]+[\\]]?[\\s]?[\\[]?[\\–\\-]+[\\]]?[\\s]?[\\[]?[\\d\\s\\.]+[+]?[\\]]?[\\s]?[dcmµ]?m");
@@ -118,6 +132,7 @@ public class NumericalHandler  {
         			character.setAttribute("name", "length");
         			character.setAttribute("from", match.substring(0,en).trim());
         			character.setAttribute("from_unit",unit[0].trim());
+        			//character.setAttribute("to", match.substring(en+1, match.indexOf('#',en+1)).trim());
         			character.setAttribute("to", match.substring(en+1, match.indexOf('×',en+1)).trim());
         			character.setAttribute("to_unit", unit[0].trim());
         			innertagstate.add(character);
@@ -130,7 +145,8 @@ public class NumericalHandler  {
         				Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
             			character.setAttribute("name", "width");
-            			character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			//character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			character.setAttribute("from", match.substring(match.indexOf('×')+1,lasten).trim());
             			character.setAttribute("from_unit",unit[1].trim());
             			character.setAttribute("to", match.substring(lasten+1, match.indexOf('+',lasten+1)).trim());
             			character.setAttribute("to_unit", unit[1].trim());
@@ -141,7 +157,8 @@ public class NumericalHandler  {
         				Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
             			character.setAttribute("name", "width");
-            			character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			//character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			character.setAttribute("from", match.substring(match.indexOf('×')+1,lasten).trim());
             			character.setAttribute("from_unit",unit[1].trim());
             			character.setAttribute("to", match.substring(lasten+1, match.indexOf('#',lasten+1)).trim());
             			character.setAttribute("to_unit", unit[1].trim());
@@ -153,7 +170,8 @@ public class NumericalHandler  {
         				Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
             			character.setAttribute("name", "width");
-            			character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			//character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			character.setAttribute("from", match.substring(match.indexOf('×')+1,lasten).trim());
             			character.setAttribute("from_unit",unit[0].trim());
             			character.setAttribute("to", match.substring(lasten+1, match.indexOf('+',lasten+1)).trim());
             			character.setAttribute("to_unit", unit[0].trim());
@@ -164,7 +182,8 @@ public class NumericalHandler  {
         				Element character = new Element("character");
             			character.setAttribute("char_type", "range_value");
             			character.setAttribute("name", "width");
-            			character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());
+            			//character.setAttribute("from", match.substring(match.indexOf('×')+2,lasten).trim());//3-5x1.5-2
+            			character.setAttribute("from", match.substring(match.indexOf('×')+1,lasten).trim());
             			character.setAttribute("from_unit",unit[0].trim());
             			character.setAttribute("to", match.substring(lasten+1, match.indexOf('#',lasten+1)).trim());
             			character.setAttribute("to_unit", unit[0].trim());
@@ -194,7 +213,8 @@ public class NumericalHandler  {
         			Element character = new Element("character");
         			character.setAttribute("char_type", "range_value");
         			character.setAttribute("name", "l_w_ratio");
-        			character.setAttribute("from", match.substring(match.indexOf('=')+2,en).trim());
+        			//character.setAttribute("from", match.substring(match.indexOf('=')+2,en).trim());
+        			character.setAttribute("from", match.substring(match.indexOf('=')+1,en).trim());
         			character.setAttribute("to", match.substring(en+1, match.indexOf('+',en+1)).trim());
         			character.setAttribute("upper_restricted", "false");
         			innertagstate.add(character);
@@ -203,7 +223,8 @@ public class NumericalHandler  {
         			Element character = new Element("character");
         			character.setAttribute("char_type", "range_value");
         			character.setAttribute("name", "l_w_ratio");
-        			character.setAttribute("from", match.substring(match.indexOf('=')+2,en).trim());
+        			//character.setAttribute("from", match.substring(match.indexOf('=')+2,en).trim());
+        			character.setAttribute("from", match.substring(match.indexOf('=')+1,en).trim());
         			character.setAttribute("to", match.substring(en+1, match.indexOf(' ',en+1)).trim());
         			innertagstate.add(character);
         			//innertagstate=innertagstate.concat("<character char_type=\"range_value\" name=\"l_w_ratio\" from=\""+match.substring(match.indexOf('=')+2,en).trim()+"\" to=\""+match.substring(en+1, match.indexOf(' ',en+1)).trim()+"\"/>");
@@ -326,6 +347,7 @@ public class NumericalHandler  {
             			Element character = new Element("character");
 	        			character.setAttribute("name", "atypical_size");
 	        			character.setAttribute("value", extreme.substring(p+1,q-1).trim());
+	        			//character.setAttribute("unit", extreme.substring(q-1).trim());
 	        			innertagstate.add(character);
         				//innertagstate = innertagstate.concat("<character name=\"atypical_size\" value=\""+extreme.substring(p+1,q-1).trim()+"\"/>");
             		}
@@ -394,9 +416,11 @@ public class NumericalHandler  {
         					e.setAttribute("upper_restricted", "false");
         				}
         				e.setAttribute("to", toval.trim());
+        				e.setAttribute("to_inclusive", "false");
         			}
         			if(e.getAttribute("from") != null && e.getAttributeValue("from").compareTo("")==0){
         				e.setAttribute("from", fromval.trim());
+        				e.setAttribute("from_inclusive", "false");
         			}
         		}
         		
@@ -601,9 +625,11 @@ public class NumericalHandler  {
         					e.setAttribute("upper_restricted", "false");
         				}
         				e.setAttribute("to", toval.trim());
+        				e.setAttribute("to_inclusive", "false");
         			}
         			if(e.getAttribute("from") != null && e.getAttributeValue("from").compareTo("")==0){
         				e.setAttribute("from", fromval.trim());
+        				e.setAttribute("from_inclusive", "false");
         			}
         		}
             	
@@ -629,7 +655,26 @@ public class NumericalHandler  {
         	plaincharset = matcher2.replaceAll("#");
         	matcher2.reset();
         
-        	int countct = 0;
+        	if(plaincharset.matches("\\[\\d+\\]")){
+        		Element character = new Element("character");
+    			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+    			character.setAttribute("value", plaincharset.replaceAll("[^\\d]", ""));
+    			innertagstate.add(character);
+    			plaincharset = "";
+        	}
+        	
+        	if(plaincharset.matches("\\[\\d+\\+\\]")){
+        		Element character = new Element("character");
+        		character.setAttribute("char_type", "range_value");
+    			character.setAttribute("name", "atypical_"+(cname==null?"count": cname));
+    			character.setAttribute("from", plaincharset.replaceAll("[^\\d]", ""));
+    			character.setAttribute("upper_restricted", "false");
+    			innertagstate.add(character);
+    			plaincharset = "";
+        	}
+        	
+        	
+        	//int countct = 0;
         	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	matcher2 = pattern15.matcher(plaincharset);
         	plaincharset = matcher2.replaceAll("#");
@@ -768,11 +813,10 @@ public class NumericalHandler  {
                 	//innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\"count\" from=\""+extract.substring(0, extract.indexOf('-')).trim()+"\" to=\""+extract.substring(extract.indexOf('-')+1,extract.length()).trim()+"\"/>");
         			toval = extract.substring(0, extract.indexOf('-'));
         			fromval = extract.substring(extract.indexOf('-')+1,extract.length());
-        			countct+=1;
+        			//countct+=1;
         		}
         		else{
         			String extract = extreme.substring(i,j);
-        			
         			Element character = new Element("character");
         			character.setAttribute("name", cname==null?"count": cname);
         			character.setAttribute("value", extract.trim());
@@ -791,9 +835,11 @@ public class NumericalHandler  {
         					e.setAttribute("upper_restricted", "false");
         				}
         				e.setAttribute("to", toval.trim());
+        				e.setAttribute("to_inclusive", "false");
         			}
         			if(e.getAttribute("from") != null && e.getAttributeValue("from").compareTo("")==0){
         				e.setAttribute("from", fromval.trim());
+        				e.setAttribute("from_inclusive", "false");
         			}
         		}
         		/*
@@ -823,7 +869,7 @@ public class NumericalHandler  {
 			e.printStackTrace();
     		System.err.println(e);
         }
-		return innertagstate;
+ 		return innertagstate;
 	}
 
 	/**
@@ -831,9 +877,18 @@ public class NumericalHandler  {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String str1 = "stems 3-4 + cm";
-		String str2 = "stems 3-4 + cm";	
-		System.out.println(CharStateHandler.characterstate(str1, str2));
+		//String str1 = "stems 2–3";
+		//String str2 = "stems 2–3";	
+		//String str1 = "10-20 mm × 40-50 mm";
+		//String str1 = "4-5[+]"; //should output atypical count, but output count
+		//String str1 = "4-5[-5+]";
+		//String str1 = "[5-]10-15[-20]";
+		//String str1 = "[30-]80-250[-450+];";
+		String str1 ="3-5 ×(0.6-)1.5-2 cm"; //not solved
+		//String str1 = "[5+]";
+		String str2 = null;	
+		
+		System.out.println(NumericalHandler.parseNumericals(str1, str2));
 	}
 
 }
