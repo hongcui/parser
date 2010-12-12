@@ -41,7 +41,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String tableprefix = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean debug = true;
+	private boolean debug = false;
 	/**
 	 * 
 	 */
@@ -57,9 +57,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
-				stmt.close();
+				//stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				//stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
+				//stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -195,7 +195,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					}
 				}else{
 					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
-					if(text.startsWith("(ROOT")){
+					if(i !=2793 && text.startsWith("(ROOT")){
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -213,10 +213,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						//System.out.println(sent);
 						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*") &&!sent.matches(".*?× .*") &&!sent.matches(".*?\\+×.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
 							if(!sent.matches(".*?[;\\.]\\s*$")){
-								sent = sent+".";
+								sent = sent+" .";
 							}
-							sent = sent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ").trim();
-							sent = sent.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");//2 . 5 => 2.5
+							//sent = normalizeSpacesRoundNumbers(sent);
 							
 							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
@@ -272,6 +271,49 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			e.printStackTrace();
         }
     }
+
+	public static String normalizeSpacesRoundNumbers(String sent) {
+		sent = sent.replaceAll("2\\s*n\\s*=", "2n=");
+		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
+		sent = sent.replaceAll("n\\s*=", "n=");
+		sent = sent.replaceAll("x\\s*=", "x=");
+		
+		sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").replaceAll("\\s+", " ").trim();
+		
+		if(sent.matches(".*?[nx]=.*")){
+			sent = sent.replaceAll("(?<=\\d)\\s*,\\s*(?=\\d)", ","); //remove spaces around , for chromosome only so numericalHandler.numericalPattern can "3" them into one 3. Other "," connecting two numbers needs spaces to avoid being "3"-ed (fruits 10, 3 of them large) 
+		}
+		sent = sent.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");//2 . 5 => 2.5
+		sent = sent.replaceAll("(?<=\\d)\\.(?=\\d[nx]=)", " . "); //pappi 0.2n=12
+		
+		//sent = sent.replaceAll("(?<=\\d)\\s+/\\s+(?=\\d)", "/"); // 1 / 2 => 1/2
+		//sent = sent.replaceAll("(?<=[\\d()\\[\\]])\\s+[–—-]\\s+(?=[\\d()\\[\\]])", "-"); // 1 - 2 => 1-2
+		//sent = sent.replaceAll("(?<=[\\d])\\s+[–—-]\\s+(?=[\\d])", "-"); // 1 - 2 => 1-2
+		Pattern p = Pattern.compile("(.*?)(\\d*)\\s+\\[\\s+([ –—+\\d\\.,?×/-]+)\\s+\\]\\s+(\\d*)(.*)");  //4-25 [ -60 ] => 4-25[-60]. ? is for chromosome count
+		Matcher m = p.matcher(sent);
+		while(m.matches()){
+			sent = m.group(1)+ (m.group(2).length()>0? m.group(2):" ")+"["+m.group(3).replaceAll("\\s*[–—-]\\s*", "-")+"]"+(m.group(4).length()>0? m.group(4):" ")+m.group(5);
+			m = p.matcher(sent);
+		}
+		////keep the space after the first (, so ( 3-15 mm) will not become 3-15mm ) in POSTagger.
+		p = Pattern.compile("(.*?)(\\d*)\\s+\\(\\s+([ –—+\\d\\.,?×/-]+)\\s+\\)\\s+(\\d*)(.*)");  //4-25 ( -60 ) => 4-25(-60)
+		m = p.matcher(sent);
+		while(m.matches()){
+			sent = m.group(1)+ (m.group(2).length()>0? m.group(2):" ")+"("+m.group(3).replaceAll("\\s*[–—-]\\s*", "-")+")"+(m.group(4).length()>0? m.group(4):" ")+m.group(5);
+			m = p.matcher(sent);
+		}
+		sent = sent.replaceAll("\\s+/\\s+", "/"); //and/or 1/2
+		sent = sent.replaceAll("\\s+×\\s+", "×");
+		sent = sent.replaceAll("\\s*\\+\\s*", "+"); // 1 + => 1+
+		sent = sent.replaceAll("(?<![\\d()\\]\\[×-])\\+", " +");
+		sent = sent.replaceAll("\\+(?![\\d()\\]\\[×-])", "+ ");
+		sent = sent.replaceAll("(?<=(\\d))\\s*\\?\\s*(?=[\\d)\\]])", "?"); // (0? )
+		sent = sent.replaceAll("\\s*-\\s*", "-"); // 1 - 2 => 1-2, 4 - {merous} => 4-{merous}
+		/*if(sent.indexOf(" -{")>=0){//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
+			sent = sent.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
+		}*/
+		return sent;
+	}
 	
 
 
@@ -300,14 +342,25 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//String posedfile = "FNAv19posedsentences.txt";
-		//String parsedfile = "FNAv19parsedsentences.txt";
-		String posedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_posedsentences_copy.txt";
-		String parsedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_parsedsentences.txt";
-		String database = "markedupdatasets";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fna_v19");
-		sp.POSTagging();
-		sp.parsing();
+		//String text=", ( 2 – ) 2 . 5 – 3 . 5 ( – 4 ) × ( 1 . 5 – ) 2 – 3 ( – 4 ) {cm} ";
+		//String text="blades ± obovate , [ 0 ] ( 1 – ) 2 – 3 - pinnately lobed , ultimate margins dentate , ";
+		//String text="cypselae 9 – 18 mm , bodies terete or narrowly conic to obconic , 5 – 9 mm , beaks 3 – 10 mm , lengths ( 1 / 2 – ) 2 times bodies ;";
+		//String text="2 n = 24 , 40 , [ 16 , 32 ] .";
+		//String text = "x= 9 ( 18 ? ) .";
+		//String text = "2 n = 24 , 40 , [ 16 , 32 ] .";
+		//String text = "blades broadly elliptic or ovate to lanceolate , 6 – 12 ( – 18 + ) cm × 30 – 80 ( – 120 + ) mm , both faces sparsely pilose to hirsute .";
+		//String text = "blades either linear to lanceolate and not lobed , 10 – 20 ( – 38 ) cm × 6 – 10 mm , or oblanceolate to oblong and pinnately lobed , 10 – 20 cm × 25 – 50 mm , or both ;";
+		String text = " often 2 - , 3 - , or 5 - ribbed ;";
+		StanfordParser.normalizeSpacesRoundNumbers(text);
+		
+		String posedfile = "FNAv19posedsentences.txt";
+		String parsedfile = "FNAv19parsedsentences.txt";
+		//String posedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_posedsentences_copy.txt";
+		//String parsedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_parsedsentences.txt";
+		String database = "fnav19_benchmark";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19");
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 	}
 }

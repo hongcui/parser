@@ -82,7 +82,8 @@ public class ChunkedSentence {
 		this.conn = conn;
 		this.sentid = id;
 		this.markedsent = tobechunkedmarkedsent;
-		tobechunkedmarkedsent = tobechunkedmarkedsent.replaceAll("[\\[\\(]", " -LRB-/-LRB- ").replaceAll("[\\]\\)]", " -RRB-/-RRB- ").replaceAll("\\s+", " ").trim(); 
+		//tobechunkedmarkedsent = tobechunkedmarkedsent.replaceAll("[\\[\\(]", " -LRB-/-LRB- ").replaceAll("[\\]\\)]", " -RRB-/-RRB- ").replaceAll("\\s+", " ").trim(); 
+		tobechunkedmarkedsent = tobechunkedmarkedsent.replaceAll("[\\[\\(]", "-LRB-/-LRB-").replaceAll("[\\]\\)]", "-RRB-/-RRB-").trim(); 
 		if(tobechunkedmarkedsent.matches(".*?\\d.*")){
 			tobechunkedmarkedsent = NumericalHandler.normalizeNumberExp(tobechunkedmarkedsent);
 		}
@@ -474,7 +475,7 @@ public class ChunkedSentence {
 		int wcount = 0;
 		if(tobeskipped[tobeskipped.length-1].compareTo("chromosome")==0){
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
-				if(this.chunkedtokens.get(i).compareTo("=")==0){
+				if(this.chunkedtokens.get(i).endsWith("=")){
 					this.pointer = i;
 					break;
 				}
@@ -527,27 +528,69 @@ public class ChunkedSentence {
 			pointer++;
 			token = this.chunkedtokens.get(pointer);
 		}
-		//create a new ChunkedSentence object
+		
+		//all tokens: 
+		//number:
+		//if(token.matches(".*?\\d+$")){ //ends with a number
+		if(NumericalHandler.isNumerical(token)){
+				chunk = getNextNumerics();//pointer++;
+				if(this.unassignedmodifier != null){
+					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
+				}
+				return chunk;
+		}
+		
+		if(token.indexOf("×")>0 && token.length()>0){
+			//token: 4-9cm×usually15-25mm
+			String[] dim = token.split("×");
+			boolean isArea = true;
+			int c = 0;
+			for(int i = 0; i<dim.length; i++){
+				isArea = dim[i].matches(".*?\\d.*") && isArea;
+				c++;
+			}
+			if(isArea && c>=2){
+				token = token.replaceAll("×[^0-9]*", " × ").replaceAll("(?<=[^a-z])(?=[a-z])", " ").replaceAll("(?<=[a-z])(?=[^a-z])", " ").replaceAll("\\s+", " ").trim();
+				chunk = new ChunkArea(token);
+				pointer++;
+				return chunk;
+			}
+		}
+
+		if(token.indexOf("=")>0){//chromosome count 2n=, FNA specific
+			String l = "";
+			String t= this.chunkedtokens.get(pointer++);
+			while(t.indexOf("SG")<0){
+				l +=t+" ";
+				t= this.chunkedtokens.get(pointer++);				
+			}
+			l = l.replaceFirst("\\d[xn]=", "").trim();
+			chunk = new ChunkChrom(l);
+			return chunk;
+		}
+		//create a new ChunkedSentence object for bracketed text 
 		if(token.startsWith("-LRB-/-LRB-")){
 			ArrayList<String> tokens = new ArrayList<String>();
 			String text = "";
-			if(token.indexOf("-RRB-/-RRB-")<0){
+			if(token.indexOf("-RRB-/-RRB-")<0+0){
 				String t = this.chunkedtokens.get(++this.pointer);
-				while(t.endsWith("-RRB-/-RRB-")){
+				while(!t.endsWith("-RRB-/-RRB-")){
 					tokens.add(t);
 					text += t+ " ";
 					t = this.chunkedtokens.get(++this.pointer);
 				}
 			}
-			this.pointer++;
 			text=text.trim();
-			if(!text.matches(".*?[,;\\.:]$")){
-				text +=" .";
-				tokens.add(".");
-			}
-			Chunk c = new ChunkBracketed(text);
-			c.setChunkedTokens(tokens);
-			return c;
+			if(text.length()>0){ //when -LRB- and -RRB- are on the same line, text="" for example, as in -LRB-/-LRB-3--RRB-/-RRB-5-{merous} (3-)5-{merous}
+				this.pointer++;
+				if(!text.matches(".*?[,;\\.:]$")){
+					text +=" .";
+					tokens.add(".");
+				}
+				Chunk c = new ChunkBracketed(text);
+				c.setChunkedTokens(tokens);
+				return c;
+			} //else, continue on
 		}
 		//create a new ChunkedSentence object
 		if(token.startsWith("s[")){
@@ -628,19 +671,6 @@ public class ChunkedSentence {
 			}
 		}
 		
-
-		//all tokens: 
-		//number:
-		//if(token.matches(".*?\\d+$")){ //ends with a number
-		if(NumericalHandler.isNumerical(token)){
-				chunk = getNextNumerics();//pointer++;
-				if(this.unassignedmodifier != null){
-					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
-				}
-				return chunk;
-		}
-		
-		
 		//OR:
 		if(token.compareTo("or") == 0){
 			this.pointer++;
@@ -695,6 +725,7 @@ public class ChunkedSentence {
 			if(token.length()==0){
 				continue;
 			}
+			token = NumericalHandler.originalNumForm(token); //turn -LRB-/-LRB-2
 			if(token.matches("^\\w+\\[.*")){ //modifier +  a chunk: m[usually] n[size[{shorter}] constraint[than or {equaling} (phyllaries)]]
 				//if(scs.matches("\\w{2,}\\[.*") && token.matches("\\w{2,}\\[.*")){ // scs: position[{adaxial}] token: pubescence[{pubescence~list~glabrous~or~villous}]
 				if(scs.matches(".*?\\w{2,}\\[.*")){
@@ -745,15 +776,20 @@ public class ChunkedSentence {
 			}
 			
 			if(token.matches(".*?"+NumericalHandler.numberpattern+"$")){ //0. sentence ends with a number, the . is not separated by a space
-				pointer=i+0;
+				pointer=i;
 				chunk = getNextNumerics();
-				if(scs.length()>0){
-					scs = scs.replaceFirst("^\\]", "").trim()+"] "+chunk.toString();
+				if(chunk!=null){
+					if(scs.length()>0){
+						scs = scs.replaceFirst("^\\]", "").trim()+"] "+chunk.toString();
+					}else{
+						scs = chunk.toString();
+					}
+					chunk.setText(scs);
+					return chunk;
 				}else{
-					scs = chunk.toString();
+					pointer++;
+					return chunk; //return null, skip this token: parsing failure
 				}
-				chunk.setText(scs);
-				return chunk;
 			}
 
 			
@@ -767,7 +803,7 @@ public class ChunkedSentence {
 						scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 						return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
 					}else{
-						if(scs.indexOf("m[")>=0){
+						if(scs.indexOf("m[")>=0+0){
 							this.unassignedmodifier = "{"+scs.trim().replaceAll("(m\\[|\\])", "").replaceAll("\\s+", "} {")+"}";
 						}
 						if(this.pastpointers.contains(i+"")){
@@ -935,7 +971,7 @@ public class ChunkedSentence {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
 		t = NumericalHandler.originalNumForm(t);
-		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-("+this.counts+")\\b|$)")){ //ends with a number
+		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+this.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
 			if(pointer==this.chunkedtokens.size()){
