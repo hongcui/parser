@@ -41,7 +41,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String tableprefix = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean debug = false;
+	private boolean debug = true;
 	/**
 	 * 
 	 */
@@ -219,6 +219,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							
 							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
+							//System.out.print("["+src+"]:");
 							if(this.debug){
 								System.out.println();
 								System.out.println(i+"["+src+"]: "+cs.toString());
@@ -350,8 +351,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String text = "2 n = 24 , 40 , [ 16 , 32 ] .";
 		//String text = "blades broadly elliptic or ovate to lanceolate , 6 – 12 ( – 18 + ) cm × 30 – 80 ( – 120 + ) mm , both faces sparsely pilose to hirsute .";
 		//String text = "blades either linear to lanceolate and not lobed , 10 – 20 ( – 38 ) cm × 6 – 10 mm , or oblanceolate to oblong and pinnately lobed , 10 – 20 cm × 25 – 50 mm , or both ;";
-		String text = " often 2 - , 3 - , or 5 - ribbed ;";
-		StanfordParser.normalizeSpacesRoundNumbers(text);
+		//String text = " often 2 - , 3 - , or 5 - ribbed ;";
+		//StanfordParser.normalizeSpacesRoundNumbers(text);
 		
 		String posedfile = "FNAv19posedsentences.txt";
 		String parsedfile = "FNAv19parsedsentences.txt";

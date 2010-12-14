@@ -226,8 +226,11 @@ public class Utilities {
 	}
 	
 	public static boolean isAdv(String word, ArrayList<String> adverbs) {
-		word = word.replaceAll("[<>{}\\]\\[]", "").trim();
+		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
 		if(word.matches("not")){
+			return true;
+		}
+		if(word.compareTo("±")==0){
 			return true;
 		}
 		if(!word.matches(".*?[a-z]+.*")){
@@ -242,9 +245,11 @@ public class Utilities {
 		if(word.compareTo("moreorless")==0){
 			return true;
 		}
+		
+
 		WordNetWrapper wnw = new WordNetWrapper(word);
 		String pos = wnw.mostlikelyPOS();
-		if(pos != null){
+		if(pos != null && pos.length()>0){
 			if(pos.compareTo("adv") == 0){
 				adverbs.add(word);
 				return true;
@@ -266,6 +271,7 @@ public class Utilities {
 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash) {
 		
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-").replaceAll(" ", "").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String ch = characterhash.get(w);
 		if(ch != null){
@@ -281,7 +287,7 @@ public class Utilities {
 			}
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select category from fnaglossaryfixed where term ='"+w+"'");
+				ResultSet rs = stmt.executeQuery("select distinct category from fnaglossaryfixed where term = '"+w+"' or term ='_"+w+"'");
 				while(rs.next()){
 					String cat = rs.getString("category");
 					if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
