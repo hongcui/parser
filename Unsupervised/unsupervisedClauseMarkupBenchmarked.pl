@@ -498,7 +498,7 @@ $test->execute() or die $test->errstr."\n";
 
 my ($create, $del);
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence varchar(2000), originalsent varchar(2000), lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_sentence');
 $del->execute();
@@ -778,23 +778,25 @@ sub markknown{
 		}
 	}#else{ #3/21/09 psuedo/inter/area
 		#add prefix to $word
-		$spwords = "(".escape(singularpluralvariations($word)).")";
-		$pattern = "^(".$PREFIX.")".$spwords."\$"; #$word=shrubs; $pattern = (pre|sub)shrubs
-		#print "$pattern\n";
-		$sth = $dbh->prepare("select word from ".$prefix."_unknownwords where word rlike '$pattern' and flag = 'unknown'");
-		$sth->execute() or print STDOUT "$sth->errstr\n";
-		while(($newword) = $sth->fetchrow_array()){
-			$sign += processnewword($newword, $pos,"*", $table, $word, 0);
-			print "by adding a prefix to $word, know $newword is a [$pos] \n" if $debug;
-		}
-		#word_$spwords
-		$spwords = "(".escape(singularpluralvariations($word)).")";
-		$pattern = ".*_".$spwords."\$";
-		$sth = $dbh->prepare("select word from ".$prefix."_unknownwords where word rlike '$pattern' and flag = 'unknown'");
-		$sth->execute() or print STDOUT "$sth->errstr\n";
-		while(($newword) = $sth->fetchrow_array()){
-			$sign += processnewword($newword, $pos,"*", $table, $word, 0);
-			print "by adding a prefix word to $word, know $newword is a [$pos] \n" if $debug;
+		if($word=~/^[a-z]/){
+			$spwords = "(".escape(singularpluralvariations($word)).")";
+			$pattern = "^(".$PREFIX.")".$spwords."\$"; #$word=shrubs; $pattern = (pre|sub)shrubs
+			#print "$pattern\n";
+			$sth = $dbh->prepare("select word from ".$prefix."_unknownwords where word rlike '$pattern' and flag = 'unknown'");
+			$sth->execute() or print STDOUT "$sth->errstr\n";
+			while(($newword) = $sth->fetchrow_array()){
+				$sign += processnewword($newword, $pos,"*", $table, $word, 0);
+				print "by adding a prefix to $word, know $newword is a [$pos] \n" if $debug;
+			}
+			#word_$spwords
+			$spwords = "(".escape(singularpluralvariations($word)).")";
+			$pattern = ".*_".$spwords."\$";
+			$sth = $dbh->prepare("select word from ".$prefix."_unknownwords where word rlike '$pattern' and flag = 'unknown'");
+			$sth->execute() or print STDOUT "$sth->errstr\n";
+			while(($newword) = $sth->fetchrow_array()){
+				$sign += processnewword($newword, $pos,"*", $table, $word, 0);
+				print "by adding a prefix word to $word, know $newword is a [$pos] \n" if $debug;
+			}
 		}
 	#}
 	return $sign;
@@ -3296,14 +3298,18 @@ sub separatemodifiertag{
 ###########  normalize tags                      ########################
 ##############################################################################
 #turn all tags and modifiers to singular form
+#remove <N><B><M> tags from sentence
  
 sub normalizetags{
 	my ($sth, $sth1, $sentid, $tag, $modifier, $bracted, $sentence);
-	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag))");
+	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence)");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
  	while(($sentid, $sentence, $tag, $modifier) = $sth->fetchrow_array()){
-		$tag = normalizethis($tag);
- 		$modifier = normalizethis($modifier);
+ 		if(isdefined($tag) and $tag ne "ignore"){
+			$tag = normalizethis($tag);
+			$modifier = normalizethis($modifier);
+ 		}
+ 		$sentence =~ s#</?[NBM]>##g; 				
  		if($tag =~/\w/){
  			tagsentwmt($sentid, $sentence, $modifier, $tag, "normalizetags");
  		}else{
@@ -3873,11 +3879,11 @@ sub wrapupmarkup{
   $sth1->execute();
   while(($id1, $lead) = $sth1->fetchrow_array()){
 	  if($checked=~/#$id1#/){next;} 
-      @words = split(/\s+/, $lead);
+      @words = split(/\s+/, escape($lead));
       @words1 = @words; #words in lead 1
       $words[@words-1] = "[^[:space:]]+\$"; #create the pattern to find other sentences sharing the same subject with different boundary words 
       $match = join(" ", @words);
-      $sth = $dbh->prepare("Select distinct lead from ".$prefix."_sentence where lead regexp \"^".escape($match)."\" and isnull(tag)" );
+      $sth = $dbh->prepare("Select distinct lead from ".$prefix."_sentence where lead regexp \"^".$match."\" and isnull(tag)" );
       $sth->execute();
       if($sth->rows > 1){ # exist x y and x z, take x as the tag
           $match =~ s# \[\^\[.*$##; #shared
@@ -4679,6 +4685,7 @@ sub doit{
 #return true if lead is followed by a N without any proposition in between
 sub followedbyn{
 	my ($sentence, $lead) = @_;
+	$lead = escape($lead);
 	$sentence =~ s#^$lead##;
 	my $word;
 	my $knownnouns = "";
@@ -5666,6 +5673,7 @@ sub populateunknownwordstable{
 		#if(($word !~ /\w/)||($word =~ /_/ && $word !~/\b($FORBIDDEN)\b/ && $word !~ /\b($stop)\b/)){ #pistillate_zone
 		if($word !~ /\w/ || $word=~/ous$/){
 			$word = "\\".$word if $word eq "'";
+			$word = "\\".$word if $word eq "\\";
 			print $word."\n";
 			my $sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', '$word')");
 			$sth->execute() or print STDOUT $sth->errstr."\n";
@@ -5731,7 +5739,7 @@ sub tokenize{
     if($mode ne "all"){
     	$temp1 = length($sentence); #3/11/09
     	$temp2 = $temp1;#
-    	if($sentence =~ / [,:;\.]/){ 
+    	if($sentence =~ / [,:;\.\[(]/){ 
 			$temp1 = $-[0];
 			#$index = $temp1;#
 		}
