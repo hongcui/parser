@@ -3305,7 +3305,7 @@ sub normalizetags{
 	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
  	while(($sentid, $sentence, $tag, $modifier) = $sth->fetchrow_array()){
- 		if(isdefined($tag) and $tag ne "ignore"){
+ 		if(defined($tag) and $tag ne "ignore"){
 			$tag = normalizethis($tag);
 			$modifier = normalizethis($modifier);
  		}
