@@ -366,7 +366,7 @@ if ($lm eq "plain"){
 }
 
 print stdout "::::::::::::::::::::::::Final step: normalize tag and modifiers: \n";
-normalizetags(); ##normalization is the last step : turn all tags and modifiers to singular form
+normalizetags(); ##normalization is the last step : turn all tags and modifiers to singular form, remove <NBM> tags from sentence
 #resolvesentencetags(); #for future
 
 print stdout "Done:\n";
@@ -3302,7 +3302,7 @@ sub separatemodifiertag{
  
 sub normalizetags{
 	my ($sth, $sth1, $sentid, $tag, $modifier, $bracted, $sentence);
-	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence)");
+	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
  	while(($sentid, $sentence, $tag, $modifier) = $sth->fetchrow_array()){
  		if(isdefined($tag) and $tag ne "ignore"){
