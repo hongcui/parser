@@ -334,32 +334,61 @@ public class StateMatrix {
 		return clusters;
 	}
 	
-	private void saveClusters(Collection clusters){
+	private void saveClusters(Collection<Set<State>> clusters){
 		int gcount = 1;
-		Iterator<Set> sets = clusters.iterator();
+		Iterator<Set<State>> sets = clusters.iterator();
 		while(sets.hasNext()){
-			Set states = (Set)sets.next();
-			Iterator<State> sit = states.iterator();
-			StringBuffer statestring = new StringBuffer();
-			while(sit.hasNext()){
-				State s = sit.next();
-				statestring.append("'"+s.getName()+"', ");				
+			Set<State> states = (Set<State>)sets.next();
+			String stategroup = formGroup(states);
+			if(stategroup != null){
+				try{
+					Statement stmt = conn.createStatement();
+					String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
+					this.tableprefix+"_terms where term in ("+stategroup+
+					"))";
+					stmt.execute(q);
+					stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				gcount++;	
 			}
-			String stategroup = statestring.toString().replaceFirst(", $", "");
+		}
+			
+	}
+
+	/**
+	 * If all states are in the glossary, ignore this set.
+	 * Otherwise, form a group
+	 * @param states
+	 * @return
+	 */
+	private String formGroup(Set<State> states) {
+		boolean keep = true;
+		Iterator<State> sit = states.iterator();
+		StringBuffer statestring = new StringBuffer();
+		while(sit.hasNext()){
+			State s = sit.next();
+			String term = s.getName();
+			statestring.append("'"+term+"', ");		
+			ArrayList<String> chars = new ArrayList<String> ();
 			try{
 				Statement stmt = conn.createStatement();
-				String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
-				this.tableprefix+"_terms where term in ("+stategroup+
-				"))";
-				stmt.execute(q);
-				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupId=0");
-
+				ResultSet rs = stmt.executeQuery("select distinct category from fnaglossaryfixed where term ='"+term+"'");
+				while(rs.next()){
+					String chara = rs.getString("category");
+					chars.add(chara);
+				}
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-			gcount++;	
+			if(chars.size()==0){
+				keep = false;
+				break;
+			}					
 		}
-			
+		String stategroup = statestring.toString().replaceFirst(", $", "");		
+		return keep? stategroup : null;
 	}
 	
 	public String toString(){
