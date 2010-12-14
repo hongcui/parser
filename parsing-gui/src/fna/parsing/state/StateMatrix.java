@@ -352,7 +352,8 @@ public class StateMatrix {
 				this.tableprefix+"_terms where term in ("+stategroup+
 				"))";
 				stmt.execute(q);
-				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where groupId=0");
+				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupId=0");
+
 			}catch(Exception e){
 				e.printStackTrace();
 			}
