@@ -528,11 +528,13 @@ public class ChunkedSentence {
 			pointer++;
 			token = this.chunkedtokens.get(pointer);
 		}
+		token = token.compareTo("±")==0? "moreorless" : token;
+		token = token.matches(".*?(\\d|-LRB-|-RRB-).*")? NumericalHandler.originalNumForm(token) : token;
 		
 		//all tokens: 
 		//number:
 		//if(token.matches(".*?\\d+$")){ //ends with a number
-		if(NumericalHandler.isNumerical(token)){
+		if(NumericalHandler.isNumerical(token) || token.matches("l\\s*\\W\\s*w")){
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
 					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
@@ -541,7 +543,7 @@ public class ChunkedSentence {
 		}
 		
 		if(token.indexOf("×")>0 && token.length()>0){
-			//token: 4-9cm×usually15-25mm
+			//token: 4-9cm×usually15-25mm			
 			String[] dim = token.split("×");
 			boolean isArea = true;
 			int c = 0;
@@ -722,18 +724,24 @@ public class ChunkedSentence {
 		}
 		for(int i = this.pointer; i<this.chunkedtokens.size(); i++){
 			token = this.chunkedtokens.get(i);
+			token = token.matches(".*?(\\d|-LRB-|-RRB-).*")? NumericalHandler.originalNumForm(token):token;
 			if(token.length()==0){
 				continue;
 			}
-			token = NumericalHandler.originalNumForm(token); //turn -LRB-/-LRB-2
+			//token = NumericalHandler.originalNumForm(token); //turn -LRB-/-LRB-2
 			if(token.matches("^\\w+\\[.*")){ //modifier +  a chunk: m[usually] n[size[{shorter}] constraint[than or {equaling} (phyllaries)]]
 				//if(scs.matches("\\w{2,}\\[.*") && token.matches("\\w{2,}\\[.*")){ // scs: position[{adaxial}] token: pubescence[{pubescence~list~glabrous~or~villous}]
 				if(scs.matches(".*?\\w{2,}\\[.*")){
 					pointer = i;
 					return new ChunkSimpleCharacterState("a["+scs.trim()+"]]"); 
+				}else if(scs.matches("o\\[\\w+\\s*")){
+					pointer = i;
+					scs = scs.replaceAll("o\\[", "o[(").trim()+")]";
+					return new ChunkNonSubjectOrgan("u["+scs+"]");
 				}else{
 					String type = checkType(i); //changed from pointer to i
 					token = this.chunkedtokens.get(i);
+					token = token.matches(".*?(\\d|-LRB-|-RRB-).*")? NumericalHandler.originalNumForm(token):token;
 					scs = scs.trim().length()>0? scs.trim()+"] " : ""; //modifier 
 					String start = token.substring(0, token.indexOf("[")+1); //becomes n[m[usually] size[{shorter}] constraint[than or {equaling} (phyllaries)]]
 					String end = token.replace(start, "");
@@ -776,25 +784,31 @@ public class ChunkedSentence {
 			}
 			
 			if(token.matches(".*?"+NumericalHandler.numberpattern+"$")){ //0. sentence ends with a number, the . is not separated by a space
-				pointer=i;
-				chunk = getNextNumerics();
-				if(chunk!=null){
-					if(scs.length()>0){
-						scs = scs.replaceFirst("^\\]", "").trim()+"] "+chunk.toString();
-					}else{
-						scs = chunk.toString();
-					}
-					chunk.setText(scs);
-					return chunk;
+				if(scs.matches(".*?\\w{2,}\\[.*")){//must have character[
+					pointer=i;
+					scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
+					return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
 				}else{
-					pointer++;
-					return chunk; //return null, skip this token: parsing failure
+					pointer=i;
+					chunk = getNextNumerics();
+					if(chunk!=null){
+						if(scs.length()>0){
+							scs = scs.replaceFirst("^\\]", "").trim()+"] "+chunk.toString();
+						}else{
+							scs = chunk.toString();
+						}
+						chunk.setText(scs);
+						return chunk;
+					}else{
+						pointer++;
+						return chunk; //return null, skip this token: parsing failure
+					}
 				}
 			}
 
 			
 			//add to a state chunk until a) a preposition b) a punct mark or c)another state is encountered
-			if(role.compareTo("<") !=0 && true){
+			if(role.compareTo("<") !=0+0 && true){
 				if(Utilities.isAdv(token, adverbs)){
 					scs = scs.trim().length()>0? scs.trim()+ "] m["+token+" " : "m["+token;
 				}else if(token.matches(".*[,;:\\.\\[].*") || token.matches("\\b("+this.prepositions+"|or|and)\\b") || token.compareTo("-LRB-/-LRB-")==0){
@@ -970,7 +984,7 @@ public class ChunkedSentence {
 	private Chunk getNextNumerics() {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
-		t = NumericalHandler.originalNumForm(t);
+		t = NumericalHandler.originalNumForm(t).replaceAll("\\?", "");		
 		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+this.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
@@ -978,15 +992,15 @@ public class ChunkedSentence {
 				return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
 			}
 			t = this.chunkedtokens.get(this.pointer);
-			if(t.matches("^[{(]*("+this.units+")\\b.*?")){
+			if(t.matches("^[{<(]*("+this.units+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
-				return new ChunkValue(numerics.replaceAll("[{()}]", "").trim());
+				return new ChunkValue(numerics.replaceAll("[{(<>)}]", "").trim());
 			}
-			if(t.matches("^[{(]*("+this.times+")\\b.*?")){
+			if(t.matches("^[{<(]*("+this.times+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
-				numerics = numerics.replaceAll("[{()}]", "");
+				numerics = numerics.replaceAll("[{(<>)}]", "");
 				Chunk c = nextChunk();
 				numerics +=c.toString();
 				if(c instanceof ChunkTHANC){
@@ -1001,6 +1015,14 @@ public class ChunkedSentence {
 				return new ChunkBasedCount(numerics.replaceAll("[<>]", "").trim());
 			}*/
 			return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
+		}
+		
+		if(t.matches("l\\s*\\W\\s*w")){
+			while(!t.matches(".*?\\d.*")){
+				t = this.chunkedtokens.get(++this.pointer);
+			}
+			this.pointer++;
+			return new ChunkRatio(NumericalHandler.originalNumForm(t).trim());
 		}
 		return null;
 	}

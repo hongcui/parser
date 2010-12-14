@@ -253,7 +253,7 @@ public class POSTagger4StanfordParser {
 	private String[] normalizeArea(String text){
 			String[] result = new String[2];
 			String text2= text;
-			Pattern p = Pattern.compile("(.*?)([\\d()+-]+ \\{[cmd]?m\\}×\\S*\\s*[\\d()+-]+ \\{[cmd]?m\\}×?(\\S*\\s*[\\d()+-]+ \\{[cmd]?m\\})?)(.*)");
+			Pattern p = Pattern.compile("(.*?)([\\d\\.()+-]+ \\{[cmd]?m\\}×\\S*\\s*[\\d\\.()+-]+ \\{[cmd]?m\\}×?(\\S*\\s*[\\d\\.()+-]+ \\{[cmd]?m\\})?)(.*)");
 			Matcher m = p.matcher(text);
 			while(m.matches()){
 				text = m.group(1)+m.group(2).replaceAll("[ \\{\\}]", "")+ m.group(4);
