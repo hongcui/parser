@@ -3309,7 +3309,9 @@ sub normalizetags{
 			$tag = normalizethis($tag);
 			$modifier = normalizethis($modifier);
  		}
- 		$sentence =~ s#</?[NBM]>##g; 				
+ 		$sentence =~ s#</?[NBM]>##g; 
+ 		$sth1 = $dbh->prepare("update ".$prefix."_sentence set sentence ='$sentence' where sentid =".$sentid);
+		$sth1->execute() or print STDOUT "$sth1->errstr\n"; 						
  		if($tag =~/\w/){
  			tagsentwmt($sentid, $sentence, $modifier, $tag, "normalizetags");
  		}else{
