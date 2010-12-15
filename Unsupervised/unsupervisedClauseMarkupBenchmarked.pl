@@ -367,6 +367,7 @@ if ($lm eq "plain"){
 
 print stdout "::::::::::::::::::::::::Final step: normalize tag and modifiers: \n";
 normalizetags(); ##normalization is the last step : turn all tags and modifiers to singular form, remove <NBM> tags from sentence
+prepareWordPos4Parser(); #12/15/10
 #resolvesentencetags(); #for future
 
 print stdout "Done:\n";
@@ -388,6 +389,19 @@ foreach (keys(%WNPOSRECORDS)){
 	print "$_ => $WNPOSRECORDS{$_}\n"; 
 }
 print stdout "wordnet counts: $t $notin $multi\n";
+
+##################################################################################################
+########### create wordpos4parser by copying from wordpos but leaving out some preloaded terms ###
+##################################################################################################
+
+sub prepareWordPos4Parser{
+	my $toremove = $PROPERNOUNS."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS;
+	$toremove =~ s#\|#","#g;
+	$toremove = "\"".$toremove+"\"";
+	my $stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.")";
+	$sth2 = $dbh->prepare($stmt2);
+	$sth2->execute() or die $test->errstr."\n";
+}
 
 #old subroutines
 ##print stdout "Handling 'and' and 'or':\n";
