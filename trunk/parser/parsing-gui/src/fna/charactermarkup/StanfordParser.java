@@ -41,7 +41,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String tableprefix = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean debug = true;
+	private boolean debug = false;
 	/**
 	 * 
 	 */
