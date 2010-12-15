@@ -43,6 +43,9 @@ public class Remove extends DataCleaner {
 					Element e = eit.next();
 					Element p = e.getParentElement();
 					p.removeContent(e);
+					if(p.getChildren().size()==0){
+						p.detach();
+					}
 				}
 			}
 		}catch(Exception e){
@@ -62,7 +65,16 @@ public class Remove extends DataCleaner {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		String sourcedir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta";
+		ArrayList<String> sourceElements = new ArrayList<String>();
+		sourceElements.add("ecological_info/couplet");
+		sourceElements.add("ecological_info/number_of_infrataxa");
+		String outputElement = null;
+		String outputdir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-0";
+		Remove rm = new Remove(sourcedir, sourceElements, outputElement, outputdir);
+		rm.collectSourceContent();
+		rm.collectLegalValues();
+		rm.cleanFiles();
 
 	}
 

@@ -46,7 +46,8 @@ public class CleanTime extends DataCleaner{
 					Iterator<String> vit = values.iterator();
 					while(vit.hasNext()){//if values is empty, no replacement is done, but the original element is removed
 						Element ce = new Element(this.outputelement);
-						ce.setText(vit.next());
+						String text = vit.next();
+						ce.setText(text);
 						p.addContent(ce);
 					}
 				}
@@ -63,30 +64,21 @@ public class CleanTime extends DataCleaner{
 	 * ***************************************************************************************
 	 */
 	protected void collectLegalValues(){
-		this.legalvalues.put("jan", "1");
-		this.legalvalues.put("feb", "1");
-		this.legalvalues.put("mar", "1");
-		this.legalvalues.put("apr", "1");
-		this.legalvalues.put("may", "1");
-		this.legalvalues.put("jun", "1");
-		this.legalvalues.put("jul", "1");
-		this.legalvalues.put("aug", "1");
-		this.legalvalues.put("sep", "1");
-		this.legalvalues.put("oct", "1");
-		this.legalvalues.put("nov", "1");
-		this.legalvalues.put("dec", "1");
-		this.legalvalues.put("spring", "1");
-		this.legalvalues.put("summer", "1");
-		this.legalvalues.put("fall", "1");
-		this.legalvalues.put("winter", "1");
-		this.legalvalues.put("year round", "1");
+		this.legalvalues="jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|spring|summer|fall|winter|year round";
 	} 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		String sourcedir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-0";
+		ArrayList<String> sourceElements = new ArrayList<String>();
+		sourceElements.add("ecological_info/flowering_time");
+		String outputElement = "flowering_time";
+		String outputdir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-1";
+		CleanTime ct = new CleanTime(sourcedir, sourceElements, outputElement, outputdir);
+		ct.collectSourceContent();
+		ct.collectLegalValues();
+		ct.cleanFiles();
 	}
 
 }

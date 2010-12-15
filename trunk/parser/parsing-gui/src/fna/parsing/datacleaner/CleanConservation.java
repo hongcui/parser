@@ -41,11 +41,17 @@ public class CleanConservation extends DataCleaner {
 			while(it.hasNext()){
 				String ename = it.next();
 				List<Element> elements = XPath.selectNodes(root, "//"+ename);
+				if(elements.size()==0){
+					conservation.detach();
+				}
 				Iterator<Element> eit = elements.iterator();
 				while(eit.hasNext()){
 					Element e = eit.next();
 					Element p = e.getParentElement();					
 					p.removeContent(e);
+					if(p.getChildren().size()==0){
+						p.detach();
+					}
 					conservation.setText("true");
 				}
 			}
@@ -66,8 +72,15 @@ public class CleanConservation extends DataCleaner {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		String sourcedir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-1";
+		ArrayList<String> sourceElements = new ArrayList<String>();
+		sourceElements.add("ecological_info/conservation");
+		String outputElement = null;
+		String outputdir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-2";
+		CleanConservation ct = new CleanConservation(sourcedir, sourceElements, outputElement, outputdir);
+		ct.collectSourceContent();
+		ct.collectLegalValues();
+		ct.cleanFiles();
 	}
 
 }

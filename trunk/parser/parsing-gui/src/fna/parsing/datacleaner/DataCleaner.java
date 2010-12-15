@@ -5,6 +5,7 @@ package fna.parsing.datacleaner;
 
 import java.util.*;
 import java.io.*;
+import java.util.regex.*;
 
 import org.jdom.Content;
 import org.jdom.Document;
@@ -18,7 +19,7 @@ import fna.parsing.*;
  *
  */
 public abstract class DataCleaner{
-	protected Hashtable<String, String> legalvalues = new Hashtable<String, String>();
+	protected String legalvalues = null;
 	protected ArrayList<String> sourceelements = new ArrayList<String>();
 	protected File outputdir = null;
 	protected File sourcedir = null;
@@ -32,10 +33,10 @@ public abstract class DataCleaner{
 		this.sourcedir = new File(sourcedir);
 		this.sourceelements = sourceElements;
 		this.outputdir = new File(outputdir);
+		if(! this.outputdir.exists()){
+			this.outputdir.mkdir();
+		}
 		this.outputelement = outputElement;
-		collectSourceContent();
-		collectLegalValues();
-		cleanFiles();
 	}
 
 	/**
@@ -91,7 +92,8 @@ public abstract class DataCleaner{
 			Document doc = builder.build(file);
 			Element root = doc.getRootElement();
 			root = clean(root);
-			ParsingUtil.outputXML(root, new File(sourcedir, file.getName()));
+			root.detach();
+			ParsingUtil.outputXML(root, new File(outputdir, file.getName()));
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -106,16 +108,25 @@ public abstract class DataCleaner{
 	 * @return a set of legal values
 	 */
 	protected ArrayList<String> cleanText(String text) {
+		
 		ArrayList<String> values = new ArrayList<String>();
-		text = text.toLowerCase();
-		String[] ws = text.split("\\s+");
-		for(int i = 0; i<ws.length; i++){
-			String v = this.legalvalues.get(ws[i]);
-			if(v!=null){
-				values.add(v);
-			}
+		//text = text.toLowerCase();
+		System.out.println();
+		System.out.print(text+"=========>");
+		text = text.replaceAll("\\.", "PERIOD").replaceAll("\\p{Punct}", "").replaceAll("PERIOD", ".");
+
+		Pattern p = Pattern.compile(".*?\\b("+this.legalvalues+")( |$|\\W)(.*)");
+		Matcher m = p.matcher(text);
+		while(m.matches()){
+			values.add(m.group(1));
+			System.out.print(":"+standardize(m.group(1)));
+			m = p.matcher(m.group(3));
 		}
 		return values;
+	}
+	
+	protected String standardize(String s){
+		return s;
 	}
 
 	/*
