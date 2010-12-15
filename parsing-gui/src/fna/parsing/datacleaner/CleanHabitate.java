@@ -37,10 +37,14 @@ public class CleanHabitate extends DataCleaner{
 					ArrayList<String> values = cleanText(e.getText());
 					Element p = e.getParentElement();
 					p.removeContent(e);
+					if(p.getChildren().size()==0){
+						p.detach();
+					}
 					Iterator<String> vit = values.iterator();
 					while(vit.hasNext()){//if values is empty, no replacement is done, but the original element is removed
 						Element ce = new Element(this.outputelement);
-						ce.setText(vit.next());
+						String text = vit.next();
+						ce.setText(text);
 						p.addContent(ce);
 					}
 				}
@@ -59,12 +63,15 @@ public class CleanHabitate extends DataCleaner{
 	 */
 	protected ArrayList<String> cleanText(String text){
 		ArrayList<String> cleaned = new ArrayList<String>();
+		System.out.print(text+"==================>");
 		if(text.matches("\\d")) return cleaned;
-		text = text.replaceAll("\\(.*?(\\)|$)", "").replaceAll("(^|\\()[^(]?\\)", ""); //remove all words in parenthesis
+		text = text.replaceAll("\\(.*?(\\)|$)", "").replaceAll("(^|\\().*?[^(]?\\)", ""); //remove all words in parenthesis
+		//text = text.replaceAll("[)(]", "");
 		//word by word ellimination
 		boolean changed = false;
 		String word = "";
 		do{
+			changed = false;
 			int i = text.indexOf(' ');
 			if(i<0){
 				word = text;
@@ -78,17 +85,28 @@ public class CleanHabitate extends DataCleaner{
 			if(word.matches("\\b("+ChunkedSentence.prepositions+")\\b")) changed = true;
 			if(!changed) text = word+" "+text;			
 		}while(changed);
+		text = text.replaceFirst("^\\W+", "").replaceFirst("\\W+$", "");
 		cleaned.add(text);
+		System.out.println(text);
 		return cleaned;	
 	}
 
 	protected void collectLegalValues(){ //no need to collect legal values
+		
 	} 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		String sourcedir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-3";
+		ArrayList<String> sourceElements = new ArrayList<String>();
+		sourceElements.add("ecological_info/habitat");
+		String outputElement = "habitat";
+		String outputdir = "X:\\RESEARCH\\Projects\\FNA2010-characterSearch\\19-meta-clean-4";
+		CleanHabitate ct = new CleanHabitate(sourcedir, sourceElements, outputElement, outputdir);
+		ct.collectSourceContent();
+		ct.collectLegalValues();
+		ct.cleanFiles();
 
 	}
 
