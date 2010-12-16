@@ -34,8 +34,9 @@ public class POSTagger4StanfordParser {
 	private ArrayList<String> chunkedtokens = null;
 	private ArrayList<String> charactertokensReversed = null;
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
-	private boolean printList = true;
+	private boolean printList = false;
 	private String tableprefix = null;
+
 	
 
 	/**
@@ -76,6 +77,9 @@ public class POSTagger4StanfordParser {
 			}
 			lookupCharacters(str);//populate charactertokens
 	        if(str.indexOf(" to ")>=0 ||str.indexOf(" or ")>=0){
+	        	if(this.printList){
+					System.out.println(str);
+				}
 	        	str = normalizeCharacterLists(); //a set of states of the same character connected by ,/to/or => {color-blue-to-red}
 	        }
 	        if(str.matches(".*? as\\s+[\\w{}<>]+\\s+as .*")){
@@ -93,8 +97,6 @@ public class POSTagger4StanfordParser {
 			try{
 				Statement stmt = conn.createStatement();
 				Statement stmt1 = conn.createStatement();
-				Statement stmt2 = conn.createStatement();
-				Statement stmt3 = conn.createStatement();
 				String strcp2 = str;
 				
 				String strnum = null;
@@ -195,7 +197,7 @@ public class POSTagger4StanfordParser {
 	        	   word = word.replaceAll("[<>{}]", "").trim();
 	        	   String p = "";
 	        	   if(word.length()>0 && !word.matches("\\W") && !word.matches("("+ChunkedSentence.prepositions+")") &&!word.matches("("+ChunkedSentence.stop+")")){
-		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_wordpos where word='"+word+"'");
+		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_wordpos4parser where word='"+word+"'");
 		       		   if(rs1.next()){
 		       			   p = rs1.getString("pos");
 		       		   }
@@ -203,8 +205,10 @@ public class POSTagger4StanfordParser {
 	       		   
 	        	   if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
 	        		   sb.append(word+"/RB ");
-	        	   //}else if(word.endsWith("ing")){
-	        		//   sb.append(word+" ");
+	        	   }else if(word.compareTo("throughout")==0 && tokens[i+1].matches("(,|or)")){
+	        		   sb.append(word+"/RB ");
+	        	   }else if(word.compareTo("at-least")==0){
+	        		   sb.append(word+"/RB ");
 	        	   }else if(word.matches("\\d+[cmd]?m\\d+[cmd]?m")){ //area turned into 32cm35mm
 	        		   sb.append(word+"/CC ");
 	        	   }else if(word.matches("("+ChunkedSentence.units+")")){
@@ -318,13 +322,17 @@ public class POSTagger4StanfordParser {
 			Iterator<String> it = amb.iterator();
 			while(it.hasNext()){
 				int i = Integer.parseInt(it.next());
-				Pattern p = Pattern.compile("("+this.charactertokensReversed.get(i).replaceAll(Utilities.or, "|")+")");
-				Matcher m = p.matcher(lastSaved(saved, i));
-				if(m.matches()){
+				Pattern p = Pattern.compile("("+this.charactertokensReversed.get(i)+"|"+this.charactertokensReversed.get(i).replaceAll(Utilities.or, "|")+")");
+				String tl = lastSaved(saved, i);
+				Matcher m = p.matcher(tl);
+				//if(m.matches()){
+				if(m.find()){
 					this.charactertokensReversed.set(i, m.group(1));
 				}else{
-					m = p.matcher(nextSaved(saved, i));
-					if(m.matches()){
+					String tn = nextSaved(saved, i);
+					m = p.matcher(tn);
+					//if(m.matches()){
+					if(m.find()){
 						this.charactertokensReversed.set(i, m.group(1));
 					}
 				}
@@ -378,7 +386,7 @@ public class POSTagger4StanfordParser {
 		//pattern match: collect state one by one
 		int base = 0;
 		//Pattern pt = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([a-z-]+ )+([@,;\\.] )+\\s*)(([a-z-]+ )*(\\4)+[@,;\\.%\\[\\]\\(\\)#].*)");//
-		Pattern pt = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([a-z-]+ )+([@,;\\.] )+\\s*)(([a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
+		Pattern pt = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
 		Matcher mt = pt.matcher(list);
 		while(mt.matches()){
 			int start = (mt.group(1).trim()+" a").trim().split("\\s+").length+base-1; //"".split(" ") == 1
@@ -415,7 +423,7 @@ public class POSTagger4StanfordParser {
 				t = t.replaceFirst("~$", "}")+" ";
 				result +=t;
 				if(this.printList){
-					System.out.println(t);
+					System.out.println(">>>"+t);
 				}
 			}
 			base = end;
@@ -458,7 +466,7 @@ public class POSTagger4StanfordParser {
 		// TODO Auto-generated method stub
 		//File posedfile = new File(posedfile); 
 		//File parsedfile = new File("");
-		String database = "markedupdatasets";
+		String database = "fnav19_benchmark";
 		String tableprefix = "fnav19";
 		String POSTaggedSentence="POSedSentence";
 		try{
@@ -466,10 +474,10 @@ public class POSTagger4StanfordParser {
 				Class.forName("com.mysql.jdbc.Driver");
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
-				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists "+tableprefix+"_"+POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				stmt.execute("delete from "+tableprefix+"_"+POSTaggedSentence);
-				stmt.close();
+				//Statement stmt = conn.createStatement();
+				//stmt.execute("create table if not exists "+tableprefix+"_"+POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				//stmt.execute("delete from "+tableprefix+"_"+POSTaggedSentence);
+				//stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -478,9 +486,17 @@ public class POSTagger4StanfordParser {
 		
 		//String str="<Cypselae> {tan} , {subcylindric} , {subterete} to 5-{angled} , 8–10 {mm} , {indistinctly} 8–10-{ribbed}";
 		//String src="364.txt-15";
-		String str="{often} 2- , 3- , or 5-{ribbed}";
-		String src="625.txt-16";
-		tagger.POSTag(str, src);
+		//String str="{often} 2- , 3- , or 5-{ribbed}";
+		//String src="625.txt-16";
+		//String str = "<heads> in {paniculiform} arrays .";
+		//String src = "10.txt-4";
+		//String str = "<{middle}> <phyllaries> {acuminate} at <apex> with <point> 22 – 38 {mm} and <{spine}> <tip> 6 – 9 {mm} , or in some {cultivated} {forms} {broadly} {obtuse} to {truncate} and {mucronate} with or without <{spine}> <tip> 1 – 2 {mm} , {distal} <margins> with or without {indistinct} {yellowish} <margins> .";
+		//String src = "41.txt-1";
+		//String str = " <outer> 5 – 6 {lance-ovate} to {lanceolate} , 4 – 7 {mm} , {basally} {cartilaginous} , {distally} {herbaceous} , <inner> 8 + {lance-linear} to {linear} , 6 – 12 {mm} , {herbaceous} , all {usually} with some <{gland}>-{tipped} <hairs> 0 . 5 – 0 . 8 {mm} on <margins> near <bases> or on {abaxial} <faces> toward <tips> .";
+		//String src = "273.txt-6";
+		String str = "<stems> {usually} 1 , {branched} {distally} or {openly} so throughout , {leafy} , {glabrous} or {thinly} {arachnoid-tomentose} .";
+		String src = "157.txt-1";
+		System.out.println(tagger.POSTag(str, src));
 	}
 
 }
