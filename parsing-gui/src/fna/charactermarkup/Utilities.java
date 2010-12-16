@@ -227,7 +227,10 @@ public class Utilities {
 	
 	public static boolean isAdv(String word, ArrayList<String> adverbs) {
 		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
-		if(word.matches("not")){
+		if(word.matches("(not|at-least|throughout)")){
+			return true;
+		}
+		if(word.compareTo("moreorless")==0){
 			return true;
 		}
 		if(word.compareTo("±")==0){
@@ -242,9 +245,7 @@ public class Utilities {
 		if(adverbs.contains(word)){
 			return true;
 		}
-		if(word.compareTo("moreorless")==0){
-			return true;
-		}
+		
 		
 
 		WordNetWrapper wnw = new WordNetWrapper(word);
