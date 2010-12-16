@@ -216,6 +216,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								sent = sent+" .";
 							}
 							//sent = normalizeSpacesRoundNumbers(sent);
+							sent = sent.replaceAll("[–—-]", "-");
+							sent = sent.replaceAll("2\\s*n\\s*=", " 2n= ");
+							sent = sent.replaceAll("2\\s*x\\s*=", " 2x= ");
+							sent = sent.replaceAll("n\\s*=", " n= ");
+							sent = sent.replaceAll("x\\s*=", " x= ");
 							
 							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
 							ChunkedSentence cs = ex.chunkIt();
