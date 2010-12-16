@@ -57,9 +57,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				//stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				//stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
-				//stmt.close();
+				stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
+				stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -274,6 +274,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
     }
 
 	public static String normalizeSpacesRoundNumbers(String sent) {
+		sent = sent.replaceAll("at least", "at-least");
 		sent = sent.replaceAll("2\\s*n\\s*=", "2n=");
 		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
 		sent = sent.replaceAll("n\\s*=", "n=");
@@ -360,8 +361,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_parsedsentences.txt";
 		String database = "fnav19_benchmark";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19");
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 	}
 }
