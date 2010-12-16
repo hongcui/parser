@@ -397,10 +397,14 @@ print stdout "wordnet counts: $t $notin $multi\n";
 sub prepareWordPos4Parser{
 	my $toremove = $PROPERNOUNS."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS;
 	$toremove =~ s#\|#","#g;
-	$toremove = "\"".$toremove+"\"";
-	my $stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.")";
+	$toremove = "\"".$toremove."\"";
+	
+	my $stmt2 ="drop table if exists ".$prefix."_wordpos4parser";
+	my $sth2 = $dbh->prepare($stmt2);
+	$sth2->execute() or die $sth2->errstr."\n";
+	$stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.")";
 	$sth2 = $dbh->prepare($stmt2);
-	$sth2->execute() or die $test->errstr."\n";
+	$sth2->execute() or die $sth2->errstr."\n";
 }
 
 #old subroutines
