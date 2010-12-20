@@ -1031,9 +1031,9 @@ public class MainForm {
 		startTransformationButton.setText("Start");
 		
 		/* Type 4 Transformation doesn't do anything other than listing source files : Doubtful*/
-		if (type.equals("type4")){
-			startTransformationButton.setVisible(false);
-		}
+		//if (type.equals("type4")){
+		//	startTransformationButton.setVisible(false);
+		//}
 
 		final Button clearTransformationButton = new Button(composite_3, SWT.NONE);
 		clearTransformationButton.addSelectionListener(new SelectionAdapter() {
@@ -1858,6 +1858,7 @@ public class MainForm {
 		
 		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar, shell.getDisplay());
 		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
+		//VolumeExtractor ve = new WordDocSegmenter(Registry.SourceDirectory, Registry.TargetDirectory, listener);
 		ve.start();
 	}
 	
@@ -1883,8 +1884,8 @@ public class MainForm {
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
-		Type3Transformation preMarkUp = 
-			new Type3Transformation(listener, shell.getDisplay(), 
+		Type3Transformer preMarkUp = 
+			new Type3Transformer(listener, shell.getDisplay(), 
 					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(), new ArrayList());
 		preMarkUp.start();
 	}
