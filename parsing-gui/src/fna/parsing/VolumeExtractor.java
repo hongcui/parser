@@ -48,28 +48,28 @@ import org.jdom.xpath.XPath;
  */
 public class VolumeExtractor extends Thread {
 	
-	private String source;
+	protected String source;
 	//private MainForm mainForm;
-	private static final Logger LOGGER = Logger.getLogger(VolumeExtractor.class);
+	protected static final Logger LOGGER = Logger.getLogger(VolumeExtractor.class);
 	
-	private String target;
+	protected String target;
 	
-	private ProcessListener listener;
+	protected ProcessListener listener;
 
-	private int count;
+	protected int count;
 
 	protected Element treatment;
 
-	private XMLOutputter outputter;
+	protected XMLOutputter outputter;
 	
 	//private String start = "Name"; //TODO: include the following in the configuration file: style names indicating the start of a new treatment
 	//private String syn = "Syn";
 	//private String tribegennamestyle = "smallCaps";
-	private static String start = ".*?(Heading|Name).*"; //starts a treatment
+	protected static String start = ".*?(Heading|Name).*"; //starts a treatment
 	//public static String start = ""; //starts a treatment
-	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
+	protected String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
 	public String tribegennamestyle = "caps";
-	private static String ignorednames = "incertae sedis";
+	protected static String ignorednames = "incertae sedis";
 	
 	public VolumeExtractor(String source, String target, ProcessListener listener) {
 		this.source = source;
@@ -141,35 +141,50 @@ public class VolumeExtractor extends Thread {
 		}
 		String style = att.getValue();
 		System.out.println(style);
-
-		Element se = new Element("style");
-		se.setText(style);
-
-		Element pe = new Element("paragraph");
-		pe.addContent(se);
-
+		
 		// check if a name paragraph reached, assuming a treatment starts with a Name paragraph
 		//if (style.indexOf("Name") >= 0) {
 		if (style.matches(start)){
 			// The code reaches to a name paragraph
 			// output the current treatment file
 			//if (treatment != null) {
-			if(treatment!=null && 
-					treatment.getChild("paragraph").getChild("text") != null && 
+			if(treatment!=null){
+				if(treatment.getChild("paragraph") !=null){
+					if(treatment.getChild("paragraph").getChild("text") != null && 
 					! treatment.getChild("paragraph").getChild("text").getTextTrim().matches(".*?"+ignorednames+".*") &&
 					treatment.getChildren("paragraph").size()>=2){ //must contain style and text, must contain >=2 paragraphs
-				/*It is not possible for a treatment to just have a name
-				 * Heading4 /Taxa incertae sedis from FoC v22, taxa whose placement is uncertain*/
-				
-				output(); // ready to write this treatment out
-				count++;
+						/*It is not possible for a treatment to just have a name
+						 * Heading4 /Taxa incertae sedis from FoC v22, taxa whose placement is uncertain*/
+						
+						output(); // ready to write this treatment out
+						count++;
+					}
+				}else{
+					output(); // ready to write this treatment out
+					count++;
+				}
 			}
 			
 			// logger.info("processing: " + count);
 			// create a new output file
-			treatment = new Element("treatment");
+			createTreatment();
 		}
-		
+		populateTreatment(wp, style);		
+	}
+	
+	protected void createTreatment() {
+		treatment = new Element("treatment");
+	}
+	
+	
+	protected void populateTreatment(Element wp, String style)
+			throws JDOMException {
+		Element se = new Element("style");
+		se.setText(style);
+
+		Element pe = new Element("paragraph");
+		pe.addContent(se);
+
 		// for non-name paragraph, just output the text content
 		// build the <w:t> content
 		//if(style.indexOf("Name") >=0 || style.indexOf("Syn") >=0){

@@ -54,7 +54,7 @@ public class Type4Transformer extends Thread {
 		this.listener = listener;
 		this.dataprefix = dataprefix;
 		/* Remove this hardcoding later*/
-		dataprefix = "plazi_ants";
+		//dataprefix = "plazi_ants";
 	}
 	
 	public Type4Transformer() {
@@ -85,6 +85,7 @@ public class Type4Transformer extends Thread {
 		File[] files =  source.listFiles();
 		Hashtable<String, String> filemapping = new Hashtable<String, String>();
     	//read in taxonX documents from source
+		int number = 0;
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			listener.progress(1);
@@ -125,11 +126,14 @@ public class Type4Transformer extends Thread {
 					//write description text in the target/description folder
 					root.detach();
 					writeTreatment2Transformed(root, fn, count);
+					listener.info((number++)+"", fn+"_"+count+".xml");
 					getDescriptionFrom(root, fn, count);
 					count++;
 				}
 				/* Show on GUI here*/
-			listener.info((f+1)+"", (f+1)+".xml");
+				
+			//listener.info((f+1)+"", (f+1)+".xml");
+				
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -165,7 +169,8 @@ public class Type4Transformer extends Thread {
 						}
 					}
 					
-					writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
+					//writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
+					writeDescription2Descriptions(sb.toString(), fn+"_"+count+".txtp"+i); //record the position for each paragraph.
 					i++;
 				}
 			}

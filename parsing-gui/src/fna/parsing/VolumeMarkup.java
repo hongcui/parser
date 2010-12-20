@@ -30,7 +30,7 @@ public class VolumeMarkup {
 	protected Text perlLog = null;
 	protected String dataPrefix = null;
 	
-	protected String markupMode = "adj"; //TODO: make this configurable
+	protected String markupMode = "plain"; //TODO: make this configurable
 	protected static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
 	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix) {
