@@ -188,8 +188,8 @@ public class MainFormDbAccessor {
 			while (rs.next()) {
 				String sentid = rs.getString("sentid");
 				String tag = rs.getString("tag");
-				String sentence = rs.getString("sentence");
-				
+				//String sentence = rs.getString("sentence");
+				String sentence = rs.getString("originalsent");
 				TableItem item = new TableItem(tagTable, SWT.NONE);
 			    item.setText(new String[]{++i+"", sentid,"", tag, sentence});
 			}
@@ -242,8 +242,8 @@ public class MainFormDbAccessor {
 			while (rs.next()) {
 				String sid = rs.getString("sentid");
 				String tag = rs.getString("tag");
-				String sentence = rs.getString("sentence");
-				
+				//String sentence = rs.getString("sentence");
+				String sentence = rs.getString("originalsent");
 				int start = contextStyledText.getText().length();
 				
 				contextStyledText.append(sentence + "\r\n");
@@ -436,9 +436,10 @@ public class MainFormDbAccessor {
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("insert into wordroles values (?,?)");
+			stmt = conn.prepareStatement("insert into "+tablePrefix+"_wordroles values (?,?)");
 			Set<String> keys = otherTerms.keySet();
 			for(String key : keys) {
 				try {
@@ -659,13 +660,15 @@ public class MainFormDbAccessor {
 		}
 		
 	}
+	
 
 	public void removeDescriptorData(List<String> words) throws SQLException {
 		Connection conn = null;
 		PreparedStatement pstmt = null ;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
 			conn = DriverManager.getConnection(url);
-			pstmt = conn.prepareStatement("delete from wordpos where pos=? and word=?");
+			pstmt = conn.prepareStatement("delete from "+tablePrefix+"_wordpos where pos=? and word=?");
 			for (String word : words) {
 				pstmt.setString(1, "b");
 				pstmt.setString(2, word);
@@ -694,9 +697,10 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		ArrayList<String> unknownWords = new ArrayList<String>();
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try{
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("select word from unknownwords " +
+			stmt = conn.prepareStatement("select word from "+tablePrefix+"_unknownwords " +
 					"where flag = ?");
 			stmt.setString(1, "unknown");
 			rset = stmt.executeQuery();
@@ -735,9 +739,10 @@ public class MainFormDbAccessor {
 		(ArrayList<String> terms, String role)throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("Insert into wordroles values (?,?)");
+			stmt = conn.prepareStatement("Insert into "+tablePrefix+"_wordroles values (?,?)");
 			for (String term : terms) {
 				stmt.setString(1, term);
 				stmt.setString(2, role);				
