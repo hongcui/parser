@@ -53,7 +53,7 @@ public class VolumeMarkupDbAccessor {
     	this.tablePrefix = dataPrefix;
     }
 	
-    public VolumeMarkupDbAccessor(){}
+    //public VolumeMarkupDbAccessor(){}
     
     public void updateData(List <String> tagList) throws  ParsingException, SQLException {
 	 
@@ -104,7 +104,7 @@ public class VolumeMarkupDbAccessor {
 		ResultSet rset = null;
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("select word from wordpos where pos=?");
+			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos where pos=?");
 			stmt.setString(1, "b");
 			rset = stmt.executeQuery();
 			if (rset != null) {
