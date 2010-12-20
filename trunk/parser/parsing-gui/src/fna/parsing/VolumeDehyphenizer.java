@@ -58,7 +58,7 @@ public class VolumeDehyphenizer extends Thread {
     private DeHyphenAFolder dhf;
     private Table descriptorTable;
     private MainForm mainForm;
-    private VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor();
+    private VolumeMarkupDbAccessor vmdb;
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, 
@@ -71,6 +71,7 @@ public class VolumeDehyphenizer extends Thread {
         this.dataPrefix = dataPrefix;
         this.descriptorTable = descriptorTable;
         this.mainForm = mainForm;
+        this.vmdb = new VolumeMarkupDbAccessor(dataPrefix);
         //this.tablename = dataPrefix+"_allwords";
         
         this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
@@ -107,7 +108,8 @@ public class VolumeDehyphenizer extends Thread {
 		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix);
 		vm.markup();
 		listener.setProgressBarVisible(false);
-		loadStructureTab();
+		//loadStructureTab(); //done in markup already
+		loadDescriptorTab();
 		loadOthersTab();
     }
     
@@ -118,7 +120,7 @@ public class VolumeDehyphenizer extends Thread {
     		}
     	});
     }
-	private void loadStructureTab() {
+	private void loadDescriptorTab() {
 		
 		display.syncExec(new Runnable() {
 			public void run() {
@@ -126,7 +128,7 @@ public class VolumeDehyphenizer extends Thread {
 				try {
 					words = vmdb.getDescriptorWords();
 				} catch (Exception exe){
-					LOGGER.error("unable to load structures tab in Markup : MainForm", exe);
+					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
 					exe.printStackTrace();
 				}
 				int count = 1;

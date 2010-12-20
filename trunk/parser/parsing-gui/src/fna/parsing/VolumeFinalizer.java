@@ -165,14 +165,14 @@ public class VolumeFinalizer extends Thread {
 	}*/
 	//public static Element getBaseRoot(int fileindex){
 	public static Element getBaseRoot(String fileindex, int order){
-		//File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
-		File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
+		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
+		//File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
 		int total = source.listFiles().length;
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			System.out.println("finalizing "+fileindex);
 			
-			//listener.progress(40+(order*60/total));
+			listener.progress(40+(order*60/total));
 			File file = new File(source, fileindex + ".xml");
 			Document doc = builder.build(file);
 			Element root = doc.getRootElement();
@@ -188,11 +188,11 @@ public class VolumeFinalizer extends Thread {
 	//public static void outputFinalXML(Element root, int fileindex, String targetstring) {
 	public static void outputFinalXML(Element root, String fileindex, String targetstring) {
 		
-		//File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		File target = new File("C:\\DATA\\FNA-v19\\target\\final");
+		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		//File target = new File("C:\\DATA\\FNA-v19\\target\\final");
 		File result = new File(target, fileindex + ".xml");
 		ParsingUtil.outputXML(root, result);
-		//listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
+		listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
 	}
 
 
