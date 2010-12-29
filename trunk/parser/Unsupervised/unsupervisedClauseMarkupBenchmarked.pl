@@ -284,6 +284,9 @@ print stdout "Bootstrapping rules:\n";
 discover("normal");
 
 #Hong Nov.18: 
+my $test = $dbh->prepare('use '.$db)
+or die "Program terminates unexpected due to: ".$dbh->errstr."\n";
+$test->execute() or die $test->errstr."\n";
 print stdout "Additional bootstrappings:\n";
 additionalbootstrapping();
 
@@ -511,7 +514,6 @@ $test->execute() or die $test->errstr."\n";
 
 my $test = $dbh->prepare('use '.$db)
 or die "Program terminates unexpected due to: ".$dbh->errstr."\n";
-
 $test->execute() or die $test->errstr."\n";
 
 my ($create, $del);
@@ -3789,6 +3791,7 @@ sub singular{
  my $s; 
  if($p eq "valves"){ return "valve"};
  if($p eq "media"){ return "media"};
+ if($p eq "species"){return "species");
  if(getnumber($p) eq "p"){
     if($p =~ /(.*?[^aeiou])ies$/){
       $s = $1.'y';
@@ -3904,7 +3907,8 @@ sub wrapupmarkup{
       $words[@words-1] = "[^[:space:]]+\$"; #create the pattern to find other sentences sharing the same subject with different boundary words 
       $match = join(" ", @words);
       $sth = $dbh->prepare("Select distinct lead from ".$prefix."_sentence where lead regexp \"^".$match."\" and isnull(tag)" );
-      $sth->execute();
+      my $z = 0;
+      $sth->execute() or $z = 1;
       if($sth->rows > 1){ # exist x y and x z, take x as the tag
           $match =~ s# \[\^\[.*$##; #shared
           $sth = $dbh->prepare("Select sentid, lead from ".$prefix."_sentence where lead like \"".$match."%\" and isnull(tag)" );
