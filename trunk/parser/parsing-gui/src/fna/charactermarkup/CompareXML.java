@@ -356,6 +356,7 @@ public class CompareXML {
 										}
 										if(ansliflag == 0 && missattr == 1){
 											charpartmatch++;
+											ansliexact += ans.getAttributes().toString();
 											flag = 1;
 											aliflag = 1;
 											break;
@@ -616,8 +617,8 @@ public class CompareXML {
 				rreasonrel = (float)(relexactmatch+relpartmatch)/tothumanrel;
 			}
 	
-			sentprecision = pexactst+ppartialst+pexactch+ppartialch+pexactrel+ppartialrel;
-			sentrecall = rexactst+rpartialst+rexactch+rpartialch+rexactrel+rpartialrel;
+			sentprecision = (float)(structexactmatch+structpartmatch+charexactmatch+charpartmatch+relexactmatch+relpartmatch)/(totmachinest+totmachinech+totmachinerel);
+			sentrecall = (float)(structexactmatch+structpartmatch+charexactmatch+charpartmatch+relexactmatch+relpartmatch)/(tothumanst+tothumanch+tothumanrel);
 			
 			stmt.execute("insert into precisionrecall values('"+source+"','"+pperfst+"','"+pexactst+"','"+ppartialst+"','"+preasonst+"','"+pperfch+"','"+pexactch+"','"+ppartialch+"','"+preasonch+"','"+pperfrel+"','"+pexactrel+"','"+ppartialrel+"','"+preasonrel+"'," +
 					"'"+rperfst+"','"+rexactst+"','"+rpartialst+"','"+rreasonst+"','"+rperfch+"','"+rexactch+"','"+rpartialch+"','"+rreasonch+"','"+rperfrel+"','"+rexactrel+"','"+rpartialrel+"','"+rreasonrel+"','"+sentprecision+"','"+sentrecall+"')");
@@ -652,49 +653,57 @@ public class CompareXML {
 	 * @param source
 	 */
 	public void dsccalcprecisionrecall(){
-		
-		float dscpperfst, dscpexactst, dscppartialst, dscpreasonst;
-		float dscpperfch, dscpexactch, dscppartialch, dscpreasonch;
-		float dscpperfrel, dscpexactrel, dscppartialrel, dscpreasonrel;
-		float dscrperfst, dscrexactst, dscrpartialst, dscrreasonst;
-		float dscrperfch, dscrexactch, dscrpartialch, dscrreasonch;
-		float dscrperfrel, dscrexactrel, dscrpartialrel, dscrreasonrel;
-		
-		dscpperfst = (float)dscstructperfmatch/dsctotmachinest;
-		dscpexactst = (float)dscstructexactmatch/dsctotmachinest;
-		dscppartialst = (float)dscstructpartmatch/dsctotmachinest;
-		dscpreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctotmachinest;
-					
-		dscpperfch = (float)dsccharperfmatch/dsctotmachinech;
-		dscpexactch = (float)dsccharexactmatch/dsctotmachinech;
-		dscppartialch = (float)dsccharpartmatch/dsctotmachinech;
-		dscpreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctotmachinech;
-		
-		dscpperfrel = (float)dscrelperfmatch/dsctotmachinerel;
-		dscpexactrel = (float)dscrelexactmatch/dsctotmachinerel;
-		dscppartialrel = (float)dscrelpartmatch/dsctotmachinerel;
-		dscpreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctotmachinerel;
-		
-		dscrperfst = (float)dscstructperfmatch/dsctothumanst;
-		dscrexactst = (float)dscstructexactmatch/dsctothumanst;
-		dscrpartialst = (float)dscstructpartmatch/dsctothumanst;
-		dscrreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctothumanst;
-		
-		dscrperfch = (float)dsccharperfmatch/dsctothumanch;
-		dscrexactch = (float)dsccharexactmatch/dsctothumanch;
-		dscrpartialch = (float)dsccharpartmatch/dsctothumanch;
-		dscrreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctothumanch;
-		
-		dscrperfrel = (float)dscrelperfmatch/dsctothumanrel;
-		dscrexactrel = (float)dscrelexactmatch/dsctothumanrel;
-		dscrpartialrel = (float)dscrelpartmatch/dsctothumanrel;
-		dscrreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctothumanrel;
-		System.out.println( "dscpperfst "+dscpperfst+"\n"+"dscpexactst "+dscpexactst+"\n"+"dscppatialst "+ dscppartialst+"\n"+"dscpreasonst "+dscpreasonst+"\n"+
-				"dscpperfch "+dscpperfch+"\n"+"dscpexactch "+ dscpexactch+"\n"+"dscppartialch "+ dscppartialch+"\n"+"dscpreasonch "+ dscpreasonch+"\n"+
-				"dscpperfrel "+dscpperfrel+"\n"+"dscpexactrel "+ dscpexactrel+"\n"+"dscppartialrel "+dscppartialrel+"\n"+"dscpreasonrel "+ dscpreasonrel+"\n"+
-				"dscrperfst "+dscrperfst+"\n"+ "dscrexactst "+dscrexactst+"\n"+ "dscrpartialst "+dscrpartialst+"\n"+ "dscrreasonst "+dscrreasonst+"\n"+
-				"dscrperfch "+dscrperfch+"\n"+ "dscrexactch "+dscrexactch+"\n"+ "dscrpartialch "+dscrpartialch+"\n"+ "dscrreasonch "+dscrreasonch+"\n"+
-				"dscrperfrel "+dscrperfrel+"\n"+ "dscrexactrel "+dscrexactrel+"\n"+ "dscrpartialrel "+dscrpartialrel+"\n"+ "dscrreasonrel "+dscrreasonrel);
+		try{
+			Statement stmt = conn.createStatement();
+			
+			float dscpperfst, dscpexactst, dscppartialst, dscpreasonst;
+			float dscpperfch, dscpexactch, dscppartialch, dscpreasonch;
+			float dscpperfrel, dscpexactrel, dscppartialrel, dscpreasonrel;
+			float dscrperfst, dscrexactst, dscrpartialst, dscrreasonst;
+			float dscrperfch, dscrexactch, dscrpartialch, dscrreasonch;
+			float dscrperfrel, dscrexactrel, dscrpartialrel, dscrreasonrel;
+			
+			dscpperfst = (float)dscstructperfmatch/dsctotmachinest;
+			dscpexactst = (float)dscstructexactmatch/dsctotmachinest;
+			dscppartialst = (float)dscstructpartmatch/dsctotmachinest;
+			dscpreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctotmachinest;
+						
+			dscpperfch = (float)dsccharperfmatch/dsctotmachinech;
+			dscpexactch = (float)dsccharexactmatch/dsctotmachinech;
+			dscppartialch = (float)dsccharpartmatch/dsctotmachinech;
+			dscpreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctotmachinech;
+			
+			dscpperfrel = (float)dscrelperfmatch/dsctotmachinerel;
+			dscpexactrel = (float)dscrelexactmatch/dsctotmachinerel;
+			dscppartialrel = (float)dscrelpartmatch/dsctotmachinerel;
+			dscpreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctotmachinerel;
+			
+			dscrperfst = (float)dscstructperfmatch/dsctothumanst;
+			dscrexactst = (float)dscstructexactmatch/dsctothumanst;
+			dscrpartialst = (float)dscstructpartmatch/dsctothumanst;
+			dscrreasonst = (float)(dscstructexactmatch+dscstructpartmatch)/dsctothumanst;
+			
+			dscrperfch = (float)dsccharperfmatch/dsctothumanch;
+			dscrexactch = (float)dsccharexactmatch/dsctothumanch;
+			dscrpartialch = (float)dsccharpartmatch/dsctothumanch;
+			dscrreasonch = (float)(dsccharexactmatch+dsccharpartmatch)/dsctothumanch;
+			
+			dscrperfrel = (float)dscrelperfmatch/dsctothumanrel;
+			dscrexactrel = (float)dscrelexactmatch/dsctothumanrel;
+			dscrpartialrel = (float)dscrelpartmatch/dsctothumanrel;
+			dscrreasonrel = (float)(dscrelexactmatch+dscrelpartmatch)/dsctothumanrel;
+			System.out.println( "dscpperfst "+dscpperfst+"\n"+"dscpexactst "+dscpexactst+"\n"+"dscppatialst "+ dscppartialst+"\n"+"dscpreasonst "+dscpreasonst+"\n"+
+					"dscpperfch "+dscpperfch+"\n"+"dscpexactch "+ dscpexactch+"\n"+"dscppartialch "+ dscppartialch+"\n"+"dscpreasonch "+ dscpreasonch+"\n"+
+					"dscpperfrel "+dscpperfrel+"\n"+"dscpexactrel "+ dscpexactrel+"\n"+"dscppartialrel "+dscppartialrel+"\n"+"dscpreasonrel "+ dscpreasonrel+"\n"+
+					"dscrperfst "+dscrperfst+"\n"+ "dscrexactst "+dscrexactst+"\n"+ "dscrpartialst "+dscrpartialst+"\n"+ "dscrreasonst "+dscrreasonst+"\n"+
+					"dscrperfch "+dscrperfch+"\n"+ "dscrexactch "+dscrexactch+"\n"+ "dscrpartialch "+dscrpartialch+"\n"+ "dscrreasonch "+dscrreasonch+"\n"+
+					"dscrperfrel "+dscrperfrel+"\n"+ "dscrexactrel "+dscrexactrel+"\n"+ "dscrpartialrel "+dscrpartialrel+"\n"+ "dscrreasonrel "+dscrreasonrel);
+			
+			stmt.execute("insert into precisionrecall values('desc','"+dscpperfst+"','"+dscpexactst+"','"+dscppartialst+"','"+dscpreasonst+"','"+dscpperfch+"','"+dscpexactch+"','"+dscppartialch+"','"+dscpreasonch+"','"+dscpperfrel+"','"+dscpexactrel+"','"+dscppartialrel+"','"+dscpreasonrel+"'," +
+					"'"+dscrperfst+"','"+dscrexactst+"','"+dscrpartialst+"','"+dscrreasonst+"','"+dscrperfch+"','"+dscrexactch+"','"+dscrpartialch+"','"+dscrreasonch+"','"+dscrperfrel+"','"+dscrexactrel+"','"+dscrpartialrel+"','"+dscrreasonrel+"','0','0')");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		
 	}
 	
