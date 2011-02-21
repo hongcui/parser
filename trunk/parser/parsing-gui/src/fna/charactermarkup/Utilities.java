@@ -37,6 +37,7 @@ public class Utilities {
 		singulars.put("teeth", "tooth");
 		singulars.put("bases", "base");
 		singulars.put("series", "series");
+		singulars.put("sulcus", "sulcus");
 		s = singulars.get(word);
 		if(s!=null) return s;
 		
@@ -63,6 +64,7 @@ public class Utilities {
 			Pattern p5 = Pattern.compile("(.*?)ves$");
 			Pattern p6 = Pattern.compile("(.*?)ices$");
 			Pattern p7 = Pattern.compile("(.*?a)e$");
+			Pattern p75 = Pattern.compile("(.*?)us$");
 			Pattern p8 = Pattern.compile("(.*?)s$");
 			
 			Matcher m1 = p1.matcher(word);
@@ -72,6 +74,7 @@ public class Utilities {
 			Matcher m5 = p5.matcher(word);
 			Matcher m6 = p6.matcher(word);
 			Matcher m7 = p7.matcher(word);
+			Matcher m75 = p75.matcher(word);
 			Matcher m8 = p8.matcher(word);
 		
 			if(m1.matches()){
@@ -88,6 +91,8 @@ public class Utilities {
 			  s = m6.group(1)+"ex";
 			}else if(m7.matches()){
 			  s = m7.group(1);
+			}else if(m75.matches()){
+			  s = word;
 			}else if(m8.matches()){
 			  s = m8.group(1);
 			}
@@ -269,7 +274,7 @@ public class Utilities {
 	 * @param w
 	 * @return null if not found
 	 */
-	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash) {
+	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable) {
 		
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-").replaceAll(" ", "").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
@@ -288,7 +293,7 @@ public class Utilities {
 			}
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select distinct category from fnaglossaryfixed where term = '"+w+"' or term ='_"+w+"'");
+				ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"'");
 				while(rs.next()){
 					String cat = rs.getString("category");
 					if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
