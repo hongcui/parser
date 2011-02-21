@@ -34,6 +34,7 @@ public class CharacterAnnotatorChunked {
 	private String sentmod = "";
 	protected Connection conn = null;
 	private String tableprefix = null;
+	private String glosstable = null;
 	/*static protected String username = "root";
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
@@ -45,9 +46,10 @@ public class CharacterAnnotatorChunked {
 	/**
 	 * 
 	 */
-	public CharacterAnnotatorChunked(Connection conn, String tableprefix) {
+	public CharacterAnnotatorChunked(Connection conn, String tableprefix, String glosstable) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
+		this.glosstable = glosstable;
 	}
 	
 	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
@@ -175,7 +177,7 @@ public class CharacterAnnotatorChunked {
 					System.out.println();
 					System.out.println(">>>>>>>>>>>>>"+text);
 				}
-				String modifier1 = "";//m[mostly] [4-]8–12[-19] mm m[distally]
+				String modifier1 = "";//m[mostly] [4-]8–12[-19] mm m[distally]; m[usually] 1.5-2 times n[size[{longer} than {wide}]]:consider a constraint
 				String modifier2 = "";
 				modifier1 = text.replaceFirst("\\[?\\d.*$", "");
 				String rest = text.replace(modifier1, "");
@@ -209,14 +211,14 @@ public class CharacterAnnotatorChunked {
 				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]$", ""), this.subjects);
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkBracketed){
-				annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn), true); //no need to updateLatestElements
+				annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn, glosstable), true); //no need to updateLatestElements
 				this.inbrackets =false;
 			}else if(ck instanceof ChunkSBAR){
 				ArrayList<Element> subjectscopy = this.subjects;
 				if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("structure")==0){
 					this.unassignedmodifiers = null;
 					this.subjects = latest("structure", this.latestelements);
-					annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn), false); //no need to updateLatestElements
+					annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn, glosstable), false); //no need to updateLatestElements
 					this.subjects = subjectscopy;
 					this.unassignedmodifiers = null;
 				}else{
@@ -300,11 +302,11 @@ public class CharacterAnnotatorChunked {
 		if(n.indexOf("constraint")>=0){
 			n = n.replaceFirst("constraint\\[", "").replaceFirst("\\]$", ""); //n holds times....
 		}
-		if(n.indexOf("n[")>=0){//1.5–2.5 times n[{longer} than (throat)]
+		if(n.indexOf("n[")==0){//1.5–2.5 times n[{longer} than (throat)]
 			//content = "n["+content.replace("n[", "");
 			content = v.replaceFirst("(^| )(?=\\d)", " size[")+"] constraint["+n.replaceFirst("n\\[", "").trim(); //m[usually] 1.5-2
 			return this.processTHAN(content, parents);
-		}else if(n.indexOf("type[")>=0){//size[{longer}] constraint[than (object}]
+		}else if(n.indexOf("type[")==0 || n.indexOf(" type[")>0){//size[{longer}] constraint[than (object}]
 			//this.processSimpleCharacterState("a[size["+v.replace(" times", "")+"]]", parents);
 			//ArrayList<Element> structures = this.processObject(n);
 			//this.createRelationElements("times", parents, structures, this.unassignedmodifiers);
@@ -318,7 +320,7 @@ public class CharacterAnnotatorChunked {
 			content = "size["+v+"] "+n;
 			return this.processTHAN(content, parents);	
 		}
-		else if(n.indexOf("a[")>=0){ //characters:1–3 times {pinnately} {lobed}
+		else if(n.indexOf("a[")==0 || n.indexOf(" a[")>0){ //characters:1–3 times {pinnately} {lobed}
 			String times = n.substring(0, n.indexOf(' '));
 			n = n.substring(n.indexOf(' ')+1);
 			n = n.replaceFirst("a\\[", "").replaceFirst("\\]$", "");
@@ -348,20 +350,25 @@ public class CharacterAnnotatorChunked {
 				Pattern p = Pattern.compile(NumericalHandler.numberpattern+" ?[{<(]?[cdm]?m?[)>}]?");
 				Matcher m = p.matcher(parts[0]);
 				String numeric = "";
-				if(m.find()){
-					numeric = parts[0].substring(m.start(), m.end()).trim();
+				if(m.find()){ //a series of number
+					numeric = parts[0].substring(m.start(), m.end()).trim().replaceAll("[{<(]$", "");
 				}else{
-					p = Pattern.compile("\\d+ ?[{<(]?[cdm]?m?[)>}]?");
+					p = Pattern.compile("\\d+ ?[{<(]?[cdm]?m?[)>}]?"); //1 number
 					m = p.matcher(parts[0]);
 					m.find();
-					numeric = parts[0].substring(m.start(), m.end()).trim();
+					numeric = parts[0].substring(m.start(), m.end()).trim().replaceAll("[{<(]$", "");
 				}
-				String modifier = parts[0].replace(numeric, "").replaceAll("(\\w+\\[|\\[|\\])", "").trim();
+				String modifier = parts[0].substring(0, parts[0].indexOf(numeric)).replaceAll("(\\w+\\[|\\[|\\])", "").trim();
+				String constraint = parts[0].substring(parts[0].indexOf(numeric)+numeric.length()).trim();
+				String t = parts[0];
+				parts = new String[2];//parsed out a constraint for further process
+				parts[0] = t;
+				parts[1] = constraint;
 				/*String modifier = parts[0].replaceFirst("size\\[.*?\\]", ";").trim().replaceAll("(^;|;$|\\w\\[|\\])", "");
 				String numeric = parts[0].substring(parts[0].indexOf("size["));
 				numeric = numeric.substring(0, numeric.indexOf("]")+1).replaceAll("(\\w+\\[|\\])", "");*/
 				charas = this.annotateNumericals(numeric.replaceAll("[{<()>}]", ""), "size", modifier.replaceAll("[{<()>}]", ""), parents);
-			}else{
+			}else{//size[{shorter} than {plumose} {inner}]
 				charas = this.processSimpleCharacterState(parts[0].replaceAll("(\\{|\\})", "").trim(), parents); //numeric part
 			}
 		}
@@ -382,6 +389,8 @@ public class CharacterAnnotatorChunked {
 						structures.addAll(this.processObject(object));
 					}
 				}
+			}
+			//have constraints even without an organ 12/15/10
 				Iterator<Element> it = charas.iterator();
 				while(it.hasNext()){
 					Element e = it.next();
@@ -391,7 +400,7 @@ public class CharacterAnnotatorChunked {
 					}
 				}
 				
-			}
+			
 		}
 		if(structures.size() > 0){
 			return structures;
@@ -532,7 +541,7 @@ public class CharacterAnnotatorChunked {
 		do{
 			findm = false;
 			String last = cvalue.substring(cvalue.lastIndexOf(' ')+1);
-			if(Utilities.lookupCharacter(last, conn, ChunkedSentence.characterhash)==null && Utilities.isAdv(last, ChunkedSentence.adverbs)){
+			if(Utilities.lookupCharacter(last, conn, ChunkedSentence.characterhash, glosstable)==null && Utilities.isAdv(last, ChunkedSentence.adverbs)){
 				mall +=last+ " ";
 				cvalue = cvalue.replaceFirst(last+"$", "").trim();
 				findm = true;
@@ -551,7 +560,7 @@ public class CharacterAnnotatorChunked {
 				}
 				int end = state.indexOf(' ')== -1? state.length():state.indexOf(' ');
 				String w = state.substring(0, end);
-				if(Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash)==null && Utilities.isAdv(w, ChunkedSentence.adverbs)){
+				if(Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable)==null && Utilities.isAdv(w, ChunkedSentence.adverbs)){
 					m +=w+ " ";
 					w = w.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\+", "\\\\+");
 					state = state.replaceFirst(w, "").trim();
@@ -725,38 +734,16 @@ public class CharacterAnnotatorChunked {
 				}
 			}
 			
-			structures = processObject(object);
-			String base = "";
-			if(object.matches("o?\\[*\\{*("+ChunkedSentence.basecounts+")\\b.*")){
-				base = "each";
-			}
-			if(lastIsChara){
-				//if last character is size, change to location: <margins> r[p[with] o[3–6 (spines)]] 1–3 {mm} r[p[{near}] o[(bases)]]. 
-				//1-3 mm is not a size, but a location of spines
-				if(lastelement.getAttributeValue("name").compareTo("size") == 0 && 
-						((lastelement.getAttributeValue("value")!=null && lastelement.getAttributeValue("value").matches(".*?\\d.*")) || (lastelement.getAttributeValue("from")!=null && lastelement.getAttributeValue("from").matches(".*?\\d.*")))
-						&& pp.matches("("+ChunkedSentence.locationpp+")")){
-					lastelement.setAttribute("name", "location");
-				}
-				//addAttribute(lastelement, "constraint", (pp+" "+base+" "+listStructureNames(structures)).replaceAll("\\s+", " ").replaceAll("(\\{|\\})", "")); //a, b, c
-				addAttribute(lastelement, "constraint", (pp+" "+listStructureNames(object)).replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
-				addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
-				if(modifier.length()>0){
-					addAttribute(lastelement, "modifier", modifier);
-				}
-			}else{
-				ArrayList<Element> entity1 = null;
-				if(lastIsStruct){
-					entity1 = this.latestelements;
-				}else{
-					entity1 = this.subjects;
-				}
-				String relation = relationLabel(pp, entity1, structures);//determine the relation
-				if(relation != null){
-					createRelationElements(relation, entity1, structures, modifier);//relation elements not visible to outside 
-				}
-			}
+			structures = linkObjects(modifier, pp, object, lastIsStruct,
+					lastIsChara, lastelement);
 			
+		}else if(object.matches(".*?\\([-a-z]+\\).*")){//contains organ in the middle of object:r[p[from] o[{thick} {notothyrial} (platform) {excavated} {laterally}]]
+			String obj = object.substring(0, object.lastIndexOf(")")+1).trim();
+			String modi = object.substring(object.lastIndexOf(")")+1).trim(); //TODO: left modi out for now.
+			
+			object = obj;
+			structures = linkObjects(modifier, pp, object, lastIsStruct,
+					lastIsChara, lastelement);
 		}else{ //contains no organ, e.g. "at flowering"
 			//Element last = this.latestelements.get(this.latestelements.size()-1);
 			if(lastIsStruct){
@@ -769,6 +756,44 @@ public class CharacterAnnotatorChunked {
 		
 		//bookkeeping: update this.latestElements: only structures are visible
 		updateLatestElements(structures);
+	}
+
+	private ArrayList<Element> linkObjects(String modifier, String pp,
+			String object, boolean lastIsStruct, boolean lastIsChara,
+			Element lastelement) {
+		ArrayList<Element> structures;
+		structures = processObject(object);
+		String base = "";
+		if(object.matches("o?\\[*\\{*("+ChunkedSentence.basecounts+")\\b.*")){
+			base = "each";
+		}
+		if(lastIsChara){
+			//if last character is size, change to location: <margins> r[p[with] o[3–6 (spines)]] 1–3 {mm} r[p[{near}] o[(bases)]]. 
+			//1-3 mm is not a size, but a location of spines
+			if(lastelement.getAttributeValue("name").compareTo("size") == 0 && 
+					((lastelement.getAttributeValue("value")!=null && lastelement.getAttributeValue("value").matches(".*?\\d.*")) || (lastelement.getAttributeValue("from")!=null && lastelement.getAttributeValue("from").matches(".*?\\d.*")))
+					&& pp.matches("("+ChunkedSentence.locationpp+")")){
+				lastelement.setAttribute("name", "location");
+			}
+			//addAttribute(lastelement, "constraint", (pp+" "+base+" "+listStructureNames(structures)).replaceAll("\\s+", " ").replaceAll("(\\{|\\})", "")); //a, b, c
+			addAttribute(lastelement, "constraint", (pp+" "+listStructureNames(object)).replaceAll("\\s+", " ").replaceAll("(\\w+\\[|\\(|\\)|\\{|\\}|\\])", ""));
+			addAttribute(lastelement, "constraintid", listStructureIds(structures));//1, 2, 3
+			if(modifier.length()>0){
+				addAttribute(lastelement, "modifier", modifier);
+			}
+		}else{
+			ArrayList<Element> entity1 = null;
+			if(lastIsStruct){
+				entity1 = this.latestelements;
+			}else{
+				entity1 = this.subjects;
+			}
+			String relation = relationLabel(pp, entity1, structures);//determine the relation
+			if(relation != null){
+				createRelationElements(relation, entity1, structures, modifier);//relation elements not visible to outside 
+			}
+		}
+		return structures;
 	}
 	/**
 	 * o[.........{m} {m} (o1) and {m} (o2)]
@@ -960,8 +985,9 @@ public class CharacterAnnotatorChunked {
 			}
 			o = o.trim();
 			for(int i = ws1.length-1; i>=0; i--){
+				String escaped = ws1[i].replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
 				if(isConstraint(ws1[i], o)){
-					part1 = part1.replaceFirst("\\s*"+ws1[i]+"$", "");
+					part1 = part1.replaceFirst("\\s*"+escaped+"$", "");
 					part2 = ws1[i]+" "+part2;
 				}else{
 					break;
@@ -1018,7 +1044,7 @@ public class CharacterAnnotatorChunked {
 				if(organ[j].trim().length()>0){
 					String w = organ[j].replaceAll("(\\w\\[|\\]|\\{|\\})", "");
 					if(w.startsWith("(") || isConstraint(w, o)){
-						constraint += w+" ";
+						constraint = w+" "+constraint;
 						organ[j] = "";
 					}else{
 						break;
@@ -1058,17 +1084,32 @@ public class CharacterAnnotatorChunked {
 				}else{
 					String w = null;
 					String chara= null;
-					if(tokens[j].matches("\\w+\\[.*")){
+					if(tokens[j].matches("\\w{2,}\\[.*")){
 						chara=tokens[j].substring(0, tokens[j].indexOf('['));
 						w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
 					}else{
 						w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
-						chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash);
+						chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable);
 					}
 					if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs)){//TODO: can be made more efficient, since sometimes character is already given
 						modifiers +=w+" ";
-					}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?
-						results = this.annotateNumericals(NumericalHandler.originalNumForm(w), "count", modifiers, parents);
+					}else if((w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")) || w.matches("l\\s*\\W\\s*w")){//TODO: 2 times =>2-times?
+						//need to collect {cm} or l-w=, l/w=
+						//it may not be count always
+						if(w.matches("l\\s*\\W\\s*w")){ //read the next number
+							while(!w.matches(".*?\\d.*")){
+								w = tokens[j++];
+							}
+							results = this.annotateNumericals(NumericalHandler.originalNumForm(w), "lwratio", modifiers, parents);
+						}else{
+							if(tokens.length>j+1 && tokens[j+1].matches(".*?\\b[cdm]?m\\b.*")){
+								w = w+tokens[j+1];
+								j++;
+							}
+							String content = NumericalHandler.originalNumForm(w);
+							results = this.annotateNumericals(content, content.indexOf('/')>0 || content.indexOf('%')>0 || content.indexOf('.')>0? "size" : null, modifiers, parents);
+						}
+						
 						//annotateCount(parents, w, modifiers);
 						modifiers = "";
 					}else{
@@ -1170,6 +1211,8 @@ public class CharacterAnnotatorChunked {
 	//if w has been seen used as a modifier to organ o
 	private boolean isConstraint(String w, String o) {
 		boolean result = false;
+		String ch = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable);
+		if(ch!=null && ch.matches(".*?_?(position|insertion|structure_type)_?.*")) return true;
 		try{
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where modifier ='"+w+"'");
