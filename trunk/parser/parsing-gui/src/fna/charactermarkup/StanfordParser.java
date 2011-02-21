@@ -39,18 +39,23 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String POSTaggedSentence = "POSedSentence";
 	private POSTagger4StanfordParser tagger = null;
 	private String tableprefix = null;
+	private String postable = null;
+	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean debug = false;
+	private boolean finalize = false;
+	private boolean debug = true;
 	/**
 	 * 
 	 */
-	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix) {
+	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix, String postable, String glosstable) {
 		// TODO Auto-generated constructor stub
 		this.posedfile = new File(posedfile); 
 		this.parsedfile = new File(parsedfile);
 		this.database = database;
 		this.tableprefix = tableprefix;
+		this.postable = postable;
+		this.glosstable = glosstable;
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -64,7 +69,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		tagger = new POSTagger4StanfordParser(conn, this.tableprefix);
+		tagger = new POSTagger4StanfordParser(conn, this.tableprefix, postable, glosstable);
 	}
 	
 	public void POSTagging(){
@@ -195,7 +200,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					}
 				}else{
 					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
-					if(i !=2793 && text.startsWith("(ROOT")){
+					//if(i !=2793 && text.startsWith("(ROOT")){//FNAv19
+					//if(i != 1156 && text.startsWith("(ROOT")){//treatiseh
+					if(/*i != 2468 && i != 3237 &&i != 9555 && i != 9504 &&*/ i !=4061 && text.startsWith("(ROOT")){//bhl	
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -206,9 +213,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
 						//int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
 						String thisfileindex = src.replaceFirst("\\.txt.*$", "");
-						if(baseroot ==null){
-							order++;
-							baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
+						if(finalize){
+							if(baseroot ==null){
+								order++;
+								baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
+							}
 						}
 						//System.out.println(sent);
 						if(!sent.matches(".*?\\b/\\b.*") &&!sent.matches(".*?\\b2s\\b.*") &&!sent.matches(".*?× .*") &&!sent.matches(".*?\\+×.*")){//TODO: until the hyphen problems are fix, do not extract from those sentences
@@ -216,47 +225,45 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								sent = sent+" .";
 							}
 							//sent = normalizeSpacesRoundNumbers(sent);
-							sent = sent.replaceAll("[–—-]", "-");
-							sent = sent.replaceAll("2\\s*n\\s*=", " 2n= ");
-							sent = sent.replaceAll("2\\s*x\\s*=", " 2x= ");
-							sent = sent.replaceAll("n\\s*=", " n= ");
-							sent = sent.replaceAll("x\\s*=", " x= ");
-							
-							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn);
+							sent = sent.replaceAll("<\\{?times\\}?>", "times");
+							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn, glosstable);
 							ChunkedSentence cs = ex.chunkIt();
+							
 							//System.out.print("["+src+"]:");
 							if(this.debug){
 								System.out.println();
 								System.out.println(i+"["+src+"]: "+cs.toString());
 
 							}
-							cac = new CharacterAnnotatorChunked(conn, this.tableprefix);
+							cac = new CharacterAnnotatorChunked(conn, this.tableprefix, glosstable);
 							//Element statement = cac.annotate(src.replaceAll("^\\d+\\.txt", ""), src, cs); //src: 100.txt-18
 							Element statement = cac.annotate(src, src, cs); //src: 100.txt-18
 							
-							if(thisdescID.compareTo(pdescID)!=0){
-								if(description.getChildren().size()!=0){ //not empty
-									//plug description in XML document
-									//write the XML to final
-									//call MainForm to display
-									//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
-									
-									placeDescription(description, pdescID, baseroot);
-									description = new Element("description");
-									if(this.debug){
-										System.out.println(pfileindex+".xml written");
+							if(finalize){
+								if(thisdescID.compareTo(pdescID)!=0){
+									if(description.getChildren().size()!=0){ //not empty
+										//plug description in XML document
+										//write the XML to final
+										//call MainForm to display
+										//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
+										
+										placeDescription(description, pdescID, baseroot);
+										description = new Element("description");
+										if(this.debug){
+											System.out.println(pfileindex+".xml written");
+										}
 									}
 								}
-							}
-							
-							//if(thisfileindex != pfileindex){
-							if(thisfileindex.compareTo(pfileindex) !=0){
-								//if(pfileindex !=0){
-								if(pfileindex.length() !=0){
-									order++;
-									VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
-									baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
-								}								
+								
+								//if(thisfileindex != pfileindex){
+								if(thisfileindex.compareTo(pfileindex) !=0){
+									//if(pfileindex !=0){
+									if(pfileindex.length() !=0){
+										order++;
+										VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");
+										baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
+									}								
+								}
 							}
 							description.addContent(statement);
 							pdescID = thisdescID;
@@ -269,8 +276,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					i = 0;
 				}
 			}
-			placeDescription(description, pdescID, baseroot);
-			VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");			
+			if(finalize){
+				placeDescription(description, pdescID, baseroot);
+				VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");		
+			}
 			rs.close();
     	}catch (Exception e){
     		//System.err.println(e);
@@ -279,6 +288,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
     }
 
 	public static String normalizeSpacesRoundNumbers(String sent) {
+		sent = ratio2number(sent);//bhl
+		sent = sent.replaceAll("(?<=\\d)\\s+(?=\\d)", "-"); //bhl: two numbers connected by a space
 		sent = sent.replaceAll("at least", "at-least");
 		sent = sent.replaceAll("2\\s*n\\s*=", "2n=");
 		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
@@ -322,7 +333,66 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		return sent;
 	}
 	
+	public static String ratio2number(String sent){
+		String small = "\\b(?:one|two|three|four|five|six|seven|eight|nine)\\b";
+		String big = "\\b(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)s?\\b";
+		//ratio
+		Pattern ptn = Pattern.compile("(.*?)("+small+"\\s*-?_?\\s*"+big+")(.*)");
+		Matcher m = ptn.matcher(sent);
+		while(m.matches()){
+			String ratio = m.group(2);
+			ratio = toRatio(ratio);
+			sent = m.group(1)+ratio+m.group(3);
+			m = ptn.matcher(sent);
+		}
+		//number
+		small = "\\b(?:two|three|four|five|six|seven|eight|nine)\\b";
+		ptn = Pattern.compile("(.*?)("+small+")(.*)");
+		m = ptn.matcher(sent);
+		while(m.matches()){
+			String number = m.group(2);
+			number = toNumber(number);
+			sent = m.group(1)+number+m.group(3);
+			m = ptn.matcher(sent);
+		}
+		sent = sent.replaceAll("(?<=\\d)\\s*to\\s*(?=\\d)", "-");
+		return sent;
+	}
 
+	public static String toNumber(String ratio){
+		ratio = ratio.replaceAll("\\btwo\\b", "2");
+		ratio = ratio.replaceAll("\\bthree\\b", "3");
+		ratio = ratio.replaceAll("\\bfour\\b", "4");
+		ratio = ratio.replaceAll("\\bfive\\b", "5");
+		ratio = ratio.replaceAll("\\bsix\\b", "6");
+		ratio = ratio.replaceAll("\\bseven\\b", "7");
+		ratio = ratio.replaceAll("\\beight\\b", "8");
+		ratio = ratio.replaceAll("\\bnine\\b", "9");
+		return ratio;
+	}
+	
+	public static String toRatio(String ratio){
+		ratio = ratio.replaceAll("\\bone\\b", "1/");
+		ratio = ratio.replaceAll("\\btwo\\b", "2/");
+		ratio = ratio.replaceAll("\\bthree\\b", "3/");
+		ratio = ratio.replaceAll("\\bfour\\b", "4/");
+		ratio = ratio.replaceAll("\\bfive\\b", "5/");
+		ratio = ratio.replaceAll("\\bsix\\b", "6/");
+		ratio = ratio.replaceAll("\\bseven\\b", "7/");
+		ratio = ratio.replaceAll("\\beight\\b", "8/");
+		ratio = ratio.replaceAll("\\bnine\\b", "9/");
+		ratio = ratio.replaceAll("\\bhalf\\b", "2");
+		ratio = ratio.replaceAll("\\bthirds?\\b", "3");
+		ratio = ratio.replaceAll("\\bfourths?\\b", "4");
+		ratio = ratio.replaceAll("\\bfifths?\\b", "5");
+		ratio = ratio.replaceAll("\\bsixthths?\\b", "6");
+		ratio = ratio.replaceAll("\\bsevenths?\\b", "7");
+		ratio = ratio.replaceAll("\\beighths?\\b", "8");
+		ratio = ratio.replaceAll("\\bninths?\\b", "9");
+		ratio = ratio.replaceAll("\\btenths?\\b", "10");
+		ratio = ratio.replaceAll("-", "").replaceAll("\\s", "");
+		return ratio;
+	}
 
 	/**
 	 * depending on the type of descriptionID, call different replaceWithAnnotated methods in VolumeFinalizer
@@ -358,14 +428,27 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String text = "blades broadly elliptic or ovate to lanceolate , 6 – 12 ( – 18 + ) cm × 30 – 80 ( – 120 + ) mm , both faces sparsely pilose to hirsute .";
 		//String text = "blades either linear to lanceolate and not lobed , 10 – 20 ( – 38 ) cm × 6 – 10 mm , or oblanceolate to oblong and pinnately lobed , 10 – 20 cm × 25 – 50 mm , or both ;";
 		//String text = " often 2 - , 3 - , or 5 - ribbed ;";
+		//<involucres> {shape~list~ovoid~to~broadly~cylindric~or~campanulate} , (2-)2.5-3.5(-4)×(1.5-)2-3(-4) {cm} , {thinly} {arachnoid} .
+		//String text = "<branchlets> {slender} , 4-{sided} , {separated} from {one} another , 0 . 8 - 1 mm . {thick} , the ultimate ones 1 . 5 - 2 {cm} . {long} ;";
+		//String text = "laminae 6 17 cm . long , 2 - 7 cm . broad , lanceolate to narrowly oblong or elliptic_oblong , abruptly and narrowly acuminate , obtuse to acute at the base , margin entire , the lamina drying stiffly chartaceous to subcoriaceous , smooth on both surfaces , essentially glabrous and the midvein prominent above , glabrous to sparsely puberulent beneath , the 8 to 18 pairs of major secondary veins prominent beneath and usually loop_connected near the margin , microscopic globose_capitate or oblongoid_capitate hairs usually present on the lower surface , clear or orange distally .";
 		//StanfordParser.normalizeSpacesRoundNumbers(text);
-		
-		String posedfile = "FNAv19posedsentences.txt";
+		//String text = "ovary more than two to three-fourths to one half superior. ";
+		//System.out.println(StanfordParser.ratio2number(text));
+		/*String posedfile = "FNAv19posedsentences.txt";
 		String parsedfile = "FNAv19parsedsentences.txt";
-		//String posedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_posedsentences_copy.txt";
-		//String parsedfile = "C:\\DATA\\FNA-v19\\target\\fna_v19_parsedsentences.txt";
 		String database = "fnav19_benchmark";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19");
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "wordpos4parser", "fnaglossaryfixed");
+		*/
+		
+		/*String posedfile = "Treatisehposedsentences.txt";
+		String parsedfile = "Treatisehparsedsentences.txt";
+		String database = "treatiseh_benchmark";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");*/
+		
+		String posedfile = "BHLposedsentences.txt";
+		String parsedfile = "BHLparsedsentences.txt";
+		String database = "bhl_benchmark";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
 		sp.POSTagging();
 		sp.parsing();
 		sp.extracting();
