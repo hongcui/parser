@@ -50,6 +50,7 @@ main subject: z[m/e]
  */
 public class SentenceChunker4StanfordParser {
 	private Connection conn = null;
+	private String glosstable = null;
 	private Document tree = null;
 	private Document treecp = null;
 	private String markedsent = null;
@@ -68,14 +69,15 @@ public class SentenceChunker4StanfordParser {
 	private int sentindex = -1;
 	private Pattern p = Pattern.compile("(.*?)((?:\\w+ )+)\\2(.*)");
 	private boolean printVB = false;
-	private boolean printPP = false;
+	private boolean printPP = true;
 	private boolean printNPlist = false;
 	//private boolean printPPTO = true;
 	/**
 	 * 
 	 */
-	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, Connection conn) {
+	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, Connection conn, String glosstable) {
 		this.conn = conn;
+		this.glosstable = glosstable;
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
@@ -163,7 +165,7 @@ public class SentenceChunker4StanfordParser {
 			}
 		//}
 		collapseThatClause();
-		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.conn);
+		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.conn, this.glosstable);
 		return cs;
 	}
 	
@@ -279,7 +281,7 @@ end procedure
 
 	private void extractFromlPPINs(ArrayList<Element> lPPINs) {
 
-		Iterator<Element> it = lPPINs.iterator();
+ 		Iterator<Element> it = lPPINs.iterator();
 		while(it.hasNext()){
 			Element lPPIN = it.next();
 			extractFromlPPIN(lPPIN);
@@ -330,9 +332,9 @@ end procedure
 		String ptag = parent==null? "" : parent.getName(); //parent is null when it is collaped in a previous run.
 		
 		
-		if(ptag.compareTo("NP") == 0 ||ptag.compareTo("NX") == 0|| ptag.compareTo("S") == 0 || 
+		if(ptag.compareTo("NP") == 0 ||ptag.compareTo("NX") == 0||ptag.compareTo("X") == 0|| ptag.compareTo("S") == 0 || 
 				ptag.compareTo("FRAG") == 0 || ptag.compareTo("UCP") == 0 ||
-				ptag.compareTo("PRN") == 0 ||ptag.compareTo("WHNP") == 0 ||
+				ptag.compareTo("PRN") == 0 ||ptag.compareTo("WHNP") == 0 ||ptag.compareTo("SINV") == 0 ||
 				ptag.compareTo("PP") == 0 ||ptag.compareTo("ROOT") == 0 || ptag.compareTo("") == 0){		
 			/**
 			 * (NP
@@ -384,7 +386,7 @@ end procedure
 				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]";
 				collapseElement(PP, chunk, "r");
 			}
-		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("RRC") == 0){
+		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("NAC") == 0 ||ptag.compareTo("RRC") == 0){
 			/*
 			 * (ADJP (JJ decurrent)
             		(PP (IN as)
@@ -407,7 +409,7 @@ end procedure
 			if(this.printPP){
 				System.out.println();
 				System.out.println(this.sentindex+": "+this.markedsent);
-				System.out.println("parent is [?]");
+				System.out.println("parent is "+ptag);
 			}
 		}
 		
@@ -523,7 +525,21 @@ end procedure
 	 * @return
 	 */
 	private String checkAgainstMarkedSent(String np, String idofthelastwordinnp){
+		/*in a case like the following
+		some gland-tipped hairs 3 mm r[p[on] o[margins]] r[p[near] o[bases]]
+		this strategy (taking the last np) is problematic. 
+		Should avoid nested chunks and take up to "hairs" and not "bases".
+		test this later 12/15/10*/
 		int last = Integer.parseInt(idofthelastwordinnp);
+		if(np.startsWith("l[")){//adjust the index of a noun list. the idofthelastwordinnp in this case should be the last word in the list, not the first.
+			last = last+np.split("\\s+").length-1;
+		}
+		/*int cindex = np.indexOf("[")-1; //index of first r[
+		if(cindex>=0){
+			String chunked = np.substring(cindex).trim(); //index of first r[
+			last = last - chunked.split("\\s+").length;
+			np = np.substring(0,cindex).trim();
+		}*/
 		String[] words = np.split("\\s+");
 		for(int i = words.length-1; i>=0; i--){//find the last NN as marked in markedsent (e.g. posoftokens)
 			if(!this.posoftokens[last--].startsWith("NN")){
