@@ -79,25 +79,28 @@ public class StateCollector  {
 	protected StateMatrix statematrix = null;
 	protected Hashtable<String, String> sentences = null;
 	protected String tableprefix = null;
+	protected String glosstable = null;
 	//protected String organnames = null;
 	
 	protected boolean marked = false;
 	
-	StateCollector(Connection conn, String tableprefix){
+	StateCollector(Connection conn, String tableprefix, String glosstable){
 		this.statematrix = new StateMatrix(conn, tableprefix);
 		this.tableprefix = tableprefix;
 		this.conn = conn;
+		this.glosstable = glosstable;
 		//this.database = database;
 		//collect(database);
 	}
 	
-	StateCollector(Connection conn, String tableprefix, ArrayList<String> knownstates){
+	StateCollector(Connection conn, String tableprefix, ArrayList<String> knownstates, String glosstable){
 		if(knownstates!=null){
 			StateImporter si = new StateImporter(knownstates);
 			this.statematrix = new StateMatrix(conn, tableprefix, si.getStates());
 		}
 		this.tableprefix = tableprefix;
 		this.conn = conn;
+		this.glosstable = glosstable;
 		//this.database = database;
 		//collect(database);
 	}
@@ -118,7 +121,7 @@ public class StateCollector  {
 			e.printStackTrace();
 		}
 		
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix);//tag organ names
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable);//tag organ names
 		this.sentences = sosm.markSentences();
 		parseSentences();//create StateGroups 
 		//System.out.println(statematrix.toString());
@@ -472,7 +475,7 @@ public class StateCollector  {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		StateCollector sc = new StateCollector(conn, "fnav19");
+		StateCollector sc = new StateCollector(conn, "fnav19", "fnaglossaryfixed");
 		sc.collect();
 	}
 
