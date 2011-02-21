@@ -24,7 +24,7 @@ import org.jdom.output.XMLOutputter;
 public class NumericalHandler  {
 
 	//static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
-	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×\\+°²½/¼\\*/%]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
+	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
 	static private boolean debug = false;
 	
 	public NumericalHandler() {
@@ -60,7 +60,7 @@ public class NumericalHandler  {
 		}
 	}
 	public static boolean isNumerical(String token){
-		if(token.matches(".*?\\d+\\+?%?\\??$")){
+		if(token.matches(".*?\\d+\\+?%?\\??\\]?$")){
 			return true;
 		}
 		if(token.matches(".*?\\d+.*-RRB-/-RRB-$")){
@@ -110,7 +110,7 @@ public class NumericalHandler  {
 			///////////////////////////////////////////////////////////////////
 			//      area                                               ////////
 			
-			Pattern pattern19 = Pattern.compile("([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))\\s*×?(\\s*[ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))?\\s*×\\s*([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m))");
+			Pattern pattern19 = Pattern.compile("([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))\\s*×?x?(\\s*[ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))?\\s*×x\\s*([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m))");
 			Matcher matcher2 = pattern19.matcher(numberexp);
 			if(matcher2.matches()){
 				//get l, w, and h
@@ -1074,9 +1074,11 @@ public class NumericalHandler  {
 		//String str1 = "[30-70+]"; //
 		//String str1 = "1-[2-10]";//todo
 		//String str1 = "3-5 [7-8]";
-		String str1 = "[0]3-5[-12+]";
+		//String str1 = "[0]3-5[-12+]";
 		//String str1 = "80[72]";
-		String str2 = null;	
+		//String str1 = "(2-)2.5-3.5(-4) × (1.5-)2-3(-4) cm";
+		String str1 = "(4–)5–6 × 1.5–2";
+		String str2 = "area";	
 		
 		System.out.println(NumericalHandler.parseNumericals(str1, str2));
 	}
