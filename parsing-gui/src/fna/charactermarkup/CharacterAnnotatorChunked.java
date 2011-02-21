@@ -1038,6 +1038,7 @@ public class CharacterAnnotatorChunked {
 			//e.setAttribute("name", o.trim()); //must have.
 			e.setAttribute("name", Utilities.toSingular(o.trim())); //must have. //corolla lobes
 
+
 			//determine constraints
 			String constraint = "";
 			for(;j >=0; j--){
@@ -1093,23 +1094,9 @@ public class CharacterAnnotatorChunked {
 					}
 					if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs)){//TODO: can be made more efficient, since sometimes character is already given
 						modifiers +=w+" ";
-					}else if((w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")) || w.matches("l\\s*\\W\\s*w")){//TODO: 2 times =>2-times?
-						//need to collect {cm} or l-w=, l/w=
-						//it may not be count always
-						if(w.matches("l\\s*\\W\\s*w")){ //read the next number
-							while(!w.matches(".*?\\d.*")){
-								w = tokens[j++];
-							}
-							results = this.annotateNumericals(NumericalHandler.originalNumForm(w), "lwratio", modifiers, parents);
-						}else{
-							if(tokens.length>j+1 && tokens[j+1].matches(".*?\\b[cdm]?m\\b.*")){
-								w = w+tokens[j+1];
-								j++;
-							}
-							String content = NumericalHandler.originalNumForm(w);
-							results = this.annotateNumericals(content, content.indexOf('/')>0 || content.indexOf('%')>0 || content.indexOf('.')>0? "size" : null, modifiers, parents);
-						}
-						
+					}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?
+
+						results = this.annotateNumericals(NumericalHandler.originalNumForm(w), "count", modifiers, parents);
 						//annotateCount(parents, w, modifiers);
 						modifiers = "";
 					}else{
