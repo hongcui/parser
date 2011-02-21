@@ -360,7 +360,7 @@ public class MainFormDbAccessor {
 				  "tab_unknown varchar(1) DEFAULT NULL, "+
 				  "tab_finalm varchar(1) DEFAULT NULL, "+
 				  "tab_gloss varchar(1) DEFAULT NULL, "+
-				  "PRIMARY KEY (prefix) ) " ; 
+				  "PRIMARY KEY (prefix, time_last_accessed) ) " ; 
 		
 		try {
 			conn = DriverManager.getConnection(url);
