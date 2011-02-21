@@ -23,8 +23,8 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	/**
 	 * @param database
 	 */
-	public StateCollectorBootstrapper(Connection conn, String tableprefix) {
-		super(conn, tableprefix);
+	public StateCollectorBootstrapper(Connection conn, String tableprefix, boolean filtered, String glosstable) {
+		super(conn, tableprefix, filtered, glosstable);
 		this.segments = new Hashtable<String, String>(); 
 		this.states = new HashSet<String>();
 		
@@ -35,8 +35,8 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	 * @param knownstates
 	 */
 	public StateCollectorBootstrapper(Connection conn, String tableprefix,
-			ArrayList<String> knownstates) {
-		super(conn,tableprefix, knownstates);
+			ArrayList<String> knownstates, boolean filtered, String glosstable) {
+		super(conn,tableprefix, knownstates, filtered, glosstable);
 		this.segments = new Hashtable<String, String>(); 
 		this.states = new HashSet<String>();
 		

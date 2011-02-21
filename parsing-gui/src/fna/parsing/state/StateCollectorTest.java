@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.*;
+
+import fna.parsing.*;
 /**
  * DO NOT treat a list of states, such as imbricate, lanceolate or ovate because it is common for an author to enumerate different characters in a list
  * Treat only states connected by or/to, such as /{elliptic} to {oblong}/ or {ovate}, {glabrous} or /{villous} to {tomentose}/, clasping or short_decurrent,  
@@ -21,16 +23,19 @@ import java.io.*;
  *
  */
 public class StateCollectorTest extends StateCollector {
-
+	private boolean filtered = false;
+	private Hashtable<String, Boolean> checkedtermpairs = new Hashtable<String, Boolean>();
 		
-	public StateCollectorTest(Connection conn, String tableprefix) {
-		super(conn, tableprefix);
+	public StateCollectorTest(Connection conn, String tableprefix, boolean filtered, String glosstable) {
+		super(conn, tableprefix, glosstable);
 		//statematrix.save2MySQL(database, "termsuser", "termspassword");
+		this.filtered = filtered;
 		
 	}
 	
-	public StateCollectorTest(Connection conn, String tableprefix, ArrayList<String> knownstates) {
-		super(conn, tableprefix, knownstates);
+	public StateCollectorTest(Connection conn, String tableprefix, ArrayList<String> knownstates, boolean filtered, String glosstable) {
+		super(conn, tableprefix, knownstates, glosstable);
+		this.filtered = filtered;
 		
 	}
 
@@ -173,10 +178,47 @@ public class StateCollectorTest extends StateCollector {
 	    		State s2 = statematrix.getStateByName(alist[j]);
 	    		s1 = s1 == null? new State(alist[i]) : s1;
 	    		s2 = s2 == null? new State(alist[j]) : s2;
-	    		statematrix.addPair(s1, s2, score, source);
+	    		boolean add = true;
+	    		if(this.filtered){
+	    			add = notInGlossary(s1.getName(), s2.getName());
+	    		}
+	    		if(add){
+	    			statematrix.addPair(s1, s2, score, source);
+	    		}
 	    	}
 	    }	
 	}
+	/**
+	 * 
+	 * @param term1
+	 * @param term2
+	 * @return false iff term1 and term2's categories overlap in glossary.
+	 */
+	private boolean notInGlossary(String term1, String term2) {
+		Boolean result = null;
+		//check the cache
+		result = this.checkedtermpairs.get(term1+"#"+term2);
+		result = result == null? this.checkedtermpairs.get(term2+"#"+term1) : result;
+		if(result==null){//not in cache
+			try{
+				Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select * from "+ApplicationUtilities.getProperty("database.glossary.name")+
+				" where term ='"+term1+"' and category in (select category from "+ApplicationUtilities.getProperty("database.glossary.name")+
+				" where term='"+term2+"')");
+				if(rs.next()){
+					this.checkedtermpairs.put(term1+"#"+term2, new Boolean(false));
+					return false;
+				}
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+			
+		}else{
+			return result.booleanValue();
+		}		
+		return true;
+	}
+
 	/**
 	 * @param args
 	 */
@@ -200,7 +242,7 @@ public class StateCollectorTest extends StateCollector {
 		}catch(Exception e){
 			e.printStackTrace();
 		}	
-		StateCollectorTest sct = new StateCollectorTest(conn, "fnav19"); /*using learned semanticroles only*/
+		StateCollectorTest sct = new StateCollectorTest(conn, "fnav19", false, "fnaglossaryfixed"); /*using learned semanticroles only*/
 		sct.collect();
 		sct.saveStates();
 		sct.grouping4GraphML();
