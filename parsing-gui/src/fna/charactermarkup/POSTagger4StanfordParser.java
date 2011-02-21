@@ -36,15 +36,18 @@ public class POSTagger4StanfordParser {
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	private boolean printList = false;
 	private String tableprefix = null;
-
+	private String postable = null;
+	private String glosstable = null;
 	
 
 	/**
 	 * 
 	 */
-	public POSTagger4StanfordParser(Connection conn, String tableprefix) {
+	public POSTagger4StanfordParser(Connection conn, String tableprefix, String postable, String glosstable) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
+		this.postable = postable;
+		this.glosstable = glosstable;
 	}
 	
 	/**
@@ -197,7 +200,7 @@ public class POSTagger4StanfordParser {
 	        	   word = word.replaceAll("[<>{}]", "").trim();
 	        	   String p = "";
 	        	   if(word.length()>0 && !word.matches("\\W") && !word.matches("("+ChunkedSentence.prepositions+")") &&!word.matches("("+ChunkedSentence.stop+")")){
-		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_wordpos4parser where word='"+word+"'");
+		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_"+this.postable+" where word='"+word+"'");
 		       		   if(rs1.next()){
 		       			   p = rs1.getString("pos");
 		       		   }
@@ -285,7 +288,7 @@ public class POSTagger4StanfordParser {
 		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
 			String word = this.chunkedtokens.get(i);
 			if(word.indexOf('{')>=0 && word.indexOf('<')<0){
-				String ch = Utilities.lookupCharacter(word, conn, this.characterhash); //remember the char for this word (this word is a word before (to|or|\\W)
+				String ch = Utilities.lookupCharacter(word, conn, this.characterhash, glosstable); //remember the char for this word (this word is a word before (to|or|\\W)
 				if(ch==null){
 					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
 				}else{
@@ -482,7 +485,7 @@ public class POSTagger4StanfordParser {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix);
+		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "wordpos4parser", "fnaglossaryfixed");
 		
 		//String str="<Cypselae> {tan} , {subcylindric} , {subterete} to 5-{angled} , 8–10 {mm} , {indistinctly} 8–10-{ribbed}";
 		//String src="364.txt-15";
@@ -494,8 +497,9 @@ public class POSTagger4StanfordParser {
 		//String src = "41.txt-1";
 		//String str = " <outer> 5 – 6 {lance-ovate} to {lanceolate} , 4 – 7 {mm} , {basally} {cartilaginous} , {distally} {herbaceous} , <inner> 8 + {lance-linear} to {linear} , 6 – 12 {mm} , {herbaceous} , all {usually} with some <{gland}>-{tipped} <hairs> 0 . 5 – 0 . 8 {mm} on <margins> near <bases> or on {abaxial} <faces> toward <tips> .";
 		//String src = "273.txt-6";
-		String str = "<stems> {usually} 1 , {branched} {distally} or {openly} so throughout , {leafy} , {glabrous} or {thinly} {arachnoid-tomentose} .";
+		//String str = "<stems> {usually} 1 , {branched} {distally} or {openly} so throughout , {leafy} , {glabrous} or {thinly} {arachnoid-tomentose} .";
 		String src = "157.txt-1";
+		String str = "laminae 6 17 cm . long , 2 - 7 cm . broad , lanceolate to narrowly oblong or elliptic_oblong , abruptly and narrowly acuminate , obtuse to acute at the base , margin entire , the lamina drying stiffly chartaceous to subcoriaceous , smooth on both surfaces , essentially glabrous and the midvein prominent above , glabrous to sparsely puberulent beneath , the 8 to 18 pairs of major secondary veins prominent beneath and usually loop_connected near the margin , microscopic globose_capitate or oblongoid_capitate hairs usually present on the lower surface , clear or orange distally .";
 		System.out.println(tagger.POSTag(str, src));
 	}
 
