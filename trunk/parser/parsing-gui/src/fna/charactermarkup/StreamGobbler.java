@@ -43,24 +43,7 @@ class StreamGobbler extends Thread
 
             while ( (line = br.readLine()) != null)
             {	
-            	if(debug) System.out.println(type+">"+line);
-            	if(line.startsWith("Parsing [sent.")){
-            		headings.add(line);
-            		if(debug) System.out.println(h+" add heading: "+line);
-            		h++;
-            	}else{
-            		if(line.startsWith("(ROOT") || line.startsWith("SENTENCE_SKIPPED_OR_UNPARSABLE")){
-            			if(sb.toString().trim().length()>0){
-            				trees.add(sb.toString());
-            				if(debug) System.out.println(t+" add tree: "+sb.toString());
-            				t++;
-            			}
-            			sb = new StringBuffer();
-            			sb.append(line+System.getProperty("line.separator"));
-            		}else if(line.matches("^\\s*\\(.*")){
-            			sb.append(line+System.getProperty("line.separator"));
-            		}
-            	}
+            	sb = gobbleLine(line, sb);
             }
             if(sb.toString().trim().length()>0){
             	trees.add(sb.toString());
@@ -70,5 +53,27 @@ class StreamGobbler extends Thread
             ioe.printStackTrace();  
             }
     }
+
+	protected StringBuffer gobbleLine(String line, StringBuffer sb) {
+		if(debug) System.out.println(type+">"+line);
+		if(line.startsWith("Parsing [sent.")){
+			headings.add(line);
+			if(debug) System.out.println(h+" add heading: "+line);
+			h++;
+		}else{
+			if(line.startsWith("(ROOT") || line.startsWith("SENTENCE_SKIPPED_OR_UNPARSABLE")){
+				if(sb.toString().trim().length()>0){
+					trees.add(sb.toString());
+					if(debug) System.out.println(t+" add tree: "+sb.toString());
+					t++;
+				}
+				sb = new StringBuffer();
+				sb.append(line+System.getProperty("line.separator"));
+			}else if(line.matches("^\\s*\\(.*")){
+				sb.append(line+System.getProperty("line.separator"));
+			}
+		}
+		return sb;
+	}
 }
 
