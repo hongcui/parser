@@ -43,7 +43,7 @@ import prefuse.visual.VisualItem;
 	        // found at the root of the java classpath
 	        Graph graph = null;
 	        try {
-	        	
+	        	System.out.println("graphPath=="+graphPath);
 	        	graph = new GraphMLReader().readGraph(graphPath);
 	        } catch ( DataIOException e ) {
 	            e.printStackTrace();

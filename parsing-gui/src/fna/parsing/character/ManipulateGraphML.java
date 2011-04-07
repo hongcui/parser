@@ -10,7 +10,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource; 
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
@@ -18,9 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
-import fna.parsing.Registry;
 
 public class ManipulateGraphML {
 

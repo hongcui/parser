@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
@@ -15,6 +14,7 @@ import fna.beans.TermsDataBean;
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
 
+@SuppressWarnings({ "unused" })
 public class CharacterStateDBAccess {
 
 	/**
@@ -85,8 +85,13 @@ public class CharacterStateDBAccess {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
+		
 		group = group.substring(group.indexOf("_")+1);
-		ArrayList<TermsDataBean > coOccurrences = new ArrayList<TermsDataBean>();
+		ArrayList<TermsDataBean > coOccurrences =null;
+		if(group!=null && group.trim()!=""){
+			
+			coOccurrences = new ArrayList<TermsDataBean>();
+				
 		try {
 			
 			conn = DriverManager.getConnection(url);
@@ -114,7 +119,9 @@ public class CharacterStateDBAccess {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getTerms", exe);
 			exe.printStackTrace();
 			
-		} finally {
+		}
+		
+		finally {
 			if (rset != null) {
 				rset.close();
 			}
@@ -127,6 +134,7 @@ public class CharacterStateDBAccess {
 				conn.close();
 			}
 			
+		}
 		}
 		return coOccurrences;
 		

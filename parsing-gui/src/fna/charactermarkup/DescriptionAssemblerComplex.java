@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.io.*;
 
 
-
+@SuppressWarnings({  "unused" })
 public class DescriptionAssemblerComplex {
     static protected Connection conn = null;
     static protected String database = "fnav19_benchmark";

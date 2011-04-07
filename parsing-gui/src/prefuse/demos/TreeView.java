@@ -47,9 +47,9 @@ import prefuse.data.event.TupleSetListener;
 import prefuse.data.io.TreeMLReader;
 import prefuse.data.search.PrefixSearchTupleSet;
 import prefuse.data.tuple.TupleSet;
+import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
-import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
@@ -68,7 +68,12 @@ import prefuse.visual.sort.TreeDepthItemSorter;
  */
 public class TreeView extends Display {
 
-    public static final String TREE_CHI = "/chi-ontology.xml.gz";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4735854492233291983L;
+
+	public static final String TREE_CHI = "/chi-ontology.xml.gz";
     
     private static final String tree = "tree";
     private static final String treeNodes = "tree.nodes";
@@ -341,7 +346,11 @@ public class TreeView extends Display {
     // ------------------------------------------------------------------------
    
     public class OrientAction extends AbstractAction {
-        private int orientation;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -4004350307212080527L;
+		private int orientation;
         
         public OrientAction(int orientation) {
             this.orientation = orientation;

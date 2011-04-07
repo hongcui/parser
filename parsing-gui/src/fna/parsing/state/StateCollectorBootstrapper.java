@@ -57,7 +57,7 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 	}
 	
 	protected void collectPatterns(String source, String sent){
-		String scopy = sent;
+	//	String scopy = sent;
 		Pattern p = Pattern.compile("\\b(to|or)\\b");
 		Matcher m = p.matcher(sent);
 		if(m.find()){
@@ -122,7 +122,7 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 		}
 	}
 	private int collectState(){
-		Pattern simple = Pattern.compile("\\{\\w+}\\s*(or|to)\\s*\\{[^{]+"); 
+		//Pattern simple = Pattern.compile("\\{\\w+}\\s*(or|to)\\s*\\{[^{]+"); 
 		int discovery = 0;
 		Enumeration<String> seg = segments.keys();
 		while(seg.hasMoreElements()){
@@ -164,6 +164,7 @@ public class StateCollectorBootstrapper extends StateCollectorTest {
 		return string.replaceFirst("\\|+$", "");
 	}
 	
+	@SuppressWarnings("unused")
 	private void collectThis(String segment, String sourcelist){
 		String matched = segment.replaceAll("\\s+\\w+\\s+", " "); //remove non-{-tagged words
 		matched = matched.trim();

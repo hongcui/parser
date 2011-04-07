@@ -28,6 +28,7 @@ import fna.db.*;
  * split taxonX documents to smaller units, each resulting xml document contains 1 treatment.
  * 
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class Type4Transformer extends Thread {
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
 	private File source = new File(Registry.SourceDirectory);
@@ -103,24 +104,29 @@ public class Type4Transformer extends Thread {
 				//detach all but one treatments from doc
 				ArrayList<Element> saved = new ArrayList<Element>();
 				for(int t = 1; t<treatments.size(); t++){
-					Element e = (Element)treatments.get(t);
+					Element e = treatments.get(t);
 					doc.removeContent(e);
 					e.detach();
 					saved.add(e);
 				}
 				//now doc is a template to create other treatment files
+				//root.detach();
+				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"), fn, 0);
 				root.detach();
 				writeTreatment2Transformed(root, fn, 0);
+				listener.info((number++)+"", fn+"_0.xml");
 		        getDescriptionFrom(root,fn, 0);
 				//replace treatement in doc with a new treatment in saved
 				Iterator<Element> it = saved.iterator();
 				int count = 1;
 				while(it.hasNext()){
-					Element e = (Element)it.next();
+					Element e = it.next();
 					Element body = root.getChild("taxonxBody", root.getNamespace());
 					Element treatment = (Element) XPath.selectSingleNode(
-						root,"/tax:taxonx/tax:taxonxBody/tax:treatment");			
+						root,"/tax:taxonx/tax:taxonxBody/tax:treatment");	
+					//in treatment/div[@type="description"], replace <tax:p> tag with <description pid="1.txtp436_1.txt">
 					int index = body.indexOf(treatment);
+					e = formatDescription(e, fn, count);
 					body.setContent(index, e);
 					//write each treatment as a file in the target/transfromed folder
 					//write description text in the target/description folder
@@ -145,6 +151,31 @@ public class Type4Transformer extends Thread {
 		
 	}
 
+	private Element formatDescription(Element treatment, int fn, int count) {
+		try{
+			Element description = (Element)XPath.selectSingleNode(treatment, ".//tax:div[@type='description']");
+			if(description==null){
+				return treatment;
+			}else{
+				List<Element> ps = XPath.selectNodes(description, ".//tax:p");
+				Iterator<Element> it = ps.iterator();
+				int i = 0;
+				while(it.hasNext()){
+					Element p = it.next();
+					p.setName("description");
+					p.setAttribute("pid", fn+"_"+count+".txtp"+i);
+					p.setNamespace(null);
+					i++;
+				}
+				return treatment;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			LOGGER.error("Type4Transformer : error.", e);
+		}
+		return null;
+	}
+
 	private void getDescriptionFrom(Element root, int fn,  int count) {
 		// TODO Auto-generated method stub
 		try{
@@ -154,10 +185,11 @@ public class Type4Transformer extends Thread {
 		while(it.hasNext()){
 			Element div = it.next();
 			if(div.getAttributeValue("type").compareToIgnoreCase("description")==0){
-				List<Element> ps = div.getChildren("p", div.getNamespace());
+				//List<Element> ps = div.getChildren("p", div.getNamespace());
+				List<Element> ps = div.getChildren("description");
 				Iterator<Element> t = ps.iterator();
 				while(t.hasNext()){
-					Element p = (Element)t.next();
+					Element p = t.next();
 					int size = p.getContentSize();
 					StringBuffer sb = new StringBuffer();
 					for(int c = 0; c < size; c++){

@@ -3,20 +3,16 @@
  */
 package fna.charactermarkup;
 
-import org.jdom.*;
-import org.jdom.xpath.*;
-import java.sql.Connection;
-import fna.parsing.state.WordNetWrapper;
-import fna.parsing.state.StateCollector;
-
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jdom.Document;
+import org.jdom.Element;
 
 
 /**
@@ -28,11 +24,14 @@ import java.util.regex.Pattern;
  *
  *	the annotation of a chunk may require access to the original parsing tree, but that is not handled by this class.
  */
+
+@SuppressWarnings("unchecked")
 public class ChunkedSentence {
 	private String glosstable = null;
 	private String markedsent = null;
 	private String chunkedsent = null;
 	private ArrayList<String> chunkedtokens = null;
+	@SuppressWarnings("unused")
 	private ArrayList<String> charactertokensReversed = new ArrayList<String>();
 	private int pointer = 0; //pointing at the next chunk to be annotated
 	public static final String locationpp="near|from";
@@ -47,6 +46,7 @@ public class ChunkedSentence {
 	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
 	private boolean inSegment = false;
 	private boolean rightAfterSubject = false;
+	@SuppressWarnings("unused")
 	private int sentid = -1;
 	private ArrayList<String> pastpointers = new ArrayList<String>();
 
@@ -162,7 +162,7 @@ public class ChunkedSentence {
 			if(t.indexOf('<')>=0){
 				for(i = i-1; i>=0; i--){
 					String m = this.chunkedtokens.get(i);
-					if(m.matches(".*?\\b("+this.prepositions+")\\b.*")){
+					if(m.matches(".*?\\b("+ChunkedSentence.prepositions+")\\b.*")){
 						this.chunkedsent = m+" "+this.chunkedsent;
 						break; //has prepositions before <
 					}
@@ -236,7 +236,7 @@ public class ChunkedSentence {
 	private void normalizeUnits(){
 		for(int i = 0; i<this.chunkedtokens.size(); i++){
 			String word = this.chunkedtokens.get(i);
-			if(word.matches("[<{]("+this.units+")[}>]")){
+			if(word.matches("[<{]("+ChunkedSentence.units+")[}>]")){
 				if(i-1>=0){
 					String latest = this.chunkedtokens.get(i-1);
 					if(latest.matches(".*?\\d\\]+$")){
@@ -261,7 +261,7 @@ public class ChunkedSentence {
 		int thani = 0;
 		int firstmorei = this.chunkedtokens.size();
 		String more = "";
-		String preps = this.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
+		String preps = ChunkedSentence.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
 		if(this.markedsent.indexOf("than") >=0 ){
 			if(this.printNormThan){
 				System.out.println("Need to normalize Than! "+np);
@@ -340,7 +340,7 @@ public class ChunkedSentence {
 						break;
 					}
 					//to b[v[expose] o[(stigma)]]
-					if(t.matches("[,:;\\d]") || t.matches(".*?\\b[pv]\\[.*") ||t.matches(".*?\\b("+this.prepositions+"|and|or|that|which|but)\\b.*")){
+					if(t.matches("[,:;\\d]") || t.matches(".*?\\b[pv]\\[.*") ||t.matches(".*?\\b("+ChunkedSentence.prepositions+"|and|or|that|which|but)\\b.*")){
 						break;
 					}
 					np +=t+" ";
@@ -363,7 +363,7 @@ public class ChunkedSentence {
 					boolean startc = false; //find the start of the chunk
 					for(int j = i-1; j>=0; j--){
 						String t = this.chunkedtokens.get(j);
-						if(t.matches(".*?\\b("+this.prepositions+"|and|or|that|which|but)\\b.*") || t.matches(".*?[>;,:].*")){
+						if(t.matches(".*?\\b("+ChunkedSentence.prepositions+"|and|or|that|which|but)\\b.*") || t.matches(".*?[>;,:].*")){
 							np = np.replaceAll("<", "(").replaceAll(">", ")").replaceAll("\\s+", " ").trim();
 							//np = np.replaceAll("\\s+", " ").trim();
 							this.chunkedtokens.set(i, "w["+np+"]"); //replace "to" with np
@@ -392,7 +392,7 @@ public class ChunkedSentence {
 	private void normalizeOtherINs(){
 		
 		//boolean startn = false;
-		String preps = this.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
+		String preps = ChunkedSentence.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
 		for(int i = 0; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
 			
@@ -492,7 +492,11 @@ public class ChunkedSentence {
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
 				wcount += (this.chunkedtokens.get(i)+" a").replaceAll(",", "or").replaceAll("\\b(or )+", "or ").trim().split("\\s+").length-1;
 				//if(this.chunkedtokens.get(i).matches(".*?\\b"+tobeskipped[sl-1]+".*") && wcount>=sl){
-				if(this.chunkedtokens.get(i).toLowerCase().matches(".*?\\b"+tobeskipped[sl-1].substring(0, tobeskipped[sl-1].length()-2)+".*") && wcount>=sl){//try to match <phyllaries> to phyllary
+				String skipthis = tobeskipped[sl-1];
+				if(tobeskipped[sl-1].length()>2){
+					skipthis = tobeskipped[sl-1].substring(0, tobeskipped[sl-1].length()-2);//for structure names such as "f3"
+				}
+				if(this.chunkedtokens.get(i).toLowerCase().matches(".*?\\b"+skipthis+".*") && wcount>=sl){//try to match <phyllaries> to phyllary
 					if(wcount==sl){
 						this.pointer = i;
 					}else{
@@ -830,7 +834,7 @@ public class ChunkedSentence {
 			if(role.compareTo("<") !=0+0 && true){
 				if(Utilities.isAdv(token, adverbs)){
 					scs = scs.trim().length()>0? scs.trim()+ "] m["+token+" " : "m["+token;
-				}else if(token.matches(".*[,;:\\.\\[].*") || token.matches("\\b("+this.prepositions+"|or|and)\\b") || token.compareTo("-LRB-/-LRB-")==0){
+				}else if(token.matches(".*[,;:\\.\\[].*") || token.matches("\\b("+ChunkedSentence.prepositions+"|or|and)\\b") || token.compareTo("-LRB-/-LRB-")==0){
 					this.pointer = i;
 					if(scs.matches(".*?\\w{2,}\\[.*")){//must have character[
 						scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
@@ -901,7 +905,7 @@ public class ChunkedSentence {
 										}
 										return new ChunkVP("b["+scs+"]"); 
 									}
-								}else if(t.matches(".*?\\W.*") || t.matches("\\b("+this.prepositions+"|or|and)\\b") || t.compareTo("-LRB-/-LRB-")==0){
+								}else if(t.matches(".*?\\W.*") || t.matches("\\b("+ChunkedSentence.prepositions+"|or|and)\\b") || t.compareTo("-LRB-/-LRB-")==0){
 									if(scs.matches(".*?\\w{2,}\\[.*")){ //borne {singly
 										this.pointer = j;
 										scs = (scs.replaceFirst("^\\]", "").trim()+"]").replaceFirst("\\bv\\[[^\\[]*?\\]\\s*", "");
@@ -1004,20 +1008,20 @@ public class ChunkedSentence {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
 		t = NumericalHandler.originalNumForm(t).replaceAll("\\?", "");		
-		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+this.counts+")\\b|$)")){ //ends with a number
+		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+ChunkedSentence.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
 			if(pointer==this.chunkedtokens.size()){
 				return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
 			}
 			t = this.chunkedtokens.get(this.pointer);
-			if(t.matches("^[{<(]*("+this.units+")\\b.*?")){
+			if(t.matches("^[{<(]*("+ChunkedSentence.units+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
 				adjustPointer4DotLong(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
 				return new ChunkValue(numerics.replaceAll("[{(<>)}]", "").trim());
 			}
-			if(t.matches("^[{<(]*("+this.times+")\\b.*?")){
+			if(t.matches("^[{<(]*("+ChunkedSentence.times+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
 				numerics = numerics.replaceAll("[{(<>)}]", "");
@@ -1085,7 +1089,7 @@ public class ChunkedSentence {
 		int i = 0;
 		for(i = pointer; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
-			if(token.matches(".*?\\b("+this.prepositions+")\\b.*") || token.matches(".*?[,;:\\.].*")){
+			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")\\b.*") || token.matches(".*?[,;:\\.].*")){
 				break;
 			}
 			if(found && token.matches("\\b(and|or)\\b")){
@@ -1183,12 +1187,12 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 			String beforechar = beforethan.replace(charword, "").trim().replaceFirst("n\\[", "");
 			
 			String chara = null;
-			if(!charword.matches("("+this.more+")")){
-				chara = Utilities.lookupCharacter(charword, this.conn, this.characterhash, glosstable);
+			if(!charword.matches("("+ChunkedSentence.more+")")){
+				chara = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable);
 			}
 			String afterthan = token.substring(token.indexOf(" than ")+6);
 			//Case B
-			if(afterthan.matches(".*?\\d.*?\\b("+this.units+"|long|length|wide|width)\\b.*") || afterthan.matches(".*?\\d\\.\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
+			if(afterthan.matches(".*?\\d.*?\\b("+ChunkedSentence.units+"|long|length|wide|width)\\b.*") || afterthan.matches(".*?\\d\\.\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
 				if(chara==null){chara="size";}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);

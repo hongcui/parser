@@ -14,6 +14,7 @@ import fna.parsing.ApplicationUtilities;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class DeHyphenizer {
 	private String tablename;
 	private String columnname;

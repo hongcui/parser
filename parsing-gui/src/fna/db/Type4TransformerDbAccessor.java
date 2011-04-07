@@ -5,11 +5,9 @@ package fna.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 
@@ -19,6 +17,7 @@ import fna.parsing.ApplicationUtilities;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked" })
 public class Type4TransformerDbAccessor {
 
 	/**

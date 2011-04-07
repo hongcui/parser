@@ -1,6 +1,5 @@
 package fna.charactermarkup;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,13 +12,6 @@ import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-
-/*
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;*/
-
-import fna.parsing.ParsingException;
 
 public class CompareXML {
 
@@ -147,6 +139,7 @@ public class CompareXML {
 	 * @param ansroot
 	 * @param testroot
 	 */	
+	@SuppressWarnings("unchecked")
 	public void validatestruct(Element ansroot, Element testroot) {
 		String exact = "";
 		String ansexact = "";
@@ -241,15 +234,15 @@ public class CompareXML {
 	 * @param ansroot
 	 * @param testroot
 	 */
+	@SuppressWarnings("unchecked")
 	public void validatecharacter(Element ansroot, Element testroot) {
 		String exact = "";
 		String ansliexact = "";
-		ArrayList<List> myansli = new ArrayList();
-		ArrayList<List> mytestli = new ArrayList();
+		ArrayList<List> myansli = new ArrayList<List> ();
+		ArrayList<List> mytestli = new ArrayList<List> ();
 		List ansli = null, testli = null;
 		List structansli = ansroot.getChildren("structure");
 		List structtestli = testroot.getChildren("structure");
-		int flags = 0;
 		for( Iterator l = structansli.iterator(); l.hasNext();){
 			Element structans = (Element)l.next();
 			if(!structans.getChildren().isEmpty()){
@@ -258,7 +251,6 @@ public class CompareXML {
 					tothumanch += ansli.size();
 			}
 		}
-		flags = 0;
 		for( Iterator l = structtestli.iterator(); l.hasNext();){
 			Element structtest = (Element)l.next();
 			if(!structtest.getChildren().isEmpty()){
@@ -327,7 +319,6 @@ public class CompareXML {
 								Element ans = (Element)ansli.get(j);
 								if(!ansliexact.contains(ans.getAttributes().toString())){
 									if (test.getParentElement().getAttributeValue("name").compareTo(ans.getParentElement().getAttributeValue("name"))==0){
-										int count = 0, passct = 0;
 										List testattr = test.getAttributes();
 										List ansattr = ans.getAttributes();
 										int missattr = 0;
@@ -386,6 +377,7 @@ public class CompareXML {
 	 * @param ansroot
 	 * @param testroot
 	 */
+	@SuppressWarnings("unchecked")
 	public void validaterelation(Element ansroot, Element testroot) {
 		String exact = "";
 		List ansli = ansroot.getChildren("relation");
@@ -720,6 +712,7 @@ public class CompareXML {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		@SuppressWarnings("unused")
 		CompareXML cXML = new CompareXML();
 	}
 

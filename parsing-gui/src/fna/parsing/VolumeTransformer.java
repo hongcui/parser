@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Hashtable;
@@ -36,6 +35,7 @@ import fna.db.VolumeTransformerDbAccess;
  * 
  * @author chunshui
  */
+@SuppressWarnings({ "unchecked", "unused","static-access" })
 public class VolumeTransformer extends Thread {
 	
 	private static String organnames ="2n|achene|anther|apex|awn|ax|bark|beak|blade|bract|bracteole|branch|branchlet|broad|calyx|capsule|cap_sule|caropohore|carpophore|caudex|cluster|corolla|corona|crown|cup_|cusp|cyme|cymule|embryo|endosperm|fascicle|filament|flower|fruit|head|herb|homophyllous|hypanthium|hypanth_ium|indument|inflore|inflorescence|inflores_cence|inflo_rescence|internode|involucre|invo_lucre|in_florescence|in_ternode|leaf|limb|lobe|margin|midvein|nectary|node|ocrea|ocreola|ovary|ovule|pair|papilla|pedicel|pedicle|peduncle|perennial|perianth|petal|petiole|plant|prickle|rhizome|rhi_zome|root|rootstock|rosette|scape|seed|sepal|shoot|spikelet|spur|stamen|stem|stigma|stipule|sti_pule|structure|style|subshrub|taproot|taprooted|tap_root|tendril|tepal|testa|tooth|tree|tube|tubercle|tubercule|tuft|twig|utricle|vein|vine|wing|x";
@@ -195,7 +195,7 @@ public class VolumeTransformer extends Thread {
 			
 			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
-			VolumeFinalizer vf = new VolumeFinalizer(listener, null, this.conn);
+			VolumeFinalizer vf = new VolumeFinalizer(listener, null, this.conn,null);
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);

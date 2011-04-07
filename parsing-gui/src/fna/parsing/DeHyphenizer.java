@@ -17,6 +17,7 @@ import fna.parsing.character.Glossary;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class DeHyphenizer {
 	private String tablename;
 	private String columnname;
@@ -26,11 +27,11 @@ public class DeHyphenizer {
 	static private String username = ApplicationUtilities.getProperty("database.username");
 	static private String password = ApplicationUtilities.getProperty("database.password");
 	private static final Logger LOGGER = Logger.getLogger(DeHyphenizer.class);
-	private String glossPrefix = null;
+	private String glossTable = null;
 	private Glossary glossary;
 	
-	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix, Glossary glossary) {
-		this.glossPrefix = glossPrefix;
+	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen, String glosstable, Glossary glossary) {
+		this.glossTable = glosstable;
 		this.glossary = glossary;
 		try{
 			if(conn == null){
@@ -239,7 +240,7 @@ public class DeHyphenizer {
 		boolean find = false;
 		try{
 			Statement stmt = conn.createStatement();
-			String query = "select term from "+this.glossPrefix+"_fnaglossary where term like '% "+term+" %' or term like '"+term+" %' or term like '% "+term+"' or term like '"+term+"'";
+			String query = "select term from "+this.glossTable+" where term like '% "+term+" %' or term like '"+term+" %' or term like '% "+term+"' or term like '"+term+"'";
 			ResultSet rs = stmt.executeQuery(query);
 			while(rs.next()){
 				find = true;

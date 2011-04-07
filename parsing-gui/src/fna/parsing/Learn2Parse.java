@@ -3,9 +3,6 @@
  */
 package fna.parsing;
 
-import java.util.ArrayList;
-
-import org.jdom.Element;
 
 /**
  * @author Hong Updates

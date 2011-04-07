@@ -67,6 +67,7 @@ public class WebServicesUtilities {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("deprecation")
 	private boolean checkZoobankServer(String text) throws Exception {
 		Parser parser = new Parser(ApplicationUtilities.getProperty("ZOOBANK")
 				+ URLEncoder.encode(text));
@@ -175,6 +176,7 @@ public class WebServicesUtilities {
 	 * @param src
 	 * @return
 	 */
+	@SuppressWarnings("deprecation")
 	public static ScientificName getNameInfo(String name, String src)
 			throws Exception {
 		/* Implemented only for Zoobank server */

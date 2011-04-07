@@ -5,7 +5,12 @@ import prefuse.util.ui.JPrefuseApplet;
 
 public class RadialGraphView extends JPrefuseApplet {
 
-    public void init() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4662402088440959222L;
+
+	public void init() {
         this.setContentPane(
             prefuse.demos.RadialGraphView.demo("/socialnet.xml", "name"));
     }

@@ -8,7 +8,9 @@ package fna.charactermarkup;
  *
  */
 import java.util.*;
+
 import java.io.*;
+@SuppressWarnings({ "unused" })
 class StreamGobbler extends Thread
 {
     InputStream is;

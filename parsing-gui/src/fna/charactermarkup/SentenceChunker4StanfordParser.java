@@ -3,16 +3,21 @@
  */
 package fna.charactermarkup;
 
-import org.jdom.*;
+import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.jdom.Attribute;
+import org.jdom.Content;
+import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
-import java.sql.Connection;
-import fna.parsing.state.WordNetWrapper;
 
-import java.io.ByteArrayInputStream;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import fna.parsing.state.WordNetWrapper;
 
 /**
  * @author hong
@@ -48,6 +53,7 @@ PPList: i
 main subject: z[m/e]
  * 
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class SentenceChunker4StanfordParser {
 	private Connection conn = null;
 	private String glosstable = null;

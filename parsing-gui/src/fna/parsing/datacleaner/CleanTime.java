@@ -3,18 +3,18 @@
  */
 package fna.parsing.datacleaner;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.jdom.Content;
-import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
 /**
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked" })
 public class CleanTime extends DataCleaner{
 
 	/**

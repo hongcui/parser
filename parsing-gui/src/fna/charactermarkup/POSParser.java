@@ -1,14 +1,17 @@
 package fna.charactermarkup;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
-import java.util.*;
-import java.io.File;
-import java.util.regex.*;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,14 +19,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-//import edu.stanford.nlp.trees.*;
-//import edu.stanford.nlp.trees.tregex.*;
-//import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
-
-
 import fna.parsing.ProcessListener;
 
-
+@SuppressWarnings({ "unused" })
 public class POSParser {
 	static protected Connection conn = null;
 	static protected String database = null;

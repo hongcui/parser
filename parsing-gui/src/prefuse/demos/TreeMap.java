@@ -60,7 +60,12 @@ import prefuse.visual.sort.TreeDepthItemSorter;
  */
 public class TreeMap extends Display {
 
-    public static final String TREE_CHI = "/chi-ontology.xml.gz";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5041356143228200948L;
+
+	public static final String TREE_CHI = "/chi-ontology.xml.gz";
     
     // create data description of labels, setting colors, fonts ahead of time
     private static final Schema LABEL_SCHEMA = PrefuseLib.getVisualItemSchema();
@@ -292,7 +297,8 @@ public class TreeMap extends Display {
         public LabelLayout(String group) {
             super(group);
         }
-        public void run(double frac) {
+        @SuppressWarnings("unchecked")
+		public void run(double frac) {
             Iterator iter = m_vis.items(m_group);
             while ( iter.hasNext() ) {
                 DecoratorItem item = (DecoratorItem)iter.next();

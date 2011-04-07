@@ -32,6 +32,8 @@ import fna.db.*;
  * input: seeds description, with or without
  * output: prefix_paragraphs and prefix_sentence, prefix_wordpos tables etc by unsupervisedClauseMarkupBenchmarked.pl
  */
+
+@SuppressWarnings("unchecked")
 public class Type3Transformation extends Thread {
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
@@ -113,7 +115,7 @@ public class Type3Transformation extends Thread {
 
 		//		read the output from the command
 		String s = "";
-		int i = 0;
+		//int i = 0;
 		while ((s = stdInput.readLine()) != null) {
 			System.out.println(s + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
@@ -150,7 +152,7 @@ public class Type3Transformation extends Thread {
 		listener.progress(60);
 		//dehypen descriptions folder
 		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", 
-				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, null);
+				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, "",null);
 		dhf.dehyphen();
 
 	}
@@ -164,9 +166,9 @@ public class Type3Transformation extends Thread {
 	 */
 	private void outputTo(File desfolder, File trafolder, String fname) {
 		Type3PreMarkupDbAccessor dba = new Type3PreMarkupDbAccessor();
-		ArrayList<String> desIDs = dba.selectRecords("paraID", dataprefix.trim()+"_paragraphbootstrap", "paraID like '"+fname+"%'");
+		ArrayList<String> desIDs = dba.selectRecords("paraID", dataprefix.trim()+"_clean_paragraphbootstrap", "paraID like '"+fname+"%'");
 		
-		ArrayList<String> allPs = dba.selectRecords("paraID, remark", dataprefix.trim()+"_paragraphs", "paraID like '"+fname+"%'");
+		ArrayList<String> allPs = dba.selectRecords("paraID, remark", dataprefix.trim()+"_clean_paragraphs", "paraID like '"+fname+"%'");
 		//put in to a hashtable
 		Hashtable<String, String> paras = new Hashtable<String, String>();
 		
@@ -217,7 +219,7 @@ public class Type3Transformation extends Thread {
 		}
 		//write xml to transformed
 		try {
-			Document xml = new Document(doc);
+		//	Document xml = new Document(doc);
 			BufferedOutputStream out = new BufferedOutputStream(
 					new FileOutputStream(new File(trafolder, fname+".xml")));
 			/* Producer */

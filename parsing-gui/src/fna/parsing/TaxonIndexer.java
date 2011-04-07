@@ -14,7 +14,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 

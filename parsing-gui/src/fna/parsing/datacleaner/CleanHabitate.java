@@ -25,6 +25,7 @@ public class CleanHabitate extends DataCleaner{
 		super(sourcedir, sourceElements, outputElement, outputdir);
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected Element clean(Element root){
 		try{
 			Iterator<String> it = this.sourceelements.iterator();

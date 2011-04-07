@@ -3,20 +3,14 @@
  */
 package fna.charactermarkup;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-
-
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +21,7 @@ import java.util.regex.Pattern;
  * @author hongcui
  *
  */
+@SuppressWarnings({  "unused","static-access" })
 public class POSTagger4StanfordParser {
 	static protected Connection conn = null;
 	static protected String username = "root";

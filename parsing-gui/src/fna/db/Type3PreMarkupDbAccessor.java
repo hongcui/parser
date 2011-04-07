@@ -4,23 +4,14 @@ package fna.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
-import fna.parsing.MainForm;
-import fna.parsing.ParsingException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.DataInputStream;
-import java.io.InputStreamReader;
-
-import java.util.ArrayList;
-
+@SuppressWarnings("unchecked")
 public class Type3PreMarkupDbAccessor {
 
 	/**
@@ -30,7 +21,8 @@ public class Type3PreMarkupDbAccessor {
     private static String url = ApplicationUtilities.getProperty("database.url");
     private static Connection conn = null;
     //private static String prefix = "fna";
-    private String prefix = null;
+    @SuppressWarnings("unused")
+	private String prefix = null;
     
 	static {
 		try {

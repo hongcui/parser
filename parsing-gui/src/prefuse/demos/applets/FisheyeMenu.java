@@ -5,7 +5,12 @@ import prefuse.util.ui.JPrefuseApplet;
 
 public class FisheyeMenu extends JPrefuseApplet {
     
-    public void init() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5951961309137681981L;
+
+	public void init() {
         prefuse.demos.FisheyeMenu fm = prefuse.demos.FisheyeMenu.demo();
         this.getContentPane().add(fm);
         fm.getVisualization().run("init");

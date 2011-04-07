@@ -3,32 +3,15 @@
  */
 package fna.charactermarkup;
 
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.sql.DriverManager;
-import java.sql.Statement;
+import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
 /**
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unused" })
 public class Test {
 	Connection conn = null;
 	/**

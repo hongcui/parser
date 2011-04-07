@@ -8,17 +8,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Connection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 
 import fna.parsing.character.Glossary;
@@ -27,10 +26,13 @@ import fna.parsing.character.Glossary;
  * @author hongcui
  * Move the dyhypen() function from VolumeDehypenizer, to make DeHyphenAFolder a utility class that can be called by other projects.
  */
+@SuppressWarnings("unchecked")
 public class DeHyphenAFolder {
 	private ProcessListener listener;
 	private String database;
+	@SuppressWarnings("unused")
 	private Text perlLog;
+	@SuppressWarnings("unused")
 	private String dataPrefix;
 	private String tablename;
 	private Glossary glossary;
@@ -40,12 +42,14 @@ public class DeHyphenAFolder {
 	private Connection conn;
     static public String num = "\\d[^a-z]+";
     private Hashtable<String,String> mapping = new Hashtable<String, String>();
+    private String glossarytable;
 	/**
 	 * 
 	 */
 	public DeHyphenAFolder(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Text perlLog, String dataPrefix, Glossary glossary) {
+    		String todofoldername, String database, Text perlLog, String dataPrefix, String glossarytable, Glossary glossary) {
 		this.listener = listener;
+		this.glossarytable = glossarytable;
         this.database = database;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
@@ -79,7 +83,7 @@ public class DeHyphenAFolder {
 	        fillInWords();
 	        if(listener!= null) listener.progress(50);
 
-	        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", dataPrefix, glossary);
+	        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", this.glossarytable, glossary);
 
 	        try{
 	            Statement stmt = conn.createStatement();
@@ -132,7 +136,7 @@ public class DeHyphenAFolder {
 	                String line = null;
 	                while ((line = reader.readLine()) != null) {
 	                    line = line.toLowerCase();
-	                    String linec = line;
+	                //    String linec = line;
 	                    /*if(line.matches(".*?\\d+-(?=[a-z]).*")){
 	                        line = fixNumTextMix(line, flist[i]);
 	                    }*/
@@ -159,7 +163,9 @@ public class DeHyphenAFolder {
 	                    }
 	                }
 	                reader.close();
+	                System.out.println("File "+flist[i].getName());
 	            }
+	           
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
 	            e.printStackTrace();
@@ -193,7 +199,8 @@ public class DeHyphenAFolder {
 	        return fixed.toString();
 	    }*/
 	    
-	    private String fixBrokenHyphens(String broken){ //cup-[,]  disc-[,]  or dish-shaped
+	    @SuppressWarnings("unused")
+		private String fixBrokenHyphens(String broken){ //cup-[,]  disc-[,]  or dish-shaped
 	        StringBuffer fixed = new StringBuffer();
 	        Pattern p = Pattern.compile("(.*?\\b)([a-z]+)-\\W[^\\.]*?[a-z]+-([a-z]+)(.*)");
 	        Matcher m = p.matcher(broken);
@@ -296,8 +303,8 @@ public class DeHyphenAFolder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DeHyphenAFolder dhaf = new DeHyphenAFolder(null, "X:\\DATA\\Plazi\\2ndFetchFromPlazi\\target-taxonX-fish", 
-		"descriptions", "markedupdatasets", null, "plazi_fish_clause", null);
+		DeHyphenAFolder dhaf = new DeHyphenAFolder(null, "C:\\RA\\PARSER-DEMO\\Treatise\\target\\", 
+		"descriptions", "markedupdatasets", null, "treatise", "treatisehglossaryfixed", null);
 		dhaf.dehyphen();
 
 	}

@@ -13,7 +13,7 @@ public class WordNetWrapper {
 	
 	public WordNetWrapper(String word){
 		String command = "wn " + word + " -over";
-		String output = "";
+	//	String output = "";
 		String s = null;
 		String ptnpos = "Overview of (\\w+) (\\w+)";
 		Pattern ppos = Pattern.compile(ptnpos);

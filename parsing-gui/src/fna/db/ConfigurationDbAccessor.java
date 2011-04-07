@@ -13,10 +13,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import fna.beans.DescriptionBean;
 import fna.beans.ExpressionBean;
 import fna.beans.NomenclatureBean;
 import fna.beans.SectionBean;
@@ -26,6 +24,8 @@ import fna.beans.Type2Bean;
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.Type2Document;
 
+
+@SuppressWarnings({ "unused" })
 public class ConfigurationDbAccessor {
 
 	/**

@@ -62,9 +62,15 @@ import prefuse.visual.sort.ItemSorter;
 /**
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+@SuppressWarnings({ "unchecked" })
 public class Congress extends JPanel {
 
-    public static void main(String[] args) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public static void main(String[] args) {
         UILib.setPlatformLookAndFeel();
         
         JFrame f = demo();

@@ -13,6 +13,7 @@ public class GraphNode {
 		edges = new ArrayList<String>();
 	}
 
+	@SuppressWarnings("unused")
 	private GraphNode(){
 		
 	}

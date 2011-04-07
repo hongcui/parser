@@ -16,6 +16,7 @@ import java.io.*;
  * @author hongcui
  *
  */
+@SuppressWarnings({  "unused" })
 public class ExtractOntoFromAnno {
 	Hashtable<String, String> onto = new Hashtable<String, String>();
 	Connection conn = null;

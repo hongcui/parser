@@ -3,9 +3,10 @@ package fna.parsing;
 import java.util.Hashtable;
 import fna.parsing.character.Glossary;
 //
+@SuppressWarnings({ "unchecked"})
 public class DeHyphenizerCorrected extends DeHyphenizer {
-	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen, String glossPrefix, Glossary glossary) {
-		super(database, table, column, countcolumn, hyphen, glossPrefix, glossary);
+	public DeHyphenizerCorrected(String database, String table, String column, String countcolumn, String hyphen, String glossarytable, Glossary glossary) {
+		super(database, table, column, countcolumn, hyphen, glossarytable, glossary);
 	}
 
 	

@@ -2,18 +2,17 @@
  * 
  */
 package fna.charactermarkup;
-import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.xpath.*;
-import org.jdom.output.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import fna.parsing.state.SentenceOrganStateMarker;
-import fna.parsing.state.StateCollector;
-import fna.parsing.state.WordNetWrapper;
-
-import java.sql.*;
-import java.util.*;
-import java.util.regex.*;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 
 /**
@@ -21,6 +20,7 @@ import java.util.regex.*;
  * fnaglossaryfixed: move verbs such as comprising from the glossary
  *
  */
+@SuppressWarnings({ "unchecked", "unused","static-access" })
 public class CharacterAnnotatorChunked {
 	private Element statement = null;
 	private ChunkedSentence cs = null;

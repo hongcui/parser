@@ -1,41 +1,23 @@
 package fna.parsing.state;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Stroke;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import edu.uci.ics.jung.graph.*;
-import edu.uci.ics.jung.graph.util.Context;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.DefaultVisualizationModel;
-import edu.uci.ics.jung.visualization.VisualizationModel;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.renderers.DefaultVertexLabelRenderer;
-import edu.uci.ics.jung.visualization.renderers.VertexLabelAsShapeRenderer;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import edu.uci.ics.jung.algorithms.cluster.*;
-import edu.uci.ics.jung.algorithms.filters.EdgePredicateFilter;
-import edu.uci.ics.jung.algorithms.filters.VertexPredicateFilter;
-import edu.uci.ics.jung.algorithms.layout.*;
-
-import java.util.*;
-
-import javax.swing.JFrame;
-
-import org.apache.commons.collections15.Predicate;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.functors.ConstantTransformer;
+import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 
 
-
+@SuppressWarnings("unchecked")
 public class StateMatrix {
 	
 	private ArrayList<State> states = null;
@@ -43,13 +25,15 @@ public class StateMatrix {
 	private int edgeCount = 0;
 	private Connection conn = null;
 	private String tableprefix = null;
+	private String glossarytable = null;
 	//private Hashtable<State, Hashtable<State, CoocurrenceScore>> matrix = null;
 	
-	StateMatrix(Connection conn, String tableprefix){
+	StateMatrix(Connection conn, String tableprefix,String glosstable){
 		states = new ArrayList<State>();
 		matrix = new ArrayList<Cell>();
 		this.tableprefix = tableprefix;
 		this.conn = conn;
+		this.glossarytable = glosstable;
 		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
@@ -70,7 +54,7 @@ public class StateMatrix {
 	 * empty matrix with the knownstates as the row and column
 	 * @param knownstates
 	 */
-	StateMatrix(Connection conn, String tableprefix, Set<State> knownstates){
+	StateMatrix(Connection conn, String tableprefix, Set<State> knownstates,String glosstable){
 		Iterator<State> it = knownstates.iterator();
 		while(it.hasNext()){
 			State s = (State)it.next();
@@ -79,6 +63,7 @@ public class StateMatrix {
 		this.conn = conn;
 		Statement stmt = null;
 		this.tableprefix = tableprefix;
+		this.glossarytable = glosstable;
 		try{
 			stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
@@ -92,6 +77,7 @@ public class StateMatrix {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private ArrayList<State> getStates(){
 		//return matrix.keySet();
 		return states;
@@ -194,9 +180,7 @@ public class StateMatrix {
 	
 	public void save2MySQL(Connection conn, String tableprefix, String username, String password){
 		try{
-			Statement stmt = conn.createStatement();
 			Collections.sort(matrix, new Cell());
-			StringBuffer sb = new StringBuffer("");
 			Cell c = null;
 			int n = states.size();
 			for(int i = 0; i < n; i++){
@@ -328,10 +312,24 @@ public class StateMatrix {
 		*/
 		//4. Voltage Clustering: 21  groups of varied sizes
 		System.out.println("Voltage Clustering");
-		VoltageClusterer vc = new VoltageClusterer(g, 50);
-		Collection clusters = vc.cluster(50);
-		saveClusters(clusters);
-		return clusters;
+		Collection clusters = null;
+		if(g.getEdgeCount()>4){
+			VoltageClusterer vc = new VoltageClusterer(g, 50);
+			if(g.getEdgeCount()>4)
+			clusters = vc.cluster(50);
+			else
+				clusters = vc.cluster(g.getEdgeCount()-1);
+			saveClusters(clusters);
+		}
+		else{
+			Collection<State>  stateCol = g.getVertices();
+			Set<State> stateSet = new HashSet<State>(stateCol);
+			ArrayList<Set<State>> stateList = new ArrayList<Set<State>>();
+			stateList.add(stateSet);
+			saveClusters(stateList);
+			return stateList;
+		}
+		return clusters==null? new ArrayList<Set<State>>() : clusters;
 	}
 	
 	private void saveClusters(Collection<Set<State>> clusters){
@@ -344,14 +342,18 @@ public class StateMatrix {
 				try{
 					Statement stmt = conn.createStatement();
 					String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
-					this.tableprefix+"_terms where term in ("+stategroup+
-					"))";
+					this.tableprefix+"_terms where cooccurterm in ("+stategroup+") or term in ("+stategroup+"))";
+					System.out.println("query::"+q);
 					stmt.execute(q);
-					stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
+					ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
+					if(rs.next()){
+						stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
+						gcount++;
+					}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				gcount++;	
+					
 			}
 		}
 			
@@ -364,17 +366,49 @@ public class StateMatrix {
 	 * @return
 	 */
 	private String formGroup(Set<State> states) {
-		boolean keep = true;
+		boolean keep = false;
 		Iterator<State> sit = states.iterator();
 		StringBuffer statestring = new StringBuffer();
+		if(states.size()==0)
+			return null;
+		HashMap stateCategoryCountMap = new HashMap<String,Integer>();
 		while(sit.hasNext()){
+			State s = sit.next();
+			String term = s.getName();
+			statestring.append("'"+term+"', ");		
+			try{
+				Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select distinct category from "+this.glossarytable+" where term ='"+term+"'");
+				
+				while(rs.next())
+				{
+					String category = rs.getString("category");
+					if(stateCategoryCountMap.containsKey(category))
+					{
+						Integer count= (Integer) stateCategoryCountMap.get(category);
+						stateCategoryCountMap.remove(category);
+						stateCategoryCountMap.put(category, count+1);
+					}
+					else
+					{
+						stateCategoryCountMap.put(category, 1);
+					}
+				}
+				
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			//commented on 14th march to find the overlapping category.If such a category is present then decide whether to display the entire set or not
+			
+			/*
 			State s = sit.next();
 			String term = s.getName();
 			statestring.append("'"+term+"', ");		
 			ArrayList<String> chars = new ArrayList<String> ();
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select distinct category from fnaglossaryfixed where term ='"+term+"'");
+				ResultSet rs = stmt.executeQuery("select distinct category from "+this.glossarytable+" where term ='"+term+"'");
 				while(rs.next()){
 					String chara = rs.getString("category");
 					chars.add(chara);
@@ -383,10 +417,38 @@ public class StateMatrix {
 				e.printStackTrace();
 			}
 			if(chars.size()==0){
-				keep = false;
+				keep = true;
+				while(sit.hasNext())
+				{
+					State remainingStates = sit.next();
+					String remainingTerm = remainingStates.getName();
+					statestring.append("'"+remainingTerm+"', ");		
+					
+				}
 				break;
 			}					
+		*/}
+		//check the max count of mapvalues
+		Collection values = stateCategoryCountMap.values();
+		ArrayList valueList = new ArrayList(values);
+		//Collections.sort(valueList);
+		if(!valueList.contains(new Integer(states.size()))){
+			//there is not one category that is common to all terms
+			//sit = states.iterator();
+			keep = true;
+			while(sit.hasNext())
+			{
+				State remainingStates = sit.next();
+				String remainingTerm = remainingStates.getName();
+				statestring.append("'"+remainingTerm+"', ");		
+				
+			}
+			
 		}
+		else{
+			keep=false;
+		}
+	
 		String stategroup = statestring.toString().replaceFirst(", $", "");		
 		return keep? stategroup : null;
 	}
@@ -413,8 +475,8 @@ public class StateMatrix {
 		}
 		return sb.toString();
 	}
-
-	public void output2GraphML() {
+//changing on March1st by Prasad
+	public int output2GraphML() {
 		GraphMLOutputter gmo = new GraphMLOutputter();
 		//from saved grouped_terms
 		ArrayList<ArrayList> groups = new ArrayList<ArrayList>();
@@ -443,8 +505,14 @@ public class StateMatrix {
 		}catch(Exception e){
 			e.printStackTrace();
 		}			
-		
+		if(groups.size()>0){
 		gmo.output(groups, 1);
+		return groups.size();
+		}
+		else
+		{
+			return 0;
+		}
 	}
 					 
 }

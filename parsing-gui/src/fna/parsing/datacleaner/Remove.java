@@ -31,6 +31,7 @@ public class Remove extends DataCleaner {
 	/* (non-Javadoc)
 	 * @see fna.parsing.datacleaner.DataCleaner#clean(org.jdom.Element)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Element clean(Element root) {
 		try{

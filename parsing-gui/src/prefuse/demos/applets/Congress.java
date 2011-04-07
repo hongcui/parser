@@ -7,7 +7,12 @@ import prefuse.util.ui.JPrefuseApplet;
 
 public class Congress extends JPrefuseApplet {
 
-    public void init() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7660414165421463998L;
+
+	public void init() {
         // load the data
         Table t = null;
         try {

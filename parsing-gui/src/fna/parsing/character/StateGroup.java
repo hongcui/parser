@@ -2,6 +2,7 @@ package fna.parsing.character;
 
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class StateGroup {
 	private ArrayList list = null;
 	private int count = 1;
@@ -53,7 +54,7 @@ public class StateGroup {
 	public ArrayList freeStates(){
 		ArrayList freestates = new ArrayList();
 		Iterator it = list.iterator();
-		int i = 0;
+		//int i = 0;
 		while(it.hasNext()){
 			State s = (State)it.next();
 			if(!s.associatedWithCharacter()){
@@ -66,7 +67,7 @@ public class StateGroup {
 	public ArrayList nonCategoryStates(String category){
 		ArrayList alist = new ArrayList();
 		Iterator it = list.iterator();
-		int i = 0;
+		//int i = 0;
 		while(it.hasNext()){
 			State s = (State)it.next();
 			if(!s.associatedWithCharacter(category)){
@@ -109,7 +110,7 @@ public class StateGroup {
 	public ArrayList seenCategories(){
 		ArrayList seen = new ArrayList();
 		Iterator it = list.iterator();
-		int i = 0;
+		//int i = 0;
 		while(it.hasNext()){
 			State s = (State)it.next();
 			seen.addAll(s.getCharacters());

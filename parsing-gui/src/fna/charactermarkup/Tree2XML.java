@@ -13,6 +13,7 @@ import org.jdom.input.SAXBuilder;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unused","static-access" })
 public class Tree2XML {
     private String test=null;
     private String str = "";

@@ -1,16 +1,17 @@
 package fna.charactermarkup;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.ResultSet;
-import java.util.*;
-import java.io.File;
-import java.util.regex.*;
+import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-
+@SuppressWarnings({ "unused" })
 public class CharacterMarkup {
 	static protected Connection conn = null;
 	static protected String database = null;

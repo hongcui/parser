@@ -10,23 +10,19 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
 import fna.charactermarkup.StanfordParser;
-import fna.parsing.character.CharacterLearner;
 
 /**
  * @author chunshui
  */
+@SuppressWarnings({ "unchecked", "static-access" })
 public class VolumeFinalizer extends Thread {
 	//glossary established in VolumeDehyphenizer
 	//private String glossary;
@@ -35,12 +31,14 @@ public class VolumeFinalizer extends Thread {
 	private String dataPrefix;
 	private static final Logger LOGGER = Logger.getLogger(VolumeFinalizer.class);
 	private Connection conn = null;
-
-	public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn) {
+	private String glossaryPrefix;
+	
+	public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn, String glossaryPrefix) {
 		//glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
 		this.conn = conn;
+		this.glossaryPrefix = glossaryPrefix;
 	}
 	
 	public static void main (String [] args) {
@@ -63,7 +61,10 @@ public class VolumeFinalizer extends Thread {
 		String posedfile = Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("POSED");
 		String parsedfile =Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("PARSED");
 		String database = ApplicationUtilities.getProperty("database.name");
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix);
+		String postable = ApplicationUtilities.getProperty("POSTABLE");
+		//String glosstable = this.dataPrefix + "_"+ApplicationUtilities.getProperty("GLOSSTABLE");
+		String glosstable = this.glossaryPrefix;
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,postable,glosstable);
 		sp.POSTagging();
 		sp.parsing();
 		sp.extracting();
@@ -121,16 +122,22 @@ public class VolumeFinalizer extends Thread {
 
 		try {
 			//Element root = doc.getRootElement();	
-			List<Element> content = adescription.getContent();
+			//List<Element> content = adescription.getContent();
 			//get the element index of the unannotated counterpart 	
 			Element description = (Element) XPath.selectSingleNode(
-					baseroot, xpath);			
-			int index = baseroot.indexOf(description);
-			
+					baseroot, xpath);	
+			int index=-1;
+			Element parent = description;
+			if(description!=null){
+			 parent= description.getParentElement();
+			//int index = baseroot.indexOf(description);
+			 index= parent.indexOf(description);
+			}
 			// replace
 			if (index >= 0) {
 				//System.out.println(fileindex+".xml has "+xpath+" element replaced");
-				baseroot.setContent(index, adescription);
+				//baseroot.setContent(index, adescription);
+				parent.setContent(index, adescription);
 			}
 			baseroot.detach();
 		} catch (Exception e) {
@@ -175,6 +182,7 @@ public class VolumeFinalizer extends Thread {
 			listener.progress(40+(order*60/total));
 			File file = new File(source, fileindex + ".xml");
 			Document doc = builder.build(file);
+			
 			Element root = doc.getRootElement();
 			root.detach();
 			return root;
