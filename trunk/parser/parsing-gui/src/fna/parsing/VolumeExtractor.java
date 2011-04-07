@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Listener;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -46,6 +42,8 @@ import org.jdom.xpath.XPath;
  * 
  * @author chunshui
  */
+
+@SuppressWarnings({ "unchecked" })
 public class VolumeExtractor extends Thread {
 	
 	protected String source;

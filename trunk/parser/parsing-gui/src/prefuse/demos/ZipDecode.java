@@ -55,9 +55,14 @@ import prefuse.visual.VisualTable;
  * 
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+@SuppressWarnings("unchecked")
 public class ZipDecode extends Display implements Constants {
 
-    public static final String ZIPCODES = "/zipcode.txt";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public static final String ZIPCODES = "/zipcode.txt";
     public static final String STATES = "/state.txt";
     
     // data groups

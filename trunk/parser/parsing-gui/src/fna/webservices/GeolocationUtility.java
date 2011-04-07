@@ -95,7 +95,7 @@ public class GeolocationUtility extends WebServicesUtilities{
 		if (text == null || text.equals("")){
 			return false;
 		}
-		String url = ApplicationUtilities.getProperty("Geonames");
+	//	String url = ApplicationUtilities.getProperty("Geonames");
 		String place = text.replaceAll(" ", "");
 		
 		if(text.length() <= 5) {

@@ -48,9 +48,14 @@ import prefuse.visual.VisualItem;
  * 
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+@SuppressWarnings({ "unchecked" })
 public class FisheyeMenu extends Display {
 
-    /** The data group name of menu items. */
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1248766350077046076L;
+	/** The data group name of menu items. */
     public static final String ITEMS = "items";
     /** The label data field for menu items. */
     public static final String LABEL = "label";
@@ -162,7 +167,12 @@ public class FisheyeMenu extends Display {
         for ( int i=1; i<=72; ++i ) {
             // add menu items that simply print their label when clicked
             fm.addMenuItem(String.valueOf(i), new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
+                /**
+				 * 
+				 */
+				private static final long serialVersionUID = -2041778491673141915L;
+
+				public void actionPerformed(ActionEvent e) {
                     System.out.println("clicked item: "+
                         ((VisualItem)e.getSource()).get(LABEL));
                     System.out.flush();

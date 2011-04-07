@@ -50,7 +50,11 @@ import prefuse.visual.VisualItem;
  */
 public class GraphView extends JPrefuseApplet {
 
-    private static final String graph = "graph";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1753857697817530937L;
+	private static final String graph = "graph";
     private static final String nodes = "graph.nodes";
     private static final String edges = "graph.edges";
     

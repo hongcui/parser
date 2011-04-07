@@ -3,19 +3,20 @@
  */
 package fna.parsing;
 
-import org.jdom.Document;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
-
-import java.util.regex.*;
-
-import java.util.*;
 
 /**
  * @author Hong Updates
  *
  */
+@SuppressWarnings("unchecked")
 public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 	static Hashtable<String, String> m2smapping = new Hashtable<String, String>();
 	static Hashtable<String, String> s2mmapping = new Hashtable<String, String>();
@@ -95,19 +96,19 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 				//System.out.println("add: "+month);
 				if(month.indexOf("year")>=0){
 					addAllMonthsSeasons();
-					includedseasons = this.seasons.replaceAll("\\W", "@");
-					includedmonths = this.months.replaceAll("\\W", "@");
+					includedseasons = FloweringTimeParser4FNA.seasons.replaceAll("\\W", "@");
+					includedmonths = FloweringTimeParser4FNA.months.replaceAll("\\W", "@");
 				}
 				
 				//add corresponding seasons for the month (if this is a month values)
-				String season = this.m2smapping.get(month.toLowerCase());
+				String season = FloweringTimeParser4FNA.m2smapping.get(month.toLowerCase());
 				if(season !=null && includedseasons.indexOf(season)<0){
 					addElement(season);
 					includedseasons +=season+"@";
 				}					
 				
 				//add corresponding months for the season (if this is a season value)
-				String monthlist = this.s2mmapping.get(month.toLowerCase());
+				String monthlist = FloweringTimeParser4FNA.s2mmapping.get(month.toLowerCase());
 				if( monthlist!=null){ 
 					String[] months = monthlist.split("\\s*@\\s*");
 					for(int i=0; i<months.length; i++){
@@ -122,8 +123,8 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 	}
 
 	private void addAllMonthsSeasons() {
-		Set<String> seasons = this.s2mmapping.keySet();
-		Set<String> months = this.m2smapping.keySet();
+		Set<String> seasons = FloweringTimeParser4FNA.s2mmapping.keySet();
+		Set<String> months = FloweringTimeParser4FNA.m2smapping.keySet();
 		Iterator<String> s = seasons.iterator();
 		while(s.hasNext()){
 			String season = (String)s.next();
@@ -153,20 +154,21 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 	 * @param times
 	 * @return
 	 */
+	
 	private ArrayList<String> allValuesInRange(String[] times) {
 		ArrayList results = new ArrayList();
 		String s = times[0];
 		String e = times[times.length-1];
 		String[] ss = s.split("\\s+");
 		String[] es = e.split("\\s+");
-		if((ss[ss.length-1].matches(this.seasons) && es[es.length-1].matches(this.months))||
-		   (ss[ss.length-1].matches(this.months) && es[es.length-1].matches(this.seasons))	){
+		if((ss[ss.length-1].matches(FloweringTimeParser4FNA.seasons) && es[es.length-1].matches(FloweringTimeParser4FNA.months))||
+		   (ss[ss.length-1].matches(FloweringTimeParser4FNA.months) && es[es.length-1].matches(FloweringTimeParser4FNA.seasons))	){
 			//return original values
 			dump2ArrayList(times, results);
 		}else{
 			Pattern p = Pattern.compile(".*?\\b("+ss[ss.length-1]+"\\b.*?\\b"+es[es.length-1]+")\\b.*");
-			Matcher mm = p.matcher(this.monthring);
-			Matcher sm = p.matcher(this.seasonring);
+			Matcher mm = p.matcher(FloweringTimeParser4FNA.monthring);
+			Matcher sm = p.matcher(FloweringTimeParser4FNA.seasonring);
 			if(mm.matches()){
 				//collect all months
 				dump2ArrayList(mm.group(1).split("-"), results);
@@ -192,7 +194,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 		while(it.hasNext()){
 			String v = ((String)it.next()).trim();
 			String[] t = v.split("\\s+");
-			if(t[t.length-1].matches(this.seasons)){
+			if(t[t.length-1].matches(FloweringTimeParser4FNA.seasons)){
 				seasons +=t[t.length-1]+"@";
 			}
 		}
@@ -208,7 +210,7 @@ public class FloweringTimeParser4FNA extends EnumerativeElementParser{
 		while(it.hasNext()){
 			String v = ((String)it.next()).trim();
 			String[] t = v.split("\\s+");
-			if(t[t.length-1].matches(this.months)){
+			if(t[t.length-1].matches(FloweringTimeParser4FNA.months)){
 				months +=t[t.length-1]+"@";
 			}
 		}

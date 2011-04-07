@@ -19,6 +19,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.Learn2Parse;
 import fna.parsing.VolumeFinalizer;
 import fna.parsing.state.SentenceOrganStateMarker;
@@ -28,6 +29,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unused","static-access" })
 public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static protected Connection conn = null;
 	static protected String database = null;
@@ -43,7 +45,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = false;
+	private boolean finalize = true;
 	private boolean debug = true;
 	/**
 	 * 
@@ -59,7 +61,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+			//	String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
 				stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
@@ -81,7 +84,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
 			//stmt.execute("alter table markedsentence add rmarkedsent text");
-			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by (source+0) ");////sort as numbers
+			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
 			//ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
 			int count = 1;
 			while(rs.next()){
@@ -119,10 +122,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
  	  		Runtime r = Runtime.getRuntime();
 	  		//Process p = r.exec("cmd /c stanfordparser.bat");
  	  		//String cmdtext = "stanfordparser.bat >"+this.parsedfile+" 2<&1";
- 	  		//String cmdtext = "cmd /c stanfordparser.bat";	  		
-	  		String cmdtext = "java -mx900m -cp \"C:/stanford-parser-2010-08-20/stanford-parser.jar;\" edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
-	  				"-sentences newline -tokenized -tagSeparator / C:/stanford-parser-2010-08-20/englishPCFG.ser.gz  "+
+ 	  		//String cmdtext = "cmd /c stanfordparser.bat";	
+ 	  		String parserJarfilePath = ApplicationUtilities.getProperty("stanford.parser.jar"); 
+	  		String englishPCFGpath = ApplicationUtilities.getProperty("englishPCFG");
+ 	  		String cmdtext = "java -mx900m -cp "+parserJarfilePath+" edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
+	  				"-sentences newline -tokenized -tagSeparator / "+englishPCFGpath+" "+
 	  				this.posedfile;
+ 	  		System.out.println("parser path::"+cmdtext);
+ 	  		
 	  		Process proc = r.exec(cmdtext);
           
 		    ArrayList<String> headings = new ArrayList<String>();
@@ -145,7 +152,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             System.out.println("ExitValue: " + exitVal);
 
 			//format
-            if(headings.size()+1 != trees.size()+1){
+            if(headings.size() != trees.size()){
             	System.err.println("Error reading parsing results");
             	System.exit(2);
             }
@@ -176,7 +183,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			String text = "";
 			int i = 0;
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by (source+0)"); //+0 so sort as numbers
+			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
 			//ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by source");
 			Pattern ptn = Pattern.compile("^Parsing \\[sent\\. (\\d+) len\\. \\d+\\]:(.*)");
 			Matcher m = null;
@@ -445,12 +452,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String database = "treatiseh_benchmark";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");*/
 		
-		String posedfile = "BHLposedsentences.txt";
-		String parsedfile = "BHLparsedsentences.txt";
-		String database = "bhl_benchmark";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
-		sp.POSTagging();
-		sp.parsing();
+		String posedfile = "C:\\RA\\PARSER-DEMO\\Treatise\\target\\treatise_posedsentences.txt";
+		String parsedfile = "C:\\RA\\PARSER-DEMO\\Treatise\\target\\treatise_parsedsentences.txt";
+		String database = "markedupdatasets";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatise", "wordpos4parser", "treatisehglossaryfixed");
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 	}
 }

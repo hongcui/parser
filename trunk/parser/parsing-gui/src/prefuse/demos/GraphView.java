@@ -70,9 +70,14 @@ import prefuse.visual.VisualItem;
 /**
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+
 public class GraphView extends JPanel {
 
-    private static final String graph = "graph";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8048602047677841941L;
+	private static final String graph = "graph";
     private static final String nodes = "graph.nodes";
     private static final String edges = "graph.edges";
 
@@ -276,19 +281,30 @@ public class GraphView extends JPanel {
         return demo(g, label);
     }
     
-    public static JFrame demo(Graph g, String label) {
+    @SuppressWarnings("serial")
+	public static JFrame demo(Graph g, String label) {
         final GraphView view = new GraphView(g, label);
         
         // set up menu
         JMenu dataMenu = new JMenu("Data");
         dataMenu.add(new OpenGraphAction(view));
         dataMenu.add(new GraphMenuAction("Grid","ctrl 1",view) {
-            protected Graph getGraph() {
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = -153022342140811118L;
+
+			protected Graph getGraph() {
                 return GraphLib.getGrid(15,15);
             }
         });
         dataMenu.add(new GraphMenuAction("Clique","ctrl 2",view) {
-            protected Graph getGraph() {
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 2185808165461375444L;
+
+			protected Graph getGraph() {
                 return GraphLib.getClique(10);
             }
         });
@@ -336,7 +352,11 @@ public class GraphView extends JPanel {
      * Swing menu action that loads a graph into the graph viewer.
      */
     public abstract static class GraphMenuAction extends AbstractAction {
-        private GraphView m_view;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1767818360483034697L;
+		private GraphView m_view;
         public GraphMenuAction(String name, String accel, GraphView view) {
             m_view = view;
             this.putValue(AbstractAction.NAME, name);
@@ -349,7 +369,8 @@ public class GraphView extends JPanel {
         protected abstract Graph getGraph();
     }
     
-    public static class OpenGraphAction extends AbstractAction {
+    @SuppressWarnings("serial")
+	public static class OpenGraphAction extends AbstractAction {
         private GraphView m_view;
 
         public OpenGraphAction(GraphView view) {

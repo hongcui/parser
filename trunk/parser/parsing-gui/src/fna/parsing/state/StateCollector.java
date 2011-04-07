@@ -2,12 +2,14 @@ package fna.parsing.state;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
-import java.util.*;
-import java.util.regex.*;
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * first run dehypenizer, then run unsupervised.pl, 
@@ -61,6 +63,8 @@ import java.io.File;
  *tag sentence: should organ names only be tagged when they appear at the beginning of a sentence? e.g. , rounded or with single <groove> [ or change simple pattern?]
  *markup character: may need to merge saved stategroups and checked states. eg. > entire or with 3 broad ,
  */
+
+@SuppressWarnings({ "unchecked", "static-access" })
 public class StateCollector  {
 	static protected Connection conn = null;
 	//static protected String database = null;
@@ -85,7 +89,7 @@ public class StateCollector  {
 	protected boolean marked = false;
 	
 	StateCollector(Connection conn, String tableprefix, String glosstable){
-		this.statematrix = new StateMatrix(conn, tableprefix);
+		this.statematrix = new StateMatrix(conn, tableprefix,glosstable);
 		this.tableprefix = tableprefix;
 		this.conn = conn;
 		this.glosstable = glosstable;
@@ -96,7 +100,7 @@ public class StateCollector  {
 	StateCollector(Connection conn, String tableprefix, ArrayList<String> knownstates, String glosstable){
 		if(knownstates!=null){
 			StateImporter si = new StateImporter(knownstates);
-			this.statematrix = new StateMatrix(conn, tableprefix, si.getStates());
+			this.statematrix = new StateMatrix(conn, tableprefix, si.getStates(),glosstable);
 		}
 		this.tableprefix = tableprefix;
 		this.conn = conn;

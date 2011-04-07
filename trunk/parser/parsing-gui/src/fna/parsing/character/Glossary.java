@@ -1,15 +1,10 @@
 package fna.parsing.character;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.LineNumberReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.ResultSet;
-import java.util.regex.*;
-import java.util.*;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -30,13 +25,15 @@ public class Glossary {
 		}
 	}
 	private static String tablename = null;
-	private static String tablename1 = null;
-	private String database;
+	//private static String tablename1 = null;
+	//private String database;
 	static private Connection conn = null;
 	
 	
-	public Glossary(File glossfile, boolean createnew, String databasename, String tablePrefix){
-		this.tablename = tablePrefix+"_fnaglossary";
+	public Glossary(String glosstable){
+		Glossary.tablename = glosstable;
+		
+		/*this.tablename = tablePrefix+"_fnaglossary";
 		this.tablename1 = tablePrefix+"_termforms";
 		try{
 			if(conn == null){
@@ -55,16 +52,16 @@ public class Glossary {
 				stmt.execute("delete from "+tablename1);				
 				if(!g){
 					stmt.execute("create table "+tablename+" (id int not null auto_increment primary key, term varchar(100), category varchar(100), limitation varchar(200), status varchar(50), definition varchar(2000))");
-					populateTable(glossfile);//TODO: if tablename exist, do not populate it again
+					populateTable(glosstable);//TODO: if tablename exist, do not populate it again
 				}				
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner constructor" + e);
 			e.printStackTrace();
-		}
+		}*/
 	}
 
-	
+	/*
 	private void populateTable(File glossfile){
 		try{
 			FileReader fr = new FileReader(glossfile);
@@ -186,14 +183,14 @@ public class Glossary {
 			LOGGER.error("Exception in CharacterLearner populateTable" + e);
 			e.printStackTrace();
 		}
-	}
+	}*/
 	/**
 	 * parse term string to populate termforms table, return all terms
 	 * termforms: single, form type, the other form
 	 * @param term
 	 * @return
 	 */
-	
+	/*
 	private String [] termForms(String term){
 		ArrayList<String> terms = new ArrayList<String>();
 		String types = "(?:sing\\.|var\\.|pl\\.)"; //embryotega  pl. embryotegae, embryotegas
@@ -251,6 +248,7 @@ public class Glossary {
 			
 		}
 	}
+	
 
 	private void addSyn(String cat, String syn, String status)
 			throws SQLException {
@@ -272,7 +270,9 @@ public class Glossary {
 			}
 		}
 	}
+	*/
 
+	@SuppressWarnings("unchecked")
 	public static ArrayList getCharacter(String state){
 		ArrayList chs = new ArrayList();
 		try{
@@ -305,6 +305,7 @@ public class Glossary {
 		return chs.toString().replaceFirst("\\|$", "");
 	}
 
+	@SuppressWarnings("unchecked")
 	public static void addInducedPair(String term, ArrayList categories){
 		Iterator it = categories.iterator();
 		while(it.hasNext()){
@@ -322,7 +323,8 @@ public class Glossary {
 
 
 	public static void main(String[] argv){
-		File glossfile = new File("C://Documents and Settings//hongcui//Desktop//WorkFeb2008//FNA//FNAGloss.txt");
-		Glossary g = new Glossary(glossfile, true, "fnav5_corpus", "fna");
+		//load glossary table directly
+		//File glossfile = new File("C://Documents and Settings//hongcui//Desktop//WorkFeb2008//FNA//FNAGloss.txt");
+		//Glossary g = new Glossary(glossfile, true, "fnav5_corpus", "fna");
 	}
 }

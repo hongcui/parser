@@ -3,23 +3,27 @@ package fna.parsing.character;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
-
+@SuppressWarnings("unchecked")
 public class Bootstrap implements Comparator<StateGroup>{
+	
+	
 	private ArrayList source;
 	private Glossary glossary;
 	//private String tablename; //save the discoveries made from bootstrapping iterations
 	static private Connection conn = null;
+	
+	@SuppressWarnings("unused")
 	static private String username = ApplicationUtilities.getProperty("database.username");
+	@SuppressWarnings("unused")
 	static private String password = ApplicationUtilities.getProperty("database.password");
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = Logger.getLogger(Bootstrap.class);
 	
 	public Bootstrap(ArrayList source, Glossary glossary, String database) {
@@ -74,6 +78,7 @@ public class Bootstrap implements Comparator<StateGroup>{
 	 * @param sg
 	 * @return the number of terms inserted into glossary
 	 */
+	@SuppressWarnings("static-access")
 	public int inferCharacters(StateGroup sg){
 		int count = 0;
 		//single state case, skip

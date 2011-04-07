@@ -10,19 +10,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.jdom.xpath.XPath;
-import fna.parsing.*;
 
+import fna.parsing.ParsingUtil;
+
+@SuppressWarnings("unchecked")
 public class SegmentIntegrator {
 	static protected Connection conn = null;
 	static protected String database = null;
@@ -73,6 +71,7 @@ public class SegmentIntegrator {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void randomdesc() {
 		try{
 			Statement stmt = conn.createStatement();
@@ -120,6 +119,7 @@ public class SegmentIntegrator {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void integrator() {
 		try{
 			Statement stmt = conn.createStatement();

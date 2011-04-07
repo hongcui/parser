@@ -17,6 +17,7 @@ import java.util.regex.*;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unused" })
 public class Utilities {
 	public static String or = "_or_";
 	

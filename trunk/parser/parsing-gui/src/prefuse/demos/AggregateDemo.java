@@ -50,9 +50,15 @@ import prefuse.visual.VisualItem;
  * 
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+
+@SuppressWarnings({ "unchecked" })
 public class AggregateDemo extends Display {
 
-    public static final String GRAPH = "graph";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7087514598614502315L;
+	public static final String GRAPH = "graph";
     public static final String NODES = "graph.nodes";
     public static final String EDGES = "graph.edges";
     public static final String AGGR = "aggregates";
@@ -202,7 +208,8 @@ class AggregateLayout extends Layout {
     /**
      * @see edu.berkeley.guir.prefuse.action.Action#run(edu.berkeley.guir.prefuse.ItemRegistry, double)
      */
-    public void run(double frac) {
+    @SuppressWarnings("unchecked")
+	public void run(double frac) {
         
         AggregateTable aggr = (AggregateTable)m_vis.getGroup(m_group);
         // do we have any  to process?
@@ -350,7 +357,8 @@ class AggregateDragControl extends ControlAdapter {
         down.setLocation(temp);
     }
 
-    protected static void setFixed(VisualItem item, boolean fixed) {
+    @SuppressWarnings("unchecked")
+	protected static void setFixed(VisualItem item, boolean fixed) {
         if ( item instanceof AggregateItem ) {
             Iterator items = ((AggregateItem)item).items();
             while ( items.hasNext() ) {
@@ -361,7 +369,8 @@ class AggregateDragControl extends ControlAdapter {
         }
     }
     
-    protected static void move(VisualItem item, double dx, double dy) {
+    @SuppressWarnings("unchecked")
+	protected static void move(VisualItem item, double dx, double dy) {
         if ( item instanceof AggregateItem ) {
             Iterator items = ((AggregateItem)item).items();
             while ( items.hasNext() ) {

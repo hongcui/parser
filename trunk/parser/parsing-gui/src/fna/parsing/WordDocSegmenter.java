@@ -3,7 +3,6 @@
  */
 package fna.parsing;
 
-import java.io.InputStream;
 import java.io.StringReader;
 
 import org.jdom.Document;

@@ -43,7 +43,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import fna.parsing.ApplicationUtilities;
-import fna.parsing.Registry;
 
 public class GNILookUp {
 
@@ -264,6 +263,7 @@ public class GNILookUp {
 	 * @param url
 	 * @return
 	 */
+	@SuppressWarnings("null")
 	public static LinkedHashSet <String> lookUpScientificName(String discussion, 
 			String url, String select) 
 		throws IOException{
@@ -435,6 +435,7 @@ public class GNILookUp {
 	 * words in memory to save the Web services invocation for every word.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unused")
 	private void createDictionary() throws Exception {
 		BufferedReader in = null;
 		try {
@@ -457,6 +458,7 @@ public class GNILookUp {
 	 * @param file
 	 * @param destination
 	 */
+	@SuppressWarnings("unused")
 	private void writeMarkUp(File file, String destination) {
 		try {
 	        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -532,6 +534,7 @@ public class GNILookUp {
 	 * valid Scientific names.
 	 * @param file
 	 */
+	@SuppressWarnings("unused")
 	private void readTags(File file) {
 		
 		try {

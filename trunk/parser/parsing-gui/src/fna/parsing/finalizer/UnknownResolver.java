@@ -20,6 +20,7 @@ import fna.parsing.character.CharacterLearner;
  * 
  * run this class to resolve the unknown tags applied to some of the clauses
  */
+@SuppressWarnings("unchecked")
 public class UnknownResolver {
 	private static String sentencetable;
 	//private static String structuretable;
@@ -28,18 +29,18 @@ public class UnknownResolver {
 	private static String postable;
 	
 	private Hashtable unmarked = new Hashtable();
-	private static String username = ApplicationUtilities.getProperty("database.username");
-	private static String password = ApplicationUtilities.getProperty("database.password");
+//	private static String username = ApplicationUtilities.getProperty("database.username");
+//	private static String password = ApplicationUtilities.getProperty("database.password");
 	private Connection conn = null;
 	private static final Logger LOGGER = Logger.getLogger(UnknownResolver.class);
 	
 	//public UnknownResolver(String database, String senttable, String postable, String structtable, String statetable, String glosstable) {
 	public UnknownResolver(String database, String senttable, String postable, String statetable) {
-		this.sentencetable = senttable;
+		UnknownResolver.sentencetable = senttable;
 		//this.structuretable = structtable;
-		this.statetable = statetable;
+		UnknownResolver.statetable = statetable;
 		//this.glosstable = glosstable;
-		this.postable = postable;
+		UnknownResolver.postable = postable;
 		try{
 			if(conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -63,12 +64,12 @@ public class UnknownResolver {
 		String statepattern = collectLearnedStateNames();//not include glossary term
 		String organpattern = collectOrganNames(); //not include glossary terms
 		String stoppattern = CharacterLearner.stop;
-		String boundarypattern = getRequiredString("word", "pos", "b", this.postable);
-		String modifierpattern = getRequiredString("modifier","modifier", "%", this.sentencetable);
+		String boundarypattern = getRequiredString("word", "pos", "b", UnknownResolver.postable);
+		String modifierpattern = getRequiredString("modifier","modifier", "%", UnknownResolver.sentencetable);
 		int count = 1;
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select sentid, sentence from "+this.sentencetable+" where tag ='unknown' order by sentence");
+			ResultSet rs = stmt.executeQuery("select sentid, sentence from "+UnknownResolver.sentencetable+" where tag ='unknown' order by sentence");
 			while(rs.next()){
 				String marked = simpleTag(rs.getString("sentence"), statepattern, "c");
 				marked = simpleTag(marked, organpattern, "o");
@@ -150,14 +151,14 @@ public class UnknownResolver {
 			if(tag == null){continue;}
 			tags.append(tag+"|");
 		}*/
-		ResultSet rs = stmt.executeQuery("select distinct tag from "+this.sentencetable);
+		ResultSet rs = stmt.executeQuery("select distinct tag from "+UnknownResolver.sentencetable);
 		while(rs.next()){
 			String tag = rs.getString("tag");
 			if(tag == null || tags.indexOf("|"+tag+"|") >= 0){continue;}
 			tags.append(tag+"|");
 		}
 		//find pl. form
-		rs = stmt.executeQuery("select word from "+this.postable+" where pos = 'p'");
+		rs = stmt.executeQuery("select word from "+UnknownResolver.postable+" where pos = 'p'");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
 		}

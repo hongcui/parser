@@ -5,10 +5,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -20,6 +20,8 @@ import fna.parsing.MainForm;
  * @author hongcui
  *
  */
+
+@SuppressWarnings("unchecked")
 public class LearnedTermsReport {
 	static private String gtablename = "fnaglossary";
 	static private String stablename = "learnedstates";
@@ -30,16 +32,16 @@ public class LearnedTermsReport {
 	private String database;
 	private static final Logger LOGGER = Logger.getLogger(LearnedTermsReport.class);
 	static private Connection conn = null;
-	static private String username = ApplicationUtilities.getProperty("database.username");
-	static private String password = ApplicationUtilities.getProperty("database.password");
+	//static private String username = ApplicationUtilities.getProperty("database.username");
+	//static private String password = ApplicationUtilities.getProperty("database.password");
 	private ArrayList overlappedstructures = new ArrayList();
 	private ArrayList newstructures = new ArrayList();
 	private ArrayList modifiedstructures = new ArrayList();
 	private ArrayList overlappedstates = new ArrayList();
 	private ArrayList newstates = new ArrayList();
 	private ArrayList modifiedstates = new ArrayList();
-	private ArrayList unusedstructures = new ArrayList();
-	private ArrayList unusedstates = new ArrayList();
+	//private ArrayList unusedstructures = new ArrayList();
+	//private ArrayList unusedstates = new ArrayList();
 	private HashSet learnedstructures = new HashSet();
 	private HashSet learnedstates = new HashSet();
 	private Hashtable donestates = new Hashtable();
@@ -109,7 +111,6 @@ public class LearnedTermsReport {
 	public String report(){
 		StringBuffer sb = new StringBuffer();
 		String ls = System.getProperty("line.separator");
-		int learnedstates = getAllStateCount("learned");
 		//Glossary
 		sb.append("Comparison between FNA Glossary and Learned Terms"+ls);
 		sb.append("Note: in the report, structure is defined to include any terms in either of the following categories: 'STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT'"+ls);
@@ -181,8 +182,8 @@ public class LearnedTermsReport {
 	private void createGlossStructureTable(){
 		try{
 			Statement stmt = conn.createStatement();
-			stmt.execute("drop table if exists "+this.gstablename);
-			stmt.execute("create table if not exists "+this.gstablename+" as select term from "+gtablename+" where category in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative') and status !='learned' and term not in (select distinct term2 from termforms where type ='pl')");
+			stmt.execute("drop table if exists "+LearnedTermsReport.gstablename);
+			stmt.execute("create table if not exists "+LearnedTermsReport.gstablename+" as select term from "+gtablename+" where category in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative') and status !='learned' and term not in (select distinct term2 from termforms where type ='pl')");
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport createGlossStructureTable", e);
 			e.printStackTrace();
@@ -194,15 +195,15 @@ public class LearnedTermsReport {
 	private void createLearnedStructureTable(){
 		try{
 			Statement stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+this.otablename +"(structure varchar(100))");
-			stmt.execute("delete from "+this.otablename);
-			ResultSet rs = stmt.executeQuery("select distinct modifier, tag from "+this.otablename1);
+			stmt.execute("create table if not exists "+LearnedTermsReport.otablename +"(structure varchar(100))");
+			stmt.execute("delete from "+LearnedTermsReport.otablename);
+			ResultSet rs = stmt.executeQuery("select distinct modifier, tag from "+LearnedTermsReport.otablename1);
 			while(rs.next()){
 				if(rs.getString("tag")!=null && !rs.getString("tag").equals("unknown")){
 					String modifier = rs.getString("modifier") == null || rs.getString("modifier").equals("NULL")? "" : rs.getString("modifier");
 					String tag = (modifier+" "+rs.getString("tag")).trim();
 					Statement stmt1 = conn.createStatement();
-					stmt1.execute("insert into "+this.otablename +" values ('"+tag+"')");
+					stmt1.execute("insert into "+LearnedTermsReport.otablename +" values ('"+tag+"')");
 				}
 			}
 		}catch(Exception e){
@@ -212,6 +213,7 @@ public class LearnedTermsReport {
 	}
 
 	
+	@SuppressWarnings("unused")
 	private ArrayList unusedStructures(){
 		ArrayList unused = new ArrayList();
 		ArrayList sents = new ArrayList();
@@ -272,6 +274,7 @@ public class LearnedTermsReport {
 		return unused;
 	}
 	
+	@SuppressWarnings("unused")
 	private ArrayList unusedStates(){
 		ArrayList unused = new ArrayList();
 		ArrayList sents = new ArrayList();
@@ -401,6 +404,7 @@ public class LearnedTermsReport {
 		return -1;
 	}
 	//state
+	@SuppressWarnings("unused")
 	private int getAllStateCount(){
 		
 		try{
@@ -418,6 +422,7 @@ public class LearnedTermsReport {
 	}
 	
 		
+	@SuppressWarnings("unused")
 	private int getAllStateCount(String status){
 		try{
 			Statement stmt = conn.createStatement();
@@ -514,6 +519,7 @@ public class LearnedTermsReport {
 		return find;
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean stringMatchInGloss(String term){
 		boolean find = false;
 		try{

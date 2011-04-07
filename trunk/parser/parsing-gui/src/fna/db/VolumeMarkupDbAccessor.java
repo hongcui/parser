@@ -27,9 +27,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
-import fna.parsing.MainForm;
 import fna.parsing.ParsingException;
-import fna.parsing.Registry;
 
 public class VolumeMarkupDbAccessor {
 
@@ -39,6 +37,7 @@ public class VolumeMarkupDbAccessor {
     private static final Logger LOGGER = Logger.getLogger(VolumeMarkupDbAccessor.class);
     private static String url = ApplicationUtilities.getProperty("database.url");
 	private String tablePrefix = null ;
+	private String glossarytable;
     static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -49,8 +48,9 @@ public class VolumeMarkupDbAccessor {
 		}
 	}
     
-    public VolumeMarkupDbAccessor(String dataPrefix){
+    public VolumeMarkupDbAccessor(String dataPrefix, String glossarytable){
     	this.tablePrefix = dataPrefix;
+    	this.glossarytable = glossarytable;
     }
 	
     //public VolumeMarkupDbAccessor(){}
@@ -64,7 +64,7 @@ public class VolumeMarkupDbAccessor {
 		try {
 			conn = DriverManager.getConnection(url);
 			
-			String sql = "select distinct tag from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %'";
+			String sql = "select distinct tag from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' and tag not in (select distinct term from "+this.glossarytable+")";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			
@@ -104,7 +104,7 @@ public class VolumeMarkupDbAccessor {
 		ResultSet rset = null;
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos where pos=?");
+			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos4parser where pos=? and word not in (select distinct term from "+this.glossarytable+")");
 			stmt.setString(1, "b");
 			rset = stmt.executeQuery();
 			if (rset != null) {

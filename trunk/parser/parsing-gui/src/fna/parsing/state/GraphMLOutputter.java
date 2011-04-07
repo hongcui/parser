@@ -8,19 +8,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Set;
 
 import fna.parsing.ApplicationUtilities;
-import fna.parsing.ParsingException;
 import fna.parsing.Registry;
 
 /**
  * @author Hong Updates
  *
  */
+
 public class GraphMLOutputter {
 	private static String nl = System.getProperty("line.separator");
 	public static String header = "<?xml version='1.0' encoding='UTF-8' standalone='no'?> " +nl+
@@ -55,6 +53,7 @@ public class GraphMLOutputter {
 	 * @param sets
 	 */
 
+	@SuppressWarnings("unchecked")
 	public void output(ArrayList<ArrayList> groups, int initialgroupnumber){		
 		int gcount = initialgroupnumber;
 		Iterator<ArrayList> sets = groups.iterator();

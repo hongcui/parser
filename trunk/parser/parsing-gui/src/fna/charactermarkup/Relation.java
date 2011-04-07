@@ -1,5 +1,6 @@
 package fna.charactermarkup;
 
+@SuppressWarnings({ "unused" })
 public class Relation {
 	private String relationname;
 	private String entity1;

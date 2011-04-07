@@ -4,12 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.*;
-
-import fna.parsing.*;
 /**
  * DO NOT treat a list of states, such as imbricate, lanceolate or ovate because it is common for an author to enumerate different characters in a list
  * Treat only states connected by or/to, such as /{elliptic} to {oblong}/ or {ovate}, {glabrous} or /{villous} to {tomentose}/, clasping or short_decurrent,  
@@ -22,6 +20,7 @@ import fna.parsing.*;
  * @author hongcui
  *
  */
+@SuppressWarnings({  "unused","static-access" })
 public class StateCollectorTest extends StateCollector {
 	private boolean filtered = false;
 	private Hashtable<String, Boolean> checkedtermpairs = new Hashtable<String, Boolean>();
@@ -43,9 +42,10 @@ public class StateCollectorTest extends StateCollector {
 		statematrix.save2MySQL(this.conn, this.tableprefix, "termsuser", "termspassword");
 	}
 	
-	public void grouping4GraphML(){
+	public int grouping4GraphML(){
 		statematrix.Grouping();
-		statematrix.output2GraphML();
+		int countXMLFiles = statematrix.output2GraphML();
+		return countXMLFiles;
 	}
 			
 	/**
@@ -182,7 +182,7 @@ public class StateCollectorTest extends StateCollector {
 	    		if(this.filtered){
 	    			add = notInGlossary(s1.getName(), s2.getName());
 	    		}
-	    		if(add){
+	    		if(add && !s1.getName().matches("\\d+") && !s2.getName().matches("\\d+")){
 	    			statematrix.addPair(s1, s2, score, source);
 	    		}
 	    	}
@@ -202,8 +202,8 @@ public class StateCollectorTest extends StateCollector {
 		if(result==null){//not in cache
 			try{
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select * from "+ApplicationUtilities.getProperty("database.glossary.name")+
-				" where term ='"+term1+"' and category in (select category from "+ApplicationUtilities.getProperty("database.glossary.name")+
+				ResultSet rs = stmt.executeQuery("select * from "+super.glosstable+
+				" where term ='"+term1+"' and category in (select category from "+super.glosstable+
 				" where term='"+term2+"')");
 				if(rs.next()){
 					this.checkedtermpairs.put(term1+"#"+term2, new Boolean(false));

@@ -1,20 +1,13 @@
 package fna.parsing;
 
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.layout.grouplayout.GroupLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 
 import com.swtdesigner.SWTResourceManager;
 
@@ -87,6 +80,7 @@ public class Configuration {
 					if(!shell.isDisposed()) {
 						shell.dispose();
 					}
+					int[] a ={1,2,3,4,5};
 					MainForm.launchMarker("");
 					System.exit(0);
 				}	
@@ -102,7 +96,14 @@ public class Configuration {
 		type2.setBounds(10, 166, 90, 16);
 		type2.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
-				new Type2Document().showType2Document();				
+				//new Type2Document().showType2Document();
+				shell.setVisible(false);
+				
+				if(!shell.isDisposed()) {
+					shell.dispose();
+				}
+				MainForm.launchMarker("type2");
+				System.exit(0);
 			}
 			
 			public void mouseDown(MouseEvent mEvent) { }

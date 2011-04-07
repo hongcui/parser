@@ -2,8 +2,10 @@ package fna.parsing.character;
 
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class State {
 	private String term = null;
+	@SuppressWarnings("unused")
 	private ArrayList characters = null;
 	private Glossary glossary = null;
 	//may consider adding constraints.
@@ -24,6 +26,7 @@ public class State {
 			this.characters.addAll(characters);
 	}	*/
 	
+	@SuppressWarnings("static-access")
 	public ArrayList getCharacters(){
 		return glossary.getCharacter(term);
 	}

@@ -1,14 +1,11 @@
 package fna.charactermarkup;
 
-import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.ResultSet;
-import java.util.*;
-import java.io.File;
-import java.util.regex.*;
+import java.sql.Statement;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OcsFreq {
 	static protected Connection conn = null;

@@ -43,9 +43,15 @@ import prefuse.visual.sort.ItemSorter;
 /**
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
+@SuppressWarnings({ "unchecked" })
 public class DataMountain extends Display {
     
-    public DataMountain(Table t) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7264167307054229068L;
+
+	public DataMountain(Table t) {
         super(new Visualization());
         m_vis.addTable("data", t);
         

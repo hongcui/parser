@@ -2,28 +2,20 @@
  * 
  */
 package fna.parsing;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import fna.db.*;;
+import fna.db.HabitatParserDbAccessor;
 
 /**
  * @author Hong Updates
  *
  */
+@SuppressWarnings("unchecked")
 public class HabitatParser4FNA implements Learn2Parse{
-	private File sourcefolder = null;
-	private String dataprefix = null;
 	private HabitatParserDbAccessor hpDbA = null;
 	private String seedNList = "|";
 	private String seedMList = "|";
@@ -94,7 +86,6 @@ public class HabitatParser4FNA implements Learn2Parse{
 		Iterator<String> it  = todos.iterator();
 		while(it.hasNext()){
 			String r = (String)it.next().trim().toLowerCase();
-			String src = r.split("@")[0];
 			String hs = r.split("@")[1];
 			discovery += modifierBeforeH(p, hs);
 		}
@@ -125,7 +116,7 @@ public class HabitatParser4FNA implements Learn2Parse{
 		Iterator<String> it = text.iterator();
 		while(it.hasNext()){
 			String r = (String)it.next().trim().toLowerCase();
-			String src = r.split("@")[0];
+		//	String src = r.split("@")[0];
 			String hs = r.split("@")[1];
 			hs = hs.replaceAll("\\s*\\([^)]*\\)\\s*", " ");
 			hs = hs.replaceAll("[\\W|\\s]+$", "");
@@ -180,7 +171,7 @@ public class HabitatParser4FNA implements Learn2Parse{
 	}
 	
 	private boolean isDone(String string){
-		String sc = string;
+	//	String sc = string;
 		string = string.replaceAll(">,", "").replaceAll("},", "");
 		if(string.indexOf(",") < 0){
 			return true;

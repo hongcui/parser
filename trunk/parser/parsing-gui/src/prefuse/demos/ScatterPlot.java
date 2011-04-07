@@ -37,7 +37,12 @@ import prefuse.visual.expression.VisiblePredicate;
  */
 public class ScatterPlot extends Display {
 
-    private static final String group = "data";
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 8241563002107640995L;
+
+	private static final String group = "data";
     
     private ShapeRenderer m_shapeR = new ShapeRenderer(2);
     

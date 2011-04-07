@@ -12,6 +12,7 @@ public class StateImporter {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Set getStates(){
 		return states;
 	}

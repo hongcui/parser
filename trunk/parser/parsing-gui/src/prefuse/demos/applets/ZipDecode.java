@@ -8,7 +8,12 @@ import prefuse.util.ui.JPrefuseApplet;
 
 public class ZipDecode extends JPrefuseApplet {
 
-    public void init() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5810391085028350915L;
+
+	public void init() {
         DelimitedTextTableReader tr = new DelimitedTextTableReader();
         Table t = null;
         try {

@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
 
 import fna.db.VolumeMarkupDbAccessor;
@@ -22,6 +20,7 @@ import fna.db.VolumeMarkupDbAccessor;
  * 
  * @author chunshui
  */
+@SuppressWarnings({  "unused" })
 public class VolumeMarkup {
 	
 	protected ProcessListener listener;
@@ -31,13 +30,16 @@ public class VolumeMarkup {
 	protected String dataPrefix = null;
 	
 	protected String markupMode = "plain"; //TODO: make this configurable
+
+	private String glossarytable;
 	protected static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
-	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix) {
+	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix, String glossarytable) {
 		this.listener = listener;
         this.display = display;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
+        this.glossarytable = glossarytable;
 	}
 	
 	public void showPerlMessage(final String message) {
@@ -86,7 +88,7 @@ public class VolumeMarkup {
 		listener.clear();
 		
 		List<String> tagList = new ArrayList<String>();
-		VolumeMarkupDbAccessor vmDba = new VolumeMarkupDbAccessor(this.dataPrefix);
+		VolumeMarkupDbAccessor vmDba = new VolumeMarkupDbAccessor(this.dataPrefix, this.glossarytable);
 		try {
 			vmDba.updateData(tagList);
 		} catch (Exception e) {

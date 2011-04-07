@@ -5,14 +5,8 @@ package fna.parsing;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +31,7 @@ import org.jdom.xpath.XPath;
  * 
  * @author chunshui
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class VolumeVerifier extends Thread {
 
 	private String target;

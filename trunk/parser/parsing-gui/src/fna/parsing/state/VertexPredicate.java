@@ -1,10 +1,11 @@
 package fna.parsing.state;
 
-import java.util.Collection;
-
 import org.apache.commons.collections15.Predicate;
-import edu.uci.ics.jung.graph.*;
 
+import edu.uci.ics.jung.graph.Graph;
+
+
+@SuppressWarnings({ "unchecked", "hiding" })
 public class VertexPredicate<State>  implements Predicate<State>{
 			Graph g;
 		public VertexPredicate(Graph g){

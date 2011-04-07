@@ -33,6 +33,7 @@ import fna.db.*;
  * output: prefix_paragraphs and prefix_sentence, prefix_wordpos tables etc by unsupervisedClauseMarkupBenchmarked.pl
  * 
  */
+@SuppressWarnings("unchecked")
 public class Type3Transformer extends Thread {
 	private ArrayList<String> seeds = new ArrayList<String>();
 	//private File source =new File(Registry.SourceDirectory); //a folder of text documents to be annotated
@@ -48,9 +49,10 @@ public class Type3Transformer extends Thread {
 	private String seedfilename = "seeds";
 	private ProcessListener listener;
 	private Text perlLog;
+	private String glossarytable;
 	
 	Type3Transformer(ProcessListener listener, Display display, 
-			Text perllog, String dataprefix, ArrayList seeds){
+			Text perllog, String dataprefix,String glossarytable, ArrayList seeds){
 		//super(listener, display, perllog, dataprefix);
 		this.seeds = seeds;
 		this.listener = listener;
@@ -58,6 +60,7 @@ public class Type3Transformer extends Thread {
 		saveSeeds();
 		//this.markupMode = "plain";
 		this.dataprefix = dataprefix;
+		this.glossarytable=glossarytable;
 		outputter = new XMLOutputter(Format.getPrettyFormat());
 	}	
 	
@@ -114,7 +117,7 @@ public class Type3Transformer extends Thread {
 
 		//		read the output from the command
 		String s = "";
-		int i = 0;
+		//int i = 0;
 		while ((s = stdInput.readLine()) != null) {
 			System.out.println(s + " at " + (System.currentTimeMillis() - time)
 					/ 1000 + " seconds");
@@ -151,7 +154,7 @@ public class Type3Transformer extends Thread {
 		listener.progress(60);
 		//dehypen descriptions folder
 		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", 
-				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix, null);
+				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix,this.glossarytable, null);
 		dhf.dehyphen();
 
 	}
@@ -218,7 +221,7 @@ public class Type3Transformer extends Thread {
 		}
 		//write xml to transformed
 		try {
-			Document xml = new Document(doc);
+			//Document xml = new Document(doc);
 			BufferedOutputStream out = new BufferedOutputStream(
 					new FileOutputStream(new File(trafolder, fname.replaceAll("\\..*$", "")+".xml")));
 			/* Producer */
@@ -260,7 +263,7 @@ public class Type3Transformer extends Thread {
 	 */
 	public static void main(String[] args) {
 		//save to-be-annotated files to source folder 
-		Type3Transformer tpm = new Type3Transformer(null, null, null, "bhl_2vs", null);
+		Type3Transformer tpm = new Type3Transformer(null, null, null, "bhl_2vs","", null);
 		tpm.bootstrapMorphDes();
 		tpm.output2Target();
 	}

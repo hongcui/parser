@@ -3,21 +3,24 @@
  */
 package fna.parsing.datacleaner;
 
-import java.util.*;
-import java.io.*;
-import java.util.regex.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
-import fna.parsing.*;
+import fna.parsing.ParsingUtil;
 /**
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked"})
 public abstract class DataCleaner{
 	protected String legalvalues = null;
 	protected ArrayList<String> sourceelements = new ArrayList<String>();

@@ -1,16 +1,18 @@
 package fna.charactermarkup;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.regex.*;
 import java.util.ArrayList;
-import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
-
+@SuppressWarnings({  "unused" })
 public class DescriptionAssembler {
     static protected Connection conn = null;
     static protected String database = "fnav19_benchmark";

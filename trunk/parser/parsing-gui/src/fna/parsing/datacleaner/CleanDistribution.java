@@ -16,6 +16,7 @@ import org.jdom.xpath.XPath;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked", "unused" })
 public class CleanDistribution extends DataCleaner {
 	private String directions="c|e|w|s|n|ec|wc|sc|nc|nw|ne|sw|se|central|east|west|south|north|eastcentral|westcentral|southcentral|northcentral|northwest|northeast|southwest|southeast";
 	private Hashtable<String, String> statenames = new Hashtable<String, String>();

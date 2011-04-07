@@ -6,24 +6,26 @@ package fna.parsing.state;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import fna.charactermarkup.*;
+import fna.charactermarkup.ChunkedSentence;
+import fna.parsing.ApplicationUtilities;
 
 /**
  * @author hongcui
  * last stable version: 653
  * this version: try to find additional nouns from unknown words, and mark them with <>. 
  */
+
+@SuppressWarnings("unchecked")
 public class SentenceOrganStateMarker {
 	private Hashtable<String, String> sentences = new Hashtable<String, String>();
 	private Connection conn = null;
@@ -36,6 +38,7 @@ public class SentenceOrganStateMarker {
 	private String statenames = null;
 	private String tableprefix = null;
 	private String glosstable = null;
+	private ArrayList<String> order = new ArrayList<String>();
 	/**
 	 * 
 	 */
@@ -45,7 +48,7 @@ public class SentenceOrganStateMarker {
 		this.glosstable = glosstable;
 		try{
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (source varchar(100) NOT NULL Primary Key, markedsent text, rmarkedsent text)");
+				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL AUTO_INCREMENT Primary Key , source varchar(100) , markedsent text, rmarkedsent text)");
 				stmt.execute("delete from "+this.tableprefix+"_markedsentence");
 				//ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_markedsentence");
 				//if(rs.next()){this.marked = true;}
@@ -64,7 +67,8 @@ public class SentenceOrganStateMarker {
 			while(rs.next()){
 				String source = rs.getString("source");
 				//String sent = rs.getString("tag")+"##"+rs.getString("originalsent");
-				String sent = rs.getString("tag")+"##"+rs.getString("sentence").replaceAll("</?[BNOM]>", "");
+				String sent = rs.getString("tag")+"##"+rs.getString("sentence").replaceAll("</?[BNOM]>", "").replaceAll(" & ", " and ");
+				order.add(source);				
 				sentences.put(source, sent);
 			}
 			
@@ -97,9 +101,13 @@ public class SentenceOrganStateMarker {
 		if(this.marked){
 			loadMarked();
 		}else{
-			Enumeration<String> en = sentences.keys();
-			while(en.hasMoreElements()){
-				String source = en.nextElement();
+			Iterator<String> it = order.iterator();
+			while(it.hasNext()){
+				
+			//Enumeration<String> en = sentences.keys();
+			//while(en.hasMoreElements()){
+				//String source = en.nextElement();
+				String source = it.next();
 				String sent = (String)sentences.get(source); 
 				String tag = sent.substring(0, sent.indexOf("##"));
 				sent = sent.replace(tag+"##", "").trim();
@@ -197,6 +205,7 @@ public class SentenceOrganStateMarker {
 	 * @param taggedsent
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private String fixAdjNouns(ArrayList adjnouns, String adjnoun, String taggedsent) {
 		adjnoun = adjnoun.replaceAll("\\s+", "\\\\W+");
 		taggedsent = Pattern.compile("[<{]*\\b"+adjnoun+"\\b[}>]*", Pattern.CASE_INSENSITIVE).matcher(taggedsent).replaceFirst("<"+adjnoun+">").replaceAll("W\\+", "> <").replaceAll("<and>", "and").replaceAll("<or>", "or");
@@ -256,8 +265,8 @@ public class SentenceOrganStateMarker {
 		String statestring = "";
 		try{
 			Statement stmt = conn.createStatement();
-			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
-			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c'");
+			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
+			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c'");
 			while(rs.next()){
 				String w = rs.getString("word");
 				if(!w.matches("\\W+") && !w.matches("("+ChunkedSentence.stop+")") &&!w.matches("("+ChunkedSentence.prepositions+")")){
@@ -267,7 +276,7 @@ public class SentenceOrganStateMarker {
 		}catch (Exception e){
 				e.printStackTrace();
 		}
-		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceFirst("\\|", "").replaceAll("\\|+", "|");
+		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceAll("\\\\d\\+", "").trim().replaceFirst("^\\|", "").replaceFirst("\\|$", "").replaceAll("\\|+", "|");
 	}
 	
 	protected String collectOrganNames(){
@@ -283,23 +292,24 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return tags.toString().replaceAll("\\|+", "|");
+		return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|");
 	}
 	
 
 	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs;
-		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n')");
-		rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os')");
+		String postable = this.tableprefix + "_"+ApplicationUtilities.getProperty("POSTABLE");
+		rs = stmt.executeQuery("select word from "+postable+" where pos in ('p', 's', 'n')");
+		//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os')");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
 		}
 		
-		rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos in ('p', 's', 'n') and word not in (select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os'))");
+		/*rs = stmt.executeQuery("select word from "+postable+" where pos in ('p', 's', 'n') and word not in (select word from "+this.tableprefix+"_wordroles where semanticrole in ('op', 'os'))");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
-		}
+		}*/
 	}
 	
 	protected void organNameFromSentences(StringBuffer tags, Statement stmt)
@@ -348,9 +358,9 @@ public class SentenceOrganStateMarker {
 		//String database="fnav19_benchmark";
 		//String database="treatiseh_benchmark";
 		//String database="plaziants_benchmark";//TODO
-		String database="bhl_benchmark";
-		String username="root";
-		String password="root";
+		String database="markedupdatasets";
+		String username="termsuser";
+		String password="termspassword";
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -363,7 +373,7 @@ public class SentenceOrganStateMarker {
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatise", "treatisehglossaryfixed");
 		sosm.markSentences();
 
 	}

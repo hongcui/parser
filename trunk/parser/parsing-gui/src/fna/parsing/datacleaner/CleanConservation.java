@@ -14,6 +14,7 @@ import org.jdom.xpath.XPath;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unchecked" })
 public class CleanConservation extends DataCleaner {
 
 	/**

@@ -17,7 +17,7 @@ import java.util.zip.ZipOutputStream;
  * @author Hong Updates
  *
  */
-
+@SuppressWarnings("unchecked")
 public class OpenXMLZipFile
 {
 	//  CreateZipFile method which will take the zipFileName and ToCompressFiles as arguments
