@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -55,6 +56,8 @@ main subject: z[m/e]
  */
 @SuppressWarnings({ "unchecked", "unused" })
 public class SentenceChunker4StanfordParser {
+	private String sentsrc = null;
+	private String tableprefix = null;
 	private Connection conn = null;
 	private String glosstable = null;
 	private Document tree = null;
@@ -74,14 +77,18 @@ public class SentenceChunker4StanfordParser {
 	private static XPath NNpath = null;
 	private int sentindex = -1;
 	private Pattern p = Pattern.compile("(.*?)((?:\\w+ )+)\\2(.*)");
+	private String conjunctions = "and|or|plus";
 	private boolean printVB = false;
-	private boolean printPP = true;
+	private boolean printPP = false;
 	private boolean printNPlist = false;
+	private boolean debug = false;
 	//private boolean printPPTO = true;
 	/**
 	 * 
 	 */
-	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, Connection conn, String glosstable) {
+	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, String sentsrc, String tableprefix,Connection conn, String glosstable) {
+		this.sentsrc = sentsrc;
+		this.tableprefix = tableprefix;
 		this.conn = conn;
 		this.glosstable = glosstable;
 		this.sentindex = index;
@@ -171,7 +178,7 @@ public class SentenceChunker4StanfordParser {
 			}
 		//}
 		collapseThatClause();
-		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.conn, this.glosstable);
+		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable);
 		return cs;
 	}
 	
@@ -496,6 +503,9 @@ end procedure
 					if(name.startsWith("NP") && ((Element)c).getAttributeValue("text") != null){//already collapsed NPs
 						return ((Element)c).getAttributeValue("text");
 					}
+					if(((Element)c).getAttribute("text") != null && ((Element)c).getAttributeValue("text").indexOf(" o[")>=0){
+						return ((Element)c).getAttributeValue("text");
+					}
 				}
 			}
 		}catch(Exception ex){
@@ -536,10 +546,12 @@ end procedure
 		this strategy (taking the last np) is problematic. 
 		Should avoid nested chunks and take up to "hairs" and not "bases".
 		test this later 12/15/10*/
+		String winner = np;
 		int last = Integer.parseInt(idofthelastwordinnp);
 		if(np.startsWith("l[")){//adjust the index of a noun list. the idofthelastwordinnp in this case should be the last word in the list, not the first.
 			last = last+np.split("\\s+").length-1;
 		}
+		int lastcp = last;
 		/*int cindex = np.indexOf("[")-1; //index of first r[
 		if(cindex>=0){
 			String chunked = np.substring(cindex).trim(); //index of first r[
@@ -547,6 +559,7 @@ end procedure
 			np = np.substring(0,cindex).trim();
 		}*/
 		String[] words = np.split("\\s+");
+		String[] words2 = np.split("\\s+");
 		for(int i = words.length-1; i>=0; i--){//find the last NN as marked in markedsent (e.g. posoftokens)
 			if(!this.posoftokens[last--].startsWith("NN")){
 				words[i] = "";
@@ -558,7 +571,56 @@ end procedure
 		for(int i = 0; i < words.length; i++){//find the last NN as marked in markedsent (e.g. posoftokens)
 			np +=words[i]+" ";
 		}
-		return np.replaceAll("\\s+", " ").trim();		
+		//test out: find the first nn
+		int first = lastcp - words.length +1;
+		boolean foundn = false;
+		boolean nends = false;
+		for(int i = 0; i<words.length; i++){
+			if(nends){
+				words[i] = "";
+			}else if(foundn && !this.posoftokens[first].startsWith("NN")){
+				words[i] = "";
+				nends = true;
+			}else if(this.posoftokens[first].startsWith("NN")){
+				foundn = true;
+			}
+			first++;
+		}
+		
+		String np2 = "";
+		for(int i = 0; i < words.length; i++){//find the last NN as marked in markedsent (e.g. posoftokens)
+			np2 +=words[i]+" ";
+		}
+		
+		np = np.replaceAll("\\s+", " ").trim();
+		np2 = np2.replaceAll("\\s+", " ").trim();
+		
+		if(np.length()>0) winner=np;
+		if(np.compareTo(np2)!=0){
+			if(debug){
+			System.out.println("first NP need help");
+			System.out.println("np is: "+np);
+			System.out.println("np2 is: "+np2);
+			}
+			if(np.length() > np2.length()){//make np2 hold the longer string
+				String t = np;
+				np = np2;
+				np2 = t;
+			}
+			if(np2.indexOf("l[")>=0){
+				winner = np2;
+			}else if(np2.replace(np, "").trim().matches("^("+this.conjunctions+")")){
+				winner = np2;
+			}else {
+				winner = np;
+			}
+		}
+		
+		
+		if(debug){
+		System.out.println("winner is: "+winner);
+		}
+		return winner;		
 	}
 	/**
 	 * 
@@ -625,6 +687,9 @@ end procedure
 					if(name.startsWith("NN") || name.startsWith("JJ")){//TODO: consider also CD(3) and PRP (them)
 						Element p = ((Element)c).getParentElement();
 						return checkJJAgainstMarkedSent(allText(p), lastIdIn(p));
+					}
+					if(((Element)c).getAttribute("text") != null && ((Element)c).getAttributeValue("text").indexOf(" o[")>=0){
+						return ((Element)c).getAttributeValue("text");
 					}
 					
 				}
@@ -720,6 +785,7 @@ end procedure
 
 	/**
 	 * also set the id of the resultant element be the id of its first word/text
+	 * if chunk is "", then collapse all text/child nodes without inserting symbols 
 	 * @param e
 	 * @return if the element is collapsed successfully
 	 */
@@ -729,7 +795,82 @@ end procedure
 		}
 		chunk = chunk.trim().replaceAll("\\s*\\w\\[\\]\\s*", "").replaceAll("\\s+", " ").trim(); //remove o[]
 		String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*\\\\b").replaceAll("\\]", "\\\\b(\\\\])*");
-		String text = allText(e);
+		
+		// collapsed text is saved to e
+		// keeping other children of e as e's children
+
+		//determine the id for the new chunked element
+		//detach any leaf element encountered along the path
+		String id = "";
+		String chunktext = chunk.length() ==0 ? allText(e) : chunk;//if chunk is "", then collapse all text/child nodes 
+		chunktext = chunktext.trim().replaceAll("(\\w\\[|\\])", "");
+		//Element thechild = null;
+		String text = "";
+		ArrayList<Element> tobedeleted = new ArrayList<Element>();
+		try{
+			Iterator<Content> cit = e.getDescendants();
+			while(cit.hasNext()){
+				Content c = cit.next();
+				if(c instanceof Element){
+					if(((Element)c).getAttribute("id") != null){
+						if(id.compareTo("")==0)
+							id = ((Element)c).getAttributeValue("id");	
+					}
+					if(((Element)c).getAttribute("text") != null){
+						String t = ((Element)c).getAttributeValue("text");
+						text+=t+" ";
+						t = t.replaceAll("(\\w\\[|\\])", "");
+						chunktext = chunktext.replaceFirst("^"+t, "").trim();
+						t = t.replaceFirst("^"+chunktext, "").trim();
+						tobedeleted.add((Element)c);//mark to-be-deleted elements						
+						if(chunktext.length()==0 || t.length()==0){
+							//thechild = (Element)c;
+							break;
+						}
+						
+					}
+				}
+			}
+		}catch (Exception ex){
+			ex.printStackTrace();
+		}
+
+		//delete
+		try{
+			Iterator<Element> it = tobedeleted.iterator();
+			while(it.hasNext()){
+				Element c = it.next();
+				Element p = c.getParentElement();
+				if(c.getChildren().size()==0){
+					c.detach(); //remove an element
+				}else if(c.getAttribute("text")!=null){
+					c.removeAttribute("text");
+					c.removeAttribute("id");
+				}
+				if(p.getChildren().size()==0 && !p.equals(e)){//remove its parent if no more children left
+						p.detach();
+				}
+			}					
+		}catch (Exception ex){
+			ex.printStackTrace();
+		}			
+		//format text
+		if(chunk.length()>0){//if chunk is "", then collapse all text/child nodes without inserting symbols 
+			text = text.replaceFirst(pattern, symbol+
+					"["+chunk+"]"); //this replacement may have no effect on text because the chunk does not consist of consecutive words.
+		}
+		//set id and text for e
+		Attribute a = e.getAttribute("text");
+		if(a != null){
+			a.setValue(text);	
+			e.getAttribute("id").setValue(id);
+		}else{
+			Attribute n = new Attribute("text", text);
+			Attribute n2  = new Attribute("id", id);
+			e.setAttribute(n2);
+			e.setAttribute(n);
+		}
+		/*String text = allText(e);
 		if(chunk.length()>0){
 			text = text.replaceFirst(pattern, symbol+
 					"["+chunk+"]"); //this replacement may have no effect on text because the chunk does not consist of consecutive words.
@@ -761,7 +902,7 @@ end procedure
 			Attribute n2  = new Attribute("id", id);
 			e.setAttribute(n2);
 			e.setAttribute(n);
-		}
+		}*/
 
 		
 	}
@@ -789,7 +930,7 @@ end procedure
 				//all children must be either NP or NN/NNS, except for one CC, and
 				//all NP child must have a child NN/NNS
 				boolean isList = true;
-				if(!CC.getAttributeValue("text").matches("(and|or)")){
+				if(!CC.getAttributeValue("text").matches("(and|or|plus)")){
 					isList = false;
 				}
 				List<Element> CCs = XPath.selectNodes(NP, "CC");

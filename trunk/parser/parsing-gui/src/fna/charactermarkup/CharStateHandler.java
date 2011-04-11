@@ -1,3 +1,4 @@
+ /* $Id$ */
 package fna.charactermarkup;
 
 import java.sql.Connection;
@@ -13,7 +14,8 @@ public class CharStateHandler {
 	static protected String database = null;
 	static protected String username = "root";
 	static protected String password = "root";
-	static protected ArrayList<String> adverbs;
+	static protected ArrayList<String> adverbs = new ArrayList<String>();
+	static protected ArrayList<String> notadverbs = new ArrayList<String>();
 	
 	public CharStateHandler() {
 		CharStateHandler.database = "benchmark_learningcurve_fnav19_test_24";
@@ -576,7 +578,7 @@ public class CharStateHandler {
     			//System.out.println(matcher2.group(6));
     			//System.out.println(matcher2.group(10));
     			//System.out.println(matcher2.group(13));
-    			if(Utilities.isAdv(mod, adverbs)){
+    			if(Utilities.isAdv(mod, adverbs, notadverbs)){
     				String chstate = matcher2.group(6).replaceAll("\\_", " ");
     				StringBuffer sb = new StringBuffer();
     				Pattern pattern29 = Pattern.compile("value=\""+chstate+"\"");

@@ -1,3 +1,4 @@
+ /* $Id$ */
 package fna.charactermarkup;
 
 public class ChunkValue extends ChunkNumericals{

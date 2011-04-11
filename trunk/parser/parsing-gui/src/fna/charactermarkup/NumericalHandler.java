@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -59,6 +60,11 @@ public class NumericalHandler  {
 			return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
 		}
 	}
+	/**
+	 * 
+	 * @param token
+	 * @return true if token represents an expression of a discrete numerical value, not a range which is represented by this.numberpattern
+	 */
 	public static boolean isNumerical(String token){
 		if(token.matches(".*?\\d+\\+?%?\\??\\]?$")){
 			return true;
@@ -110,7 +116,7 @@ public class NumericalHandler  {
 			///////////////////////////////////////////////////////////////////
 			//      area                                               ////////
 			
-			Pattern pattern19 = Pattern.compile("([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))\\s*×?x?(\\s*[ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m?))?\\s*×x\\s*([ \\d\\.\\[\\]+-]+\\s*([cmdµ]?m))");
+			Pattern pattern19 = Pattern.compile("([ \\d\\.\\[\\]+-]+\\s*([cmdµu]?m?))\\s*[×x]?(\\s*[ \\d\\.\\[\\]+-]+\\s*([cmdµu]?m?))?\\s*[×x]\\s*([ \\d\\.\\[\\]+-]+\\s*([cmdµu]?m))");
 			Matcher matcher2 = pattern19.matcher(numberexp);
 			if(matcher2.matches()){
 				//get l, w, and h

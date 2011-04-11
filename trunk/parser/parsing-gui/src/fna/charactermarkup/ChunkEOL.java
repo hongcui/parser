@@ -5,15 +5,15 @@
 package fna.charactermarkup;
 
 /**
- * @author hongcui
+ * @author Hong Updates
  *
  */
-public class ChunkTHANC extends Chunk {
+public class ChunkEOL extends Chunk {
 
 	/**
 	 * @param text
 	 */
-	public ChunkTHANC(String text) {
+	public ChunkEOL(String text) {
 		super(text);
 		// TODO Auto-generated constructor stub
 	}

@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -46,7 +47,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 	private boolean finalize = true;
-	private boolean debug = true;
+	//private boolean debug = true;
+	private boolean printSent = true;
+	private boolean printProgress = false;
 	/**
 	 * 
 	 */
@@ -65,9 +68,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
-				stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-				stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
-				stmt.close();
+				//stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
+				//stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
+				//stmt.close();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -77,13 +80,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	
 	public void POSTagging(){
 		try{
-			Statement stmt = conn.createStatement();
+  			Statement stmt = conn.createStatement();
 			Statement stmt2 = conn.createStatement();
 			FileOutputStream ostream = new FileOutputStream(posedfile); 
 			PrintStream out = new PrintStream( ostream );
 			
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
 			//stmt.execute("alter table markedsentence add rmarkedsent text");
+
 			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
 			//ResultSet rs = stmt.executeQuery("select * from markedsentence order by source ");
 			int count = 1;
@@ -91,6 +95,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				//str=rs.getString(3);
 				String src = rs.getString("source");
 				String str = rs.getString("markedsent");
+				//count++;
+				//if(count!=549) continue;
 				//TODO: may need to fix "_"
 				str = tagger.POSTag(str, src);
 	       		//stmt2.execute("insert into marked_pos values('"+rs.getString(1)+"','"+rs.getString(2)+"','"+str+"')");
@@ -109,9 +115,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	}
 
 	/**
-	 * direct the parsed result to text file parsedfile
-	 * 
-	 * this does not work. Work only from commandline. 
+	 * direct the parsed result to the text file parsedfile
 	 */
 	public void parsing(){
 		PrintStream out = null;
@@ -183,7 +187,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			String text = "";
 			int i = 0;
 			Statement stmt = conn.createStatement();
+
 			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
+
 			//ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence order by source");
 			Pattern ptn = Pattern.compile("^Parsing \\[sent\\. (\\d+) len\\. \\d+\\]:(.*)");
 			Matcher m = null;
@@ -191,7 +197,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Document doc = null;
 			CharacterAnnotatorChunked cac = null;
 			String pdescID ="";
-			int order = 0+0;
+			int order = 0;
 			//int pfileindex = 0;
 			String pfileindex = "";
 			Element baseroot = null;
@@ -207,9 +213,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					}
 				}else{
 					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
-					//if(i !=2793 && text.startsWith("(ROOT")){//FNAv19
-					//if(i != 1156 && text.startsWith("(ROOT")){//treatiseh
-					if(/*i != 2468 && i != 3237 &&i != 9555 && i != 9504 &&*/ i !=4061 && text.startsWith("(ROOT")){//bhl	
+					//if(i !=2793 && text.startsWith("(ROOT")){//FNAv19 865[162.txt-0], 310, 1638 (SentenceOrganStateMarkup); 5262[466.txt-14]
+					if(text.startsWith("(ROOT")){//treatiseh
+					//if(/*i != 2468 && i != 3237 &&i != 9555 && i != 9504 &&*/ i !=2018 && i !=2793 && text.startsWith("(ROOT")){//bhl	
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
@@ -233,11 +239,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							}
 							//sent = normalizeSpacesRoundNumbers(sent);
 							sent = sent.replaceAll("<\\{?times\\}?>", "times");
-							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, conn, glosstable);
+							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
+							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
+							SentenceChunker4StanfordParser ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable);
 							ChunkedSentence cs = ex.chunkIt();
 							
 							//System.out.print("["+src+"]:");
-							if(this.debug){
+							if(this.printSent){
 								System.out.println();
 								System.out.println(i+"["+src+"]: "+cs.toString());
 
@@ -256,7 +264,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 										
 										placeDescription(description, pdescID, baseroot);
 										description = new Element("description");
-										if(this.debug){
+										if(this.printProgress){
 											System.out.println(pfileindex+".xml written");
 										}
 									}
@@ -334,6 +342,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("\\+(?![\\d()\\]\\[×-])", "+ ");
 		sent = sent.replaceAll("(?<=(\\d))\\s*\\?\\s*(?=[\\d)\\]])", "?"); // (0? )
 		sent = sent.replaceAll("\\s*-\\s*", "-"); // 1 - 2 => 1-2, 4 - {merous} => 4-{merous}
+		
+		//%,°, and ×
+		sent = sent.replaceAll("(?<![a-z])\\s+%", "%").replaceAll("(?<![a-z])\\s+°", "°").replaceAll("(?<![a-z ])\\s*×\\s*(?![ a-z])", "×");
 		/*if(sent.indexOf(" -{")>=0){//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
 			sent = sent.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
 		}*/
@@ -441,21 +452,36 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser.normalizeSpacesRoundNumbers(text);
 		//String text = "ovary more than two to three-fourths to one half superior. ";
 		//System.out.println(StanfordParser.ratio2number(text));
-		/*String posedfile = "FNAv19posedsentences.txt";
+		//String text="<pollen> 70-100% 3-{porate} , {mean} 25 um .";
+		//System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
+		//*fna
+		String posedfile = "FNAv19posedsentences.txt";
 		String parsedfile = "FNAv19parsedsentences.txt";
-		String database = "fnav19_benchmark";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "wordpos4parser", "fnaglossaryfixed");
+		
+		/*treatiseh
+		String posedfile = "Treatisehposedsentences.txt";
+		String parsedfile = "Treatisehparsedsentences.txt";
 		*/
+		//String database = "fnav19_benchmark";
+		String database = "annotationevaluation";
+		
+		
+		
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "wordpos4parser", "fnaglossaryfixed");
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");
+		
 		
 		/*String posedfile = "Treatisehposedsentences.txt";
 		String parsedfile = "Treatisehparsedsentences.txt";
 		String database = "treatiseh_benchmark";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");*/
 		
-		String posedfile = "C:\\RA\\PARSER-DEMO\\Treatise\\target\\treatise_posedsentences.txt";
-		String parsedfile = "C:\\RA\\PARSER-DEMO\\Treatise\\target\\treatise_parsedsentences.txt";
-		String database = "markedupdatasets";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatise", "wordpos4parser", "treatisehglossaryfixed");
+
+		//String posedfile = "BHLposedsentences.txt";
+		//String parsedfile = "BHLparsedsentences.txt";
+		//String database = "bhl_benchmark";
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
+		
 		//sp.POSTagging();
 		//sp.parsing();
 		sp.extracting();
