@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -5,6 +6,8 @@ package fna.charactermarkup;
 
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -13,6 +16,8 @@ import java.util.regex.Pattern;
 
 import org.jdom.Document;
 import org.jdom.Element;
+
+
 
 
 /**
@@ -34,8 +39,14 @@ public class ChunkedSentence {
 	@SuppressWarnings("unused")
 	private ArrayList<String> charactertokensReversed = new ArrayList<String>();
 	private int pointer = 0; //pointing at the next chunk to be annotated
+	private String subjecttext = null;
+	private String text = null;
+	private String sentsrc = null;
+	private String tableprefix = null;
 	public static final String locationpp="near|from";
-	public static final String units= "cm|mm|dm|m|meter|meters|microns|micron|unes";
+	public static final String units= "cm|mm|dm|m|meter|meters|microns|micron|unes|µm|um";
+	public static final String percentage="%|percent";
+	public static final String degree="°|degree|degrees";
 	public static final String times = "times|folds|lengths|widths";
 	public static final String per = "per";
 	public static final String more="greater|more|less|fewer";
@@ -50,22 +61,26 @@ public class ChunkedSentence {
 	private int sentid = -1;
 	private ArrayList<String> pastpointers = new ArrayList<String>();
 
-	private String unassignedmodifier = null;
+	public String unassignedmodifier = null;
 	//caches
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	public static ArrayList<String> adverbs = new ArrayList<String>();
 	public static ArrayList<String> verbs = new ArrayList<String>();
 	public static ArrayList<String> nouns = new ArrayList<String>();
+	public static ArrayList<String> notadverbs = new ArrayList<String>();
+	public static ArrayList<String> notverbs = new ArrayList<String>();
+	public static ArrayList<String> notnouns = new ArrayList<String>();
 	
 	protected Connection conn = null;
 	/*static protected String username = "root";
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
 	
-	private boolean printNorm = false;
+	private boolean printNorm = true;
 	private boolean printNormThan = false;
 	private boolean printNormTo = false;
 	private boolean printExp = false;
+	private boolean printRecover = true;
 	
 
 	
@@ -80,7 +95,9 @@ public class ChunkedSentence {
 	 * @param tree 
 	 * 
 	 */
-	public ChunkedSentence(int id, Document collapsedtree, Document tree, String tobechunkedmarkedsent, Connection conn, String glosstable) {
+	public ChunkedSentence(int id, Document collapsedtree, Document tree, String tobechunkedmarkedsent,  String sentsrc, String tableprefix,Connection conn, String glosstable) {
+		this.sentsrc = sentsrc;
+		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
 		this.conn = conn;
 		this.sentid = id;
@@ -107,7 +124,7 @@ public class ChunkedSentence {
 				treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{2,40})(\\}| |$)","}]");
 			}
 		}		
-		for(i = 0; i<treetoken.length; i++){
+		for(i= 0; i<treetoken.length; i++){
 			if(treetoken[i].indexOf('[') >=0){
 				int bcount  = treetoken[i].replaceAll("[^\\[]", "").trim().length();
 				for(int j = 0; j < bcount; j++){
@@ -145,21 +162,290 @@ public class ChunkedSentence {
 		normalizeTo();
 		normalizeUnits();
 		
+		recoverVPChunks();//recover unidentified verb phrases
+		recoverConjunctedOrgans(); //
+		findSubject(); //set the pointer to a place right after the subject, assuming the subject part is stable in chunkedtokens at this time
+		recoverNonsubjectOrgans();
+		segmentSent();//insert segment marks in chunkedtokens while producing this.chunkedsent
 		
-		//insert segment marks in chunkedtokens while producing this.chunkedsent
-		//boolean suspend = false;
+		//TODO move this to an earlier place
+		//if the last words in l[] are marked with {}, take them out of the chunk
+		if(this.chunkedsent.matches(".*?l\\[[^\\[].*?}\\].*")){
+			removeStateFromList();
+		}
+	}
+	
+	/**
+	 * scan through a chunkedtokens to find Verbs not parsed as such by the parser
+	 * find verbs by
+	 * 1. look into this.verbs
+	 * 2. find pattern o ting/ted by o, then t must be a verb and save this verb in verbs
+	 */
+	private void recoverVPChunks() {
+		for(int i = 0; i < this.chunkedtokens.size(); i++){
+			String t = this.chunkedtokens.get(i);
+			if(t.contains("-")) continue; //check 751
+			if(!t.contains("[") && this.verbs.contains(t)){
+				recoverVPChunk(i);
+			}else if(!t.contains("[") && (t.endsWith("ing")|| t.endsWith("ing}"))){
+				 if(connects2organs(i)){
+					 this.verbs.add(t.replaceAll("\\W", ""));
+					 recoverVPChunk(i);
+				 }
+			}/*else if(!t.contains("[")&& t.endsWith("ed") && this.chunkedtokens.size()>i+1 && this.chunkedtokens.get(i+1).matches(".*?\\bby\\b.*")){				
+			}*/
+		}
+	}
+
+	/**
+	 * 
+	 * @param i :index of the verb
+	 * @return
+	 */
+	private boolean connects2organs(int i) {
+		boolean organ1 = false;
+		boolean organ2 = false;
+		if(i>=1 && this.chunkedtokens.size()>i+1){
+			String t = this.chunkedtokens.get(i-1);
+			if(t.endsWith(">") || t.contains("o[") || t.contains("(") ){
+				organ1 = true;
+			}
+			
+			for(int j = i+1; j < this.chunkedtokens.size(); j++){
+				t = this.chunkedtokens.get(j);
+				if(t.endsWith(">") || t.contains("o[") || t.contains("(") ){
+					organ2 = true;
+					break;
+				}
+				if((j == i+1 && t.equals(","))|| t.matches("\\w+")){
+					organ2 = false;
+					break;
+				}
+			}
+		}
+		return organ1 && organ2;
+	}
+	/**
+	 * 
+	 * @param i: the index of a possible verb
+	 */
+	private void recoverVPChunk(int i) {
+	 
+		String chunk = "";
+		boolean foundo = false;
+		int j = i+1;
+		for(; j < chunkedtokens.size(); j++){
+			//scan for the end of the chunk TODO: may refactor with normalizeOtherINs on this search
+			String t = this.chunkedtokens.get(j);
+			if(j==i+1 && t.matches(",")){ //verb not have object
+				return;
+			}
+			if(t.matches("(;|\\.)")) break;
+			if(foundo && (t.contains("{") || t.contains("~list~")||t.matches("(\\w+|,|;|\\.)")||t.contains("["))){
+				break;
+			}
+			if(t.contains("<")){
+				chunk += t+" ";
+				foundo = true;
+			}else if(t.matches(".*?\\bo\\[[^\\]*]+") || t.matches(".*?l\\[[^\\]]*\\]+")){//found noun)
+				chunk += t+" ";
+				foundo = true;
+				j++;
+				break;
+			}else{
+				chunk += t+" ";
+			}						
+		}
+		if(!foundo) return;
+		//format the chunk
+		chunk = chunk.trim();
+		if(chunk.endsWith(">")){
+			chunk = "b[v["+this.chunkedtokens.get(i)+"]"+" o["+chunk.replaceAll("<", "(").replaceAll(">", ")")+"]]";
+		}else if(chunk.matches(".*?\\bo\\[.*\\]+")){
+			if(chunk.contains(" v[")){
+				chunk = chunk.replaceFirst(" v[", " v["+this.chunkedtokens.get(i)+" ");
+			}else if(chunk.matches("^r\\[.*")){//t[c[{extending}] r[p[to] o[(midvalve)]]]
+				//chunk = chunk.replaceFirst("^r[p[", "b[v["+this.chunkedtokens.get(i)+ " "); //need to make the v is taken as a relation in processChunkVP
+				chunk = "t[c["+this.chunkedtokens.get(i)+"] "+chunk+"]";
+			}else if(chunk.startsWith("l[")){
+				chunk = "b[v["+this.chunkedtokens.get(i)+"] "+chunk.replaceFirst("^l\\[", "o[")+"]"; 
+			}else if(chunk.startsWith("u[")){
+				chunk = chunk.replaceFirst("^u[", "b[v["+this.chunkedtokens.get(i)+ "] "); 
+			}
+		}
+		//this.chunkedtokens.set(i, chunk);
+		if(this.printRecover){
+			System.out.println("verb chunk formed: "+chunk +" for \n"+this.sentid+"["+this.sentsrc+"]"+this.markedsent);
+		}
+		for(int k = i; k<j; k++){
+			this.chunkedtokens.set(k, "");
+		}
+		this.chunkedtokens.set(j-1, chunk);
+			/*
+			t = t.replaceFirst("^u\\[", "").replaceFirst("\\]$", "");
+			String o = t.substring(t.indexOf("o[")).trim();
+			t = t.substring(0, t.indexOf("o[")).trim();
+			if(t.length()>0){
+				String[] states = t.split("\\s+");
+				for(int k = 0; k < states.length; k++){
+					String ch = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable);
+					if(ch!=null){
+						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+states[k].replaceAll("[{}]", "")+" ";
+					}else{
+						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"m["+states[k].replaceAll("[{}]", "")+" ";
+					}
+				}		
+			}
+			scs = (scs.trim().length()>0? scs.trim()+"] ": "")+o;
+		}*/
+		
+	}
+	/**
+	 * attempts to mark modified non-subject organs as a chunk to avoid characters of these organs be attached to previous organs
+	 * run this after recoverConjunctedOrgans to exclude organs that are objects of VP/PP-phrases)
+	 * does not attempt to recognize conjunctions as the decisions may be context-sensitive
+	 */
+	private void recoverNonsubjectOrgans() {
+		for(int i = this.chunkedtokens.size()-1; i >=this.pointer; i--){
+			String t = this.chunkedtokens.get(i);
+			if(t.endsWith(">")){//TODO: not dealing with nplist at this time, may be later
+				recoverNonsubjectOrgan(i);//chunk and update chunkedtokens
+			}
+		}		
+	}
+	
+	/**
+	 * 
+	 * @param last: the index of the last part of an organ name
+	 */
+	private void recoverNonsubjectOrgan(int last) {
+		String chunk = this.chunkedtokens.get(last);
+		boolean foundm = false; //modifiers
+		boolean subjecto = false;
+		int i = last-1;
+		for(;i >=this.pointer; i--){
+			String t = this.chunkedtokens.get(i);
+			if(t.matches("\\{\\w+\\}") || t.contains("~list~")){
+				chunk = t+" "+chunk;
+				foundm = true;
+			}else if(!foundm && t.endsWith(">")){ //if m o m o, collect two chunks
+				chunk = t+" "+chunk;
+			}else{
+				if(t.equals(",")) subjecto = true;
+				break;
+			}
+		}
+		//if(i==0) subjecto = true;
+		//reformat this.chunkedtokens
+		if(subjecto){
+			chunk = "z["+chunk.trim().replaceAll("<", "(").replaceAll(">", ")")+"]";
+		}else{
+			chunk = "u["+chunk.trim().replaceFirst("<", "o[(").replaceFirst(">$", ")]").replaceAll("<", "(").replaceAll(">", ")")+"]";
+		}
+		
+		//reset from i+2 to last
+		for(int j = i+1; j <last; j++){
+			this.chunkedtokens.set(j, "");
+		}
+		this.chunkedtokens.set(last, chunk);
+		if(this.printRecover){
+			System.out.println("nsorgan chunk formed: "+chunk +" for \n"+this.sentid+"["+this.sentsrc+"]"+this.markedsent);
+		}
+	}
+	/**
+	 * attempts to include broken-away conjuncted organs to pp and vb phrase
+	 */
+	private void recoverConjunctedOrgans() {
+		for(int i = 0; i < this.chunkedtokens.size(); i++){
+			String t = this.chunkedtokens.get(i);
+			if(this.chunkedtokens.size()>i+2){
+				if((t.startsWith("r[p") || t.startsWith("b[v")) && 
+						(this.chunkedtokens.get(i+1).matches("(and|or|plus)")||
+								(this.chunkedtokens.get(i+1).matches(",") && this.chunkedtokens.get(i+2).matches("(and|or|plus)")))) {//check 211
+					recoverConjunctedOrgans4PP(i);
+				}else if((t.startsWith("r[p") || t.startsWith("b[v")) && this.chunkedtokens.get(i+1).startsWith("<")){//found a broken away noun
+					int j = i;
+					String newo = "";
+					String o = this.chunkedtokens.get(++j);					
+					do{
+						newo += o;
+						this.chunkedtokens.set(j, "");
+						o = this.chunkedtokens.get(++j);					
+					}while (o.startsWith("<"));
+					String p1 = t.replaceFirst("\\]+$", "");
+					String p2 = t.replace(p1, "");
+					newo = newo.replaceAll("<", "(").replaceAll(">", ")").trim();
+					t = p1+" "+newo+p2;
+					this.chunkedtokens.set(i, "");
+					this.chunkedtokens.set(--j, t);
+				}
+				
+				
+				/*else if (t.startsWith("b[v") && this.chunkedtokens.get(i+1).matches("(and|or|plus)")){
+					recoverConjunctedOrgans4VB(i);
+				}*/
+			}
+		}
+	}
+
+	/**
+	 * recover if what follows the PP is "and|or|plus" and a (modified) organ followed by a , or a series of chunks
+	 * @param i: the index where a PP-chunk followed by and|or|plus is found
+	 */
+	private void recoverConjunctedOrgans4PP(int i) {
+		String recovered = this.chunkedtokens.get(i+1)+" ";//and|or|plus
+		boolean foundo = false;
+		boolean recover = true;
+		int endindex = 0;
+		for(int j = i+2; j < this.chunkedtokens.size(); j++){
+			String t = this.chunkedtokens.get(j);
+			if(!foundo && (t.matches("\\{\\w+\\}") || t.equals(",") || t.contains("~list~"))){//states before an organ 
+				recovered += t+" ";
+			}else if(t.matches("<\\w+>") || t.contains("l[")){//organ
+				recovered += t+" ";
+				endindex = j;
+				foundo = true;
+			}else if(foundo && t.matches("(,|;|\\.)")){//states before an organ 
+				break; //organ followed by ",",  should recover
+			}else if(foundo && t.contains("[") && !t.contains("~list~")){//found or not found organ
+				//do nothing
+			}else{
+				recover = false;
+				break;
+			}
+		}
+		
+		if(recover){
+			//reformat: insert recovered before the last set of ] 
+			String chunk = this.chunkedtokens.get(i);
+			String p1 = chunk.replaceFirst("\\]+$", "");
+			String p2 = chunk.replace(p1, "");
+			recovered = recovered.replaceAll("<", "(").replaceAll(">", ")").trim();
+			chunk = p1+" "+recovered+p2;
+			this.chunkedtokens.set(i, "");
+			//reset from i+1 to endindex
+			for(int j = i+1; j <endindex; j++){
+				this.chunkedtokens.set(j, "");
+			}
+			this.chunkedtokens.set(endindex, chunk);
+			if(this.printRecover){
+				System.out.println("pp/vp object chunk formed: "+chunk +" for \n"+this.sentid+"["+this.sentsrc+"]"+this.markedsent);
+			}
+			
+		}
+	}
+	/**
+	 * insert segment marks in chunkedtokens while producing this.chunkedsent
+	 * after first round of segmentation, proceed to the 2nd round to disambiguate ", those of" 
+	 */
+	private void segmentSent() {
+		int i;
 		for(i = this.chunkedtokens.size()-1; i>=0; i--){
 			String t = this.chunkedtokens.get(i);
-			//if(t.compareTo("-RRB-/-RRB-")==0){
-			//	suspend = true;
-			//}
-			//if(t.compareTo("-LRB-/-LRB-")==0){
-			//	suspend = false;
-			//}
 			if(t.compareTo("") !=0){
 				this.chunkedsent = t+" "+this.chunkedsent;;
 			}
-			if(t.indexOf('<')>=0){
+			if(t.indexOf('<')>=0 || t.indexOf("z[")>=0){//z[ is chunkOrgan
 				for(i = i-1; i>=0; i--){
 					String m = this.chunkedtokens.get(i);
 					if(m.matches(".*?\\b("+ChunkedSentence.prepositions+")\\b.*")){
@@ -184,14 +470,93 @@ public class ChunkedSentence {
 			this.chunkedtokens.set(this.chunkedtokens.size()-1, "SG"+this.chunkedtokens.get(this.chunkedtokens.size()-1)+"SG");
 		}
 		this.chunkedsent.trim();
-		
-		//if the last words in l[] are marked with {}, take them out of the chunk
-		if(this.chunkedsent.matches(".*?l\\[[^\\[].*?}\\].*")){
-			removeStateFromList();
-		}
-		normalizeSubject();
+		disambiguateThose();
 	}
 	
+	/**
+	 * <corollas> {purple} , those of {sterile} <florets> ± {expanded} , {exceeding} <corollas> of {fertile} <florets> , those of {fertile} <florets> 15-18 {mm} .
+	 * <phyllaries> {many} in 6-8 <series>... , <apices> {shape~list~acute~to~acuminate} , those of {innermost} {bristly-ciliate-or-plumose} .
+	 * find "those" instances in chunkedsent, fix chunkedsent, then fix chunkedtokens
+	 * fix = replacing those with the subject of the last segment
+	 */
+	private void disambiguateThose() {
+		Pattern p = null;
+		if(this.chunkedsent.indexOf(" those r[p[of")>0){
+			p = Pattern.compile("((?:.*?SG\\WSG.*|^)<(.*?)>.*?)those(\\s+r?\\[?p?\\[?of.*)");
+			Matcher m = p.matcher(this.chunkedsent);
+			while(m.matches()){
+				String noun = m.group(2);
+				int indexOfthose = m.group(1).split("\\s+").length;
+				//update chunkedsent and chunkedtokens
+				//"those" may be included in a chunk
+				String token = this.chunkedtokens.get(indexOfthose);
+				if(token.compareTo("those")==0){
+					String temp = m.group(1).trim();
+					temp = temp.replaceFirst(",$", "SG,SG");
+					this.chunkedsent = temp+" <"+noun+">"+m.group(3);
+					this.chunkedtokens.set(indexOfthose, "<"+noun+">");
+					if(this.chunkedtokens.get(indexOfthose-1).compareTo(",")==0){
+						this.chunkedtokens.set(indexOfthose-1, "SG,SG");
+					}
+				}else{//in a chunk: break the chunk into two
+					int indexOfchunk = findChunk(indexOfthose, "those");
+					String chunk = this.chunkedtokens.get(indexOfchunk);
+					String[] two = chunk.split("\\s*those\\s*");
+					two[0] += " ("+noun+")";
+					//find how many closing brackets are needed in two[0] and form the two new chunks
+					int lb = two[0].replaceAll("[^\\[]", "").length();
+					int rb = two[0].replaceAll("[^\\]]", "").length();
+					for(int i = 0; i<lb-rb; i++){
+						two[0]+="]";
+						two[1] = two[1].replaceFirst("\\]$", "");						
+					}
+					String newchunk = two[0]+" "+two[1];
+					this.chunkedsent = this.chunkedsent.replace(chunk, newchunk);
+					//replace the old chunk with two chunks in this.chunkedtokens 
+					if(this.chunkedtokens.get(indexOfchunk+1).length()==0){
+						this.chunkedtokens.set(indexOfchunk, two[0]);
+						this.chunkedtokens.set(indexOfchunk+1, two[1]);
+					}else if(this.chunkedtokens.get(indexOfchunk-1).length()==0){
+						this.chunkedtokens.set(indexOfchunk-1, two[0]);
+						this.chunkedtokens.set(indexOfchunk, two[1]);
+					}
+				}
+				m = p.matcher(this.chunkedsent);
+			}
+		}
+	}
+	
+	/**
+	 * find the index in this.chunkedtokens that is near indexofkeyword and hold a chunk containing "keyword"
+	 * @param indexOfkeyword
+	 * @param keyword
+	 * @return
+	 */
+	private int findChunk(int indexOfkeyword, String keyword) {
+		//search downwards
+		String chunk = "";
+		int i = indexOfkeyword;
+		do{
+			i++;
+			chunk = this.chunkedtokens.get(i);
+		}while(chunk.length()==0);
+		if(chunk.indexOf(keyword)>=0){
+			return i;
+		}
+		//search upwards
+		chunk = "";
+		i = indexOfkeyword;
+		do{
+			i--;
+			chunk = this.chunkedtokens.get(i);
+		}while(chunk.length()==0);
+		if(chunk.indexOf(keyword)>=0){
+			return i;
+		}		
+		System.out.println("Wrong chunks in ChunkedSentence");
+		System.exit(1); //should never reach here
+		return 0;
+	}
 	/**
 	 * l[(mid) and (distal) (cauline) {smaller}]
 	 * ==>
@@ -220,14 +585,6 @@ public class ChunkedSentence {
 		
 	}
 
-
-	/**
-	 * for the first <> after SG,SG, put the organ and its modifier in one chunk
-	 */
-	private void normalizeSubject(){
-		
-
-	}
 	
 	/**
 	 * 3] {mm}
@@ -323,6 +680,7 @@ public class ChunkedSentence {
 	
 	/**
 	 * expanded to <throats>
+	 * to 6 m.
 	 */
 	private void normalizeTo(){
 		String np = "";
@@ -336,6 +694,10 @@ public class ChunkedSentence {
 				//scan for the next organ
 				for(int j = i+1; j<this.chunkedtokens.size(); j++){
 					String t = this.chunkedtokens.get(j).trim();
+					if(j==i+1 && t.matches("\\d[^a-z]*")){//match "to 6[-9]" ; not match "to 5-lobed"
+						copy = formRangeMeasure(i);
+						break;
+					}
 					if(startn && t.indexOf('<')<0){
 						break;
 					}
@@ -386,6 +748,28 @@ public class ChunkedSentence {
 	}
 }
 	/**
+	 * form a chunk if a pattern "to # unit" is found starting from i
+	 * @param i: index of "to", which is followed by a number
+	 * @return this.chunkedtokens
+	 */
+	private ArrayList<String> formRangeMeasure(int i) {
+		String chunk = "to~"+this.chunkedtokens.get(i+1)+"~"; //"to"
+		if(this.chunkedtokens.size()>i+2){
+			String unit = this.chunkedtokens.get(i+2).replaceAll("\\W", " ").trim();
+			if(unit.matches("("+this.units+")")){
+				chunk += unit;
+				this.chunkedtokens.set(i+2, chunk);
+				this.chunkedtokens.set(i+1, "");
+				if(this.chunkedtokens.get(i).equals("to")){
+					this.chunkedtokens.set(i, "");
+				}else{
+					this.chunkedtokens.set(i, this.chunkedtokens.get(i).replaceFirst("\\s+to(?=\\W+$)", ""));
+				}
+			}
+		}		
+		return this.chunkedtokens;
+	}
+	/**
 	 * most [of] lengths
 	 * [in] zyz arrays
 	 */
@@ -400,14 +784,72 @@ public class ChunkedSentence {
 				if(this.printNorm){
 					System.out.println(token+" needs normalization!");
 				}
+				// a prep is identified, needs normalization
 				ArrayList<String> copy = (ArrayList<String>)this.chunkedtokens.clone();
+				//String nscopy = null;
+				String npcopy = null;
+				ArrayList<String> ctcopy = null;
 				boolean startn = false;
 				String np = "";
-				String ns = "";
-				for(int j = i+1; j<this.chunkedtokens.size(); j++){
+				//String ns = "";
+				boolean foundorgan = false;
+				//boolean ofnumber = false;
+				//lookforward in chunkedtokens to find the object noun
+				int j = 0;
+				for(j = i+1; j<this.chunkedtokens.size(); j++){
+					String t = this.chunkedtokens.get(j).trim();
+					if(j==i+1 && t.matches("^[,;\\.]")){//"smooth throughout, ", but what about "smooth throughout OR hairy basally"?
+						if(this.printNorm){
+							System.out.println("encounter ',' immediately, no object is expected");
+						}
+						break; 						
+					}
+					
+					if(!foundorgan && startn && t.indexOf('<')<0 && t.indexOf('(')<0 && !Utilities.isNoun(t, nouns, notnouns)){ //test whole t, not the last word once a noun has been found
+						//save ns for now, but keep looking for organs
+						//nscopy = nscopy == null ? ns : nscopy; //keep only the first copy
+						npcopy = npcopy == null? np : npcopy;
+						ctcopy = ctcopy == null? (ArrayList<String>)this.chunkedtokens.clone():ctcopy;
+					}
+					if(startn && !foundorgan && ishardstop(j)){
+						//hard stop encountered, break
+						//ns = nscopy;
+						np = npcopy;
+						this.chunkedtokens = ctcopy;
+						break;
+					}
+					
+					if(foundorgan && t.indexOf('<')<0 && t.indexOf('(')<0){ //test whole t, not the last word once a noun has been found
+						break; //break, the end of the search is reached, found organ as object
+					}
+					
+					np +=t+" "; //any word in betweens
+					this.chunkedtokens.set(j, "");
+					
+					if(t.indexOf('<')>=0 ||t.indexOf('(')>=0){ //t may have []<>{}
+						startn = true; //not break yet, may be the next token is also a noun
+						foundorgan = true;
+					}
+					
+					if(!foundorgan && Utilities.isNoun(t, nouns, notnouns)){ //t may have []<>{}
+						startn = true; //won't affect the value of foundorgan, after foundorgan is true, "plus" problem
+						if(Utilities.isPlural(t)){
+							foundorgan = true;
+							np = np.trim();
+							if(np.lastIndexOf(" ")>0){
+								np = np.substring(0, np.lastIndexOf(" "))+" "+ "("+t.replaceAll("\\W", "")+") ";
+							}else{
+								np = "("+np.replaceAll("\\W", "")+") ";
+							}
+						}
+					}
+				}
+				
+				/*
+				 for(int j = i+1; j<this.chunkedtokens.size(); j++){
 					String t = this.chunkedtokens.get(j).trim();
 					if(startn && t.indexOf('<')<0 && !Utilities.isNoun(t, nouns)){ //test whole t, not the last word once a noun has been found
-						break;
+						break; //break, the end of the search is reached
 					}
 					np +=t+" ";
 					this.chunkedtokens.set(j, "");
@@ -415,28 +857,61 @@ public class ChunkedSentence {
 					if(t.indexOf('<')>=0 ||t.indexOf('(')>=0 || Utilities.isNoun(t, nouns)){ //t may have []<>{}
 						startn = true; //not break yet, may be the next token is a noun
 						ns += t+" ";
-						if(this.printNorm){
-							System.out.println("!normalized!");
-						}
 					}
-				}
-				if(startn){
-					ns = ns.trim();
-					if(!ns.endsWith("]")){
-						np = np.replace(ns, "").trim();
-						ns  = "("+ns.replaceAll("[{(<>)}]", "").replaceAll("\\s+", ") (")+")";
-						np = (np.replaceAll("<", "(").replaceAll(">", ")")+" "+ns).trim();
-					}
+				} 
+				 */
+				//form the normalized chunk
+				if(foundorgan || npcopy!= null /*|| ofnumber*/){
+					//ns = ns.trim();
+					//if(!ns.endsWith("]")){ //not already a chunk
+						//np = np.replace(ns, "").trim();
+						//ns  = "("+ns.replaceAll("[{(<>)}]", "").replaceAll("\\s+", ") (")+")"; //mark the object as organ word by word
+						//np = (np.replaceAll("<", "(").replaceAll(">", ")")+" "+ns).trim();
+						np = np.replaceAll("<", "(").replaceAll(">", ")").replaceAll("\\s+", " ").trim();
+					//}
+					String symbol = "o";	
+					/*if(ofnumber){
+						symbol = "c";
+					}*/
 					if(token.indexOf('[')>=0){
 						String rest = token.replaceFirst("\\]+$", "").trim();
 						String brackets = token.replace(rest, "").replaceFirst("\\]$", "").trim();
-						token = rest + "] o["+np.trim()+"]"+brackets;
+						token = rest + "] "+symbol+"["+np.trim()+"]"+brackets;
 						this.chunkedtokens.set(i, token);
+						if(this.printNorm){
+							System.out.println("!normalized!: "+token);
+						}
 					}else{//without [], one word per token
-						this.chunkedtokens.set(i, "r[p["+token+"] o["+np.trim()+"]]");
+						token = "r[p["+token+"] "+symbol+"["+np.trim()+"]]";
+						this.chunkedtokens.set(i, token);
+						if(this.printNorm){
+							System.out.println("!normalized!: "+token);
+						}
 					}
-				}else{
-					this.chunkedtokens = copy;
+				}else{ 
+					if(j-i==1){
+						//cancel the normalization attempt on this prep, return to the original chunkedtokens
+						this.chunkedtokens = copy;
+					}else{//reached the end of the sentence.This is the case for "plumose on distal 80 % ."?
+						this.chunkedtokens = copy;
+						//np = np.replaceAll("\\s+", " ").trim();
+						String head = token.replaceFirst("\\]+$", "").trim();
+						String brackets = token.replace(head, "").replaceFirst("\\]$", "").trim();
+						String rest = np.replaceFirst(".*?(?=(\\.|;|,|\\band\\b|\\bor\\b|\\w\\[))", "").trim();
+						np = np.replace(rest, ""); //perserve spaces for later
+						String object = np.replaceAll("\\s+", " ").trim();
+						if(object.length()>0){
+							token = head + "] o["+np.replaceAll("\\s+", " ").trim()+"]"+brackets;
+							this.chunkedtokens.set(i, token);
+							int npsize = np.split("\\s").length; //split on single space to perserve correct count of tokens
+							for(int k = i+1; k<=i+npsize; k++){
+								this.chunkedtokens.set(k, "");
+							}
+							if(this.printNorm){
+								System.out.println("!default normalized to (.|;|,|and|or|r[)!: "+token);
+							}
+						}
+					}
 				}
 			}
 			//i=i+1;
@@ -450,18 +925,28 @@ public class ChunkedSentence {
 
 	
 
+	private boolean ishardstop(int j) {
+		String t1 = this.chunkedtokens.get(j).trim();
+		
+		if(t1.startsWith(".")){
+			return true;
+		}
+		
+		if(this.chunkedtokens.size()==j+1){
+			return true;
+		}
+
+		String t2 = this.chunkedtokens.get(j+1).trim();
+		if(t1.startsWith(",") && t2.matches("^\\W*[<(].*")){
+			return true;
+		}
+		return false;
+	}
 	public String toString(){
 		return this.chunkedsent;
 	}
 	public int getPointer(){
 		return this.pointer;
-	}
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
 	}
 	
 	public void setInSegment(boolean yes){
@@ -485,18 +970,18 @@ public class ChunkedSentence {
 				}
 			}
 			this.pointer++;
-		}else if(tobeskipped[tobeskipped.length-1].compareTo("general")==0){ //Treatises: "general" = "wholeorganism"
+		}else if(tobeskipped[tobeskipped.length-1].compareTo("whole_organism")==0){ //Treatises: "general" = "whole_organism"
 			//do not skip
 		}else{
 			int sl = tobeskipped.length;
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
-				wcount += (this.chunkedtokens.get(i)+" a").replaceAll(",", "or").replaceAll("\\b(or )+", "or ").trim().split("\\s+").length-1;
+				//chunkedtokens may be a list: shape[{shape~list~planoconvex~to~ventribiconvex~subquadrate~to~subcircular}]
+				/*wcount += (this.chunkedtokens.get(i)+" a").replaceAll(",", "or").replaceAll("\\b(or )+", "or ")
+				.replaceFirst("^.*?~list~", "").replaceAll("~", " ")
+				.trim().split("\\s+").length-1;*/
+				wcount ++;
 				//if(this.chunkedtokens.get(i).matches(".*?\\b"+tobeskipped[sl-1]+".*") && wcount>=sl){
-				String skipthis = tobeskipped[sl-1];
-				if(tobeskipped[sl-1].length()>2){
-					skipthis = tobeskipped[sl-1].substring(0, tobeskipped[sl-1].length()-2);//for structure names such as "f3"
-				}
-				if(this.chunkedtokens.get(i).toLowerCase().matches(".*?\\b"+skipthis+".*") && wcount>=sl){//try to match <phyllaries> to phyllary
+				if(this.chunkedtokens.get(i).replace("SG", "").replaceAll("(\\w+\\[|\\]|\\)|\\(|\\{|\\})", "").replaceAll("-", "_").toLowerCase().matches(".*?\\b"+tobeskipped[sl-1].substring(0, tobeskipped[sl-1].length()-2)+".*") && wcount>=sl){//try to match <phyllaries> to phyllary
 					if(wcount==sl){
 						this.pointer = i;
 					}else{
@@ -504,11 +989,13 @@ public class ChunkedSentence {
 						//put those words in chunkedtokens for process
 						//example:{thin} {dorsal} {median} <septum> {centrally} only ; 
 						int save = i;
-						i++;
-						for(int j = 0; j < wcount-sl; j++){
-							this.chunkedtokens.add(i++, this.chunkedtokens.get(j));
+						if(!this.chunkedtokens.get(i).matches(".*?\\bof\\b.*")){//, , l[(taproots) and clusters], , , , r[p[of] o[{coarse} {fibrous} (roots)]],, tobeskiped is "taproot and root"
+							i++;
+							for(int j = 0; j < wcount-sl; j++){
+								this.chunkedtokens.add(i++, this.chunkedtokens.get(j));
+							}
+							this.chunkedtokens.add(i++, ",");
 						}
-						this.chunkedtokens.add(i++, ",");
 						this.pointer = save;
 					}
 					break;
@@ -526,7 +1013,7 @@ public class ChunkedSentence {
 	}
 	
 	public Chunk nextChunk(){
-
+		
 		Chunk ck = getNextChunk();
 		while(ck==null && this.hasNext()){
 			ck=this.getNextChunk();
@@ -537,6 +1024,7 @@ public class ChunkedSentence {
 			this.rightAfterSubject = false;
 		}
 		return ck;
+		
 	}
 	/**
 	 * returns the next Chunk: may be a
@@ -557,7 +1045,7 @@ public class ChunkedSentence {
 		//all tokens: 
 		//number:
 		//if(token.matches(".*?\\d+$")){ //ends with a number
-		if(NumericalHandler.isNumerical(token) || token.matches("l\\s*\\W\\s*w")){//l-w or l/w
+		if(NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("l\\s*\\W\\s*w")){//l-w or l/w
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
 					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
@@ -645,11 +1133,18 @@ public class ChunkedSentence {
 			return null;
 		}
 		//end of a segment
-		if(token.matches("SG[;:,\\.]SG")){
+		if(token.matches("SG[;:\\.]SG")){
 			this.inSegment = false;
 			pointer++;
 			this.unassignedmodifier = null;
-			return new ChunkEOS("");
+			return new ChunkEOL(""); //end of line/statement
+		}
+		
+		if(token.matches("SG,SG")){
+			this.inSegment = false;
+			pointer++;
+			this.unassignedmodifier = null;
+			return new ChunkEOS("");//end of segment/substence
 		}
 		
 		//start of a segment
@@ -664,13 +1159,14 @@ public class ChunkedSentence {
 		
 		//all chunks
 		if(token.matches("^\\w+\\[.*")){
-			String type = checkType(pointer);
+			String type = chunkType(pointer);
 			token = this.chunkedtokens.get(pointer); //as checkType may have reformatted token.
 			try{
 				if(type != null){
 					Class c = Class.forName("fna.charactermarkup."+type);
 					Constructor cons = c.getConstructor(String.class);
 					pointer++;
+					//deal with any unassignedmodifier when EOS is approached.
 					if(this.unassignedmodifier != null && this.chunkedtokens.get(pointer).matches("(SG)?\\W(SG)?")){
 						token = token.replaceFirst("\\[", "["+this.unassignedmodifier+" ");
 						this.unassignedmodifier = null;
@@ -754,15 +1250,15 @@ public class ChunkedSentence {
 			//token = NumericalHandler.originalNumForm(token); //turn -LRB-/-LRB-2
 			if(token.matches("^\\w+\\[.*")){ //modifier +  a chunk: m[usually] n[size[{shorter}] constraint[than or {equaling} (phyllaries)]]
 				//if(scs.matches("\\w{2,}\\[.*") && token.matches("\\w{2,}\\[.*")){ // scs: position[{adaxial}] token: pubescence[{pubescence~list~glabrous~or~villous}]
-				if(scs.matches(".*?\\w{2,}\\[.*")){
-					pointer = i;
-					return new ChunkSimpleCharacterState("a["+scs.trim()+"]]"); 
-				}else if(scs.matches("o\\[\\w+\\s*")){
+				if(scs.matches(".*?\\bo\\[\\w+\\s.*")){
 					pointer = i;
 					scs = scs.replaceAll("o\\[", "o[(").trim()+")]";
 					return new ChunkNonSubjectOrgan("u["+scs+"]");
-				}else{
-					String type = checkType(i); //changed from pointer to i
+				}else if(scs.matches(".*?\\w{2,}\\[.*")){
+					pointer = i;
+					return new ChunkSimpleCharacterState("a["+scs.trim()+"]]"); 
+				}else {
+					String type = chunkType(i); //changed from pointer to i
 					token = this.chunkedtokens.get(i);
 					token = token.matches(".*?\\d.*")? NumericalHandler.originalNumForm(token):token;
 					scs = scs.trim().length()>0? scs.trim()+"] " : ""; //modifier 
@@ -806,7 +1302,7 @@ public class ChunkedSentence {
 				return this.rightAfterSubject? new ChunkSimpleCharacterState("a["+scs+"]") : new ChunkNonSubjectOrgan("u["+scs+"]"); //must have type[ or o[
 			}
 			
-			if(token.matches(".*?"+NumericalHandler.numberpattern+"$") || token.matches("\\d+\\+?")){ //0. sentence ends with a number, the . is not separated by a space
+			if(token.matches(".*?"+NumericalHandler.numberpattern+"$") || token.matches("\\d+\\+?") || token.matches("^to~\\d.*")){ //0. sentence ends with a number, the . is not separated by a space
 				if(scs.matches(".*?\\w{2,}\\[.*")){//must have character[
 					pointer=i;
 					scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
@@ -832,7 +1328,7 @@ public class ChunkedSentence {
 			
 			//add to a state chunk until a) a preposition b) a punct mark or c)another state is encountered
 			if(role.compareTo("<") !=0+0 && true){
-				if(Utilities.isAdv(token, adverbs)){
+				if(Utilities.isAdv(token, adverbs, notadverbs)){
 					scs = scs.trim().length()>0? scs.trim()+ "] m["+token+" " : "m["+token;
 				}else if(token.matches(".*[,;:\\.\\[].*") || token.matches("\\b("+ChunkedSentence.prepositions+"|or|and)\\b") || token.compareTo("-LRB-/-LRB-")==0){
 					this.pointer = i;
@@ -862,7 +1358,7 @@ public class ChunkedSentence {
 						scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 						return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
 					}else if(chara==null){
-						if(Utilities.isVerb(token, verbs) && !founds){//construct ChunkVP or ChunkCHPP
+						if(Utilities.isVerb(token, verbs, notverbs) && !founds){//construct ChunkVP or ChunkCHPP
 							scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"v["+token+" ";
 							//continue searching for either a <> or a r[]
 							boolean findc = false; //find a chunk
@@ -871,8 +1367,27 @@ public class ChunkedSentence {
 							boolean findt = false; //find a text token
 							for(int j = i+1; j < this.chunkedtokens.size(); j++){
 								String t = this.chunkedtokens.get(j).trim();
-								String ch = Utilities.lookupCharacter(t, conn, characterhash, glosstable);
 								if(t.length() == 0){continue;}
+								if(t.startsWith("u[")){//form a vb chunk
+									t = t.replaceFirst("^u\\[", "").replaceFirst("\\]$", "");
+									String o = t.substring(t.indexOf("o[")).trim();
+									t = t.substring(0, t.indexOf("o[")).trim();
+									if(t.length()>0){
+										String[] states = t.split("\\s+");
+										for(int k = 0; k < states.length; k++){
+											String ch = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable);
+											if(ch!=null){
+												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+states[k].replaceAll("[{}]", "")+" ";
+											}else{
+												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"m["+states[k].replaceAll("[{}]", "")+" ";
+											}
+										}		
+									}
+									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+o;
+									this.pointer = j+1;
+									return new ChunkVP("b["+scs+"]"); 
+								}
+								String ch = Utilities.lookupCharacter(t, conn, characterhash, glosstable);
 								if((!findc &&!findo) && t.matches("^[rwl]\\[.*")){
 									scs = scs.replaceFirst("^\\]\\s+", "").trim()+"] ";
 									scs += t;
@@ -882,10 +1397,10 @@ public class ChunkedSentence {
 									findo = true;
 								}else if(!findo && !findc && ch!=null){
 									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+t.replaceAll("[{}]", "")+" ";
-								}else if(!findo && !findc && !findm && Utilities.isAdv(t, adverbs)){
+								}else if(!findo && !findc && !findm && Utilities.isAdv(t, adverbs, notadverbs)){
 									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"m["+t.replaceAll("[{}]", "")+" ";
 									findm = true;
-								}else if(!findo && !findc && findm && Utilities.isAdv(t, adverbs)){
+								}else if(!findo && !findc && findm && Utilities.isAdv(t, adverbs, notadverbs)){
 									scs += t.replaceAll("[{}]", "")+" ";
 								}else if(findo && t.indexOf("<")>=0){
 									scs += t.replace("<", "(").replace(">", ")").replaceAll("[{}]", "")+" ";
@@ -1008,18 +1523,46 @@ public class ChunkedSentence {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
 		t = NumericalHandler.originalNumForm(t).replaceAll("\\?", "");		
+		if(t.matches("^to~\\d.*")){
+			this.pointer++;
+			return new ChunkValue(t.replaceAll("~", " ").trim());
+		}
+		if(t.matches(".*?("+ChunkedSentence.percentage+")")){
+			numerics += t+ " ";
+			pointer++;
+			return new ChunkValuePercentage(numerics.trim());
+		}
+		if(t.matches(".*?("+ChunkedSentence.degree+")")){
+			numerics += t+ " ";
+			pointer++;
+			return new ChunkValueDegree(numerics.trim());
+		}
 		if(t.matches(".*?[()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*(-\\s*("+ChunkedSentence.counts+")\\b|$)")){ //ends with a number
 			numerics += t+ " ";
 			pointer++;
 			if(pointer==this.chunkedtokens.size()){
 				return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
 			}
-			t = this.chunkedtokens.get(this.pointer);
+			t = this.chunkedtokens.get(this.pointer);//read next token
+			/*if(t.matches("^[{<(]*("+ChunkedSentence.percentage+").*")){
+				numerics += t+ " ";
+				pointer++;
+				return new ChunkValuePercentage(numerics.replaceAll("[{(<>)}]", "").trim());
+			}
+			if(t.matches("^[{<(]*("+ChunkedSentence.degree+")\\b.*")){
+				numerics += t+ " ";
+				pointer++;
+				return new ChunkValueDegree(numerics.replaceAll("[{(<>)}]", "").trim());
+			}*/
 			if(t.matches("^[{<(]*("+ChunkedSentence.units+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
 				adjustPointer4DotLong(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
-				return new ChunkValue(numerics.replaceAll("[{(<>)}]", "").trim());
+				numerics = numerics.replaceAll("[{(<>)}]", "").trim();
+				if(numerics.contains("×")){
+					return new ChunkArea(numerics);
+				}
+				return new ChunkValue(numerics);
 			}
 			if(t.matches("^[{<(]*("+ChunkedSentence.times+")\\b.*?")){
 				numerics += t+ " ";
@@ -1089,6 +1632,10 @@ public class ChunkedSentence {
 		int i = 0;
 		for(i = pointer; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
+			if(token.startsWith("z[")){
+				pointer++;
+				return new ChunkOrgan(token);
+			}
 			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")\\b.*") || token.matches(".*?[,;:\\.].*")){
 				break;
 			}
@@ -1140,7 +1687,7 @@ non-subject organ/structure u[m[] relief[] o[]]
 character modifier: a[m[largely] relief[smooth] m[abaxially]]
 
 	 */
-	private String checkType(int id) {
+	private String chunkType(int id) {
 		String token = this.chunkedtokens.get(id);
 		if(token.matches("^\\w{2,}\\[.*")){
 			return "ChunkSL"; //state list
@@ -1158,15 +1705,16 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		//	return "ChunkOf";
 		//}
 		if(token.startsWith("r[")){
-			if(token.indexOf("o[")>=0){
+			if(token.indexOf("o[")>=0 /*|| token.indexOf("c[")>=0*/){
 				return "ChunkPrep";
 			}else{
 				return null;
 			}
 		}
 		if(token.startsWith("t[")){
+			//this was for FNAv19, but it seemed all t[ chunks were only generated by composeChunk, bypassing this step. t[ chunks generated by chunking does not seem to need this reformatting.
 			//reformat c[] in t[]: c: {loosely} {arachnoid} : should be m[loosely] architecture[arachnoid]
-			Pattern p = Pattern.compile("(.*?\\b)c\\[([^]].*)\\](.*)");
+			/*Pattern p = Pattern.compile("(.*?\\b)c\\[([^]].*?)\\](.*)");
 			Matcher m = p.matcher(token);
 			String reformed = "";
 			if(m.matches()){
@@ -1174,7 +1722,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				String c = reformCharacterState(m.group(2));
 				reformed += c+ m.group(3);
 			}
-			this.chunkedtokens.set(id, reformed);
+			this.chunkedtokens.set(id, reformed);*/
 			return "ChunkCHPP"; //character/state-pp
 		}
 		if(token.startsWith("n[")){//returns three different types of ChunkTHAN
@@ -1182,7 +1730,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 			Matcher m = p.matcher(token);
 			m.find();
 			//String beforethan = token.substring(0, token.indexOf(" than "));
-			String beforethan = token.substring(0, m.start());
+			String beforethan = token.substring(0, m.start()).trim();
 			String charword = beforethan.lastIndexOf(' ')>0 ? beforethan.substring(beforethan.lastIndexOf(' ')+1) : beforethan.replaceFirst("n\\[", "");
 			String beforechar = beforethan.replace(charword, "").trim().replaceFirst("n\\[", "");
 			
@@ -1242,7 +1790,9 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		if(token.startsWith("z[")){
 			return "ChunkOrgan";
 		}
-		
+		if(token.startsWith("u[")){
+			return "ChunkNonSubjectOrgan";
+		}
 		return null;
 	}
 
@@ -1253,25 +1803,30 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 	 */
 	private String reformCharacterState(String charstring) {
 		String result = "";
-		String last = charstring.substring(charstring.lastIndexOf(' ')).trim();
-		String first = charstring.replace(last, "").trim();
-		result = "m["+first+"] ";
-		
+		String first = "";
+		String last = "";
+		if(charstring.lastIndexOf(' ')>=0){
+			last = charstring.substring(charstring.lastIndexOf(' ')).trim();
+			first = charstring.replace(last, "").trim();
+			result = "m["+first+"] ";
+		}else{
+			last = charstring.trim();
+		}
+			
 		String c = Utilities.lookupCharacter(last, conn, characterhash, glosstable);
 		if(c!=null){
 			result += c+"["+last+"]";
-		}else if(Utilities.isVerb(last, verbs)){
+		}else if(Utilities.isVerb(last, verbs, notverbs)){
 			result += "v["+last+"]";
 		}
-
-		return result;
+	
+		return result.trim();
 	}
 	
 	/**
 	 * when parsing fails at certain point, forward the pointer to the next comma
 	 */
 	public void setPointer2NextComma() {
-		// TODO Auto-generated method stub
 		for(; this.pointer<this.chunkedtokens.size(); pointer++){
 			if(this.chunkedtokens.get(pointer).matches("(,|\\.|;|:)")){
 				break;
@@ -1279,8 +1834,165 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		}
 		
 	}
-
+	public String getText(){
+		return this.text;
+	}
 	
+	public String getSubjectText(){
+		return this.subjecttext;
+	}
+
+	private void findSubject(){
+		String senttag = null;
+		String sentmod = null;
+		String text = null;
+		//boolean islifestyle = false;//make this a post-process
+		try{
+			Statement stmt = conn.createStatement();
+			//ResultSet rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
+			ResultSet rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
+			if(rs.next()){
+				senttag = rs.getString(2).trim();
+				senttag = senttag.compareTo("general")==0? "whole_organism" : senttag;
+				sentmod = rs.getString(1).trim();
+				this.text = rs.getString(3);
+			}
+			rs = stmt.executeQuery("select rmarkedsent from "+this.tableprefix+"_markedsentence where source ='"+sentsrc+"'");
+			if(rs.next()){
+				text = rs.getString(1).replaceAll("[{}<>]", "").trim();
+			}
+			/*rs = stmt.executeQuery("select * from "+this.glosstable+" where category ='life_style' and term like'%"+senttag+"'");
+			if(rs.next()){
+				islifestyle = true;
+			}*/
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		if(senttag.compareTo("ignore")!=0){
+			//sentence subject
+			if(senttag.compareTo("whole_organism")==0 /*|| islifestyle*/){
+				this.subjecttext = "(whole_organism)";
+			}else if(senttag.compareTo("chromosome")==0){
+				this.subjecttext = "(chromosome)";
+				skipLead("chromosome".split("\\s"));
+			}else if(senttag.compareTo("ditto")!=0 && senttag.length()>0){
+				//find the subject segment
+				String subject = "";
+				String [] tokens = text.split("\\s+");
+				if(senttag.indexOf("[")<0){ 
+					if(senttag.indexOf(" ")>=0){// a , c, and/or b
+						int or = senttag.lastIndexOf(" or ");
+						int and = senttag.lastIndexOf(" and ");
+						int ind = or < and ? and : or;
+						int plus = senttag.lastIndexOf(" plus ");
+						ind = plus < ind ? ind : plus;
+						String seg = senttag.substring(ind).replaceAll("oo", "(oo|ee)").trim();// and/or b
+						if(seg.length() - seg.lastIndexOf(")")-1 >=3){
+							seg =seg.replaceFirst("...$", "\\\\w+\\\\b");
+						}else{
+							seg = seg.replaceFirst("(?<=\\)).*", "\\\\w+\\\\b");
+						}
+						//seg = seg.replaceFirst("(and|or) ", "(and|or|plus|,) .*?");
+						seg = seg.replaceFirst("(and|or) ", "(\\\\band\\\\b|\\\\bor\\\\b|\\\\bplus\\\\b|,).*?\\\\b");
+						//tag derived from complex text expression: "biennial or short_lived perennial" from "iennials or short-lived , usually monocarpic perennials ,"
+						seg = seg.replaceAll("(?<=\\W)\\s+(?=\\W)", ".*?")
+						.replaceAll("(?<=\\W)\\s+(?=\\w)", ".*?\\\\b")
+						.replaceAll("(?<=\\w)\\s+(?=\\W)", "\\\\b.*?")
+						.replaceAll("(?<=\\w)\\s+(?=\\w)", "\\\\b.*?\\\\b");
+						Pattern p = Pattern.compile("(^.*?"+seg+")");
+						Matcher m = p.matcher(text.replaceAll("\\s*-\\s*", "_"));
+						if(m.find()){
+							subject = m.group(1);
+							subject = subject.replaceAll("\\s+-\\s+", "-");
+							skipLead(subject.split("\\s+"));
+							String organs = senttag.replaceAll("\\w+\\s+(?!(and |or |plus |$))", "|").replaceAll("\\s*\\|\\s*", "|").replaceAll("(^\\||\\|$)", "").replaceAll("\\|+", "|");//o1|o2
+							//turn organ names in subject to singular
+							String[] stokens = subject.split("\\s+");
+							subject = "";
+							for(int i = 0; i < stokens.length; i++){
+								String singular = Utilities.toSingular(stokens[i]);
+								if(singular.matches("("+organs+")")){
+									stokens[i] = singular;
+								}
+								subject += stokens[i]+" ";
+							}
+							subject = subject.trim().replaceAll("(?<=\\b("+organs+")\\b) ", ") ").replaceAll(" (?=\\b("+organs+")\\b)", " (").replaceFirst("(?<=\\b("+organs+")\\b)$", ")").replaceFirst("^(?=\\b("+organs+")\\b)", "(").trim();
+							subject = subject.replaceAll("(?<=\\w) ", "} ").replaceAll(" (?=\\w)", " {").replaceAll("(?<=\\w)$", "}").replaceAll("^(?=\\w)", "{").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();;
+							//subject = ("{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {")+"} ("+senttag.replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
+							this.subjecttext = subject;
+						}	
+						
+					}else{
+						for(int i = 0; i<tokens.length; i++){
+							if(Utilities.toSingular(tokens[i]).compareTo(senttag)==0){
+								subject = subject.replaceAll("\\s+-\\s+", "-");
+								subject = "{"+subject.trim().replaceAll("[\\[\\]{}()]", "").replaceAll(" ", "} {")+"}";
+								subject = (subject + " ("+tokens[i].replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
+								this.subjecttext=subject;
+								if(subject.length()>0){
+									skipLead(subject.replaceAll("[\\[\\]{}()]", "").split("\\s+"));
+									break;
+								}
+							}else{
+								subject += tokens[i]+" ";
+							}
+						}
+					}
+				}else if(senttag.indexOf("[")>=0){// must not be of-case
+					subject = ("{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {")+"} ("+senttag.replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
+					this.subjecttext=subject;
+					String mt = (sentmod+" "+senttag).replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
+					if(mt.length()>0)
+						skipLead(mt.split("\\s+"));
+				}
+				
+				/*
+				String subject = ("{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {")+"} ("+senttag.replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
+				establishSubject(subject, true);
+				String mt = "";
+				if(of){
+					mt = senttag.replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
+				}else{
+					mt = (sentmod+" "+senttag).replaceAll("\\[+.+?\\]+", "").replaceAll("\\s+", " ").trim();
+				}
+				if(mt.length()>0)
+					cs.skipLead(mt.split("\\s+"));*/
+			}else if(senttag.compareTo("ditto")==0){
+				if(sentsrc.endsWith("0")){
+					this.subjecttext ="(whole_organism)";//starting sentence in a treatment, without an explicit subject.
+				}else{
+					this.subjecttext ="ditto";
+				}
+			}
+		}else{
+			this.subjecttext = "ignore";
+		}
+	}
+	
+	/**
+	 * 
+	 * @param begainindex (inclusive)
+	 * @param endindex (not include)
+	 * @return element in the range
+	 */
+	public String getText(int begainindex, int endindex) {
+		String text = "";
+		for(int i = begainindex; i < endindex; i++){
+			text += this.chunkedtokens.get(i)+" ";
+		}
+		return text.replaceAll("\\s+", " ").trim();
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
 	
 	
 }

@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -73,13 +74,22 @@ public class POSTagger4StanfordParser {
 				str = m.group(1)+"{"+m.group(2).replaceAll("[, ]","").replaceAll("\\{$", "")+m.group(5);
 				m = pp.matcher(str);
 			}
+			String scp = str;
+			str = str.replaceAll("(?<![\\d(\\[–—-]\\s?)[–—-]+\\s*(?="+NumericalHandler.numberpattern+"\\s+\\W?("+ChunkedSentence.units+")\\W?)", " to "); //fna: tips>-2.5 {mm}
+			if(!scp.equals(str)){
+				System.out.println();
+			}
 			lookupCharacters(str);//populate charactertokens
+	        if(this.charactertokensReversed.contains("color") || this.charactertokensReversed.contains("coloration")){
+	        	str = normalizeColorPatterns();
+	        }
 	        if(str.indexOf(" to ")>=0 ||str.indexOf(" or ")>=0){
 	        	if(this.printList){
 					System.out.println(str);
 				}
 	        	str = normalizeCharacterLists(); //a set of states of the same character connected by ,/to/or => {color-blue-to-red}
 	        }
+
 	        if(str.matches(".*? as\\s+[\\w{}<>]+\\s+as .*")){
 	           str = normalizeAsAs(str);
 	        }
@@ -98,7 +108,8 @@ public class POSTagger4StanfordParser {
 				String strcp2 = str;
 				
 				String strnum = null;
-				if(str.indexOf("}×")>0){//{cm}×
+				//if(str.indexOf("}×")>0){//{cm}×
+				if(str.indexOf("×")>0){
 					containsArea = true;
 					String[] area = normalizeArea(str);
 					str = area[0]; //with complete info
@@ -111,7 +122,7 @@ public class POSTagger4StanfordParser {
 				if(m.matches()){
 					str = m.group(3);
 				}
-				
+				str = str.replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±(?!\\s+\\d)","moreorless");
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
 				if(containsArea){
 					str = strnum;
@@ -146,9 +157,15 @@ public class POSTagger4StanfordParser {
 	           str = matcher1.replaceAll("0");
 	           matcher1.reset();
 	           
-	           matcher1 = pattern6.matcher(str);
+	           /* should not remove space around 0, because: pollen 70-80% 3-porate should keep 2 separate numbers: 70-80% and 3-porate
+	            * 
+	           String scptemp = str;
+	           matcher1 = pattern6.matcher(str);//remove space around 0
 	           str = matcher1.replaceAll("0");
-	           matcher1.reset();
+	           if(!scptemp.equals(str)){
+	        	   System.out.println();
+	           }
+	           matcher1.reset();*/
 	           
 	           matcher1 = pattern7.matcher(str);//added for (2)
 	           str = matcher1.replaceAll("0");
@@ -203,12 +220,17 @@ public class POSTagger4StanfordParser {
 	       		   
 	        	   if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
 	        		   sb.append(word+"/RB ");
+	        	   }else if(word.compareTo("becoming")==0){
+	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("throughout")==0 && tokens[i+1].matches("(,|or)")){
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("at-least")==0){
 	        		   sb.append(word+"/RB ");
-	        	   }else if(word.matches("\\d+[cmd]?m\\d+[cmd]?m")){ //area turned into 32cm35mm
+	        	   }else if(word.compareTo("plus")==0){
 	        		   sb.append(word+"/CC ");
+	        	   }else if(word.matches("\\d+[cmd]?m\\d+[cmd]?m")){ //area turned into 32cm35mm
+	        		   //sb.append(word+"/CC ");
+	        		   sb.append(word+"/CD ");
 	        	   }else if(word.matches("("+ChunkedSentence.units+")")){
 	       			   sb.append(word+"/NNS ");
 	       		   }else if(word.matches("as-\\S+")){ //as-wide-as
@@ -246,7 +268,70 @@ public class POSTagger4StanfordParser {
 		}
 		return "";
 	}
-		
+	
+		/**
+		 * make  "suffused with dark blue and purple or green" one token
+		 * ch-ptn"color % color color % color @ color"
+		 * @return
+		 */
+	private String normalizeColorPatterns() {
+		String list = "";
+		String result = "";
+		String header = "ttt";
+		for(int i = this.charactertokensReversed.size() -1; i>=0; i--){
+			list+=this.charactertokensReversed.get(i)+" ";
+		}
+		list = list.trim()+" "; //need to have a trailing space
+		Pattern p = Pattern.compile("(.*?)((color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");
+		Matcher m = p.matcher(list);
+		int base = 0;
+		while(m.matches()){
+			int start = (m.group(1).trim()+" a").trim().split("\\s+").length+base-1;
+			int end = start+(m.group(2).trim()+" b").trim().split("\\s+").length-1;
+			String ch = m.group(3)+header;
+			list = m.group(4);
+			m = p.matcher(list);
+			//form result string, adjust chunkedtokens
+			for(int i = base; i<start; i++){
+				result += this.chunkedtokens.get(i)+" ";
+			}
+			if(end>start){ //if it is a list
+				String t= "{"+ch+"~list~";
+				for(int i = start; i<end; i++){
+					t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+					this.chunkedtokens.set(i, "");
+				}
+				t = t.replaceFirst("~$", "}");
+				t = distributePrep(t)+" ";
+				this.chunkedtokens.set(end-1, t.trim());//"suffused with ..." will not form a list with other previously mentioned colors, but may with following colors, so put this list close to the next token.
+				result +=t;
+			}
+			//prepare for the next step
+			base = end;
+			
+			
+		}
+		//dealing with the last segment of the list or the entire list if no match
+		for(int i = base; i<(list.trim()+" b").trim().split("\\s+").length+base-1; i++){
+			result += this.chunkedtokens.get(i)+" ";
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param t: {color~list~suffused~with~red~or~purple}
+	 * @return {color~list~suffused~with~red~or~purple}
+	 */
+	private String distributePrep(String t) {
+			Pattern p = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
+			Matcher m = p.matcher(t);
+			if(m.matches()){
+				t = m.group(1)+m.group(2)+m.group(3)+m.group(2)+m.group(4);
+			}
+			return t;
+		}
+
 	/**
 	 * 
 	 * @param text
@@ -416,9 +501,19 @@ public class POSTagger4StanfordParser {
 			if(end>start){ //if it is a list
 				String t= "{"+ch+"~list~";
 				for(int i = start; i<end; i++){
-					t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+					if(this.chunkedtokens.get(i).length()>0){
+						t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+					}else if(i == end-1){
+						while(this.chunkedtokens.get(i).length()==0){
+							i++;
+						}
+						t+=this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+					}
+					this.chunkedtokens.set(i, "");
 				}
 				t = t.replaceFirst("~$", "}")+" ";
+				if(t.indexOf("ttt~list")>=0) t = t.replaceAll("~color.*?ttt~list", "");
+				this.chunkedtokens.set(start, t);
 				result +=t;
 				if(this.printList){
 					System.out.println(">>>"+t);

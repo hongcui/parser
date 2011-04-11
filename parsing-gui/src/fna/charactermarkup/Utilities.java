@@ -1,3 +1,4 @@
+ /* $Id$ */
 /**
  * 
  */
@@ -22,29 +23,64 @@ public class Utilities {
 	public static String or = "_or_";
 	
 	public static Hashtable<String, String> singulars = new Hashtable<String, String>();
+	public static Hashtable<String, String> plurals = new Hashtable<String, String>();
 	public static boolean debug = false;
 	//special cases
 
-
+	public static boolean isPlural(String t) {
+		t = t.replaceAll("\\W", "");
+		if(t.matches("\\b(series|species|fruit)\\b")){
+			return true;
+		}
+		if(t.compareTo(toSingular(t))!=0){
+			return true;
+		}
+		return false;
+	}
 
 	public static String toSingular(String word){
 		String s = "";
 		word = word.toLowerCase().replaceAll("\\W", "");
 		//check cache
-		singulars.put("valves", "valve");
-		singulars.put("media", "media");
+		singulars.put("axis", "axis");
+		singulars.put("bases", "base");
+		singulars.put("boss", "boss");
+		singulars.put("buttress", "buttress");
+		singulars.put("callus", "callus");
 		singulars.put("frons", "frons");
+		singulars.put("grooves", "groove");
+		singulars.put("lens", "len");
+		singulars.put("media", "media");
+		singulars.put("midnerves", "midnerve");
+		singulars.put("process", "process");
+		singulars.put("series", "series");
 		singulars.put("species", "species");
 		singulars.put("teeth", "tooth");
-		singulars.put("bases", "base");
-		singulars.put("series", "series");
-		singulars.put("sulcus", "sulcus");
+		singulars.put("valves", "valve");
+		
+		plurals.put("axis", "axis");
+		plurals.put("base", "bases");		
+		plurals.put("groove", "grooves");
+		plurals.put("len", "lens");
+		plurals.put("media", "media");
+		plurals.put("midnerve", "midnerves");
+		plurals.put("tooth", "teeth");
+		plurals.put("valve", "valves");
+		plurals.put("boss", "bosses");
+		plurals.put("buttress", "buttresses");
+		plurals.put("callus", "calluses");
+		plurals.put("frons", "fronses");
+		plurals.put("process", "processes");
+		plurals.put("series", "series");
+		plurals.put("species", "species");
+
 		s = singulars.get(word);
 		if(s!=null) return s;
 		
 		//adverbs
 		if(word.matches("[a-z]{3,}ly")){
 			singulars.put(word, word);
+			plurals.put(word, word);
 			return word;
 		}
 		
@@ -54,6 +90,7 @@ public class Utilities {
 			return word;
 		}else if(wordcopy!=null){
 			singulars.put(word, wordcopy);
+			if(!wordcopy.equals(word)) plurals.put(wordcopy, word);
 			if(debug) System.out.println("["+word+"]'s singular is "+wordcopy);
 			return wordcopy;
 		}else{//word not in wn
@@ -67,6 +104,7 @@ public class Utilities {
 			Pattern p7 = Pattern.compile("(.*?a)e$");
 			Pattern p75 = Pattern.compile("(.*?)us$");
 			Pattern p8 = Pattern.compile("(.*?)s$");
+			//Pattern p9 = Pattern.compile("(.*?[^aeiou])a$");
 			
 			Matcher m1 = p1.matcher(word);
 			Matcher m2 = p2.matcher(word);
@@ -77,7 +115,8 @@ public class Utilities {
 			Matcher m7 = p7.matcher(word);
 			Matcher m75 = p75.matcher(word);
 			Matcher m8 = p8.matcher(word);
-		
+			//Matcher m9 = p9.matcher(word);
+			
 			if(m1.matches()){
 			  s = m1.group(1)+"y";
 			}else if(m2.matches()){
@@ -96,11 +135,14 @@ public class Utilities {
 			  s = word;
 			}else if(m8.matches()){
 			  s = m8.group(1);
-			}
+			}//else if(m9.matches()){
+			//  s = m9.group(1)+"um";
+			//}
 		  
 		  if(s != null){
 			if(debug) System.out.println("["+word+"]'s singular is "+s);
 			singulars.put(word, s);
+			if(!s.equals(word)) plurals.put(s, word);
 			return s;
 		  }
 		}
@@ -118,15 +160,15 @@ public class Utilities {
 		  	    ArrayList<String> outputs = new ArrayList<String>();
 		  
 	            // any error message?
-	            StreamGobbler errorGobbler = new 
-	                StreamGobbler(proc.getErrorStream(), "ERROR", errors, outputs);            
+	            //StreamGobbler errorGobbler = new 
+	                //StreamGobblerWordNet(proc.getErrorStream(), "ERROR", errors, outputs);            
 	            
 	            // any output?
 	            StreamGobbler outputGobbler = new 
-	                StreamGobbler(proc.getInputStream(), "OUTPUT", errors, outputs);
+	                StreamGobblerWordNet(proc.getInputStream(), "OUTPUT", errors, outputs);
 	                
 	            // kick them off
-	            errorGobbler.start();
+	            //errorGobbler.start();
 	            outputGobbler.start();
 	                                    
 	            // any error???
@@ -134,8 +176,8 @@ public class Utilities {
 	            //System.out.println("ExitValue: " + exitVal);
 
 	            StringBuffer sb = new StringBuffer();
-	            for(int i = 0; i<errors.size(); i++){
-	            	sb.append(errors.get(i)+" ");
+	            for(int i = 0; i<outputs.size(); i++){
+	            	//sb.append(errors.get(i)+" ");
 	            	sb.append(outputs.get(i)+" ");
 	            }
 	            return sb.toString();
@@ -160,11 +202,11 @@ public class Utilities {
 		}
 		//found word in WN:
 		String t = "";
-		Pattern p = Pattern.compile("Overview of noun (\\w+) (.*)");
+		Pattern p = Pattern.compile("(.*?)Overview of noun (\\w+) (.*)");
 		Matcher m = p.matcher(result);
 		while(m.matches()){
-			 t += m.group(1)+" ";
-			 result = m.group(2);
+			 t += m.group(2)+" ";
+			 result = m.group(3);
 			 m = p.matcher(result);
 		}
 		if (t.length() ==0){//word is not a noun
@@ -172,24 +214,32 @@ public class Utilities {
 		} 
 		String[] ts = t.trim().split("\\s+"); //if multiple singulars (bases =>basis and base, pick the first one
 		for(int i = 0; i<ts.length; i++){
-			if(ts[i].compareTo(word)==0){//the original word is a singular
-				return "";
+			if(ts[i].compareTo(word)!=0){//find a singular form
+				return ts[i];
 			}
 		}
-		return ts[0];
+		return "";//original is a singular
 	}
 	 
 
-	public static boolean isNoun(String word, ArrayList<String> nouns){
+	public static boolean isNoun(String word, ArrayList<String> nouns, ArrayList<String> notnouns){
+		word = word.trim();
+		if(word.indexOf(' ')>0) return false;
 		word = word.replaceAll("[<>{}\\]\\[]", "");
 		if(!word.matches(".*?[a-z]+.*")){
+			notnouns.add(word);
 			return false;
 		}
 		if(word.matches("\\b("+StateCollector.stop+")\\b")){
+			notnouns.add(word);
 			return false;
 		}
 		if(nouns.contains(word)){
 			return true;
+		}
+		
+		if(notnouns.contains(word)){
+			return false;
 		}
 		WordNetWrapper wnw = new WordNetWrapper(word);
 		String pos = wnw.mostlikelyPOS();
@@ -199,11 +249,12 @@ public class Utilities {
 				return true;
 			}
 		}
+		notnouns.add(word);
 		return false;
 
 	}
 	
-	public static boolean isVerb(String word, ArrayList<String> verbs) {
+	public static boolean isVerb(String word, ArrayList<String> verbs, ArrayList<String> notverbs) {
 		word = word.replaceAll("[<>{}\\]\\[]", "").trim();
 		if(!word.matches(".*?[a-z]+.*")){
 			return false;
@@ -213,6 +264,9 @@ public class Utilities {
 		}
 		if(verbs.contains(word)){
 			return true;
+		}
+		if(notverbs.contains(word)){
+			return false;
 		}
 		WordNetWrapper wnw = new WordNetWrapper(word);
 		String pos = wnw.mostlikelyPOS();
@@ -227,13 +281,14 @@ public class Utilities {
 				}
 			}
 		}
-			return false;
+		notverbs.add(word);
+		return false;
 
 	}
 	
-	public static boolean isAdv(String word, ArrayList<String> adverbs) {
+	public static boolean isAdv(String word, ArrayList<String> adverbs, ArrayList<String> notadverbs) {
 		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
-		if(word.matches("(not|at-least|throughout)")){
+		if(word.matches("(not|at-least|throughout|much)")){
 			return true;
 		}
 		if(word.compareTo("moreorless")==0){
@@ -243,15 +298,19 @@ public class Utilities {
 			return true;
 		}
 		if(!word.matches(".*?[a-z]+.*")){
+			notadverbs.add(word);
 			return false;
 		}
 		if(word.matches("\\b("+StateCollector.stop+")\\b")){
+			notadverbs.add(word);
 			return false;
 		}
 		if(adverbs.contains(word)){
 			return true;
 		}
-		
+		if(notadverbs.contains(word)){
+			return false;
+		}
 		
 
 		WordNetWrapper wnw = new WordNetWrapper(word);
@@ -267,6 +326,7 @@ public class Utilities {
 				return true;
 			}
 		}
+		notadverbs.add(word);
 		return false;
 	}
 	
@@ -315,9 +375,18 @@ public class Utilities {
 		return null;
 	}
 	
+	
 	public static void main(String[] argv){
 		//Utilities.lookupCharacter(w, conn, characterhash)
-		System.out.println(Utilities.toSingular("margins"));
+		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
+		System.out.println(Utilities.toSingular("septa"));
+		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
 	}
+
+	public static String plural(String b) {
+		return Utilities.plurals.get(b);
+	}
+
+
 
 }

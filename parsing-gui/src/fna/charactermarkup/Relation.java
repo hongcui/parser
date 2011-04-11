@@ -1,3 +1,4 @@
+ /* $Id$ */
 package fna.charactermarkup;
 
 @SuppressWarnings({ "unused" })
