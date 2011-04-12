@@ -337,7 +337,7 @@ public class ChunkedSentence {
 		}
 		//if(i==0) subjecto = true;
 		//reformat this.chunkedtokens
-		if(subjecto){
+		if(subjecto || i==0){ 
 			chunk = "z["+chunk.trim().replaceAll("<", "(").replaceAll(">", ")")+"]";
 		}else{
 			chunk = "u["+chunk.trim().replaceFirst("<", "o[(").replaceFirst(">$", ")]").replaceAll("<", "(").replaceAll(">", ")")+"]";
@@ -1110,7 +1110,7 @@ public class ChunkedSentence {
 			ArrayList<String> tokens = new ArrayList<String>();
 			String text = token.replaceFirst("s\\[", "").replaceFirst("\\]$", "");
 			//break text into correct tokens: s[that is {often} {concealed} r[p[by] o[(trichomes)]]] ;
-			tokens = breakText(text);
+			tokens = Utilities.breakText(text);
 			this.pointer++;
 			text=text.trim();
 			if(!text.matches(".*?[,;\\.:]$")){
@@ -1203,32 +1203,7 @@ public class ChunkedSentence {
 		
 		return chunk;
 	}
-	/**
-	 * break text into correct tokens: 
-	 * @param text: that is {often} {concealed} r[p[by] o[(trichomes)]];
-	 * @return
-	 */
-	private ArrayList<String> breakText(String text) {
-		ArrayList<String> tokens = new ArrayList<String>();
-		String[] words = text.split("\\s+");
-		String t = "";
-		int left = 0;
-		for(int i = 0; i<words.length; i++){
-			String w = words[i];
-			if(w.indexOf("[")<0 && w.indexOf("]")<0 && left==0){
-				if(!w.matches("\\b(this|have|that|may|be)\\b")){tokens.add(w);};
-			}else{
-				left += w.replaceAll("[^\\[]", "").length();
-				left -= w.replaceAll("[^\\]]", "").length();
-				t += w+" ";
-				if(left==0){
-					tokens.add(t.trim());
-					t = "";
-				}
-			}
-		}
-		return tokens;
-	}
+	
 	
 	private Chunk composeChunk() {
 		Chunk chunk;
@@ -1889,11 +1864,18 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 						int plus = senttag.lastIndexOf(" plus ");
 						ind = plus < ind ? ind : plus;
 						String seg = senttag.substring(ind).replaceAll("oo", "(oo|ee)").trim();// and/or b
-						if(seg.length() - seg.lastIndexOf(")")-1 >=3){
+						if(seg.indexOf("(oo|ee)")>=0){
+							seg =seg.replaceFirst(".$", "\\\\w+\\\\b");
+						}else if(seg.length() < 5){
+							seg =seg.replaceFirst("..$", "\\\\w+\\\\b");
+						}else{
+							seg = seg.replaceFirst("...$", "\\\\w+\\\\b");
+						}
+						/*if(seg.length() - seg.lastIndexOf(")")-1 >=3){
 							seg =seg.replaceFirst("...$", "\\\\w+\\\\b");
 						}else{
 							seg = seg.replaceFirst("(?<=\\)).*", "\\\\w+\\\\b");
-						}
+						}*/
 						//seg = seg.replaceFirst("(and|or) ", "(and|or|plus|,) .*?");
 						seg = seg.replaceFirst("(and|or) ", "(\\\\band\\\\b|\\\\bor\\\\b|\\\\bplus\\\\b|,).*?\\\\b");
 						//tag derived from complex text expression: "biennial or short_lived perennial" from "iennials or short-lived , usually monocarpic perennials ,"

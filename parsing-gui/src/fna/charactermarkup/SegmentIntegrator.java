@@ -276,7 +276,7 @@ public class SegmentIntegrator {
 			}
 			testroot.detach();
 			File f = new File("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
-			ParsingUtil.outputXML(testroot, f);
+			ParsingUtil.outputXML(testroot, f, null);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

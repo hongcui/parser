@@ -376,17 +376,42 @@ public class Utilities {
 	}
 	
 	
+
+	public static String plural(String b) {
+		return Utilities.plurals.get(b);
+	}
+
+	/**
+	 * break text into correct tokens: 
+	 * @param text: that is {often} {concealed} r[p[by] o[(trichomes)]];
+	 * @return
+	 */
+	public static ArrayList<String> breakText(String text) {
+		ArrayList<String> tokens = new ArrayList<String>();
+		String[] words = text.split("\\s+");
+		String t = "";
+		int left = 0;
+		for(int i = 0; i<words.length; i++){
+			String w = words[i];
+			if(w.indexOf("[")<0 && w.indexOf("]")<0 && left==0){
+				if(!w.matches("\\b(this|have|that|may|be)\\b")){tokens.add(w);};
+			}else{
+				left += w.replaceAll("[^\\[]", "").length();
+				left -= w.replaceAll("[^\\]]", "").length();
+				t += w+" ";
+				if(left==0){
+					tokens.add(t.trim());
+					t = "";
+				}
+			}
+		}
+		return tokens;
+	}
+
 	public static void main(String[] argv){
 		//Utilities.lookupCharacter(w, conn, characterhash)
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		System.out.println(Utilities.toSingular("septa"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
 	}
-
-	public static String plural(String b) {
-		return Utilities.plurals.get(b);
-	}
-
-
-
 }

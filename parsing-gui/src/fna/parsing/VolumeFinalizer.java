@@ -6,18 +6,21 @@ package fna.parsing;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
 import fna.charactermarkup.StanfordParser;
+import fna.parsing.state.SentenceOrganStateMarker;
 
 /**
  * @author chunshui
@@ -32,6 +35,7 @@ public class VolumeFinalizer extends Thread {
 	private static final Logger LOGGER = Logger.getLogger(VolumeFinalizer.class);
 	private Connection conn = null;
 	private String glossaryPrefix;
+	private static String version="$Id$";
 	
 	public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn, String glossaryPrefix) {
 		//glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
@@ -41,14 +45,12 @@ public class VolumeFinalizer extends Thread {
 		this.glossaryPrefix = glossaryPrefix;
 	}
 	
-	public static void main (String [] args) {
-		
-	}
+
 	
 	public void run () {
-		listener.setProgressBarVisible(true);
+		//listener.setProgressBarVisible(true);
 		outputFinal();
-		listener.setProgressBarVisible(false);
+		//listener.setProgressBarVisible(false);
 	}
 	/**
 	 * stanford parser
@@ -56,42 +58,29 @@ public class VolumeFinalizer extends Thread {
 	 */
 	public void outputFinal() throws ParsingException {
 
-		listener.progress(20);
-		updateGlossary();
+		//listener.progress(20);
+		//updateGlossary(); //active this later 4/2011
+		/*
 		String posedfile = Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("POSED");
 		String parsedfile =Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("PARSED");
 		String database = ApplicationUtilities.getProperty("database.name");
 		String postable = ApplicationUtilities.getProperty("POSTABLE");
-		//String glosstable = this.dataPrefix + "_"+ApplicationUtilities.getProperty("GLOSSTABLE");
+		*/
+		String posedfile = "FNAv19posedsentences.txt";		
+		String parsedfile = "FNAv19parsedsentences.txt";
+		String database = "annotationevaluation";
+		String postable = "wordpos4parser";
 		String glosstable = this.glossaryPrefix;
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true);
+		//sosm.markSentences();
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,postable,glosstable);
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
-		listener.progress(40);
-		//CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name")
-		//		/*+ "_corpus"*/, dataPrefix);
-		//cl.markupCharState();
-		// output final records
-		// read in treatments, replace description with what cl output
-		//replaceWithAnnotated(cl, "treatment/description", "FINAL", false);
+		//listener.progress(40);
 	}
 	
-	/**
-	 * 2008 version 
-	 */
-	/*public void outputFinal() throws ParsingException {
-
-		listener.progress(20);
-
-		CharacterLearner cl = new CharacterLearner(ApplicationUtilities.getProperty("database.name"), dataPrefix);
-		listener.progress(40);
-
-		cl.markupCharState();
-		// output final records
-		// read in treatments, replace description with what cl output
-		replaceWithAnnotated(cl, "treatment/description", "FINAL", false);
-	}*/
+	
 	/**
 	 * add new character/state to glossary
 	 */
@@ -121,8 +110,6 @@ public class VolumeFinalizer extends Thread {
 	public static void replaceWithAnnotated(Element adescription, Element baseroot, String xpath) {
 
 		try {
-			//Element root = doc.getRootElement();	
-			//List<Element> content = adescription.getContent();
 			//get the element index of the unannotated counterpart 	
 			Element description = (Element) XPath.selectSingleNode(
 					baseroot, xpath);	
@@ -130,13 +117,11 @@ public class VolumeFinalizer extends Thread {
 			Element parent = description;
 			if(description!=null){
 			 parent= description.getParentElement();
-			//int index = baseroot.indexOf(description);
 			 index= parent.indexOf(description);
 			}
 			// replace
 			if (index >= 0) {
 				//System.out.println(fileindex+".xml has "+xpath+" element replaced");
-				//baseroot.setContent(index, adescription);
 				parent.setContent(index, adescription);
 			}
 			baseroot.detach();
@@ -147,39 +132,15 @@ public class VolumeFinalizer extends Thread {
 		}
 	}
 
-	/*public static void replaceWithAnnotated(Element adescription, Document doc, String descId, String xpath, boolean flatten) {
-		try{
-			Element root = doc.getRootElement();	
-			List<Element> content = adescription.getContent();
-			//get the element index of the unannotated counterpart 	
-			Element description = (Element) XPath.selectSingleNode(
-					root, xpath);			
-			int index = root.indexOf(description);
-			
-			// replace
-			if (index >= 0) {
-				//System.out.println(fileindex+".xml has "+xpath+" element replaced");
-				root.setContent(index, adescription);
-			}
-			root.detach();
-			
-			//outputFinalXML(target, root);
-		} catch (Exception e) {
-			e.printStackTrace();
-			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
-			throw new ParsingException("Failed to output the final result.", e);
-		}
-	}*/
-	//public static Element getBaseRoot(int fileindex){
 	public static Element getBaseRoot(String fileindex, int order){
-		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
-		//File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
+		//File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
+		File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
 		int total = source.listFiles().length;
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			System.out.println("finalizing "+fileindex);
 			
-			listener.progress(40+(order*60/total));
+			//listener.progress(40+(order*60/total));
 			File file = new File(source, fileindex + ".xml");
 			Document doc = builder.build(file);
 			
@@ -193,29 +154,32 @@ public class VolumeFinalizer extends Thread {
 		}
 	}
 
-	//public static void outputFinalXML(Element root, int fileindex, String targetstring) {
+	
 	public static void outputFinalXML(Element root, String fileindex, String targetstring) {
 		
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		//File target = new File("C:\\DATA\\FNA-v19\\target\\final");
+		//File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		File target = new File("C:\\DATA\\FNA-v19\\target\\final");
 		File result = new File(target, fileindex + ".xml");
-		ParsingUtil.outputXML(root, result);
-		listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
+		Comment comment = new Comment("produced by "+VolumeFinalizer.version+System.getProperty("line.separator"));
+		//Comment comment = null;
+		ParsingUtil.outputXML(root, result, comment);
+		//listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
 	}
 
 
 	public void replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
-		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
+		//File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
+		File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
 		int total = source.listFiles().length;
 
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-
+		//File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		File target = new File("C:\\DATA\\FNA-v19\\target\\final");
 		try {
 
 			SAXBuilder builder = new SAXBuilder();
 			for (int count = 1; count <= total; count++) {
 				System.out.println("finalizing "+count);
-				listener.progress(40+(count*60/total));
+				//listener.progress(40+(count*60/total));
 				File file = new File(source, count + ".xml");
 				Document doc = builder.build(file);
 				Element root = doc.getRootElement();	
@@ -247,9 +211,9 @@ public class VolumeFinalizer extends Thread {
 				root.detach();
 				
 				File result = new File(target, count + ".xml");
-				ParsingUtil.outputXML(root, result);
+				ParsingUtil.outputXML(root, result, null);
 
-				listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
+				//listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
 			}
 
 		} catch (Exception e) {
@@ -257,5 +221,23 @@ public class VolumeFinalizer extends Thread {
 			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
 			throw new ParsingException("Failed to output the final result.", e);
 		}
+	}
+	
+	public static void main (String [] args) {
+		String database="annotationevaluation";
+		String username="root";
+		String password="root";
+		Connection conn = null;
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		VolumeFinalizer vf = new VolumeFinalizer(null, "fnav19", conn, "fnaglossaryfixed");
+		vf.start();
 	}
 }
