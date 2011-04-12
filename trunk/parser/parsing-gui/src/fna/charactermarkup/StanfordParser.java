@@ -28,7 +28,13 @@ import fna.parsing.state.SentenceOrganStateMarker;
 
 /**
  * @author hongcui
- *
+ * updates April 2011
+ * 	1. annual etc. => life_style
+	2. added may_be_the_same relation for structures with the same name and constraint.
+	3. to 60 m => marked as a range value with to_value="60" to_unit="m"
+	4. separate two types of constraints for structure element (see below)
+	5. removed empty values
+	6. put <text> element as the first element in output
  */
 @SuppressWarnings({ "unused","static-access" })
 public class StanfordParser implements Learn2Parse, SyntacticParser{
@@ -64,8 +70,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			//	String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
-				String URL = ApplicationUtilities.getProperty("database.url");
+			    String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
 				//stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
@@ -127,8 +133,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	  		//Process p = r.exec("cmd /c stanfordparser.bat");
  	  		//String cmdtext = "stanfordparser.bat >"+this.parsedfile+" 2<&1";
  	  		//String cmdtext = "cmd /c stanfordparser.bat";	
- 	  		String parserJarfilePath = ApplicationUtilities.getProperty("stanford.parser.jar"); 
-	  		String englishPCFGpath = ApplicationUtilities.getProperty("englishPCFG");
+ 	  		//String parserJarfilePath = ApplicationUtilities.getProperty("stanford.parser.jar"); 
+	  		//String englishPCFGpath = ApplicationUtilities.getProperty("englishPCFG");
+	  		String parserJarfilePath="lib\\stanford-parser.jar";
+	  		String englishPCFGpath ="lib\\englishPCFG.ser.gz";
  	  		String cmdtext = "java -mx900m -cp "+parserJarfilePath+" edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
 	  				"-sentences newline -tokenized -tagSeparator / "+englishPCFGpath+" "+
 	  				this.posedfile;
