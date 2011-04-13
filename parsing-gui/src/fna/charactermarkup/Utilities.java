@@ -294,6 +294,9 @@ public class Utilities {
 		if(word.compareTo("moreorless")==0){
 			return true;
 		}
+		if(word.compareTo("becoming")==0){
+			return true;
+		}
 		if(word.compareTo("±")==0){
 			return true;
 		}

@@ -667,7 +667,8 @@ public class CharacterAnnotatorChunked {
 	private ArrayList<Element> processTVerb(String content,
 			ArrayList<Element> parents) {
 		ArrayList<Element> results = new ArrayList<Element>();
-		String object = content.substring(content.indexOf("o["));
+		//String object = content.substring(content.indexOf("o["));
+		String object = content.substring(content.lastIndexOf("o["));
 		String rest = content.replace(object, "").trim();
 		String relation = rest.substring(rest.indexOf("v["));
 		String modifier = rest.replace(relation, "").trim().replaceAll("(m\\[|\\])", "");
@@ -676,7 +677,7 @@ public class CharacterAnnotatorChunked {
 		ArrayList<Element> tostructures = this.processObject(object); //TODO: fix content is wrong. i8: o[a] architecture[surrounding (involucre)]
 		results.addAll(tostructures);
 		
-		this.createRelationElements(relation.replaceAll("(v\\[|\\])", ""), this.subjects, tostructures, modifier, false);
+		this.createRelationElements(relation.replaceAll("(\\w\\[|\\])", ""), this.subjects, tostructures, modifier, false);
 		return results;
 	}
 
@@ -953,21 +954,28 @@ public class CharacterAnnotatorChunked {
 	 * CK takes form of relation character/states [structures]?
 	 * update this.latestElements with structures only.
 	 * 
-	 * nested: r[p[of] o[5-40 , fusion[{fusion~list~distinct~or~basally~connate}] r[p[in] o[groups]] , coloration[{coloration~list~white~to~tan}] , {wholly} or {distally} {plumose} (bristles)]] r[p[in] o[1 (series)]]
+	 * nested1: r[p[of] o[5-40 , fusion[{fusion~list~distinct~or~basally~connate}] r[p[in] o[groups]] , coloration[{coloration~list~white~to~tan}] , {wholly} or {distally} {plumose} (bristles)]] []]
+	 * nested2: r[p[with] o[{central} {cluster} r[p[of] o[(spines)]]]]
 	 * @param ck
 	 * @param asrelation: if this PP should be treated as a relation
 	 */
 	private void processPrep(ChunkPrep ck) {
 		String ckstring = ck.toString(); //r[{} {} p[of] o[.....]]
 		String modifier = ckstring.substring(0, ckstring.indexOf("p[")).replaceFirst("^r\\[", "").replaceAll("[{}]", "").trim();
-		//String pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
-		String pp = ckstring.substring(ckstring.indexOf("p["), ckstring.indexOf("] o[")).replaceAll("(\\w\\[|])", "");
-		String object  = ckstring.substring(ckstring.indexOf("o[")).replaceFirst("\\]+$", "")+"]";
-		//String object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";
-		String nestedtext = null;
-		if(object.matches("o\\[.*?\\[.*?\\].*\\]")){//nested ChunkPrep
-			nestedtext = object.replaceFirst("o\\[", "").replaceFirst("\\]", "");			
-		}
+		String pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
+		String object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";	
+
+		/*String pp = null;
+		String object = null;
+		if(ckstring.matches(".*?\\]{4,}$")){//nested2 
+			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
+			object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";	
+		}else{//nested1 or not nested
+			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.indexOf("] o[")).replaceAll("(\\w\\[|])", "");
+			object  = ckstring.substring(ckstring.indexOf("o[")).replaceFirst("\\]+$", "")+"]";//nested or not
+		}*/
+		
+		object = NumericalHandler.originalNumForm(object);
 		boolean lastIsStruct = false;
 		boolean lastIsChara = false;
 		boolean lastIsComma = false;
@@ -983,7 +991,7 @@ public class CharacterAnnotatorChunked {
 			}
 		}
 		//of o[3-7]
-		if(lastIsStruct && object.matches("o\\[\\d.*?\\d\\]")){
+		if(lastIsStruct && object.matches("o\\[\\(?\\[?\\d.*?\\d\\+?\\]")){
 			this.annotateNumericals(object.replaceAll("(o\\[|\\])", ""), "count", null, this.latestelements, false);
 			return;
 		}
@@ -1112,7 +1120,7 @@ public class CharacterAnnotatorChunked {
 		String[] twoparts = separate(object);//find the organs in object o[.........{m} {m} (o1) and {m} (o2)]
 		structures = createStructureElements(twoparts[1]/*, false*/);//to be added structures found in 2nd part, not rewrite this.latestelements yet
 		if(twoparts[0].length()>0){
-			if(twoparts[0].matches(".*?\\b\\w\\[.*")){//nested chunks: e.g. 5-40 , fusion[{fusion~list~distinct~or~basally~connate}] r[p[in] o[groups]] , coloration[{coloration~list~white~to~tan}] , {wholly} or {distally} {plumose}
+			/*if(twoparts[0].matches(".*?\\b\\w\\[.*")){//nested chunks: e.g. 5-40 , fusion[{fusion~list~distinct~or~basally~connate}] r[p[in] o[groups]] , coloration[{coloration~list~white~to~tan}] , {wholly} or {distally} {plumose}
 				//get tokens for the new chunkedsentence
 				ArrayList<String>tokens = Utilities.breakText(twoparts[0]);
 				twoparts[0]=twoparts[0].trim();
@@ -1127,10 +1135,10 @@ public class CharacterAnnotatorChunked {
 				newcs.setInSegment(true);
 				annotateByChunk(newcs, false); //no need to updateLatestElements
 				this.subjects = subjectscopy;
-			}else{
+			}else{*/
 				String[] tokens = twoparts[0].replaceFirst("[_-]$", "").split("\\s+");//add character elements
 				processCharacterText(tokens, structures, null); //process part 1, which applies to all lateststructures, invisible
-			}
+			//}
 		}
 		return structures;
 	}
