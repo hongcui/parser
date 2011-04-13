@@ -38,7 +38,8 @@ public class VolumeFinalizer extends Thread {
 	private static String version="$Id$";
 	
 	public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn, String glossaryPrefix) {
-		//glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
+		/*glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
+		*/
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
 		this.conn = conn;

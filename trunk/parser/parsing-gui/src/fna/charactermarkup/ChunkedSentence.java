@@ -804,7 +804,10 @@ public class ChunkedSentence {
 						}
 						break; 						
 					}
-					
+					/*if(t.startsWith("r[p[") && !np.matches(".*?\\b(or|and)\\b\\s+$")){
+						npcopy = np;//TODO: 4/14/2011 check out 501.txt-4, 502.txt-5 "after flowering, 10 cm in fruit" 512.txt-11 "differing from inner, highly variable in <color>"
+						break;
+					}*/
 					if(!foundorgan && startn && t.indexOf('<')<0 && t.indexOf('(')<0 && !Utilities.isNoun(t, nouns, notnouns)){ //test whole t, not the last word once a noun has been found
 						//save ns for now, but keep looking for organs
 						//nscopy = nscopy == null ? ns : nscopy; //keep only the first copy
@@ -1576,17 +1579,17 @@ public class ChunkedSentence {
 	 */
 	private void adjustPointer4DotLong(int pointer) {
 		boolean iscase = false;
-		while(this.chunkedtokens.get(pointer).trim().length()==0){
+		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().length()==0){
 			pointer++;
 		}
-		if(this.chunkedtokens.get(pointer).trim().matches("\\.")){//optional
+		if(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().matches("\\.")){//optional
 			pointer++;
 		}
 		
-		while(this.chunkedtokens.get(pointer).trim().length()==0){
+		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().length()==0){
 			pointer++;
 		}
-		while(this.chunkedtokens.get(pointer).trim().matches("[{(<]?(long|broad|wide|thick)[})>]?")){//required
+		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().matches("[{(<]?(long|broad|wide|thick)[})>]?")){//required
 			pointer++;
 			iscase = true;
 		}
@@ -1681,6 +1684,15 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		//}
 		if(token.startsWith("r[")){
 			if(token.indexOf("o[")>=0 /*|| token.indexOf("c[")>=0*/){
+				//r[p[without] o[or r[p[with] o[{poorly} {developed} {glutinous} ({ridge})]]]] ; 
+				if(token.matches(".*?\\[p\\[\\w+\\] o\\[\\w+ r\\[p\\[.*")){
+					Pattern p = Pattern.compile("(.*?\\[p\\[\\w+)(\\] o\\[)(\\w+ )(r\\[p\\[)(.*)");
+					Matcher m = p.matcher(token);
+					if(m.matches()){
+						token = m.group(1)+" "+m.group(3)+m.group(5).replaceFirst("\\]\\]\\s*$", "");
+						this.chunkedtokens.set(id, token);
+					}					
+				}
 				return "ChunkPrep";
 			}else{
 				return null;
