@@ -27,8 +27,8 @@ import fna.parsing.state.SentenceOrganStateMarker;
  */
 @SuppressWarnings({ "unchecked", "static-access" })
 public class VolumeFinalizer extends Thread {
-	//glossary established in VolumeDehyphenizer
-	//private String glossary;
+	/*glossary established in VolumeDehyphenizer
+	private String glossary;*/
 
 	private static ProcessListener listener;
 	private String dataPrefix;

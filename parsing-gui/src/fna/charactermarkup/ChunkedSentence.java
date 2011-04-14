@@ -76,11 +76,11 @@ public class ChunkedSentence {
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
 	
-	private boolean printNorm = true;
+	private boolean printNorm = false;
 	private boolean printNormThan = false;
 	private boolean printNormTo = false;
 	private boolean printExp = false;
-	private boolean printRecover = true;
+	private boolean printRecover = false;
 	
 
 	
@@ -189,7 +189,7 @@ public class ChunkedSentence {
 				recoverVPChunk(i);
 			}else if(!t.contains("[") && (t.endsWith("ing")|| t.endsWith("ing}"))){
 				 if(connects2organs(i)){
-					 this.verbs.add(t.replaceAll("\\W", ""));
+					 ChunkedSentence.verbs.add(t.replaceAll("\\W", ""));
 					 recoverVPChunk(i);
 				 }
 			}/*else if(!t.contains("[")&& t.endsWith("ed") && this.chunkedtokens.size()>i+1 && this.chunkedtokens.get(i+1).matches(".*?\\bby\\b.*")){				
@@ -207,13 +207,21 @@ public class ChunkedSentence {
 		boolean organ2 = false;
 		if(i>=1 && this.chunkedtokens.size()>i+1){
 			String t = this.chunkedtokens.get(i-1);
-			if(t.endsWith(">") || t.contains("o[") || t.contains("(") ){
+			if(t.endsWith(">") || t.matches(".*\\bo\\[[^\\]\\[]*\\]+") || t.endsWith(")") ){
 				organ1 = true;
 			}
 			
-			for(int j = i+1; j < this.chunkedtokens.size(); j++){
+			do{
+				i++;
+				t = this.chunkedtokens.get(i).trim();
+			}while(t.length()==0);
+			if(t.endsWith(">") || t.matches("[uz]?\\[?\\bo\\[[^\\]\\[]*\\]+") || t.endsWith(")") ){
+				organ2 = true;
+			}
+			
+			/*for(int j = i+1; j < this.chunkedtokens.size(); j++){
 				t = this.chunkedtokens.get(j);
-				if(t.endsWith(">") || t.contains("o[") || t.contains("(") ){
+				if(t.endsWith(">") || t.matches("[uz]?\\[?\\bo\\[[^\\]\\[]*\\]+") || t.endsWith(")") ){
 					organ2 = true;
 					break;
 				}
@@ -221,7 +229,7 @@ public class ChunkedSentence {
 					organ2 = false;
 					break;
 				}
-			}
+			}*/
 		}
 		return organ1 && organ2;
 	}
