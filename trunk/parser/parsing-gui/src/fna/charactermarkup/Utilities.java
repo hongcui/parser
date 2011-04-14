@@ -355,25 +355,36 @@ public class Utilities {
 				String[] ws = w.split("-+");
 				w = ws[ws.length-1];
 			}
-			try{
-				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"'");
-				while(rs.next()){
-					String cat = rs.getString("category");
-					if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
-						ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
-					}
-				}
-				rs.close();
-				stmt.close();
-				if(ch.length()>0){
-					ch = ch.replaceFirst(Utilities.or+"$", "");
-					characterhash.put(wc, ch);
-					return ch;
-				}
-			}catch(Exception e){
-				e.printStackTrace();
+			ch = lookup(w, conn, characterhash, glosstable, wc);
+			if(ch == null && wc.indexOf('-')>0){//pani_culiform
+				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc);
 			}
+		}
+		return ch;
+	}
+
+	private static String lookup(String w, Connection conn,
+			Hashtable<String, String> characterhash, String glosstable,
+			String wc) {
+		String ch ="";
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"'");
+			while(rs.next()){
+				String cat = rs.getString("category");
+				if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+					ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
+				}
+			}
+			rs.close();
+			stmt.close();
+			if(ch.length()>0){
+				ch = ch.replaceFirst(Utilities.or+"$", "");
+				characterhash.put(wc, ch);
+				return ch;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		return null;
 	}

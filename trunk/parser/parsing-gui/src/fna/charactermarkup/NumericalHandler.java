@@ -55,9 +55,9 @@ public class NumericalHandler  {
 	
 	public static String originalNumForm(String token){
 		if(token.matches(".*[a-z].*?")){
-			return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "(").replaceAll("-\\s*RRB-/-RRB\\s*-", ")");
+			return token.replaceAll("-\\s*LRB-/-LRB\\s*-?", "(").replaceAll("-\\s*RRB-/-RRB\\s*-?", ")");
 		}else{
-			return token.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
+			return token.replaceAll("-\\s*LRB-/-LRB\\s*-?", "[").replaceAll("-\\s*RRB-/-RRB\\s*-?", "]");
 		}
 	}
 	/**
