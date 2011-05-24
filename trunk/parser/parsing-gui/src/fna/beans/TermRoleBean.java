@@ -3,6 +3,7 @@
  */
 package fna.beans;
 
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 
@@ -12,20 +13,20 @@ import org.eclipse.swt.widgets.Label;
  */
 public class TermRoleBean {
 	private Label termLabel;
-	private Combo roleCombo;
+	private Button roleCombo;
 	public Label getTermLabel() {
 		return termLabel;
 	}
 	public void setTermLabel(Label termLabel) {
 		this.termLabel = termLabel;
 	}
-	public Combo getRoleCombo() {
+	public Button getRoleCombo() {
 		return roleCombo;
 	}
-	public void setRoleCombo(Combo roleCombo) {
+	public void setRoleCombo(Button roleCombo) {
 		this.roleCombo = roleCombo;
 	}
-	public TermRoleBean(Label termLabel, Combo roleCombo) {
+	public TermRoleBean(Label termLabel, Button roleCombo) {
 		super();
 		this.termLabel = termLabel;
 		this.roleCombo = roleCombo;

@@ -229,7 +229,7 @@ public class Type4Transformer extends Thread {
 
 	private void writeTreatment2Transformed(Element root, int fn, int count) {
 		// TODO Auto-generated method stub
-		ParsingUtil.outputXML(root, new File(target+"/transformed", fn+"_"+count+".xml"));
+		ParsingUtil.outputXML(root, new File(target+"/transformed", fn+"_"+count+".xml"), null);
 	}
 
 	/**

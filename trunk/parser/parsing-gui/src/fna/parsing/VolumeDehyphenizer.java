@@ -1,32 +1,17 @@
 package fna.parsing;
 
 
-import java.io.BufferedReader;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.util.regex.*;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import fna.db.MainFormDbAccessor;
 import fna.db.VolumeMarkupDbAccessor;
-import fna.parsing.character.*;
+import fna.parsing.character.Glossary;
 
 //import fna.parsing.finalizer.Output;
 
@@ -37,6 +22,7 @@ import fna.parsing.character.*;
  * @author hongcui
  *
  */
+@SuppressWarnings({ "unused","static-access" })
 public class VolumeDehyphenizer extends Thread {
     //protected File folder = null;
     //protected File outfolder = null;
@@ -59,6 +45,7 @@ public class VolumeDehyphenizer extends Thread {
     private Table descriptorTable;
     private MainForm mainForm;
     private VolumeMarkupDbAccessor vmdb;
+    private String glossaryTableName;
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, 
@@ -71,11 +58,14 @@ public class VolumeDehyphenizer extends Thread {
         this.dataPrefix = dataPrefix;
         this.descriptorTable = descriptorTable;
         this.mainForm = mainForm;
-        this.vmdb = new VolumeMarkupDbAccessor(dataPrefix);
+        this.glossaryTableName = mainForm.glossaryPrefixCombo.getText();
+        this.vmdb = new VolumeMarkupDbAccessor(dataPrefix, this.glossaryTableName);
+        
         //this.tablename = dataPrefix+"_allwords";
         
-        this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
-        		true, this.database, dataPrefix);
+        /*this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), 
+        		true, this.database, dataPrefix);*/
+        this.glossary = new Glossary(this.glossaryTableName);
         //workdir = workdir.endsWith("/")? workdir : workdir+"/";
         //folder = new File(workdir+todofoldername);
         //outfolder = new File(workdir+ApplicationUtilities.getProperty("DEHYPHENED"));
@@ -96,7 +86,7 @@ public class VolumeDehyphenizer extends Thread {
             e.printStackTrace();
         }*/
      
-        this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, perlLog,  dataPrefix, glossary);
+        this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, perlLog,  dataPrefix, this.glossaryTableName, glossary);
     }
 
     public void run () {
@@ -105,7 +95,7 @@ public class VolumeDehyphenizer extends Thread {
     	showPerlMessage("Preparing files...");
     	//dehyphen();
     	dhf.dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix);
+		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName);
 		vm.markup();
 		listener.setProgressBarVisible(false);
 		//loadStructureTab(); //done in markup already

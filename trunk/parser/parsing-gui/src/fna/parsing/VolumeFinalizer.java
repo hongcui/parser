@@ -13,7 +13,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+
+import org.eclipse.swt.SWT;
+
 import org.jdom.Comment;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -51,7 +55,20 @@ public class VolumeFinalizer extends Thread {
 	public void run () {
 		//listener.setProgressBarVisible(true);
 		outputFinal();
+
+		//check for errors
+		File fileList= new File(Registry.TargetDirectory+"\\final\\");
+		if(fileList.list().length==0)
+		{
+			//show error popup
+			//statusOfMarkUp[6] = false;
+			ApplicationUtilities.showPopUpWindow("Error executing step 7", "Error",SWT.ERROR);
+			
+		}
+		listener.setProgressBarVisible(false);
+
 		//listener.setProgressBarVisible(false);
+
 	}
 	/**
 	 * stanford parser
