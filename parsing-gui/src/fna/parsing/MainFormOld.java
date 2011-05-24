@@ -1,15 +1,6 @@
-/**
- * 
- */
+ /* $Id$ */
 package fna.parsing;
-
-
-
-
-/**
- * @author prasad
- *
- */
+//
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,7 +8,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,7 +17,6 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
@@ -37,7 +26,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -69,17 +57,19 @@ import fna.beans.TermRoleBean;
 import fna.beans.TermsDataBean;
 import fna.db.CharacterStateDBAccess;
 import fna.db.MainFormDbAccessor;
-import fna.db.VolumeMarkupDbAccessor;
 import fna.parsing.character.CoOccurrenceGraph;
 import fna.parsing.character.GraphNode;
 import fna.parsing.character.LearnedTermsReport;
 import fna.parsing.character.ManipulateGraphML;
 import fna.parsing.state.GraphMLOutputter;
 import fna.parsing.state.StateCollectorTest;
-
+/**
+ * @author chunshui, Partha Pratim Sanyal (ppsanyal@email.arizona.edu)
+ */
+//
+//
 @SuppressWarnings("unchecked")
-public class MainForm {
-
+public class MainFormOld {
 
 	@SuppressWarnings("unused")
 	private Combo combo_1_1_1;
@@ -114,7 +104,6 @@ public class MainForm {
 	private ProgressBar verificationProgressBar;
 	private ProgressBar transformationProgressBar;
 	private ProgressBar finalizerProgressBar;
-	private ProgressBar popupBar;
 	
 	private Combo tagListCombo;
 	public static Combo dataPrefixCombo;
@@ -124,14 +113,12 @@ public class MainForm {
 	private Group termRoleGroup;
 	/* This ScrolledComposite to MarkUpTab -> Others tab*/
 	private ScrolledComposite scrolledComposite;
-	/* This rectangle will hold the latest coordinates of the Markup -Others checkbox*/
-	private static Rectangle otherChkbx = new Rectangle(10, 20, 93, 16);
 	/* This rectangle will hold the latest coordinates of the Markup -Others tab term*/
-	private static Rectangle otherTerm = new Rectangle(109, 20, 144, 21);
+	private static Rectangle otherTerm = new Rectangle(25, 20, 115, 15);
 	/* This rectangle will hold the latest coordinates of the Markup - Others tab combo*/
-	private static Rectangle otherCombo = new Rectangle (265, 23, 90, 16);
+	private static Rectangle otherCombo = new Rectangle (195, 20, 140, 25);
 	/* This String array holds all the roles for the Markup/Others tab */
-	private static String [] otherRoles = {"Other","Structure", "Descriptor", "Verb"};
+	private static String [] otherRoles = {"Structure", "Descriptor", "Verb", "Other"};
 	/* This ArrayList will hold all the group info of removed terms*/
 	private static ArrayList <TermRoleBean> markUpTermRoles = new ArrayList<TermRoleBean>();
 	
@@ -141,7 +128,7 @@ public class MainForm {
 	private static int hashCodeOfItem = 0;
 	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
-	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
+	private static final Logger LOGGER = Logger.getLogger(MainFormOld.class);
 	/* This will determine how many tabs to show */
 	private String type = "";
 	
@@ -210,52 +197,13 @@ public class MainForm {
 	
 
 	String [] glossprefixes = null;
-	private Text projectDirectory;
-	
-	private CLabel StepsToBeCompletedLbl;
-	
-	private CLabel label_prjDir;
-	private CLabel label_dsprefix;
-	private CLabel label_glossary;
-	private CLabel lblForProject;
-	private CLabel lblWithDatasetPrefix;
-	private CLabel lblAndGlossary;
-	private CLabel lblStepsToBe;
-	private Text txtStepProduces;
-	private Text text;
-	private Text text_1;
-	/*Display colordisplay = new Display();
-
-	Color red = colordisplay.getSystemColor(SWT.COLOR_RED);
-	Color green = colordisplay.getSystemColor(SWT.COLOR_GREEN);*/
-	Color red;
-	Color green;
-	private Text step3_heading;
-	private Text step1_desc; 	   
-	private Text tab2Desc;
-	private Text text_2;
-	private StyledText StructContextstyledText;
-	private StyledText descriptorstyledText;
-	
-	ArrayList<String> removedTags = new ArrayList<String>();// used to remove descriptors marked red
-	ArrayList<String> descriptorsToSaveList = new ArrayList<String>();// used to save the descriptors that are marked green
-	ArrayList<Integer> descriptorsToSaveIndexList = new ArrayList<Integer>();// used to save the descriptors index that are marked green
-	private Table table_Others;
-	//private JTable table_Others;
-	private Text text_Others;
-	
-	private Text step5_desc;
-	private Table table_1;
-	private Text step6_desc;
-	private Text txtThisLastStep;
-	private StyledText styledText ;
 	
 	//-----------------------------------Character Tab Variables ---END-------------------------------//
 	
 	public static void launchMarker(String type) {
 		try {
 			
-			MainForm window = new MainForm();
+			MainFormOld window = new MainFormOld();
 			window.type = type ;
 			window.open();
 		} catch (Exception e) {
@@ -273,9 +221,6 @@ public class MainForm {
 	 */
 	public void open() throws Exception {
 		final Display display = Display.getDefault();
-		 red = display.getSystemColor(SWT.COLOR_RED);
-		 green = display.getSystemColor(SWT.COLOR_GREEN);
-		
 		
 		createContents(display);
 		shell.open();
@@ -294,20 +239,17 @@ public class MainForm {
 	 */
 	protected void createContents(Display display) throws Exception{
 		shell = new Shell(display);
-		shell.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/garland_logo.gif"));
+		shell.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/garland_logo.gif"));
 		shell.setSize(843, 614);
 		shell.setLocation(200, 100);
 		shell.setText(ApplicationUtilities.getProperty("application.name"));
-		
-		
+
 		final TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
-		tabFolder.setBounds(10, 10, 803, 543);
+		tabFolder.setBounds(10, 10, 803, 469);
 		tabFolder.addSelectionListener(new SelectionListener() {
 
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 				// TODO Auto-generated method stub
-					
-				
 				
 			}
 
@@ -325,7 +267,7 @@ public class MainForm {
 				// For general tab
 				if (configurationText == null ) return;
 				if(tabName.indexOf(
-						ApplicationUtilities.getProperty("tab.one.name")) == -1 && statusOfMarkUp[0] 
+						ApplicationUtilities.getProperty("tab.one.name")) == -1 && !statusOfMarkUp[0] 
 						      && !saveFlag)  {
 					// inform the user that he needs to load the information for starting mark up
 					// focus back to the general tab
@@ -346,8 +288,7 @@ public class MainForm {
 					}
 
 					try {
-						int option_chosen = getType(type);
-						mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
+				//		mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 						
 					} catch (Exception exe) {
 						LOGGER.error("Error saving dataprefix", exe);
@@ -454,8 +395,6 @@ public class MainForm {
 							tabFolder.setSelection(3);
 						}
 						tabFolder.setFocus();
-						 
-						
 						return;
 					}
 
@@ -487,7 +426,7 @@ public class MainForm {
 
 				}	
 				//changed from 6 to 5
-				if (!statusOfMarkUp[5]) {
+				if (statusOfMarkUp[5]) {
 					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))){
 						// set the decisions combo
 						setCharacterTabDecisions();
@@ -514,12 +453,116 @@ public class MainForm {
 		final Composite composite = new Composite(tabFolder, SWT.NONE);
 		generalTabItem.setControl(composite);
 
+		final Group configurationDirectoryGroup = new Group(composite, SWT.NONE);
+		configurationDirectoryGroup.setText(ApplicationUtilities.getProperty("config"));
+		configurationDirectoryGroup.setBounds(10, 10, 763, 70);
+
+		configurationText = new Text(configurationDirectoryGroup, SWT.BORDER);
+		configurationText.setEditable(false);
+		configurationText.setBounds(10, 25, 618, 23);
+
+		final Button browseConfigurationButton = new Button(configurationDirectoryGroup, SWT.NONE);
+		browseConfigurationButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				browseConfigurationDirectory(); // browse the configuration directory
+			}
+		});
+		browseConfigurationButton.setText(ApplicationUtilities.getProperty("browse"));
+		browseConfigurationButton.setBounds(653, 24, 100, 23);
+
+		final Group configurationDirectoryGroup_1 = new Group(composite, SWT.NONE);
+		configurationDirectoryGroup_1.setBounds(10, 86, 763, 70);
+		configurationDirectoryGroup_1.setText(ApplicationUtilities.getProperty("source"));
+
+		sourceText = new Text(configurationDirectoryGroup_1, SWT.BORDER);
+		sourceText.setEditable(false);
+		sourceText.setBounds(10, 25, 618, 23);
+
+		final Button browseSourceButton = new Button(configurationDirectoryGroup_1, SWT.NONE);
+		browseSourceButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				browseSourceDirectory(); // browse the source directory
+			}
+		});
+		browseSourceButton.setBounds(653, 24, 100, 23);
+		browseSourceButton.setText(ApplicationUtilities.getProperty("browse"));
+
+		final Group configurationDirectoryGroup_1_1 = new Group(composite, SWT.NONE);
+		configurationDirectoryGroup_1_1.setBounds(10, 162, 763, 70);
+		configurationDirectoryGroup_1_1.setText(
+				ApplicationUtilities.getProperty("target"));
+
+		targetText = new Text(configurationDirectoryGroup_1_1, SWT.BORDER);
+		targetText.setEditable(false);
+		targetText.setBounds(10, 25, 618, 23);
+
+		final Button browseTargetButton = new Button(configurationDirectoryGroup_1_1, SWT.NONE);
+		browseTargetButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				browseTargetDirectory(); // browse the target directory
+			}
+		});
+		browseTargetButton.setBounds(653, 24, 100, 23);
+		browseTargetButton.setText(ApplicationUtilities.getProperty("browse"));
+
+		final Button loadProjectButton = new Button(composite, SWT.NONE);
+		loadProjectButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e){
+				loadProject();
+				// code for setting the text of the combo to the last accessed goes here - Partha
+				try {
+					String t = mainDb.getLastAccessedDataSet();
+					String prefix = t==null? "" : t;
+					
+					MainFormOld.dataPrefixCombo.setText(prefix);
+					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
+					//mainDb.saveStatus("general", combo.getText(), true);
+					statusOfMarkUp[0] = true;
+					if(glossprefixes!=null && glossprefixes.length>0)
+					MainFormOld.glossaryPrefixCombo.setText(glossprefixes[0]);
+					
+				} catch (Exception ex) {
+					LOGGER.error("Error Setting focus", ex);
+					ex.printStackTrace();
+				} 
+				
+			}
+		});
+		loadProjectButton.setBounds(548, 385, 100, 23);
+		loadProjectButton.setText(ApplicationUtilities.getProperty("load"));
+
+		final Button saveProjectButton = new Button(composite, SWT.NONE);
+		saveProjectButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				if (checkFields(new StringBuffer(), tabFolder)) {
+					return;
+				}
+				saveProject(); 
+				saveFlag = false;
+				try {
+				//	mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
+				} catch (Exception exe) {
+					exe.printStackTrace();
+					LOGGER.error("Error saving dataprefix", exe);
+				}
+				String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
+				String message = ApplicationUtilities.getProperty("popup.info.saved");				
+				ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
+								
+			}
+		});
+		saveProjectButton.setBounds(673, 385, 100, 23);
+		saveProjectButton.setText(ApplicationUtilities.getProperty("save"));
+
 		final Group configurationDirectoryGroup_1_1_1 = new Group(composite, SWT.NONE);
-		//configurationDirectoryGroup_1_1_1.setEnabled(false);
-		//configurationDirectoryGroup_1_1_1.setBounds(20, 117, 748, 70);
+		configurationDirectoryGroup_1_1_1.setBounds(10, 255, 763, 70);
 		configurationDirectoryGroup_1_1_1.setText(
 				ApplicationUtilities.getProperty("dataset"));
-		configurationDirectoryGroup_1_1_1.setVisible(false);
+
+		combo = new Combo(configurationDirectoryGroup_1_1_1, SWT.NONE);
+		combo.setToolTipText(ApplicationUtilities.getProperty("application.dataset.instruction"));
+		dataPrefixCombo = combo;
 		// get value from the project conf and set it here
 		List <String> datasetPrefixes = new ArrayList <String> (); 
 		mainDb.datasetPrefixRetriever(datasetPrefixes);
@@ -529,6 +572,33 @@ public class MainForm {
 			prefixes [loopCount] = s;
 			loopCount++;
 		}
+		combo.setItems(prefixes);
+		combo.setBounds(10, 26, 138, 23);
+		combo.addModifyListener(new ModifyListener() {
+			public void modifyText(final ModifyEvent me) {
+				 if (combo.getText().trim().equals("")) {
+					saveFlag = false;
+				}
+			}
+		});
+		combo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				try {
+					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
+				} catch (Exception exe) {
+					LOGGER.error("Error in loading Status of mark Up", exe);
+					exe.printStackTrace();
+				}
+				/* remove the deleted edges graph if a new prefix is selected*/
+				removedEdges.clear();
+			}
+		});
+		
+		/////////////////////////////////////////////////////////////////////
+		
+		
+		Combo glossaryCombo = new Combo(configurationDirectoryGroup_1_1_1, SWT.NONE);
+		glossaryCombo.setBounds(206, 26, 138, 23);
 		List <String> glossaryPrefixes = new ArrayList <String> (); 
 		
 		mainDb.glossaryPrefixRetriever(glossaryPrefixes);
@@ -538,352 +608,9 @@ public class MainForm {
 			glossprefixes [glossCount] = s;
 			glossCount++;
 		}
+		glossaryCombo.setItems(glossprefixes);
+		glossaryPrefixCombo = glossaryCombo;
 		
-		CLabel lblSelectA = new CLabel(composite, SWT.NONE);
-		lblSelectA.setBounds(20, 37, 208, 21);
-		lblSelectA.setText(ApplicationUtilities.getProperty("labelSelectProject"));
-		
-		projectDirectory = new Text(composite, SWT.BORDER);
-		projectDirectory.setToolTipText(ApplicationUtilities.getProperty("chooseDirectoryTooltip"));
-		projectDirectory.setBounds(238, 37, 386, 21);
-		
-				final Button browseConfigurationButton = new Button(composite, SWT.NONE);
-				browseConfigurationButton.setBounds(654, 35, 100, 23);
-				browseConfigurationButton.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(final SelectionEvent e) {
-						browseConfigurationDirectory(); // browse the configuration directory
-					}
-				});
-				browseConfigurationButton.setText(ApplicationUtilities.getProperty("browse"));
-				
-				Group grpCreateANew = new Group(composite, SWT.NONE);
-				grpCreateANew.setText("Create a new project :");
-				grpCreateANew.setBounds(10, 10, 773, 215);
-				
-						final Button saveProjectButton = new Button(grpCreateANew, SWT.NONE);
-						saveProjectButton.setBounds(635, 182, 100, 23);
-						saveProjectButton.setToolTipText(ApplicationUtilities.getProperty("saveProjectTooltip"));
-						saveProjectButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e) {
-								if (checkFields(new StringBuffer(), tabFolder)) {
-									return;
-								}
-								saveProject(); 
-								saveFlag = false;
-								try {
-									int option_chosen =getType(type); 
-									mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
-									mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
-								} catch (Exception exe) {
-									exe.printStackTrace();
-									LOGGER.error("Error saving dataprefix", exe);
-								}
-								String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-								String message = ApplicationUtilities.getProperty("popup.info.saved");				
-								ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-												
-							}
-						});
-						saveProjectButton.setText(ApplicationUtilities.getProperty("save"));
-												
-														combo = new Combo(grpCreateANew, SWT.NONE);
-														combo.setBounds(23, 134, 138, 23);
-														combo.setToolTipText(ApplicationUtilities.getProperty("application.dataset.instruction"));
-														dataPrefixCombo = combo;
-														combo.setItems(prefixes);
-														
-														/////////////////////////////////////////////////////////////////////
-														
-														
-														Combo glossaryCombo = new Combo(grpCreateANew, SWT.NONE);
-														glossaryCombo.setBounds(199, 134, 138, 23);
-														glossaryCombo.setItems(glossprefixes);
-														glossaryPrefixCombo = glossaryCombo;
-														
-														CLabel label = new CLabel(grpCreateANew, SWT.NONE);
-														label.setBounds(23, 82, 344, 21);
-														label.setText(ApplicationUtilities.getProperty("dataset"));
-														combo.addModifyListener(new ModifyListener() {
-															public void modifyText(final ModifyEvent me) {
-																 if (combo.getText().trim().equals("")) {
-																	saveFlag = false;
-																}
-															}
-														});
-														combo.addSelectionListener(new SelectionAdapter() {
-															public void widgetSelected(final SelectionEvent e) {
-																try {
-																	mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
-																} catch (Exception exe) {
-																	LOGGER.error("Error in loading Status of mark Up", exe);
-																	exe.printStackTrace();
-																}
-																/* remove the deleted edges graph if a new prefix is selected*/
-																removedEdges.clear();
-															}
-														});
-						
-						Group grpContinueWithThe = new Group(composite, SWT.NONE);
-						grpContinueWithThe.setToolTipText("Continue with the last project");
-						grpContinueWithThe.setText("Continue with the last project");
-						grpContinueWithThe.setBounds(20, 264, 763, 144);
-						
-						final Button loadProjectButton = new Button(grpContinueWithThe, SWT.NONE);
-						loadProjectButton.setBounds(634, 99, 100, 23);
-						loadProjectButton.setToolTipText(ApplicationUtilities.getProperty("loadProjectTooltip"));
-						loadProjectButton.addSelectionListener(new SelectionAdapter() {
-							public void widgetSelected(final SelectionEvent e){
-								//make all labels in this group "grpContinueWithThe" visible
-								lblForProject.setVisible(true);
-								lblWithDatasetPrefix.setVisible(true);
-								lblAndGlossary.setVisible(true);
-								label_prjDir.setVisible(true);
-								label_dsprefix.setVisible(true);
-								label_glossary.setVisible(true);
-								lblStepsToBe.setVisible(true);
-								
-								
-								loadProject();
-								//step1 description
-								if(step1_desc!=null){
-								step1_desc.setText(ApplicationUtilities.getProperty("step1DescpPart1")+Registry.TargetDirectory.concat(ApplicationUtilities.getProperty("EXTRACTED"))+ ApplicationUtilities.getProperty("step1DescpPart2") +Registry.SourceDirectory+ApplicationUtilities.getProperty("step1DescpPart3"));
-								}
-								if(tab2Desc!=null){
-								tab2Desc.setText(ApplicationUtilities.getProperty("step2DescpPart1")+Registry.TargetDirectory.concat(ApplicationUtilities.getProperty("EXTRACTED"))+ApplicationUtilities.getProperty("step2DescpPart2"));
-								}
-								// code for setting the text of the combo to the last accessed goes here 
-								try {
-									int option_chosen = getType(type);
-									String t = mainDb.getLastAccessedDataSet(option_chosen);
-									String prefix = t==null? "" : t;
-									int index= t.indexOf("|");
-									String glossaryName="";
-									if(index != -1)
-									{
-										prefix=t.substring(0,index);
-										glossaryName=t.substring(index+1);
-										
-									}
-									MainForm.dataPrefixCombo.setText(prefix);
-									label_dsprefix.setText(prefix);
-									
-									mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
-									//mainDb.saveStatus("general", combo.getText(), true);
-									statusOfMarkUp[0] = true;
-									//display all remaining steps:
-									StringBuffer remainingSteps= new StringBuffer();
-									int i=3;
-									if(type.trim().equalsIgnoreCase(""))
-										i=1;
-									boolean notComplete=false;
-									for(;i<statusOfMarkUp.length;i++)
-									{
-										if(statusOfMarkUp[i])
-										{
-											notComplete=true;
-											remainingSteps.append("Step "+i+",");
-											// try loading all those steps..
-											
-												if(!StepsToBeCompletedLbl.getVisible())
-													StepsToBeCompletedLbl.setVisible(true);
-										}
-										else{
-										if(i==1)
-											loadFileInfo(extractionTable, Registry.TargetDirectory + 
-													ApplicationUtilities.getProperty("EXTRACTED"));
-											if(i==2)
-											loadFileInfo(verificationTable, Registry.TargetDirectory + 
-													ApplicationUtilities.getProperty("EXTRACTED"));
-											if(i==3)
-											loadFileInfo(transformationTable, Registry.TargetDirectory + 
-													ApplicationUtilities.getProperty("TRANSFORMED"));
-										}		
-									}
-									if(!notComplete)
-									{
-										remainingSteps.append(ApplicationUtilities.getProperty("stepsComplete"));
-										if(!StepsToBeCompletedLbl.getVisible())
-											StepsToBeCompletedLbl.setVisible(true);
-									}
-									if(remainingSteps!=null && remainingSteps.length()>0){
-									
-										String remainingStepsLb =	remainingSteps.substring(0,remainingSteps.length()-1);
-										StepsToBeCompletedLbl.setText(remainingStepsLb);
-										
-									}
-									/*else
-									{
-										StepsToBeCompletedLbl.setText("All steps are complete from this project.");
-									}*/
-									
-									
-									if(glossprefixes!=null && glossprefixes.length>0)
-									MainForm.glossaryPrefixCombo.setText(glossaryName);
-									label_glossary.setText(glossaryName);
-									
-								} catch (Exception ex) {
-									LOGGER.error("Error Setting focus", ex);
-									ex.printStackTrace();
-								} 
-								
-								//load step4 here
-								if(!statusOfMarkUp[4]){
-								
-									loadMarkupTable();
-									loadDescriptorTable();
-									loadOthersTable();
-									
-								}
-								
-								if(!statusOfMarkUp[5])//unknown removal
-								{
-									loadTags();
-									//should not rerun character grouping, should load results from terms table. Hong TODO 5/23/11
-									// set the decisions combo
-								//	setCharacterTabDecisions();
-									// set the groups list
-									setCharactertabGroups();
-									// show the terms that co-occured in the first group
-									loadTerms();
-									//Clear context table;
-									contextTable.removeAll();
-									//load processed groups table;
-									loadProcessedGroups();
-									
-									
-								}
-								if(!statusOfMarkUp[6])
-								{
-									loadFileInfo(finalizerTable, Registry.TargetDirectory + 
-											ApplicationUtilities.getProperty("FINAL"));
-								}
-								
-							}
-
-						
-
-							protected void loadMarkupTable() {
-				
-				ArrayList <String> structures = new ArrayList<String>();
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					//words = vmdb.getDescriptorWords();
-					vmdb.updateData(structures);
-					int count = 1;
-					if (structures != null) {
-						for (String word : structures){
-							TableItem item = new TableItem(markupTable, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			
-			}
-
-			protected void loadOthersTable() {
-				// TODO Auto-generated method stub
-				//showOtherTerms();
-				showOtherTermsTable();
-			}
-
-			protected void loadDescriptorTable() {
-				// TODO Auto-generated method stub
-				ArrayList <String> words = null;
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					words = vmdb.getSavedDescriptorWords();
-					//words = vmdb.getDescriptorWords();
-					
-					int count = 1;
-					if (words != null) {
-						for (String word : words){
-							TableItem item = new TableItem(markupTable_1, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			}
-						});
-						loadProjectButton.setText(ApplicationUtilities.getProperty("loadLastProjectText"));
-						
-						this.lblStepsToBe = new CLabel(grpContinueWithThe, SWT.NONE);
-						lblStepsToBe.setVisible(false);
-						lblStepsToBe.setBounds(10, 84, 162, 21);
-						lblStepsToBe.setText(ApplicationUtilities.getProperty("stepsTobeCompletedLbl"));
-						
-						 this.StepsToBeCompletedLbl = new CLabel(grpContinueWithThe, SWT.NONE);
-						this.StepsToBeCompletedLbl.setBounds(198, 84, 416, 21);
-						this.StepsToBeCompletedLbl.setText("");
-						this.StepsToBeCompletedLbl.setVisible(false);
-		
-		 this.lblForProject= new CLabel(grpContinueWithThe, SWT.NONE);
-		lblForProject.setBounds(10, 25, 224, 21);
-		lblForProject.setText(ApplicationUtilities.getProperty("loadPrjLbl"));
-		lblForProject.setVisible(false);
-		
-		 this.label_prjDir= new CLabel(grpContinueWithThe, SWT.NONE);
-		label_prjDir.setBounds(240, 25, 247, 21);
-		label_prjDir.setText("");
-		
-		 this.lblWithDatasetPrefix= new CLabel(grpContinueWithThe, SWT.NONE);
-		lblWithDatasetPrefix.setBounds(10, 52, 113, 21);
-		lblWithDatasetPrefix.setText(ApplicationUtilities.getProperty("datasetLbl"));
-		lblWithDatasetPrefix.setVisible(false);
-		
-		this.label_dsprefix = new CLabel(grpContinueWithThe, SWT.NONE);
-		label_dsprefix.setBounds(129, 52, 128, 21);
-		label_dsprefix.setText("");
-		
-		this.lblAndGlossary = new CLabel(grpContinueWithThe, SWT.NONE);
-		lblAndGlossary.setBounds(263, 52, 79, 21);
-		lblAndGlossary.setText(ApplicationUtilities.getProperty("glossaryLbl"));
-		lblAndGlossary.setVisible(false);
-		
-		 this.label_glossary= new CLabel(grpContinueWithThe, SWT.NONE);
-		label_glossary.setBounds(348, 52, 137, 21);
-		label_glossary.setText("");
-						
-								targetText = new Text(composite, SWT.BORDER);
-								targetText.setBounds(20, 220, 618, 23);
-								targetText.setEditable(false);
-								targetText.setVisible(false);
-								
-										final Group configurationDirectoryGroup_1 = new Group(composite, SWT.NONE);
-										configurationDirectoryGroup_1.setBounds(20, 216, 763, 70);
-										configurationDirectoryGroup_1.setText(ApplicationUtilities.getProperty("source"));
-										configurationDirectoryGroup_1.setVisible(false);
-										
-												final Group configurationDirectoryGroup = new Group(configurationDirectoryGroup_1, SWT.NONE);
-												configurationDirectoryGroup.setBounds(-10, 46, 763, 70);
-												configurationDirectoryGroup.setText(ApplicationUtilities.getProperty("config"));
-												configurationDirectoryGroup.setVisible(false);
-												
-														configurationText = new Text(configurationDirectoryGroup, SWT.BORDER);
-														configurationText.setEditable(false);
-														configurationText.setBounds(10, 25, 618, 23);
-														configurationText.setVisible(false);
-														
-																sourceText = new Text(configurationDirectoryGroup, SWT.NONE);
-																sourceText.setBounds(20, 28, 618, 23);
-																sourceText.setEditable(false);
-																
-		final Group configurationDirectoryGroup_1_1 = new Group(configurationDirectoryGroup_1, SWT.NONE);
-		configurationDirectoryGroup_1_1.setBounds(10, 10, 763, 70);
-		configurationDirectoryGroup_1_1.setVisible(false);
-		configurationDirectoryGroup_1_1.setText(
-				ApplicationUtilities.getProperty("target"));
 				
 		
 		
@@ -899,7 +626,7 @@ public class MainForm {
 
 			extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
 			extractionProgressBar.setVisible(false);
-			extractionProgressBar.setBounds(10, 440, 551, 17);
+			extractionProgressBar.setBounds(10, 386, 581, 17);
 			
 			final Button startExtractionButton = new Button(composite_1, SWT.NONE);
 			startExtractionButton.addSelectionListener(new SelectionAdapter() {
@@ -923,18 +650,12 @@ public class MainForm {
 				}
 			});
 			startExtractionButton.setText(ApplicationUtilities.getProperty("start"));
-			startExtractionButton.setBounds(565, 440, 63, 23);
+			startExtractionButton.setBounds(656, 380, 53, 23);
 
 			extractionTable = new Table(composite_1, SWT.FULL_SELECTION | SWT.BORDER );
 			extractionTable.setLinesVisible(true);
 			extractionTable.setHeaderVisible(true);
-			extractionTable.setBounds(10, 75, 784, 358);
-			
-			//label giving the description for this step is::
-			this.step1_desc = new Text(composite_1, SWT.READ_ONLY | SWT.WRAP);
-			step1_desc.setBounds(10,10,784,60);
-			step1_desc.setText(ApplicationUtilities.getProperty("step1DescpPart1")+ApplicationUtilities.getProperty("step1DescpPart2")+ApplicationUtilities.getProperty("step1DescpPart3"));
-
+			extractionTable.setBounds(10, 10, 744, 358);
 			/*Hyperlinking the file */
 			extractionTable.addMouseListener(new MouseListener () {
 				public void mouseDoubleClick(MouseEvent event) {
@@ -967,7 +688,7 @@ public class MainForm {
 					ApplicationUtilities.getProperty("file"));
 			
 			Button btnLoad = new Button(composite_1, SWT.NONE);
-			btnLoad.setBounds(636, 440, 53, 23);
+			btnLoad.setBounds(597, 380, 53, 23);
 			btnLoad.setText("Load");
 			btnLoad.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
@@ -977,21 +698,14 @@ public class MainForm {
 			});
 			
 			Button btnClear = new Button(composite_1, SWT.NONE);
-			btnClear.setBounds(695, 440, 100, 23);
-			btnClear.setText("Clear and rerun");
+			btnClear.setBounds(715, 380, 45, 23);
+			btnClear.setText("Clear");
 			btnClear.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					extractionTable.removeAll();
 					statusOfMarkUp[1] = false;
 					try {
-						startExtraction();
-						statusOfMarkUp[1] = true;
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					try {
-					//	mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
 					} catch (Exception exe) {
 						LOGGER.error("Couldnt save status - verify" , exe);
 						exe.printStackTrace();
@@ -1022,35 +736,26 @@ public class MainForm {
 					}
 				}
 			});
-			startVerificationButton.setBounds(543, 450, 95, 23);
-			startVerificationButton.setText(ApplicationUtilities.getProperty("start2"));
+			startVerificationButton.setBounds(624, 385, 65, 23);
+			startVerificationButton.setText(ApplicationUtilities.getProperty("start"));
 
 			final Button clearVerificationButton = new Button(composite_2, SWT.NONE);
 			clearVerificationButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					clearVerification();
-					//statusOfMarkUp[2] = false;
-					
+					statusOfMarkUp[2] = false;
 					try {
-						startVerification(); // start the verification process
-						statusOfMarkUp[2] = true;
-						
-						//mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
 					} catch (Exception exe) {
 						LOGGER.error("Couldnt save status - verify" , exe);
 						exe.printStackTrace();
 					}
 				}
 			});
-			clearVerificationButton.setBounds(648, 450, 90, 23);
-			clearVerificationButton.setText("Clear and rerun");
-			 this.tab2Desc = new Text(composite_2, SWT.READ_ONLY | SWT.WRAP);
-			tab2Desc.setBounds(10,10,744,60);
-			tab2Desc.setText(ApplicationUtilities.getProperty("step2DescpPart1")+ApplicationUtilities.getProperty("step2DescpPart2"));
-			
-			
+			clearVerificationButton.setBounds(695, 385, 59, 23);
+			clearVerificationButton.setText("Clear");
 			verificationTable = new Table(composite_2, SWT.BORDER | SWT.FULL_SELECTION);
-			verificationTable.setBounds(10, 75, 744, 369);
+			verificationTable.setBounds(10, 10, 744, 369);
 			verificationTable.setLinesVisible(true);
 			verificationTable.setHeaderVisible(true);
 			verificationTable.addMouseListener(new MouseListener () {
@@ -1076,7 +781,7 @@ public class MainForm {
 
 			final TableColumn verificationStageColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
 			verificationStageColumnTableColumn.setWidth(168);
-			verificationStageColumnTableColumn.setText("Tasks");
+			verificationStageColumnTableColumn.setText("Task");
 
 			final TableColumn verificationFileColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
 			verificationFileColumnTableColumn.setWidth(172);
@@ -1084,13 +789,13 @@ public class MainForm {
 
 			final TableColumn verificationErrorColumnTableColumn = new TableColumn(verificationTable, SWT.NONE);
 			verificationErrorColumnTableColumn.setWidth(376);
-			verificationErrorColumnTableColumn.setText("Errors to be corrected");
+			verificationErrorColumnTableColumn.setText("Error");
 
 			verificationProgressBar = new ProgressBar(composite_2, SWT.NONE);
 			verificationProgressBar.setVisible(false);
-			verificationProgressBar.setBounds(10, 450, 515, 17);
+			verificationProgressBar.setBounds(10, 387, 515, 17);
 			
-			/*Button btnLoad_1 = new Button(composite_2, SWT.NONE);
+			Button btnLoad_1 = new Button(composite_2, SWT.NONE);
 			btnLoad_1.setBounds(543, 385, 75, 23);
 			btnLoad_1.setText("Load");
 			btnLoad_1.addSelectionListener(new SelectionAdapter() {
@@ -1098,7 +803,7 @@ public class MainForm {
 					loadFileInfo(verificationTable, Registry.TargetDirectory + 
 							ApplicationUtilities.getProperty("EXTRACTED"));
 				}
-			});*/
+			});
 			
 		}
 
@@ -1114,86 +819,43 @@ public class MainForm {
 		markupTabItem.setControl(composite_4);
 
 		final TabFolder tabFolder_1 = new TabFolder(composite_4, SWT.NONE);
-		tabFolder_1.setBounds(0, 0, 795, 515);
-		
-		TabItem tbtmPerlProgram = new TabItem(tabFolder_1, SWT.NONE);
-		tbtmPerlProgram.setText("Perl Program");
-		
-		Composite composite_9 = new Composite(tabFolder_1, SWT.NONE);
-		tbtmPerlProgram.setControl(composite_9);
-		
-		txtStepProduces = new Text(composite_9, SWT.READ_ONLY | SWT.WRAP);
-		txtStepProduces.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		txtStepProduces.setText(ApplicationUtilities.getProperty("step4Descp"));
-		txtStepProduces.setEditable(false);
-		txtStepProduces.setBounds(10, 10, 744, 39);
+		tabFolder_1.setBounds(0, 0, 795, 441);
 
-		final TabItem tbtmFindStructureNames = new TabItem(tabFolder_1, SWT.NONE);
-		tbtmFindStructureNames.setText("Find Structure Names");
+		final TabItem tabItem_1 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_1.setText("Structure");
 
 		final Composite composite_2 = new Composite(tabFolder_1, SWT.NONE);
-		tbtmFindStructureNames.setControl(composite_2);
+		tabItem_1.setControl(composite_2);
 
-		markupTable = new Table(composite_2, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-		markupTable.setBounds(10, 74, 744, 209);
+		markupTable = new Table(composite_2, SWT.CHECK | SWT.BORDER);
+		markupTable.setBounds(10, 10, 744, 209);
 		markupTable.setLinesVisible(true);
 		markupTable.setHeaderVisible(true);
-		markupTable.addListener(SWT.MouseDown, new Listener() {
-		      public void handleEvent(Event e) {
-		    	 
-		    	 TableItem[] selItem= markupTable.getSelection();
-		    	 for (TableItem item : selItem) {
-			  			
-			  				String str = item.getText(1);
-			  				try {
-			  					StructContextstyledText.setText("");
-								mainDb.getContextData(str, StructContextstyledText);
-							} catch (ParsingException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							} catch (SQLException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-			  			
-		    	 }
-		    	  
-		    	
-		  				
-		  			
-		      }
-		    });
-		
-		
 		
 		/* Introduce new tabs here for markup tab*/
 		final TableColumn transformationNumberColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
 		transformationNumberColumnTableColumn_1_1_1.setWidth(81);
 		transformationNumberColumnTableColumn_1_1_1.setText("Count");
-		
 
 		final TableColumn transformationNameColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
-		transformationNameColumnTableColumn_1_1_1.setWidth(658);
+		transformationNameColumnTableColumn_1_1_1.setWidth(418);
 		transformationNameColumnTableColumn_1_1_1.setText("Structure Name");
-		
 
-		/*final TableColumn transformationFileColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
+		final TableColumn transformationFileColumnTableColumn_1_1_1 = new TableColumn(markupTable, SWT.NONE);
 		transformationFileColumnTableColumn_1_1_1.setWidth(215);
-		transformationFileColumnTableColumn_1_1_1.setText("New column");*/
-		//commented by prasad after march demo
+		transformationFileColumnTableColumn_1_1_1.setText("New column");
 
-		markUpPerlLog = new Text(composite_9, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
-		markUpPerlLog.setBounds(10, 103, 744, 250);
+		markUpPerlLog = new Text(composite_2, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
+		markUpPerlLog.setBounds(10, 235, 744, 125);
 		markUpPerlLog.setEnabled(false);
 
-		markupProgressBar = new ProgressBar(composite_9, SWT.NONE);
-		markupProgressBar.setBounds(7, 434, 432, 17);
+		markupProgressBar = new ProgressBar(composite_2, SWT.NONE);
+		markupProgressBar.setBounds(10, 375, 532, 17);
 		markupProgressBar.setVisible(false);
 
-		final Button startMarkupButton_1 = new Button(composite_9, SWT.NONE);
-		startMarkupButton_1.setToolTipText(ApplicationUtilities.getProperty("startMarkupButtonTooltip"));
-		startMarkupButton_1.setBounds(545, 434, 71, 23);
-		startMarkupButton_1.setText(ApplicationUtilities.getProperty("startMarkupButtonText"));
+		final Button startMarkupButton_1 = new Button(composite_2, SWT.NONE);
+		startMarkupButton_1.setBounds(545, 370, 71, 23);
+		startMarkupButton_1.setText("Start");
 		startMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				startMarkup();
@@ -1211,9 +873,8 @@ public class MainForm {
 		});
 
 		final Button removeMarkupButton_1 = new Button(composite_2, SWT.NONE);
-		removeMarkupButton_1.setToolTipText(ApplicationUtilities.getProperty("badStructuresTooltip"));
-		removeMarkupButton_1.setBounds(489, 434, 127, 23);
-		removeMarkupButton_1.setText(ApplicationUtilities.getProperty("badStructureBtnTxt"));
+		removeMarkupButton_1.setBounds(688, 370, 62, 23);
+		removeMarkupButton_1.setText("Remove");
 	    removeMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeMarkup();
@@ -1227,183 +888,40 @@ public class MainForm {
 			}
 		});
 
-		
-		
-		txtStepProduces = new Text(composite_2, SWT.READ_ONLY | SWT.WRAP);
-		txtStepProduces.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		txtStepProduces.setText(ApplicationUtilities.getProperty("step4Descp"));
-		txtStepProduces.setEditable(false);
-		txtStepProduces.setBounds(10, 10, 744, 39);
-		
-		Button btnLoad_3 = new Button(composite_2, SWT.NONE);
-		btnLoad_3.setToolTipText("Load results from last time");
-		btnLoad_3.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//call functions to load values for all tables in order
-			
-				loadMarkupTable();
-				loadDescriptorTable();
-				loadOthersTable();
-			
-			}
-
-			protected void loadMarkupTable() {
-				// TODO Auto-generated method stub
-
-				// TODO Auto-generated method stub
-				ArrayList <String> words = null;
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					//words = vmdb.getDescriptorWords();
-					vmdb.updateData(words);
-					int count = 1;
-					if (words != null) {
-						for (String word : words){
-							TableItem item = new TableItem(markupTable, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			
-			}
-
-			protected void loadOthersTable() {
-				// TODO Auto-generated method stub
-				showOtherTerms();
-			}
-
-			protected void loadDescriptorTable() {
-				// TODO Auto-generated method stub
-				ArrayList <String> words = null;
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					words = vmdb.getDescriptorWords();
-					
-					int count = 1;
-					if (words != null) {
-						for (String word : words){
-							TableItem item = new TableItem(markupTable_1, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			}
-		});
-		btnLoad_3.setBounds(171, 433, 175, 25);
-		btnLoad_3.setText("Load results from last time");
-		
-		Button btnMarkSelectedAs = new Button(composite_2, SWT.NONE);
-		btnMarkSelectedAs.setToolTipText(ApplicationUtilities.getProperty("goodStructTooltip"));
-		btnMarkSelectedAs.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int i=0;
-				for (TableItem item : markupTable.getItems()) {
-					if (item.getChecked()) {
-				
-						markupTable.getItem(i).setBackground(0,green);
-						markupTable.getItem(i).setBackground(1,green);
-						//markupTable.getColumn(0)
-					}
-					i+=1;
-				}
-				
-			}
-		});
-		btnMarkSelectedAs.setText(ApplicationUtilities.getProperty("markGoodTxt"));
-		btnMarkSelectedAs.setBounds(352, 434, 132, 23);
-		
-		StructContextstyledText = new StyledText(composite_2, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
-		StructContextstyledText.setEditable(false);
-		StructContextstyledText.setDoubleClickEnabled(false);
-		StructContextstyledText.setBounds(10, 299, 744, 114);
-		//StructContextstyledText.set
-		
 		final Button saveButton_1 = new Button(composite_2, SWT.NONE);
-		saveButton_1.setToolTipText(ApplicationUtilities.getProperty("saveGoodTooltip"));
-		saveButton_1.setText(ApplicationUtilities.getProperty("saveGoodTxt"));// save good structure names here.
-		saveButton_1.setBounds(622, 434, 132, 23);
-		
-		
-		
-				
-		
+		saveButton_1.setText("Save");
+		saveButton_1.setBounds(622, 370, 60, 23);
 		saveButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				saveStructureTerms(markupTable_1, Registry.MARKUP_ROLE_O);
-							
-				
+				saveStructureTerms(markupTable, Registry.MARKUP_ROLE_O);
 			}
 		});
-		final TabItem tbtmFindDescriptors = new TabItem(tabFolder_1, SWT.NONE);
-		tbtmFindDescriptors.setText("Find Descriptors");
+		final TabItem tabItem_2 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_2.setText("Descriptors");
 
 		final Composite composite_7 = new Composite(tabFolder_1, SWT.NONE);
-		tbtmFindDescriptors.setControl(composite_7);
+		tabItem_2.setControl(composite_7);
 
-		markupTable_1 = new Table(composite_7, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-		markupTable_1.setBounds(7, 69, 747, 183);
+		markupTable_1 = new Table(composite_7, SWT.CHECK | SWT.BORDER);
+		markupTable_1.setBounds(10, 21, 747, 341);
 		markupTable_1.setLinesVisible(true);
 		markupTable_1.setHeaderVisible(true);
-		
-		markupTable_1.addListener(SWT.MouseDown, new Listener() {
-		      public void handleEvent(Event e) {
-		    	 
-		    	 TableItem[] selItem= markupTable_1.getSelection();
-		    	 for (TableItem item : selItem) {
-			  			
-			  				String str = item.getText(1);
-			  				try {
-			  					descriptorstyledText.setText("");
-								mainDb.getContextData(str, descriptorstyledText);
-							} catch (ParsingException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							} catch (SQLException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-			  			
-		    	 }
-		    	  
-		    	
-		  				
-		  			
-		      }
-		    });
-		
-		
 
 		final TableColumn transformationNumberColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
 		transformationNumberColumnTableColumn_1_1_1_1.setWidth(81);
 		transformationNumberColumnTableColumn_1_1_1_1.setText("Count");
 
-		final TableColumn transformationNameColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.LEFT);
-		transformationNameColumnTableColumn_1_1_1_1.setWidth(659);
-		transformationNameColumnTableColumn_1_1_1_1.setText("Descriptors");
+		final TableColumn transformationNameColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
+		transformationNameColumnTableColumn_1_1_1_1.setWidth(418);
+		transformationNameColumnTableColumn_1_1_1_1.setText("Structure Name");
 
-		/*final TableColumn transformationFileColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
+		final TableColumn transformationFileColumnTableColumn_1_1_1_1 = new TableColumn(markupTable_1, SWT.NONE);
 		transformationFileColumnTableColumn_1_1_1_1.setWidth(215);
-		transformationFileColumnTableColumn_1_1_1_1.setText("New column");*/
-		//commented by prasad after march demo
+		transformationFileColumnTableColumn_1_1_1_1.setText("New column");
 
 		final Button removeButton = new Button(composite_7, SWT.NONE);
-		removeButton.setToolTipText(ApplicationUtilities.getProperty("badDescriptorTooltip"));
-		removeButton.setText(ApplicationUtilities.getProperty("badStructureBtnTxt"));
-		removeButton.setBounds(344, 418, 122, 25);
+		removeButton.setText("Remove");
+		removeButton.setBounds(580, 370, 91, 25);
 		removeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				removeDescriptor();
@@ -1411,256 +929,24 @@ public class MainForm {
 		});
 
 		final Button saveButton_2 = new Button(composite_7, SWT.NONE);//this button is on the markup-descriptor tab
-		saveButton_2.setToolTipText(ApplicationUtilities.getProperty("goodDescriptorTooltip"));
-		saveButton_2.setText(ApplicationUtilities.getProperty("markGoodTxt"));
-		saveButton_2.setBounds(472, 418, 140, 25);
+		saveButton_2.setText("Save");
+		saveButton_2.setBounds(675, 370, 82, 25);
 		saveButton_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				
-				TableItem [] items = markupTable_1.getItems();
-				int greenCounter = 0;
-				for (TableItem item : items) {
-					if (item.getChecked()) {
-						
-						item.setBackground(green);
-						item.setChecked(false);
-						descriptorsToSaveList.add(item.getText(1));
-						descriptorsToSaveIndexList.add(greenCounter);
-						
-					}
-					greenCounter++;
-				}
-				
-			 //	saveStructureTerms(markupTable_1, Registry.MARKUP_ROLE_B);//temp to check green color
+				saveStructureTerms(markupTable_1, Registry.MARKUP_ROLE_B);
 			//	saveStructureTerms(markupTable_1, Registry.MARKUP_ROLE_O);
 			}
 		});
-		
-		text = new Text(composite_7, SWT.READ_ONLY | SWT.WRAP);
-		text.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		text.setText(ApplicationUtilities.getProperty("step4Descp"));
-		text.setEditable(false);
-		text.setBounds(10, 10, 744, 39);
-		
-		Button btnSaveGoodTo = new Button(composite_7, SWT.NONE);
-		btnSaveGoodTo.setToolTipText("Save good descriptors to database");
-		btnSaveGoodTo.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				saveStructureTerms(descriptorsToSaveList, Registry.MARKUP_ROLE_O);
-				
-				//for display only show the descriptors that are red and undecided
-				
-				//markupTable_1.removeAll();//removed temporarily, should be removed from database
-				
-				/*TableItem [] items = markupTable_1.getItems();
-				for (int i=0;i<descriptorsToSaveIndexList.size();i++) {
-					
-					
-					Color c = items[descriptorsToSaveIndexList.get(i)+1].getBackground();
-					markupTable_1.remove(descriptorsToSaveIndexList.get(i));
-					items[descriptorsToSaveIndexList.get(i)].setBackground(c);
-					descriptorsToSaveIndexList.remove(i);
-					i--;
-					
-				}
-				*/
 
-			markupTable_1.removeAll();
-			reLoadTable();
-				
-			}
-
-			private void reLoadTable() {
-				// TODO Auto-generated method stub
-
-				// TODO Auto-generated method stub
-				ArrayList <String> words = null;
-				ArrayList <String> flag = null;
-				ArrayList <ArrayList> wordsAndFlag = null;
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					wordsAndFlag = vmdb.getUnSavedDescriptorWords();
-					words=wordsAndFlag.get(0);
-					flag=wordsAndFlag.get(1);
-					//words = vmdb.getDescriptorWords();
-					
-					int count = 1;
-					int flag_cnt=0;
-					if (words != null) {
-						for (String word : words){
-							TableItem item = new TableItem(markupTable_1, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							System.out.println("Flag = "+flag.get(flag_cnt)+" for count "+flag_cnt+" for word: "+word);
-							if("red".equalsIgnoreCase(flag.get(flag_cnt)))
-							{
-								item.setBackground(red);
-							}
-							flag_cnt++;
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			
-			}
-		});
-		btnSaveGoodTo.setBounds(619, 418, 135, 25);
-		btnSaveGoodTo.setText("Save good to database");
-		
-		Button btnLoadResultsFrom = new Button(composite_7, SWT.NONE);
-		btnLoadResultsFrom.setToolTipText("Load results from last time");
-		btnLoadResultsFrom.setBounds(182, 418, 152, 25);
-		btnLoadResultsFrom.setText("Load results from last time");
-		
-		descriptorstyledText = new StyledText(composite_7, SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL);
-		descriptorstyledText.setEditable(false);
-		descriptorstyledText.setDoubleClickEnabled(false);
-		descriptorstyledText.setBounds(7, 283, 747, 111);
-		
-		final TabItem tabItmCategorizeOthers = new TabItem(tabFolder_1, SWT.NONE);
-		tabItmCategorizeOthers.setText("Categorize Others");
-		
-		final Composite compositeOthers = new Composite(tabFolder_1, SWT.NONE);
-		tabItmCategorizeOthers.setControl(compositeOthers);
-		
-		text_Others = new Text(compositeOthers, SWT.READ_ONLY|SWT.WRAP|SWT.MULTI);
-		text_Others.setText(ApplicationUtilities.getProperty("step4Descp"));
-		text_Others.setEditable(false);
-		text_Others.setBounds(10, 10, 750, 47);
-		
-		table_Others = new Table(compositeOthers, SWT.CHECK|SWT.BORDER | SWT.FULL_SELECTION |SWT.V_SCROLL |SWT.H_SCROLL);
-		table_Others.setBounds(20, 83, 750, 171);
-		table_Others.setHeaderVisible(true);
-		table_Others.setLinesVisible(true);
-		
-		table_Others.addListener(SWT.MouseDown, new Listener() {
-		      public void handleEvent(Event e) {
-		    	 
-		    	 TableItem[] selItem= table_Others.getSelection();
-		    	 for (TableItem item : selItem) {
-			  			
-			  				String str = item.getText(1);
-			  				try {
-			  					styledText.setText("");
-								mainDb.getContextData(str, styledText);
-							} catch (ParsingException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							} catch (SQLException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-			  			
-		    	 }
-		   			
-		      }
-		    });
-		
-		
-		
-		
-		
-		TableColumn othersTable_count = new TableColumn(table_Others, SWT.NONE);
-		othersTable_count.setWidth(100);
-		othersTable_count.setText("Count");
-		
-		TableColumn tblclmnTerm = new TableColumn(table_Others, SWT.NONE);
-		tblclmnTerm.setWidth(98);
-		tblclmnTerm.setText("Term");
-		
-		/*TableColumn tblclmnOption = new TableColumn(table_Others, SWT.NONE);
-		tblclmnOption.setWidth(547);
-		tblclmnOption.setText("Option");*/
-		
-		styledText= new StyledText(compositeOthers, SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.READ_ONLY);
-		styledText.setText(" ");
-		styledText.setEditable(false);
-		styledText.setDoubleClickEnabled(false);
-		styledText.setVisible(true);
-		styledText.setBounds(26, 284, 744, 114);
-		
-		Button btnLoadResultsFrom_2 = new Button(compositeOthers, SWT.NONE);
-		btnLoadResultsFrom_2.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				table_Others.removeAll();
-				showOtherTerms();
-				showOtherTermsTable();
-			}
-		});
-		btnLoadResultsFrom_2.setBounds(190, 430, 152, 25);
-		
-		btnLoadResultsFrom_2.setText("Load results from last time\r\n");
-		
-		Button btnMarkSelectedAs_1 = new Button(compositeOthers, SWT.NONE);
-		btnMarkSelectedAs_1.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				TableItem [] items = table_Others.getItems();
-				for (TableItem item : items) {
-					if (item.getChecked()) {
-			
-						item.setBackground(red);
-						item.setChecked(false);
-						// logic to manipulate database must go here.
-					} else {
-						
-					}
-				}
-			}
-		});
-		btnMarkSelectedAs_1.setBounds(352, 430, 136, 25);
-		
-		btnMarkSelectedAs_1.setText("Mark selected as bad");
-		
-		Button btnMarkSelectedAs_2 = new Button(compositeOthers, SWT.NONE);
-		btnMarkSelectedAs_2.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				TableItem [] items = table_Others.getItems();
-				for (TableItem item : items) {
-					if (item.getChecked()) {
-			
-						item.setBackground(green);
-						item.setChecked(false);
-						// logic to manipulate database must go here.
-					} else {
-						
-					}
-				}
-			}
-		});
-		btnMarkSelectedAs_2.setBounds(494, 430, 130, 25);
-		
-		btnMarkSelectedAs_2.setText("Mark selected as good");
-		
-		Button btnSaveGoodTo_1 = new Button(compositeOthers, SWT.NONE);
-		btnSaveGoodTo_1.setBounds(630, 430, 147, 25);
-		
-		btnSaveGoodTo_1.setText("Save good to database");
-		
-		
-		
-		//Button button = new Button(table_Others, SWT.RADIO);
-		
-		//button.setBounds(219, 102, 90, 16);
-		//button.setText("Others");
-
-		//final TabItem tbtmCategorizeOthers = new TabItem(tabFolder_1, SWT.NONE);
-		
-	//	tbtmCategorizeOthers.setText("Categorize Other Terms");
+		final TabItem tabItem_3 = new TabItem(tabFolder_1, SWT.NONE);
+		tabItem_3.setText("Others");
 
 		final Composite composite_1 = new Composite(tabFolder_1, SWT.NONE);
-	//	tbtmCategorizeOthers.setControl(composite_1);
+		tabItem_3.setControl(composite_1);
 
 		final Button saveButton = new Button(composite_1, SWT.NONE);
 		saveButton.setText("Save");
-		saveButton.setBounds(650, 427, 98, 25);
+		saveButton.setBounds(650, 375, 98, 25);
 		saveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				saveOtherTerms();
@@ -1668,42 +954,16 @@ public class MainForm {
 		});
 
 		final Group group = new Group(composite_1, SWT.NONE);
-		group.setBounds(10, 62, 736, 352);
+		group.setBounds(10, 10, 736, 352);
 
 		scrolledComposite = new ScrolledComposite(group, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		scrolledComposite.setBounds(0, 40,736, 342);
+		scrolledComposite.setBounds(0, 40,736, 312);
 		scrolledComposite.setLayout(new RowLayout(SWT.HORIZONTAL));
-		
-		
 
 		termRoleGroup = new Group(scrolledComposite, SWT.NONE);
 		termRoleGroup.setLayoutData(new RowData());			
-		termRoleGroup.setSize(736, 352);
-		//	termRoleGroup.setSize(736, 152);
-		
-		scrolledComposite.setContent(termRoleGroup);
-		
-		
-		
-		/*Button button = new Button(termRoleGroup, SWT.CHECK);
-		button.setBounds(10, 20, 93, 16);
-		button.setText("Check Button");
-		
-		text_2 = new Text(termRoleGroup, SWT.BORDER);
-		text_2.setBounds(109, 20, 144, 21);
-		
-		Button button_1 = new Button(termRoleGroup, SWT.RADIO);
-		button_1.setBounds(281, 20, 90, 16);
-		button_1.setText("Radio Button");
-		
-		Button button_2 = new Button(termRoleGroup, SWT.RADIO);
-		button_2.setBounds(386, 20, 90, 16);
-		button_2.setText("Radio Button");*/
-		
-		/*Button button = new Button(termRoleGroup, SWT.RADIO);
-		button.setBounds(164, 30, 90, 16);
-		button.setText("Radio Button"); */
-		//   
+		termRoleGroup.setSize(736, 312);
+		scrolledComposite.setContent(termRoleGroup);    
 		
 		//// Terms and Roles _ mark up tab
 		
@@ -1720,31 +980,17 @@ public class MainForm {
 		
 		final Label termLabel = new Label(group, SWT.NONE);
 		termLabel.setText("Term");
-		termLabel.setBounds(125, 20, 120, 15);
+		termLabel.setBounds(25, 20, 120, 15);
 
 		final Label roleLabel = new Label(group, SWT.NONE);
 		roleLabel.setText("Role");
-		roleLabel.setBounds(328, 20, 93, 15);
-		
-		Label lblCount = new Label(group, SWT.NONE);
-		lblCount.setText("Count");
-		lblCount.setBounds(14, 20, 93, 15);
-		
-		text_1 = new Text(composite_1, SWT.READ_ONLY | SWT.WRAP);
-		text_1.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		text_1.setText(ApplicationUtilities.getProperty("step4Descp"));
-		text_1.setEditable(false);
-		text_1.setBounds(10, 17, 744, 39);
-		
-		Button btnLoadResultsFrom_1 = new Button(composite_1, SWT.NONE);
-		btnLoadResultsFrom_1.setBounds(459, 427, 172, 25);
-		btnLoadResultsFrom_1.setText("Load results from last time");
+		roleLabel.setBounds(195, 20, 93, 15);
 
 		final Composite composite_3 = new Composite(tabFolder, SWT.NONE);
 		transformationTabItem.setControl(composite_3);
 
 		transformationTable = new Table(composite_3, SWT.FULL_SELECTION | SWT.BORDER);
-		transformationTable.setBounds(20, 89, 744, 369);
+		transformationTable.setBounds(10, 10, 744, 369);
 		transformationTable.setLinesVisible(true);
 		transformationTable.setHeaderVisible(true);
 		transformationTable.addMouseListener(new MouseListener () {
@@ -1771,18 +1017,17 @@ public class MainForm {
 
 		final TableColumn transformationNumberColumnTableColumn_1 = new TableColumn(transformationTable, SWT.NONE);
 		transformationNumberColumnTableColumn_1.setWidth(168);
-		transformationNumberColumnTableColumn_1.setText("File Count");
+		transformationNumberColumnTableColumn_1.setText("Count");
 
 		final TableColumn transformationNameColumnTableColumn_1 = new TableColumn(transformationTable, SWT.NONE);
 		transformationNameColumnTableColumn_1.setWidth(172);
-		transformationNameColumnTableColumn_1.setText("File Links");
+		transformationNameColumnTableColumn_1.setText("File");
 
-		/*final TableColumn transformationFileColumnTableColumn_1 = new TableColumn(transformationTable, SWT.NONE);
+		final TableColumn transformationFileColumnTableColumn_1 = new TableColumn(transformationTable, SWT.NONE);
 		transformationFileColumnTableColumn_1.setWidth(376);
 		transformationFileColumnTableColumn_1.setText("Error");
-*/
+
 		final Button startTransformationButton = new Button(composite_3, SWT.NONE);
-		startTransformationButton.setToolTipText("Run step 3");
 		startTransformationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				transformationTable.removeAll();
@@ -1808,8 +1053,8 @@ public class MainForm {
 				}
 			}
 		});
-		startTransformationButton.setBounds(547, 464, 90, 23);
-		startTransformationButton.setText(ApplicationUtilities.getProperty("start3"));
+		startTransformationButton.setBounds(633, 385, 60, 23);
+		startTransformationButton.setText("Start");
 		
 		/* Type 4 Transformation doesn't do anything other than listing source files : Doubtful*/
 		//if (type.equals("type4")){
@@ -1817,9 +1062,8 @@ public class MainForm {
 		//}
 
 		final Button clearTransformationButton = new Button(composite_3, SWT.NONE);
-		clearTransformationButton.setToolTipText("Clear and rerun step 3");
 		clearTransformationButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {/*
+			public void widgetSelected(final SelectionEvent e) {
 				clearTransformation();				
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.four.name"), combo.getText(), false);
@@ -1828,65 +1072,25 @@ public class MainForm {
 					LOGGER.error("Couldnt save status - transform" , exe);
 					exe.printStackTrace();
 				}
-			*/
-				//commented above code to make it re-run
-
-				transformationTable.removeAll();
-				if(type.equals("")) {
-					startTransformation(); // start the transformation process
-				} 
-				else if (type.equals("type2")) {
-					startType2Transformation(); // When the doc selected is type 4
-				}				
-				else if (type.equals("type3")) {
-					startPreMarkUp(); // start pre-mark up process
-				} else if (type.equals("type4")) {
-					startType4Transformation(); // When the doc selected is type 4
-				}
-				
-				
-				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.four.name"), combo.getText(), true);
-					statusOfMarkUp[3] = true;
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - transform" , exe);
-					exe.printStackTrace();
-				}
-			
-			
-			
 			}
 		});
-		clearTransformationButton.setBounds(647, 464, 90, 23);
-		clearTransformationButton.setText("Clear and rerun");
+		clearTransformationButton.setBounds(701, 385, 53, 23);
+		clearTransformationButton.setText("Clear");
 
 		transformationProgressBar = new ProgressBar(composite_3, SWT.NONE);
 		transformationProgressBar.setVisible(false);
-		transformationProgressBar.setBounds(10, 464, 524, 17);
+		transformationProgressBar.setBounds(10, 387, 524, 17);
 		
-		/*Button button = new Button(composite_3, SWT.NONE);
-		button.setBounds(577, 464, 60, 23);
-		button.setText("Load");*/
-		
-		step3_heading = new Text(composite_3, SWT.READ_ONLY | SWT.WRAP);
-		step3_heading.setText(ApplicationUtilities.getProperty("step3DescpText"));
-		
-		step3_heading.setBounds(20, 10, 744, 62);
-		
-		/*CLabel label_2 = new CLabel(composite_3, SWT.NONE);
-		label_2.setBounds(105, 38, 61, 21);
-		label_2.setText("New Label");
-		
-		CLabel label_3 = new CLabel(composite_3, SWT.NONE);
-		label_3.setBounds(105, 38, 238, 23);
-		label_3.setText("New Label");*/
-		/*button.addSelectionListener(new SelectionAdapter() {
+		Button button = new Button(composite_3, SWT.NONE);
+		button.setBounds(567, 385, 60, 23);
+		button.setText("Load");
+		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				loadFileInfo(transformationTable, Registry.TargetDirectory + 
 						ApplicationUtilities.getProperty("TRANSFORMED"));
 			}
 		});
-*/
+
 		final TabItem tagTabItem = new TabItem(tabFolder, SWT.NONE);
 		tagTabItem.setText(ApplicationUtilities.getProperty("tab.six.name"));
 
@@ -1894,13 +1098,6 @@ public class MainForm {
 		tagTabItem.setControl(composite_6);
 		/* Changing the "unknown removal checked box to RADIO*/
 		tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER);
-		
-		//added to check on focus,to display any message
-		if(tabFolder.getSelectionIndex()==6){
-			tabFolder.setSelection(1);
-			tabFolder.setFocus();
-		}
-		
 	
 	    tagTable.addListener(SWT.Selection, new Listener() {
 	        public void handleEvent(Event event) {
@@ -1924,7 +1121,7 @@ public class MainForm {
 	      });
 		tagTable.setLinesVisible(true);
 		tagTable.setHeaderVisible(true);
-		tagTable.setBounds(10, 37, 744, 203);
+		tagTable.setBounds(10, 10, 744, 203);
 
 	    final TableColumn newColumnTableColumn = new TableColumn(tagTable, SWT.NONE);
 	    newColumnTableColumn.setWidth(81);
@@ -1937,7 +1134,6 @@ public class MainForm {
 	    final TableColumn modifierColumnTableColumn = new TableColumn(tagTable, SWT.NONE);
 	    modifierColumnTableColumn.setWidth(65);
 	    modifierColumnTableColumn.setText("Modifier");
-	    
 
 		final TableColumn tagColumnTableColumn = new TableColumn(tagTable, SWT.NONE);
 		tagColumnTableColumn.setWidth(78);
@@ -1948,32 +1144,25 @@ public class MainForm {
 		sentenceColumnTableColumn.setText("Sentence");
 
 		tagListCombo = new Combo(composite_6, SWT.NONE);
-		tagListCombo.setBounds(260, 442, 210, 21);
+		tagListCombo.setBounds(260, 387, 210, 21);
 
 		final Button saveTagButton = new Button(composite_6, SWT.NONE);
-		saveTagButton.setToolTipText("Save tagged sentences");
 		saveTagButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				saveTag();
 			}
 		});
-		saveTagButton.setBounds(580, 251, 174, 23);
-		saveTagButton.setText("Save tagged sentences");
+		saveTagButton.setBounds(654, 219, 100, 23);
+		saveTagButton.setText("Save");
 
 		final Button loadTagButton = new Button(composite_6, SWT.NONE);
-		loadTagButton.setToolTipText("Load sentences to be tagged");
 		loadTagButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				ApplicationUtilities.showProgressPopup(popupBar);
 				loadTags();
 				groupInfo.clear();
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
-					if(tagTable.getItemCount()==0)
-					{
-						ApplicationUtilities.showPopUpWindowTab5("Nothing to Load. Please proceed to the next tab", "Information", SWT.OK|SWT.CANCEL,tabFolder);
-					}
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
@@ -1982,26 +1171,26 @@ public class MainForm {
 				
 			}
 		});
-		loadTagButton.setBounds(392, 251, 168, 23);
-		loadTagButton.setText("Load to-be-tagged sentences");
+		loadTagButton.setBounds(548, 219, 100, 23);
+		loadTagButton.setText("Load");
 
 		final Label contextLabel = new Label(composite_6, SWT.NONE);
 		contextLabel.setText("Context");
-		contextLabel.setBounds(10, 255, 88, 13);
+		contextLabel.setBounds(10, 229, 88, 13);
 
 		contextStyledText = new StyledText(composite_6, SWT.V_SCROLL | SWT.READ_ONLY | SWT.H_SCROLL | SWT.BORDER);
-		contextStyledText.setBounds(10, 290, 744, 114);
+		contextStyledText.setBounds(10, 248, 744, 114);
 
 		modifierListCombo = new Combo(composite_6, SWT.NONE);
-		modifierListCombo.setBounds(10, 442, 210, 21);
+		modifierListCombo.setBounds(14, 387, 210, 21);
 
 		final Label modifierLabel = new Label(composite_6, SWT.NONE);
 		modifierLabel.setText("Modifier");
-		modifierLabel.setBounds(10, 423, 64, 13);
+		modifierLabel.setBounds(15, 368, 64, 13);
 
 		final Label tagLabel = new Label(composite_6, SWT.NONE);
 		tagLabel.setText("Tag");
-		tagLabel.setBounds(259, 423, 33, 24);
+		tagLabel.setBounds(260, 368, 25, 13);
 
 		final Button applyToAllButton = new Button(composite_6, SWT.NONE);
 		applyToAllButton.addSelectionListener(new SelectionAdapter() {
@@ -2010,22 +1199,7 @@ public class MainForm {
 			}
 		});
 		applyToAllButton.setText("Apply to Checked");
-		applyToAllButton.setBounds(626, 441, 110, 23);
-		
-		step5_desc = new Text(composite_6, SWT.READ_ONLY|SWT.WRAP);
-		step5_desc.setText("Please provide tags for the sentences displayed.");
-		step5_desc.setEditable(false);
-		step5_desc.setBounds(10, 10, 741, 21);
-		
-		/*TableViewer tableViewer = new TableViewer(composite_6, SWT.BORDER | SWT.FULL_SELECTION);
-		table_1 = tableViewer.getTable();
-		table_1.setBounds(13, 147, 85, 85);
-		formToolkit.paintBordersFor(table_1);
-		String[] myList = {"A","B","C"};
-		CellEditor[] editors = new CellEditor[3];
-		editors[0] = new CheckboxCellEditor(table_1);
-		editors[2]=new ComboBoxCellEditor(table_1,myList );
-		tableViewer.setCellEditors(editors);*/
+		applyToAllButton.setBounds(513, 385, 110, 23);
 		
 		///////////////// New Tab!!????????????/////////////////////////
 		/* Character State tab *///
@@ -2037,7 +1211,7 @@ public class MainForm {
 		
 		Group grpContextTable = new Group(composite_8, SWT.NONE);
 		grpContextTable.setText("Context Table");
-		grpContextTable.setBounds(0, 356, 635, 149);
+		grpContextTable.setBounds(0, 282, 635, 149);
 		// Add the context table here
 		contextTable = new Table(grpContextTable, SWT.FULL_SELECTION | SWT.BORDER);
 		contextTable.setBounds(10, 20, 615, 119);
@@ -2081,7 +1255,7 @@ public class MainForm {
 		contextTablecolumn_2.setText("Sentence");
 		
 		Group group_2 = new Group(composite_8, SWT.NONE);
-		group_2.setBounds(641, 314, 144, 191);
+		group_2.setBounds(641, 240, 144, 191);
 		
 		processedGroupsTable = new Table(group_2, SWT.BORDER | SWT.FULL_SELECTION);
 		processedGroupsTable.setBounds(10, 10, 124, 171);
@@ -2093,11 +1267,11 @@ public class MainForm {
 		tableColumn.setText("Processed Groups");
 		
 		Group group_3 = new Group(composite_8, SWT.NONE);
-		group_3.setBounds(0, 295, 635, 36);
+		group_3.setBounds(0, 240, 635, 36);
 		
 		Label lblGroup = new Label(group_3, SWT.NONE);
 		lblGroup.setBounds(10, 13, 40, 15);
-		lblGroup.setText("Groups");
+		lblGroup.setText("Group");
 		
 		groupsCombo = new Combo(group_3, SWT.NONE);
 		groupsCombo.setBounds(56, 10, 161, 23);
@@ -2110,11 +1284,11 @@ public class MainForm {
 		});
 		
 		Label lblDecision = new Label(group_3, SWT.NONE);
-		lblDecision.setBounds(236, 13, 139, 15);
-		lblDecision.setText("Label apply to this group");
+		lblDecision.setBounds(286, 13, 55, 15);
+		lblDecision.setText("Decision");
 		
 		comboDecision = new Combo(group_3, SWT.NONE);
-		comboDecision.setBounds(392, 10, 145, 23);
+		comboDecision.setBounds(365, 10, 145, 23);
 
 		
 		Button btnSave = new Button(group_3, SWT.NONE);
@@ -2222,7 +1396,7 @@ public class MainForm {
 		
 		Group grpRemovedTerms = new Group(composite_8, SWT.NONE);
 		grpRemovedTerms.setText("Removed Terms");
-		grpRemovedTerms.setBounds(457, 81, 328, 208);
+		grpRemovedTerms.setBounds(457, 26, 328, 208);
 		
 		removedScrolledComposite = new ScrolledComposite(grpRemovedTerms, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		removedScrolledComposite.setBounds(10, 24, 308, 174);
@@ -2237,7 +1411,7 @@ public class MainForm {
 		
 		Group grpDeleteAnyTerm = new Group(composite_8, SWT.NONE);
 		grpDeleteAnyTerm.setText("Delete any term that you think doesn't belong to this group");
-		grpDeleteAnyTerm.setBounds(0, 55, 451, 234);
+		grpDeleteAnyTerm.setBounds(0, 0, 451, 234);
 		
 		termsScrolledComposite = new ScrolledComposite(grpDeleteAnyTerm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		termsScrolledComposite.setBounds(10, 41, 429, 183);
@@ -2265,7 +1439,7 @@ public class MainForm {
 		lblFrequency.setText("Frequency");
 		
 		sortLabel = new Label(grpDeleteAnyTerm, SWT.NONE);
-		sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));		
+		sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/down.jpg"));		
 		sortLabel.setBounds(408, 10, 31, 25);
 		sortLabel.setToolTipText("Sort by frequency");
 		sortLabel.addMouseListener(new MouseListener() {
@@ -2364,12 +1538,12 @@ public class MainForm {
 					if(sortedBy!=null && sortedBy.length>0 && sortedBy[selectionIndex]) {
 						/*Sort Ascending*/
 						sortedBy[selectionIndex] = false;
-						sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/up.jpg"));
+						sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/up.jpg"));
 						
 					} else if(sortedBy!=null && sortedBy.length>0 && !sortedBy[selectionIndex]){
 						/* Sort Descending*/
 						sortedBy[selectionIndex] = true;
-						sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));	
+						sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/down.jpg"));	
 						
 					}
 					
@@ -2381,15 +1555,9 @@ public class MainForm {
 			public void mouseDoubleClick(MouseEvent me){	}
 		});
 		Button btnViewGraphVisualization = new Button(composite_8, SWT.NONE);
-		btnViewGraphVisualization.setBounds(457, 55, 159, 25);
+		btnViewGraphVisualization.setBounds(457, 0, 159, 25);
 		btnViewGraphVisualization.setText("View Graph Visualization");
 		btnViewGraphVisualization.setToolTipText("Click to view the graph visualization of the terms that have co-occurred");
-		
-		step6_desc = new Text(composite_8, SWT.READ_ONLY | SWT.WRAP);
-		step6_desc.setText(ApplicationUtilities.getProperty("step6DescpText"));
-		step6_desc.setEditable(false);
-		step6_desc.setBounds(10, 10, 762, 39);
-	
 		
 		/*Removed terms test*/
 /*		Button btnRemovedTerms = new Button(composite_8, SWT.NONE);
@@ -2412,7 +1580,6 @@ public class MainForm {
 				{
 					String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
 					ApplicationUtilities.showPopUpWindow("No graph to display", messageHeader, SWT.ICON_WARNING);
-					//when no graph to display.. land him on next tab
 				}
 			}
 		});
@@ -2427,7 +1594,7 @@ public class MainForm {
 		finalizerTabItem.setControl(composite_5);
 
 		finalizerTable = new Table(composite_5, SWT.FULL_SELECTION | SWT.BORDER);
-		finalizerTable.setBounds(10, 54, 744, 369);
+		finalizerTable.setBounds(10, 10, 744, 369);
 		finalizerTable.setLinesVisible(true);
 		finalizerTable.setHeaderVisible(true);
 		finalizerTable.addMouseListener(new MouseListener () {
@@ -2454,14 +1621,17 @@ public class MainForm {
 
 		final TableColumn transformationNumberColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
 		transformationNumberColumnTableColumn_1_2.setWidth(168);
-		transformationNumberColumnTableColumn_1_2.setText("Count");
+		transformationNumberColumnTableColumn_1_2.setText("Number");
 
 		final TableColumn transformationNameColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
-		transformationNameColumnTableColumn_1_2.setWidth(359);
-		transformationNameColumnTableColumn_1_2.setText("File Links");
+		transformationNameColumnTableColumn_1_2.setWidth(172);
+		transformationNameColumnTableColumn_1_2.setText("File");
+
+		final TableColumn transformationFileColumnTableColumn_1_2 = new TableColumn(finalizerTable, SWT.NONE);
+		transformationFileColumnTableColumn_1_2.setWidth(376);
+		transformationFileColumnTableColumn_1_2.setText("Taxon Name");
 
 		final Button startFinalizerButton = new Button(composite_5, SWT.NONE);
-		startFinalizerButton.setToolTipText("Start running step 7");
 		startFinalizerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e){
 				finalizerTable.removeAll();
@@ -2470,14 +1640,6 @@ public class MainForm {
 					
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
-					/*File fileList= new File(Registry.TargetDirectory+"\\final\\");
-					if(fileList.list().length==0)
-					{
-						//show error popup
-						statusOfMarkUp[6] = false;
-						ApplicationUtilities.showPopUpWindow("Error executing step 7", "Error",SWT.ERROR);
-					}*/
-					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
 					exe.printStackTrace();
@@ -2485,55 +1647,25 @@ public class MainForm {
 				
 			}
 		});
-		startFinalizerButton.setBounds(384, 436, 65, 23);
-		startFinalizerButton.setText("Run step 7");
+		startFinalizerButton.setBounds(618, 385, 65, 23);
+		startFinalizerButton.setText("Start");
 
 		final Button clearFinalizerButton = new Button(composite_5, SWT.NONE);
-		clearFinalizerButton.setToolTipText("Clear and Re-run step 7");
-		clearFinalizerButton.setBounds(653, 436, 96, 23);
-		clearFinalizerButton.setText("Clear and rerun");
+		clearFinalizerButton.setBounds(689, 385, 65, 23);
+		clearFinalizerButton.setText("Clear");
 		clearFinalizerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				finalizerTable.removeAll();
-				startFinalize();
-				try {
-					
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					
-					File fileList= new File(Registry.TargetDirectory+"\\final\\");
-					statusOfMarkUp[6] = true;
-					if(fileList.list().length==0)
-					{
-						//show error popup
-						statusOfMarkUp[6] = false;
-						ApplicationUtilities.showPopUpWindow("Error executing step 7", "Error",SWT.ERROR);
-						
-					}
-					
-					
-					
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - markup" , exe);
-					exe.printStackTrace();
-				}
-				
-			
 			}
 		});
 
 		finalizerProgressBar = new ProgressBar(composite_5, SWT.NONE);
 		finalizerProgressBar.setVisible(false);
-		finalizerProgressBar.setBounds(10, 436, 322, 17);
+		finalizerProgressBar.setBounds(10, 387, 522, 17);
 		
 		Button btnLoad_2 = new Button(composite_5, SWT.NONE);
-		btnLoad_2.setToolTipText("Load step 7 results from last time");
-		btnLoad_2.setBounds(455, 436, 192, 23);
-		btnLoad_2.setText("Load step 7 results from last time");
-		
-		txtThisLastStep = new Text(composite_5, SWT.READ_ONLY | SWT.WRAP);
-		txtThisLastStep.setText(ApplicationUtilities.getProperty("step7DescpText"));
-		txtThisLastStep.setBounds(10, 10, 744, 38);
-	
+		btnLoad_2.setBounds(552, 385, 58, 23);
+		btnLoad_2.setText("Load");
 		btnLoad_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				loadFileInfo(finalizerTable, Registry.TargetDirectory + 
@@ -2567,19 +1699,17 @@ public class MainForm {
 		reportGlossaryButton.setBounds(654, 385, 100, 23);
 		reportGlossaryButton.setText("Report");*/
 
-		/* final Label logoLabel = new Label(shell, SWT.NONE);
+		final Label logoLabel = new Label(shell, SWT.NONE);
 		logoLabel.setText(ApplicationUtilities.getProperty("application.instructions"));
 		logoLabel.setBounds(10, 485, 530, 83);
 
 		final Label label = new Label(shell, SWT.NONE);
-		label.setBackgroundImage(SWTResourceManager.getImage(MainForm.class, 
+		label.setBackgroundImage(SWTResourceManager.getImage(MainFormOld.class, 
 				ApplicationUtilities.getProperty("application.logo")));
-		label.setBounds(569, 485, 253, 71);*/
+		label.setBounds(569, 485, 253, 71);
 
 	}
 	
-	
-
 	/* This function saves the Other terms from the markup tab 
 	 * to database after user assigns a role to each one of them*/
 	private void saveOtherTerms() {
@@ -2622,11 +1752,8 @@ public class MainForm {
 		}
 		
 		if (otherTerms != null) {
-			int counter =1;
 	        for (String term : otherTerms) {
-	        	addOtherTermsRow(term,counter);
-	        	counter+=1;
-	        	System.out.println("addother term called for "+term);
+	        	addOtherTermsRow(term);
 	        }
 	        
 			RowData rowdata = (RowData)termRoleGroup.getLayoutData();
@@ -2635,58 +1762,13 @@ public class MainForm {
 	        Rectangle rect = termRoleGroup.getBounds();
 	        rect.height += 40;
 	        termRoleGroup.setBounds(rect); 
-	       scrolledComposite.setMinSize(termRoleGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+	        scrolledComposite.setMinSize(termRoleGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		}
 
 	}
-	
-	public void showOtherTermsTable() {
-		//Populate Others Table Hong TODO 5/23/11
-		ArrayList<String> otherTerms = null;
-		try {
-			otherTerms = mainDb.getUnknownWords();
-		} catch (Exception exe) {
-			LOGGER.error("Exception in getting unknown words", exe);
-			exe.printStackTrace();
-		}
-		
-		if (otherTerms != null) {
-			int counter =1;
-	        for (String term : otherTerms) {
-	        	//addOtherTermsRow(term,counter);
-	        	
-	        	TableItem item = new TableItem(table_Others,SWT.HORIZONTAL);
-	        	item.setText(new String[] {counter+"",term});
-	        	
-	        	/*Button radio_Option = new Button(table_Others,SWT.RADIO);
-	        	
-	        	for(int i=0;i<otherRoles.length;i++)
-	        		{
-		        		radio_Option= new Button(table_Others, SWT.RADIO);
-		        		radio_Option.setBounds(otherCombo.x +(i*100) , otherCombo.y, otherCombo.width, otherCombo.height);
-		    			radio_Option.setText(otherRoles[i]);
-		    			if(i==0){
-		    				radio_Option.setSelection(true);
-		    				}
-		    		
-	    			}
-	        	otherCombo.y+=40;*/
-	        	
-	        	
-	        	//table_Others.set
-	        	counter+=1;
-	        	System.out.println("addother term called for "+term);
-	        }
-	        
-			
-		}
-
-	}
-	
-	
 	
 	/* This function adds a row to the Markup - Others tab*/
-	private void addOtherTermsRow(String term,int counter){
+	private void addOtherTermsRow(String term){
 		if (markUpTermRoles.size() > 7) {
 			RowData rowdata = (RowData)termRoleGroup.getLayoutData();
 			rowdata.height += 40;
@@ -2696,85 +1778,24 @@ public class MainForm {
 	        termRoleGroup.setBounds(rect);
 		}
 		
-		Button button = new Button(termRoleGroup, SWT.CHECK);
-		button.setBounds(otherChkbx.x, otherChkbx.y, otherChkbx.width, otherChkbx.height);
-		button.setText(String.valueOf(counter));
-		otherChkbx.y+=40;
-		
-		//instead of a combo box we need radio buttons.
-		Button radiobutton_otherRoles =null;
-		
-		for(int i=0;i<otherRoles.length;i++){
-			
-			radiobutton_otherRoles= new Button(termRoleGroup, SWT.RADIO);
-			radiobutton_otherRoles.setBounds(otherCombo.x +(i*100) , otherCombo.y, otherCombo.width, otherCombo.height);
-		
-		radiobutton_otherRoles.setText(otherRoles[i]);
-		if(i==0){
-			radiobutton_otherRoles.setSelection(true);
-			
-		}
-		
-		}
-		otherCombo.y+=40;
-		/*radiobutton_otherRoles= new Button(termRoleGroup, SWT.RADIO);
-		radiobutton_otherRoles.setBounds(x,y,width,height);
-		radiobutton_otherRoles.setText("Other");
-		*/
-		//164,30   264,30    364,30  464,30
-		//164,70   264,70         
-		/*Combo tempCombo = new Combo(termRoleGroup, SWT.NONE);	
+		Combo tempCombo = new Combo(termRoleGroup, SWT.NONE);	
 		tempCombo.setItems(otherRoles);
 		tempCombo.select(0);
 		tempCombo.setBounds(otherCombo.x , otherCombo.y, otherCombo.width, otherCombo.height);
-		otherCombo.y += 40;*/
+		otherCombo.y += 40;
 	    
 	    Label tempLabel = new Label(termRoleGroup, SWT.NONE);
 	    tempLabel.setText(term);
 	    tempLabel.setBounds(otherTerm.x, otherTerm.y, otherTerm.width, otherTerm.height);
 	    otherTerm.y += 40;
 	    
-	    TermRoleBean tbean = new TermRoleBean(tempLabel, radiobutton_otherRoles);
-	  //  markUpTermRoles.add(tbean);
+	    TermRoleBean tbean = new TermRoleBean(tempLabel, tempCombo);
+	    markUpTermRoles.add(tbean);
 	}
 	
 	/**
 	 * This function saves the terms from the Structure tab 
 	 * under markup tab - to the wordroles table
-	 * method declaration changed to accept a list as the descriptors that are marked green
-	 * are stored separately and passed here.Changed by Prasad in May 2011
-	 */
-	private void saveStructureTerms(ArrayList <String>  structureTerms, String role) {
-		/*ArrayList <String> structureTerms = new ArrayList<String>();
-		TableItem [] items = table.getItems();
-		for (TableItem item : items) {
-			structureTerms.add(item.getText(1));
-		}*/
-		try {
-			mainDb.saveStructureTerms(structureTerms, role);
-			//now display only those that are yet to be decided.
-			//so get descriptors from 
-			
-			
-			/*markupTable_1.removeAll();//removed temporarily, should be removed from database
-			int count = 1;
-			for (String word : descriptorsToSaveList) {
-				TableItem item = new TableItem(markupTable_1, SWT.NONE);
-				item.setText(new String [] {count+"", word});
-				count++;
-			}*/
-			
-			
-		} catch (Exception exe) {
-			exe.printStackTrace();
-		}
-		
-	}
-	
-	/**
-	 * This function saves the terms from the Structure tab 
-	 * under markup tab - to the wordroles table
-	 * 
 	 */
 	private void saveStructureTerms(Table table, String role) {
 		ArrayList <String> structureTerms = new ArrayList<String>();
@@ -2784,54 +1805,35 @@ public class MainForm {
 		}
 		try {
 			mainDb.saveStructureTerms(structureTerms, role);
-			
-			/*markupTable_1.removeAll();//removed temporarily, should be removed from database
-			int count = 1;
-			for (String word : descriptorsToSaveList) {
-				TableItem item = new TableItem(markupTable_1, SWT.NONE);
-				item.setText(new String [] {count+"", word});
-				count++;
-			}*/
-			
-			
 		} catch (Exception exe) {
 			exe.printStackTrace();
 		}
 		
 	}
-	
-	
-	
 /**
  * In the Markup - Descriptor Tab, this function 
  * is used to remove any term selected by the user 
  */
 	private void removeDescriptor(){
 		
-		
-		
+		List<String> removedTags = new ArrayList<String>();
+		List<String> newList = new ArrayList<String>();
 		@SuppressWarnings("unused")
 		boolean toRemove = false;
 		TableItem [] items = markupTable_1.getItems();
 		for (TableItem item : items) {
 			if (item.getChecked()) {
 				removedTags.add(item.getText(1));
-			/*	item.setBackground(0,red);
-				item.setBackground(1,red);
-				item.setBackground(2,red);*/
-				item.setBackground(red);
-				
 				toRemove = true;
-				item.setChecked(false);
 			} else {
-				//descriptorsToSaveList.add(item.getText(1));
+				newList.add(item.getText(1));
 			}
 		}
 		
 		// remove the tag from the database (No need to remove from database now!)
-		if(toRemove) {
+/*		if(toRemove) {
 			try {
-				mainDb.removeDescriptorData_markRed(removedTags);
+				mainDb.removeDescriptorData(removedTags);
 			} catch (Exception exe) {
 				LOGGER.error("Exception encountered in removing tags from database in MainForm:removeMarkup", exe);
 				exe.printStackTrace();
@@ -2840,14 +1842,14 @@ public class MainForm {
 			ApplicationUtilities.showPopUpWindow("You have not selected anything for removal. " +
 					"\nPlease select atleast one row.", 
 					"Nothing Selected!", SWT.ICON_ERROR);
-		}
-	//	markupTable_1.removeAll();//removed temporarily, should be removed from database
-		/*int count = 1;
-		for (String word : descriptorsToSaveList) {
+		}*/
+		markupTable_1.removeAll();
+		int count = 1;
+		for (String word : newList) {
 			TableItem item = new TableItem(markupTable_1, SWT.NONE);
 			item.setText(new String [] {count+"", word});
 			count++;
-		}*/ //commented as we want them to be displayed on the screen as red.
+		}
 
 	}
 
@@ -2861,64 +1863,41 @@ public class MainForm {
         	if(!directory.endsWith(dirsep)){
         		directory =directory+dirsep;
         	}
-        	
-        String path = 	directory;
-        
-        projectDirectory.setText(directory);
-        makeReqDirectories(path);
-        
-       
+          configurationText.setText(directory);
+          Registry.ConfigurationDirectory = directory;
         }
 	}
 	
-	private void makeReqDirectories(String path) {
-		// TODO Auto-generated method stub
-		
-		 File confFldr = new File(path+"/conf/");
-	        File srcFldr = new File(path+"/source/");
-	        File targetFldr = new File(path+"/target/");
-	        
-	      
-	        if(!confFldr.exists())
-	        	confFldr.mkdir();
-	        if(!srcFldr.exists())
-	        	srcFldr.mkdir();
-	        if(!targetFldr.exists())
-	        	targetFldr.mkdir();
-	        String targetPath= targetFldr.getAbsolutePath();
-	        
-	        File cooccur = new File(targetPath+"/co-occurrence");
-	        File descriptions = new File(targetPath+"/descriptions");
-	        File desc_dehyphened = new File(targetPath+"/descriptions-dehyphened");
-	        File extracted = new File(targetPath+"/extracted");
-	        File extractedword = new File(targetPath+"/extractedword");
-	        File final_dir = new File(targetPath+"/final");
-	        File habitats = new File(targetPath+"/habitats");
-	        File markedup = new File(targetPath+"/markedup");
-	        File transformed = new File(targetPath+"/transformed");
-	        
-	        cooccur.mkdir();
-	        descriptions.mkdir();
-	        desc_dehyphened.mkdir();
-	        extracted.mkdir();
-	        extractedword.mkdir();
-	        final_dir.mkdir();
-	        habitats.mkdir();
-	        markedup.mkdir();
-	        transformed.mkdir();
-	        
-	        	
-	        
-	          configurationText.setText(confFldr.getAbsolutePath());
-	          sourceText.setText(srcFldr.getAbsolutePath());
-	          targetText.setText(targetFldr.getAbsolutePath());
-	          
-	          Registry.ConfigurationDirectory = confFldr.getAbsolutePath()+"\\";
-	          Registry.SourceDirectory=srcFldr.getAbsolutePath()+"\\";
-	          Registry.TargetDirectory=targetFldr.getAbsolutePath()+"\\";
-		
+	private void browseSourceDirectory() {
+        DirectoryDialog directoryDialog = new DirectoryDialog(shell);
+        directoryDialog.setMessage("Please select a directory and click OK");
+        
+        String directory = directoryDialog.open();
+        if(directory != null && !directory.equals("")) {
+        	String dirsep = System.getProperty("file.separator");
+        	if(!directory.endsWith(dirsep)){
+        		directory =directory+dirsep;
+        	}
+          sourceText.setText(directory);
+          Registry.SourceDirectory = directory;
+        }
 	}
-
+	
+	private void browseTargetDirectory() {
+        DirectoryDialog directoryDialog = new DirectoryDialog(shell);
+        directoryDialog.setMessage("Please select a directory and click OK");
+        
+        String directory = directoryDialog.open();
+        if(directory != null && !directory.equals("")) {
+        	String dirsep = System.getProperty("file.separator");
+        	if(!directory.endsWith(dirsep)){
+        		directory =directory+dirsep;
+        	}
+        	targetText.setText(directory);
+        	Registry.TargetDirectory = directory;
+        }
+	}
+	
 	private void startExtraction() throws Exception {
 		
 		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar, shell.getDisplay());
@@ -2951,7 +1930,7 @@ public class MainForm {
 		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
 		Type3Transformer preMarkUp = 
 			new Type3Transformer(listener, shell.getDisplay(), 
-					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(),MainForm.glossaryPrefixCombo.getText().trim(), new ArrayList());
+					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(),MainFormOld.glossaryPrefixCombo.getText().trim(), new ArrayList());
 		preMarkUp.start();
 	}
 	
@@ -2982,16 +1961,7 @@ public class MainForm {
 			if(type.trim().equals(""))
 				project= new File("fnaproject.conf");
 			else
-				if(type.trim().equals("type2"))
-					project= new File("treatiseproject.conf");
-				else
-			if(type.trim().equals("type3"))
-				project= new File("bhlproject.conf");
-				else 
-			if(type.trim().equals("type4"))
-				project= new File("taxonproject.conf");
-			
-			//	 project= new File("project.conf");			
+				 project= new File("project.conf");			
 		BufferedReader in = new BufferedReader(new FileReader(project));
 		String conf = in.readLine();
 		conf = conf == null ? "" : conf;
@@ -3007,13 +1977,6 @@ public class MainForm {
         target = target == null ? "" : target;
         targetText.setText(target);
         Registry.TargetDirectory = target;
-        step3_heading.append(Registry.TargetDirectory+ApplicationUtilities.getProperty("TRANSFORMED"));
-        
-        String projDir = in.readLine();
-        projDir = projDir==null?"":projDir;
-        projectDirectory.setText(projDir);
-        label_prjDir.setText(projDir);
-        
 		
 		}catch(Exception e){
 			LOGGER.error("couldn't load the configuration file", e);
@@ -3024,32 +1987,16 @@ public class MainForm {
 	private void saveProject() {
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(configurationText.getText()).append("\\\n");
-		sb.append(sourceText.getText()).append("\\\n");
+		sb.append(configurationText.getText()).append("\n");
+		sb.append(sourceText.getText()).append("\n");
 		sb.append(targetText.getText());
-		//save the main directory also
-		sb.append("\\\n").append(projectDirectory.getText());
-		
 		File project =null;
 		try{
 			System.out.println(type.equalsIgnoreCase(""));
 			if(type.trim().equals(""))//that means fna is selected.. so save it to fnaproject.conf
 				project = new File(System.getProperty("user.dir")+"\\fnaproject.conf");
-				else
-					if(type.trim().equals("type2"))
-						project = new File(System.getProperty("user.dir")+"\\treatiseproject.conf");
-						
-				else
-					if(type.trim().equals("type3"))
-						
-						project = new File(System.getProperty("user.dir")+"\\bhlproject.conf");
-				else 
-					if(type.trim().equals("type4"))
-						project = new File(System.getProperty("user.dir")+"\\taxonproject.conf");
-						
-				
-				
-				//project = new File(System.getProperty("user.dir")+"\\project.conf");
+			else
+				project = new File(System.getProperty("user.dir")+"\\project.conf");
 			
 			if(!project.exists()){
 				project.createNewFile();
@@ -3066,16 +2013,15 @@ public class MainForm {
 	
 	private void startMarkup() {
 
-		mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
 		String workdir = Registry.TargetDirectory;
 		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
 		String databasename = ApplicationUtilities.getProperty("database.name");
 		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
 		
-		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
+	/*	VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
 				databasename, shell.getDisplay(), markUpPerlLog, 
-				dataPrefixCombo.getText().replaceAll("-", "_").trim(), markupTable_1, this);
-		vd.start();
+				dataPrefixCombo.getText().replaceAll("-", "_").trim(), markupTable_1, this);*/
+	//	vd.start();
 	}
 	
 	private void startFinalize() {
@@ -3087,7 +2033,7 @@ public class MainForm {
 				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
 			VolumeFinalizer vf = new VolumeFinalizer(listener, 
-					dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim());
+					dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainFormOld.glossaryPrefixCombo.getText().trim());
 			vf.start();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -3097,13 +2043,10 @@ public class MainForm {
 	private void removeMarkup() {
 		// gather removed tag
 		List<String> removedTags = new ArrayList<String>();
-		int i=0;
 		for (TableItem item : markupTable.getItems()) {
 			if (item.getChecked()) {
 				removedTags.add(item.getText(1));
-				markupTable.getItem(i).setBackground(i,red);
 			}
-			i+=1;
 		}
 		
 		// remove the tag from the database
@@ -3115,10 +2058,10 @@ public class MainForm {
 			exe.printStackTrace();
 		}
 
-		/*ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
-		String glossarytable = MainForm.glossaryPrefixCombo.getText();
-		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossarytable);
-		vm.update();*/
+		ProcessListener listener = new ProcessListener(markupTable, markupProgressBar, shell.getDisplay());
+		String glossarytable = MainFormOld.glossaryPrefixCombo.getText();
+		VolumeMarkup vm = new VolumeMarkup(listener, shell.getDisplay(), null, MainFormOld.dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossarytable);
+		vm.update();
 	}	
 	
 	private void loadTags() {
@@ -3159,9 +2102,9 @@ public class MainForm {
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				 String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
+				 String dataPrefix = MainFormOld.dataPrefixCombo.getText().replaceAll("-", "_").trim();
 				//String glosstable = dataPrefix + "_"+ApplicationUtilities.getProperty("GLOSSTABLE");
-				 String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
+				 String glosstable = MainFormOld.glossaryPrefixCombo.getText().trim();
 				 StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable); /*using learned semanticroles only*/
 				 sct.collect();
 				 sct.saveStates();
@@ -3323,8 +2266,6 @@ public class MainForm {
 		else
 		{
 			groupsCombo.setText("");
-			//print alert
-			ApplicationUtilities.showPopUpWindow("No Group to load. Please proceed to the next tab.", "Information",SWT.ERROR);
 		}
 			
 		groupsCombo.select(0);
@@ -3342,7 +2283,7 @@ public class MainForm {
 			showTerms();
 			//restore edges if they were removed but the group was not processed (saved)
 			restoreUnsavedEdges();
-			sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));
+			sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/down.jpg"));
 			
 		} else {
 			/* Load it from memory! */
@@ -3420,9 +2361,9 @@ public class MainForm {
 			
 				/** Show the correct sort order image */		
 				if(sortedBy[selectionIndex]) {
-					sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/down.jpg"));			
+					sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/down.jpg"));			
 				} else {
-					sortLabel.setImage(SWTResourceManager.getImage(MainForm.class, "/fna/parsing/up.jpg"));	
+					sortLabel.setImage(SWTResourceManager.getImage(MainFormOld.class, "/fna/parsing/up.jpg"));	
 				
 			}
 			
@@ -3500,9 +2441,8 @@ public class MainForm {
 		}
 		
 		if (terms!=null && terms.size() != 0) {
-			int radio_button_count=0;
+			
 			for (final TermsDataBean tbean : terms) {
-				radio_button_count+=1;
 				CoOccurrenceBean cbean = new CoOccurrenceBean();
 				if (!(tbean.getTerm1() == null) && !tbean.getTerm1().equals("")) {
 					
@@ -3525,7 +2465,6 @@ public class MainForm {
 				cbean.setKeep(tbean.getKeep());
 				
 				final Button button = new Button(termsGroup, SWT.RADIO);
-				//button.setText("radio_"+radio_button_count);
 				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
 				button.setToolTipText("Select to see the context sentences");
 				button.addSelectionListener(new SelectionAdapter() {
@@ -3936,22 +2875,5 @@ public class MainForm {
 			}
 		}
 		return returnValue;
-	}
-	
-	private int getType(String type) {
-		
-		if(type.trim().equalsIgnoreCase(""))
-			return 1;
-		
-		if(type.equals("type2"))
-			return 2;
-		
-		if(type.equals("type3"))
-			return 3;
-		
-		if(type.equals("type4"))
-			return 4;
-		else
-			return 0;
 	}
 }

@@ -36,6 +36,12 @@ public class ProcessListener {
 		this.display = display;
 	}
 	
+	public ProcessListener(ProgressBar popupBar, Display display2) {
+		// TODO Auto-generated constructor stub
+		this.progressBar = popupBar;
+		this.display = display2;
+	}
+
 	public void info(final String... contents) {		
 		display.syncExec(new Runnable() {
 			public void run() {

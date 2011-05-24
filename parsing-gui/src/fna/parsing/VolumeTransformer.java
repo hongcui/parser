@@ -164,7 +164,7 @@ public class VolumeTransformer extends Thread {
 				// output the treatment to transformed
 				File xml = new File(Registry.TargetDirectory,
 						ApplicationUtilities.getProperty("TRANSFORMED") + "/" + count + ".xml");
-				ParsingUtil.outputXML(treatment, xml);
+				ParsingUtil.outputXML(treatment, xml, null);
 				String error = (String)errors.get(count+"");
 				error = error ==null? "":error;
 				

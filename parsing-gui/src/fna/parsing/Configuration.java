@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-
 import com.swtdesigner.SWTResourceManager;
 
 public class Configuration {
@@ -80,7 +79,7 @@ public class Configuration {
 					if(!shell.isDisposed()) {
 						shell.dispose();
 					}
-					int[] a ={1,2,3,4,5};
+					
 					MainForm.launchMarker("");
 					System.exit(0);
 				}	

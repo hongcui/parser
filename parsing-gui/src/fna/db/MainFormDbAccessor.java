@@ -40,7 +40,7 @@ import fna.parsing.MainForm;
 import fna.parsing.ParsingException;
 
 
-
+@SuppressWarnings({ "unused"})
 public class MainFormDbAccessor {
 
 
@@ -125,8 +125,8 @@ public class MainFormDbAccessor {
 				String tag = rs.getString("tag");
 				tagListCombo.add(tag);
 			}
-
-			sql = "select distinct modifier from "+tablePrefix+"_sentence where modifier is not null order by modifier asc";
+//changed 02/28 added modifier != ''
+			sql = "select distinct modifier from "+tablePrefix+"_sentence where modifier is not null and modifier != '' order by modifier asc";
 			stmt_select = conn.prepareStatement(sql);			
 			rs = stmt_select.executeQuery();
 			
@@ -342,6 +342,42 @@ public class MainFormDbAccessor {
 		}
 	}
 	
+	//added March 1st
+	public void glossaryPrefixRetriever(List <String> datasetPrefixes) 
+	throws ParsingException, SQLException{
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.createStatement();
+			rset = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='markedupdatasets' and table_name like '%glossaryfixed'");
+			while (rset.next()) {
+				datasetPrefixes.add(rset.getString("table_name"));
+			}
+		}catch (SQLException exe) {
+			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
+			exe.printStackTrace();
+			throw new ParsingException("Failed to execute the statement.", exe);
+		} finally {
+			if (rset != null) {
+				rset.close();
+			}
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+						
+		}
+		
+		
+	}
+	
+	//added March 1st ends
 	public void datasetPrefixRetriever(List <String> datasetPrefixes) 
 		throws ParsingException, SQLException{
 		
@@ -360,6 +396,7 @@ public class MainFormDbAccessor {
 				  "tab_unknown varchar(1) DEFAULT NULL, "+
 				  "tab_finalm varchar(1) DEFAULT NULL, "+
 				  "tab_gloss varchar(1) DEFAULT NULL, "+
+				  "option_chosen varchar(1) DEFAULT '', "+
 				  "PRIMARY KEY (prefix, time_last_accessed) ) " ; 
 		
 		try {
@@ -392,7 +429,7 @@ public class MainFormDbAccessor {
 		
 	}
 	
-	public String getLastAccessedDataSet() 
+	public String getLastAccessedDataSet(int option_chosen) 
 	throws ParsingException, SQLException{
 	
 	Connection conn = null;
@@ -403,9 +440,11 @@ public class MainFormDbAccessor {
 	try {
 		conn = DriverManager.getConnection(url);
 		stmt = conn.createStatement();
-		rset = stmt.executeQuery("select * from datasetprefix order by time_last_accessed desc");
+		rset = stmt.executeQuery("select * from datasetprefix where option_chosen= '"+option_chosen+"' order by time_last_accessed desc");
 		if (rset.next()) {
 			recent =  rset.getString("prefix");
+			recent = recent.concat("|").concat(rset.getString("glossary"));
+			//added by prasad to extract the glossary name along with dataset prefix
 		}
 	}catch (SQLException exe) {
 		LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
@@ -439,7 +478,9 @@ public class MainFormDbAccessor {
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("insert into "+tablePrefix+"_wordroles values (?,?)");
+			String postable = tablePrefix+ "_"+ApplicationUtilities.getProperty("POSTABLE");
+			
+			stmt = conn.prepareStatement("insert into "+postable+"(word,pos) values (?,?)");
 			Set<String> keys = otherTerms.keySet();
 			for(String key : keys) {
 				try {
@@ -470,7 +511,7 @@ public class MainFormDbAccessor {
 		}
 	}
 	
-	public void savePrefixData(String prefix) 
+	public void savePrefixData(String prefix, String glossaryName, int optionChosen) 
 	throws ParsingException, SQLException{
 	
 	Connection conn = null;
@@ -480,9 +521,22 @@ public class MainFormDbAccessor {
 	try {
 		if (!prefix.equals("")) {
 			conn = DriverManager.getConnection(url);		
-			stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
-					prefix + "', current_timestamp, 0, 0, 0 ,0, 0, 0, 0, 0)");
-			stmt.executeUpdate();
+			/*stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
+					prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 0,'"+glossaryName+"','"+optionChosen+"')");*/
+			stmt = conn.prepareStatement("select prefix from datasetprefix where prefix='"+prefix+"'");
+			rset=stmt.executeQuery();
+			if(rset.next()){
+				stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp, tab_general = 1,tab_segm=1," +
+						"tab_verf =1,tab_trans =1,tab_struct =1,tab_unknown =1,tab_finalm =1,tab_gloss =1,glossary= '" +glossaryName+"',option_chosen='"+optionChosen+"' where prefix='"+prefix+"'");
+				stmt.executeUpdate();
+			}
+			else
+			{
+				stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
+						prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 1,'"+glossaryName+"','"+optionChosen+"')");
+				//changed insert from 0 to 1 by Prasad, since the remaining code is taking 1 as unprocessed 
+				stmt.executeUpdate();
+			}
 		}
 	}catch (SQLException exe) {
 		
@@ -525,6 +579,7 @@ public class MainFormDbAccessor {
 				conn = DriverManager.getConnection(url);
 				stmt = conn.prepareStatement("select * from datasetprefix where prefix ='" + dataPrefix + "'");
 				rset = stmt.executeQuery();
+				
 				if (rset != null && rset.next()) {
 					
 					/* Segmentation tab */
@@ -635,7 +690,8 @@ public class MainFormDbAccessor {
 		}
 		
 		 if (status == true) {
-			 tabStatus = 1; 
+			 tabStatus = 0;//changed to 0 by Prasad. if status is 0 that means processed and can be loaded
+			 //status of 1 means yet to be loaded
 		 } 
 		
 		try {
@@ -742,10 +798,14 @@ public class MainFormDbAccessor {
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
 			conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("Insert into "+tablePrefix+"_wordroles values (?,?)");
+			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
+			
+			stmt = conn.prepareStatement("Insert into "+wordrolesable+" (word,semanticrole) values (?,?)");
+			//stmt = conn.prepareStatement("Update "+postable+" set saved_flag ='green' where word = ?");
 			for (String term : terms) {
 				stmt.setString(1, term);
-				stmt.setString(2, role);				
+				stmt.setString(2, "c");	
+			//	stmt.setString(3,"green");
 				try {
 					stmt.execute();
 				} catch (Exception exe) {
@@ -770,4 +830,129 @@ public class MainFormDbAccessor {
 			
 		}		
 	}
+
+	public void removeDescriptorData_markRed(ArrayList<String> words) throws SQLException {
+		
+
+		Connection conn = null;
+		PreparedStatement pstmt = null ;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		try {
+			conn = DriverManager.getConnection(url);
+			pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red' where pos=? and word=?");
+			for (String word : words) {
+				pstmt.setString(1, "b");
+				pstmt.setString(2, word);
+				pstmt.addBatch();
+			}
+			pstmt.executeBatch();
+			
+		} catch (SQLException exe){
+			LOGGER.error("Exception in RemoveDescriptorData", exe);
+			exe.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}			
+			
+		}
+
+		
+	}
+	
+	public void createWordRoleTable(){
+		Connection conn = null;
+		Statement stmt = null ;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		try {
+			conn = DriverManager.getConnection(url);
+			stmt = conn.createStatement();
+			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2))");			
+			
+		} catch (SQLException exe){
+			LOGGER.error("Exception in RemoveDescriptorData", exe);
+			exe.printStackTrace();
+		} finally {
+			try{
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}		
+			}catch(Exception e){
+				LOGGER.error("Exception in RemoveDescriptorData", e);
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+//added newly to load the styled context for step 4 (all 3 tabs)
+public void getContextData(String word,StyledText context) throws SQLException, ParsingException {
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			//Class.forName(driverPath);
+			conn = DriverManager.getConnection(url);
+			String tablePrefix = MainForm.dataPrefixCombo.getText();
+			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '%"+word+"%' ";
+			stmt = conn.prepareStatement(sql);
+		
+			rs = stmt.executeQuery();
+			context.cut();
+			while (rs.next()) {
+				String src = rs.getString("source");
+				String sentence = rs.getString("sentence");
+				System.out.println(src+"::"+sentence+" \r\n");
+				context.append(src+"::"+sentence+" \r\n");
+				
+				/*int start = context.getText().length();
+				StyleRange styleRange = new StyleRange();
+				styleRange.start = start;
+				styleRange.length = sentence.length();
+				context.setStyleRange(styleRange);*/
+				/*contextStyledText.append(sentence + "\r\n");
+				if (Integer.parseInt(sid) == sentid) {
+					StyleRange styleRange = new StyleRange();
+					styleRange.start = start;
+					styleRange.length = sentence.length();
+					styleRange.fontStyle = SWT.BOLD;
+					// styleRange.foreground = display.getSystemColor(SWT.COLOR_BLUE);
+					contextStyledText.setStyleRange(styleRange);
+				}*/
+			}
+
+		} catch (SQLException exe) {
+			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
+			exe.printStackTrace();
+			throw new ParsingException("Failed to execute the statement.", exe);
+		} /*catch (ClassNotFoundException clex) {
+			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:updateContextData", clex);
+			throw new ParsingException("Couldn't load the db Driver" , clex);			
+		}*/ finally {
+			if (rs != null) {
+				rs.close();
+			}
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			if (conn != null) {
+				conn.close();
+			}
+			
+		}
+	}
+
+
 }

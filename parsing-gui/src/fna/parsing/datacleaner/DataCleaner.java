@@ -96,7 +96,7 @@ public abstract class DataCleaner{
 			Element root = doc.getRootElement();
 			root = clean(root);
 			root.detach();
-			ParsingUtil.outputXML(root, new File(outputdir, file.getName()));
+			ParsingUtil.outputXML(root, new File(outputdir, file.getName()), null);
 		}catch (Exception e){
 			e.printStackTrace();
 		}

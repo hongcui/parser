@@ -63,7 +63,7 @@ public class VolumeMarkupDbAccessor {
 	 
 		try {
 			conn = DriverManager.getConnection(url);
-			
+			//Populate Structure Table Hong TODO 5/23/11
 			String sql = "select distinct tag from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' and tag not in (select distinct term from "+this.glossarytable+")";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
@@ -95,7 +95,11 @@ public class VolumeMarkupDbAccessor {
 		}
 	 
  }
-	
+	/**
+	 * no longer used
+	 * @return
+	 * @throws SQLException
+	 */
 	public ArrayList<String> getDescriptorWords() throws SQLException {
 		
 		ArrayList<String> words = new ArrayList<String>();
@@ -132,8 +136,89 @@ public class VolumeMarkupDbAccessor {
 		return words;
 	}
 	
+	
+	
+public ArrayList<String> getSavedDescriptorWords() throws SQLException {
+		
+		ArrayList<String> words = new ArrayList<String>();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			//Populate descriptor Hong TODO 5/23/11
+			//stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos4parser where pos=? and word not in (select distinct term from "+this.glossarytable+") and saved_flag not in ('green','red')");
+			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and word not in (select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+") and saved_flag not in ('red')");
+			stmt.setString(1, "b");
+			rset = stmt.executeQuery();
+			if (rset != null) {
+				while(rset.next()){
+					words.add(rset.getString("word"));
+				}	
+			}			
+		} catch (SQLException exe) {
+			LOGGER.error("Error in getting words as descriptors: " +
+					"mainFormDbAccessor.getDescriptorWords", exe);
+		} finally {
+			if(rset != null) {
+				rset.close();
+			}
+			
+			if(stmt != null) {
+				stmt.close();
+			}
+			
+			if(conn != null){
+				conn.close();
+			}
+		}
+		
+		return words;
+	}
     public static void main(String[] args)throws Exception {
 		// TODO Auto-generated method stub
 		//System.out.println(DriverManager.getConnection(url));
+	}
+
+	public ArrayList<ArrayList> getUnSavedDescriptorWords() throws SQLException {
+		
+		ArrayList<String> words = new ArrayList<String>();
+		ArrayList<String> flag = new ArrayList<String>();
+		ArrayList<ArrayList> wordsAndFlag = new ArrayList<ArrayList>();
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			//Populate descriptor Hong TODO 5/23/11
+			//stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos4parser where pos=? and word not in (select distinct term from "+this.glossarytable+") and saved_flag not in ('green','red')");
+			stmt = conn.prepareStatement("select word,saved_flag from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and word not in (select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+")");
+			stmt.setString(1, "b");
+			rset = stmt.executeQuery();
+			if (rset != null) {
+				while(rset.next()){
+					words.add(rset.getString("word"));
+					flag.add(rset.getString("saved_flag"));
+				}	
+			}			
+		} catch (SQLException exe) {
+			LOGGER.error("Error in getting words as descriptors: " +
+					"mainFormDbAccessor.getDescriptorWords", exe);
+		} finally {
+			if(rset != null) {
+				rset.close();
+			}
+			
+			if(stmt != null) {
+				stmt.close();
+			}
+			
+			if(conn != null){
+				conn.close();
+			}
+		}
+		wordsAndFlag.add(words);
+		wordsAndFlag.add(flag);
+		return wordsAndFlag;
 	}
 }
