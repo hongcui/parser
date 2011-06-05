@@ -32,7 +32,7 @@ import prefuse.visual.VisualItem;
 	public class CoOccurrenceGraph {
 		public static final String AGGR = "weights";
 		public static void main(String [] args){
-			viewGraph("D:\\FNA\\FNAV19\\target\\co-occurrence\\Group_1.xml", "Group_1");
+			viewGraph("C:\\DATA\\FNA-v19\\target\\co-occurrence\\Group_1.xml", "Group_1");
 		}
 	    public static void viewGraph(String graphPath, String groupName) {
 	        
