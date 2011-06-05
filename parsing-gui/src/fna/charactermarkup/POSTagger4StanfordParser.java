@@ -220,7 +220,7 @@ public class POSTagger4StanfordParser {
 	       		   
 	        	   if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
 	        		   sb.append(word+"/RB ");
-	        	   }else if(word.compareTo("becoming")==0){
+	        	   }else if(word.compareTo("becoming")==0 || word.compareTo("about")==0){
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("throughout")==0 && tokens[i+1].matches("(,|or)")){
 	        		   sb.append(word+"/RB ");

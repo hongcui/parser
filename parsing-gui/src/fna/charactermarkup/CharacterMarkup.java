@@ -79,7 +79,8 @@ public class CharacterMarkup {
 			String source;
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from markedsentence");
+			//ResultSet rs = stmt.executeQuery("select * from markedsentence");
+			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence");
 			while (rs.next())
         		{
 						source=rs.getString(1);

@@ -14,20 +14,24 @@ import java.util.regex.Pattern;
 public class ParseSimpleseg {
 	static protected Connection conn = null;
 	static protected String database = null;
-	static protected String username = "root";
-	static protected String password = "";
-	
+	static protected String username = "termsuser";
+	static protected String password = "termspassword";
+	private String projectfolder = null;
+	private static CharStateHandler csh = null;
 	public ParseSimpleseg() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public ParseSimpleseg(String database) {
+	public ParseSimpleseg(String database, String projectfolder) {
 		// TODO Auto-generated constructor stub
+		ParseSimpleseg.database = database;
+		this.projectfolder = projectfolder;
+		ParseSimpleseg.csh = new CharStateHandler(database);
 		collect(database);
 	}
 	
 	protected void collect(String database){
-		ParseSimpleseg.database = database;
+		
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -59,7 +63,7 @@ public class ParseSimpleseg {
 			PrintStream out = new PrintStream( ostream ); 
         	ResultSet rs = stmt.executeQuery("select * from segments");
         	while(rs.next()){
-        		FileOutputStream ostream1 = new FileOutputStream("F:\\UA\\RA\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
+        		FileOutputStream ostream1 = new FileOutputStream(this.projectfolder+"\\TestCase_Benchmark\\"+rs.getString("sentid")+".xml");
         		PrintStream out1 = new PrintStream( ostream1 );
 				out1.println("<?xml version=\"1.0\" encoding=\"iso8859-1\"?>");
 		
@@ -69,13 +73,14 @@ public class ParseSimpleseg {
         		if(oldsrcstr.compareTo(newsrcstr)==0)
         			srcflag=1;
         		str=rs.getString(3);
-        		Pattern pattern = Pattern.compile("(<[a-zA-Z_ ]+>)");
+        		
+        		Pattern pattern = Pattern.compile("(<[a-zA-Z_ -]+>)");
                 Matcher matcher = pattern.matcher(str);
                 while ( matcher.find()){
                 	orcount +=1;
                 }
                 matcher.reset();
-                if(orcount==1|orcount==0){
+                if(orcount==1|orcount==0){ //single organ or less
                 	str = reversecondense(str);
                 	String str1="";
                 	str1 = plaintextextractornum(str);
@@ -130,7 +135,7 @@ public class ParseSimpleseg {
                 					int o=matcher1.start();
                 					int p=matcher1.end();
                 					String chr = str1.substring(o,p);
-                					chrtag = "<structure name=\"chromosome_count\" id=\"o"+(ct+1)+"\">";
+                					chrtag = "<structure name=\"chromosome\" id=\"o"+(ct+1)+"\">";
                 					Pattern pattern15 = Pattern.compile("(?<!([/][\\s]?))([±]?[\\d]+[\\–\\-][\\d]+[+]?|[±]?[\\d]+[+]?)(?!([\\s]?[n/]))");
                                 	Matcher matcher2 = pattern15.matcher(chr);
                                 	int flag7=0;
@@ -153,11 +158,11 @@ public class ParseSimpleseg {
                 			else{
                 				if(flag8==0){
 	                				if(ct>1){
-	                					str2=str2.concat("<structure name=\"chromosome_count\" id=\"o"+ct+"\">");
+	                					str2=str2.concat("<structure name=\"chromosome\" id=\"o"+ct+"\">");
 	                					str4=str4.concat("</structure>");
 	                				}
 	                				else{
-	                				str2=str2.concat("<structure name=\"chromosome_count\" id=\"o"+ct+"\">");
+	                				str2=str2.concat("<structure name=\"chromosome\" id=\"o"+ct+"\">");
 	                				str4="</structure>";
 	                				}
 	                				//str1="";
@@ -169,18 +174,18 @@ public class ParseSimpleseg {
                 		Pattern pattern8 = Pattern.compile("[\\d]?[\\s]?n[\\s]?=[\\s]?[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*|x[\\s]?=[\\s]?[\\[]?[\\d]+[\\]]?([\\s]?[\\–\\-\\—]?[:]?[\\s]?[\\[]?[\\d]+[\\]]?)*");
                     	Matcher matcher1 = pattern8.matcher(str1);
                     	if ( matcher1.find()){
-                    		str2=str2.concat("<structure name=\"chromosome_count\" id=\"o"+(ct+1)+"\">");
+                    		str2=str2.concat("<structure name=\"chromosome\" id=\"o"+(ct+1)+"\">");
                     		str4="</structure>";
                     	}
                     	else{
-                		str2=str2.concat("<structure name=\"org\" id=\"o"+(ct+1)+"\">");
+                		str2=str2.concat("<structure name=\"whole_organism\" id=\"o"+(ct+1)+"\">");
                 		str4="</structure>";
                     	}
                     	if(srcflag==0)
                     		oldorg="<org>";
                 	}
                 	matcher.reset();
-                	str2 = str2.concat(CharStateHandler.characterstate(str1, str));
+                	str2 = str2.concat(ParseSimpleseg.csh.characterstate(str1, str));
                 	
                 	Pattern pattern13 = Pattern.compile("_");
                     // Replace all occurrences of pattern in input
@@ -201,6 +206,8 @@ public class ParseSimpleseg {
                     else
                     	str2=str2.concat(str4+"<text>"+str6+"</text></statement>");
                                         
+                    
+                    //add constraint to structure => remove corresponding characters from str2
                     ResultSet rs3 = stmt3.executeQuery("select * from sentence where source='"+rs.getString(2)+"'");
                     if(rs3.next()){
                     	String tag = rs3.getString("tag");
@@ -219,11 +226,14 @@ public class ParseSimpleseg {
 	                    		StringBuffer sb = new StringBuffer();
 	                            Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
 	                        	matcher2 = pattern17.matcher(str2);
+	                        	boolean setconstraint = false;
 	        					while ( matcher2.find()){
 	        						matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+modifier+"\"");
+	        						setconstraint = true;
 	        					}
 	        					matcher2.appendTail(sb);
 	        					str2=sb.toString();
+	        					if(setconstraint) str2 = removeCharacters(str2, modifier);
 	        					matcher2.reset();
 	                		}
                     	}
@@ -240,11 +250,14 @@ public class ParseSimpleseg {
 	                    		StringBuffer sb = new StringBuffer();
 	                            Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
 	                        	matcher2 = pattern17.matcher(str2);
+	                        	boolean setconstraint = false;
 	        					while ( matcher2.find()){
 	        						matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+constraint+"\"");
+	        						setconstraint = true;
 	        					}
 	        					matcher2.appendTail(sb);
 	        					str2=sb.toString();
+	        					if(setconstraint) str2 = removeCharacters(str2, constraint);
 	        					matcher2.reset();
 	                		}
                     	}
@@ -256,7 +269,7 @@ public class ParseSimpleseg {
                 }
                 
                 
-                else{
+                else{//multiple organs
                 	str = reversecondense(str);
 	            	String str6=plaintextextractor(str);
 	            	orcount = 0;
@@ -282,12 +295,12 @@ public class ParseSimpleseg {
 	            	String markedsent = "";
 	            	String charset = "";
 	            	//System.out.println("str:"+str);
-	            	Pattern pattern4 = Pattern.compile("(<[a-zA-Z_ ]+>)[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>) m]+(<[a-zA-Z_ ]+>)");
+	            	Pattern pattern4 = Pattern.compile("(<[a-zA-Z_ -]+>)[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>) m]+(<[a-zA-Z_ -]+>)");
 	        		matcher = pattern4.matcher(str);
 	        		while ( matcher.find()){
 	        			int i=matcher.start();
 	            		int j=matcher.end();
-	            		str2=str.subSequence(i,j).toString();
+	            		str2=str.subSequence(i,j).toString();//not-comma separated text that connecting two organs, inclusive
 	            		//System.out.println("str2:"+str2);
 	            		int m=str2.indexOf("<");
 	            		int k=str2.indexOf(">");
@@ -304,20 +317,25 @@ public class ParseSimpleseg {
                 				}
 	            			}
 	            			if(org1.compareTo("n")==0)
-	            				org1 = "chromosome_count";
-	            			l=str2.indexOf("<",k);
+	            				org1 = "chromosome";
+	            			//int nextstate = str2.indexOf("{", k); //Hong add 5/6/11
+	            			l=str2.indexOf("<",k); 
+	            			//l=str2.lastIndexOf("<",k);//Hong 5/6/11
 	            			if(str2.charAt(l+1)!='{'){
 	            				org2=str2.substring(l+1,str2.indexOf(">",l));
 	            				organ2 = org2;
+	            				//organ2 = str2.substring(nextstate,str2.indexOf(">",l));//Hong 5/6/11
+	            				//organ2 = str2.substring(nextstate);//Hong 5/6/11
 	            				ResultSet rs2 = stmt3.executeQuery("select * from singularplural where plural='"+org2+"'");
                 				while(rs2.next()){
                 					org2 = rs2.getString(1);
                 				}
 	            			}
 	            			if(org2.compareTo("n")==0)
-	            				org2 = "chromosome_count";
-	            			relation = "";
+	            				org2 = "chromosome";
+	            			relation = "";	            			
 	            			relation=str2.substring(k+1,l);
+	            			//relation=str2.substring(k+1,nextstate).trim(); //Hong update 5/6/11
 	            			m=l;
 	            			k=str2.indexOf(">",l);
 	            			innertagstate = "";
@@ -328,7 +346,7 @@ public class ParseSimpleseg {
 	            				out.println(rs.getString(2)+"  "+relation);
 	            				String plaincharset = "";
 	            				plaincharset = plaintextextractornum(charset);
-	            				innertagstate = CharStateHandler.characterstate(plaincharset, charset);
+	            				innertagstate = ParseSimpleseg.csh.characterstate(plaincharset, charset);
 	            				Pattern pattern5 = Pattern.compile("[a-zA-Z]+");
 	                    		Matcher matcher1 = pattern5.matcher(relation);
 	                    		int flag=0;
@@ -407,7 +425,7 @@ public class ParseSimpleseg {
 	            				out.println(rs.getString(2)+"  "+relation);
 	            				Pattern pattern5 = Pattern.compile("[a-zA-Z]+");
 	                    		Matcher matcher1 = pattern5.matcher(relation);
-	                    		int flag=0;
+	                    		int flag=0; //look for negation
 	                    		while ( matcher1.find()){
 	                        		i=matcher1.start();
 	                        		j=matcher1.end();
@@ -472,7 +490,7 @@ public class ParseSimpleseg {
 	                		state=state.concat(str.subSequence(i,j).toString());
 	                		String plaincharset = "";
 	                		plaincharset = plaintextextractornum(state);
-	        				innertagstate = CharStateHandler.characterstate(plaincharset, state);
+	        				innertagstate = ParseSimpleseg.csh.characterstate(plaincharset, state);
 	                	}
 	                	matcher1.reset();
 	                	if(innertagstate!=""){
@@ -482,7 +500,7 @@ public class ParseSimpleseg {
             					organ1 = rs4.getString(1);
             				}
 	                		if(organ1.compareTo("n")==0)
-	                			organ1 = "chromosome_count";
+	                			organ1 = "chromosome";
 	                		Pattern pattern9 = Pattern.compile("<structure name=\""+organ1+"\" id=\"o1\">");
 	                		Matcher matcher2 = pattern9.matcher(innertags);
 	                		if ( matcher2.find()){
@@ -497,6 +515,8 @@ public class ParseSimpleseg {
 	                	
 	             //handle states for last organ in segment
 	                	innertagstate = "";
+	                	
+	                	organ2 = organ2.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
 	                	Pattern pattern10 = Pattern.compile("<"+organ2+">[\\w±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,=µ%\\*\\{\\}\\[\\](<\\{)(\\}>)m]+");
 	                	matcher1 = pattern10.matcher(str);
 	                	state = "";
@@ -504,13 +524,16 @@ public class ParseSimpleseg {
 	                		i=matcher1.start();
 	                		j=matcher1.end();
 	                		state=state.concat(str.subSequence(i,j).toString());
+	                		
+	                		//state = organ2;
 	                		String plaincharset = "";
 	                		plaincharset = plaintextextractornum(state);
-	                		innertagstate = CharStateHandler.characterstate(plaincharset, state);
+	                		innertagstate = ParseSimpleseg.csh.characterstate(plaincharset, state);
 	                	}
 	                	matcher1.reset();
 	                	if(innertagstate!=""){
 	                		StringBuffer sb = new StringBuffer();
+	                		org2 = org2.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
 	                		Pattern pattern9 = Pattern.compile("<structure name=\""+org2+"\" id=\"o"+ct+"\">");
 	                		Matcher matcher2 = pattern9.matcher(innertags);
 	                		while ( matcher2.find()){
@@ -556,11 +579,14 @@ public class ParseSimpleseg {
 		                    	StringBuffer sb = new StringBuffer();
 		                        Pattern pattern17 = Pattern.compile("<structure name=\""+tag+"\"");
 		                       	matcher2 = pattern17.matcher(markedsent);
+		                       	boolean setconstraint = false;
 		        				while ( matcher2.find()){
 		        					matcher2.appendReplacement(sb, matcher2.group(0)+" constraint=\""+modifier+"\"");
+		        					setconstraint = true;
 		        				}
 		        				matcher2.appendTail(sb);
 		        				markedsent=sb.toString();
+		        				if(setconstraint) markedsent = removeCharacters(markedsent, modifier);
 		        				matcher2.reset();
 		                	}
 	                    }
@@ -575,10 +601,29 @@ public class ParseSimpleseg {
 		}
         catch (Exception e)
         {
+        	e.printStackTrace();
         		System.err.println(e);
         }
 	}
-	
+	/**
+	 * 
+	 * @param text: xml : <character name="insertion" value="ventral"/>
+	 * @param constraint: ventral 
+	 * @return: xml with constraint-named character removed
+	 */
+	private String removeCharacters(String text, String constraint){
+		String[] values = constraint.split("\\s+");
+		String rtext ="";
+		for(int i = 0; i < values.length; i++){
+			String character = "<character .*? value=['\"]"+values[i]+"['\"].*?/>";
+			rtext = text.replaceFirst(character, "");
+			if(rtext.equals(text)){
+				break;
+			}
+			text =rtext;
+		}		
+		return rtext;
+	}
 	protected String reversecondense(String str) { 
 		StringBuffer sb2 = new StringBuffer();
     	Pattern pattern12 = Pattern.compile("<[a-zA-Z_ ]+>");
@@ -651,7 +696,8 @@ public class ParseSimpleseg {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new ParseSimpleseg("fnav19_benchmark");
+		//new ParseSimpleseg("fnav19_benchmark");
+		new ParseSimpleseg("annotationevaluation_heuristics_fna", "C:\\DATA\\evaluation\\fnav19");
 	}
 
 }

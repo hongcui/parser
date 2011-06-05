@@ -16,9 +16,15 @@ public class CharStateHandler {
 	static protected String password = "root";
 	static protected ArrayList<String> adverbs = new ArrayList<String>();
 	static protected ArrayList<String> notadverbs = new ArrayList<String>();
+	static protected String glosstable = null;
 	
-	public CharStateHandler() {
-		CharStateHandler.database = "benchmark_learningcurve_fnav19_test_24";
+	public CharStateHandler(String database) {
+		CharStateHandler.database = database;
+		if(database.endsWith("fna")){
+			CharStateHandler.glosstable = "fnaglossaryfixed";
+		}else if(database.endsWith("treatise")){
+			CharStateHandler.glosstable = "treatisehglossaryfixed";
+		} 
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -36,8 +42,8 @@ public class CharStateHandler {
 	 * @param state: <styles> 2[10] mm {diam}.
 	 * @return: characters marked up in XML format <character name="" value="">
 	 */
-	public static String characterstate(String plaincharset, String state){
-		new CharStateHandler();
+	public String characterstate(String plaincharset, String state){
+		
 		String innertagstate = "";
 		try{
 			Statement stmt2 = conn.createStatement();
@@ -355,7 +361,7 @@ public class CharStateHandler {
         	plaincharset = matcher2.replaceAll("#");
         	matcher2.reset();
         
-        	int countct = 0;
+        	int countct = 0+0;
         	//Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	matcher2 = pattern15.matcher(plaincharset);
@@ -363,12 +369,14 @@ public class CharStateHandler {
         	matcher2.reset();     	
         	//Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	//add \\. to allow 0.5-0.6+
+        	//TODO: match also just a period . 
         	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./]+[+]?[\\]]?)*|[±]?[\\d\\./]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	matcher2 = pattern16.matcher(plaincharset);
         	while ( matcher2.find()){
         		i=matcher2.start();
         		j=matcher2.end();
         		String extreme = plaincharset.substring(i,j);
+        		if(!extreme.matches(".*\\d.*")) continue;
     			i = 0;
     			j = extreme.length();
         		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
@@ -486,9 +494,9 @@ public class CharStateHandler {
         		if(state2.contains("_")){
         			state2=state2.substring(state2.indexOf("_")+1);
         		}
-        		ResultSet rs1 = stmt2.executeQuery("select * from character_markup_ontology where term='"+state1+"'");
+        		ResultSet rs1 = stmt2.executeQuery("select category from "+CharStateHandler.glosstable+" where term='"+state1+"'");
         		if(rs1.next()){
-        			chstate1=rs1.getString(4);
+        			chstate1=rs1.getString("category");
         			if(chstate1.contains("/")){
         				String [] terms = chstate1.split("/");
         				chstate1=terms[0];
@@ -496,9 +504,9 @@ public class CharStateHandler {
                 			chstate1=chstate1.concat("_or_"+terms[t]);  
         			}
         		}
-        		ResultSet rs2 = stmt2.executeQuery("select * from character_markup_ontology where term='"+state2+"'");
+        		ResultSet rs2 = stmt2.executeQuery("select category from "+CharStateHandler.glosstable+" where term='"+state2+"'");
         		if(rs2.next()){
-        			chstate2=rs2.getString(4);
+        			chstate2=rs2.getString("category");
         			if(chstate2.contains("/")){
         				String [] terms = chstate2.split("/");
         				chstate2=terms[0];
@@ -538,9 +546,9 @@ public class CharStateHandler {
         			str3=str3.substring(str3.indexOf("_")+1);
         			flag6=1;
         		}
-        		ResultSet rs1 = stmt2.executeQuery("select * from character_markup_ontology where term='"+str3+"'");
+        		ResultSet rs1 = stmt2.executeQuery("select category from "+CharStateHandler.glosstable+" where term='"+str3+"'");
         		if(rs1.next()){
-        			chstate=rs1.getString(4);
+        			chstate=rs1.getString("category");
         			if(chstate.contains("/")){
         				String [] terms = chstate.split("/");
         				chstate=terms[0];
@@ -583,32 +591,41 @@ public class CharStateHandler {
     				StringBuffer sb = new StringBuffer();
     				Pattern pattern29 = Pattern.compile("value=\""+chstate+"\"");
     				Matcher matcher1 = pattern29.matcher(innertagstate);
+    				String value="";
     				while ( matcher1.find()){
     					matcher1.appendReplacement(sb, "modifier=\""+mod+"\" "+matcher1.group());
+    					value = matcher1.group();
     				}
     				matcher1.appendTail(sb);
     				innertagstate=sb.toString();
+					if(value.length()> 0) innertagstate= combineModifiers(innertagstate, value);
     				matcher1.reset();
     				if(matcher2.group(10)!=null){
     					StringBuffer sb1 = new StringBuffer();
     					Pattern pattern30 = Pattern.compile("from=\""+chstate+"\"");
     					matcher1 = pattern30.matcher(innertagstate);
+    					value="";
     					while ( matcher1.find()){
     						matcher1.appendReplacement(sb1, "modifier=\""+mod+"\" "+matcher1.group());
+    						value = matcher1.group();
     					}
     					matcher1.appendTail(sb1);
     					innertagstate=sb1.toString();
+    					if(value.length()> 0) innertagstate= combineModifiers(innertagstate, value);
     					matcher1.reset();
     					
     					chstate = matcher2.group(10).replaceAll("\\_", " ");
     					StringBuffer sb2 = new StringBuffer();
     					Pattern pattern31 = Pattern.compile("value=\""+chstate+"\"");
     					matcher1 = pattern31.matcher(innertagstate);
+    					value="";
     					while ( matcher1.find()){
     						matcher1.appendReplacement(sb2, "modifier=\""+mod+"\" "+matcher1.group());
+    						value = matcher1.group();
     					}
     					matcher1.appendTail(sb2);
     					innertagstate=sb2.toString();
+    					if(value.length()> 0) innertagstate= combineModifiers(innertagstate, value);
     					matcher1.reset();
     				}
     				if(matcher2.group(13)!=null){
@@ -616,11 +633,14 @@ public class CharStateHandler {
     					StringBuffer sb3 = new StringBuffer();
     					Pattern pattern32 = Pattern.compile("value=\""+chstate+"\"");
     					matcher1 = pattern32.matcher(innertagstate);
+    					value = "";
     					while ( matcher1.find()){
     						matcher1.appendReplacement(sb3, "modifier=\""+mod+"\" "+matcher1.group());
+    						value = matcher1.group();
     					}
     					matcher1.appendTail(sb3);
     					innertagstate=sb3.toString();
+    					if(value.length()> 0) innertagstate = combineModifiers(innertagstate, value);
     					matcher1.reset();
     				}
     			}
@@ -633,25 +653,67 @@ public class CharStateHandler {
     		System.err.println(e);
     		e.printStackTrace();
         }
-		return(innertagstate);
+		return(innertagstate.replaceAll("\\s+\\.\\s+", ".")); //turn 4 . 5 to 4.5
 	}
 
+	
+	/**
+	 * modifier="a" modifier="b" value="c" 
+	 * @param element: <character name="n" modifier="a" modifier="b" value="c"/> 
+	 * @param value: value="c"
+	 * @return: <character name="n" modifier="a;b" value="c"/> 
+	 */
+	private static String combineModifiers(String text, String value){
+		
+		String rtext = "";
+		Pattern p = Pattern.compile("(.*?)(<character [^>]*? "+value+".*?/>)(.*)");
+		Matcher m0 = p.matcher(text);
+		while(m0.matches()){
+			rtext +=m0.group(1);
+			rtext +=combineModifiers4Element(m0.group(2));
+			text = m0.group(3);
+			m0 = p.matcher(text);
+		}
+		return rtext+text;
+	}
+	
+	private static String combineModifiers4Element(String element) {
+		Pattern ptn = Pattern.compile("(.*? )(modifier=\\S+)(['\"].*)");
+		Matcher m = ptn.matcher(element);
+		String result = "";
+		String modifiers = "";
+		while(m.matches()){
+			result +=m.group(1).replaceFirst("^['\"]", "");
+			modifiers += m.group(2).replaceAll("modifier=", "")+";";
+			element = m.group(3);
+			m = ptn.matcher(element);
+		}
+		result += element.replaceFirst("^['\"]", "");
+		modifiers = "modifier=\""+modifiers.replaceAll("['\"]", "").replaceAll("\\W+$", "").trim()+"\"";
+		result = result.replaceFirst(" value", modifiers+" value").replaceAll("\\s+", " ");
+		return result;
+	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		CharStateHandler ch = new CharStateHandler("annotationevaluation_heuristics_fna");
 		// TODO Auto-generated method stub
 		String str1 = "0.5-0.6+"; 		String str2 = "0.5-0.6+";	
-		System.out.println(CharStateHandler.characterstate(str1, str2));
+		System.out.println(ch.characterstate(str1, str2));
 		
 		str1 = "0.5-0.6+ cm"; 	 str2 = "0.5-0.6+ cm";	
-		System.out.println(CharStateHandler.characterstate(str1, str2));
+		System.out.println(ch.characterstate(str1, str2));
 		
 		str1 = "1/3-1/2"; 	 str2 = "1/3-1/2";	
-		System.out.println(CharStateHandler.characterstate(str1, str2));
+		System.out.println(ch.characterstate(str1, str2));
 		
 		str1 = "[5-]8+"; 	 str2 = "[5-]8+";	
-		System.out.println(CharStateHandler.characterstate(str1, str2));
+		System.out.println(ch.characterstate(str1, str2));
+		
+		str1 = "outer and mid phyllaries acute"; 
+		str2 = "{outer} and <{mid}> <phyllaries> {acute}";
+		System.out.println(ch.characterstate(str1, str2));
 		
 	}
 

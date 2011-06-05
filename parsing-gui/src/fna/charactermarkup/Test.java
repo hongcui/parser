@@ -105,12 +105,45 @@ public class Test {
 		return tokens;
 	}
 
+	public String addSentmod(String subject, String sentmod) {
+		String[] tokens = subject.split("\\s+");
+		String substring = "";
+		for(int i = 0; i<tokens.length; i++){
+			if(!sentmod.matches(".*?\\b"+tokens[i].replaceAll("[{()}]", "")+"\\b.*")){
+				substring +=tokens[i]+" ";
+			}
+		}
+		substring = substring.trim();
+		substring ="{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ")+"} "+substring;
+		return substring;
+	}
+	
+	private static String combineModifiers(String element){
+		Pattern ptn = Pattern.compile("(.*? )(modifier=\\S+)(['\"].*)");
+		Matcher m = ptn.matcher(element);
+		String result = "";
+		String modifiers = "";
+		while(m.matches()){
+			result +=m.group(1).replaceFirst("^['\"]", "");
+			modifiers += m.group(2).replaceAll("modifier=", "")+";";
+			element = m.group(3);
+			m = ptn.matcher(element);
+		}
+		result += element.replaceFirst("^['\"]", "");
+		modifiers = "modifier=\""+modifiers.replaceAll("['\"]", "").replaceAll("\\W+$", "").trim()+"\"";
+		result = result.replaceFirst("value", modifiers+" value").replaceAll("\\s+", " ");
+		return result;
+	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		Test t = new Test();
-		t.constraint();
+		
+		System.out.println(
+		//t.addSentmod("{distal} (face)", "distal [basal leaf]")
+		t.combineModifiers("<character name=\"n\" modifier=\"a\" value=\"c\"/>")
+		);
 		//String text = "that often do not overtop the heads";
 		//t.breakText(text);
 	}

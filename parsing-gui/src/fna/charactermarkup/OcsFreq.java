@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public class OcsFreq {
 	static protected Connection conn = null;
 	static protected String database = null;
-	static protected String username = "root";
-	static protected String password = "";
+	static protected String username = "termsuser";
+	static protected String password = "termspassword";
 
 	public OcsFreq(String database) {
 		// TODO Auto-generated constructor stub

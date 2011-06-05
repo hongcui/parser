@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public class CondenseMarkedsent {
 	static protected Connection conn = null;
 	static protected String database = null;
-	static protected String username = "root";
-	static protected String password = "root";
+	static protected String username = "termsuser";
+	static protected String password = "termspassword";
 	/**
 	 * @param args
 	 */
@@ -45,7 +45,8 @@ public class CondenseMarkedsent {
 			String source;
 			Statement stmt = conn.createStatement();
 			Statement stmt1 = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from markedsentence");
+			//ResultSet rs = stmt.executeQuery("select * from markedsentence");
+			ResultSet rs = stmt.executeQuery("select source, markedsent from markedsentence");
 			while (rs.next())
         		{
 						source=rs.getString(1);
@@ -133,7 +134,8 @@ public class CondenseMarkedsent {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new CondenseMarkedsent("benchmark_learningcurve_fnav19_test_24");
+		//new CondenseMarkedsent("benchmark_learningcurve_fnav19_test_24");
+		new CondenseMarkedsent("annotationevaluation_heuristics");
 	}
 
 }

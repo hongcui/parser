@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,9 +53,10 @@ public class ChunkedSentence {
 	public static final String more="greater|more|less|fewer";
 	public static final String counts="few|several|many|none|numerous|single|couple";
 	public static final String basecounts="each|every|per";
-	public static final String clusters="cluster|clusters|involucre|involucres|rosette|rosettes";
+	public static final String clusters="cluster|clusters|involucre|involucres|rosette|rosettes|pair|pairs|series|ornament|ornamentation|array|arrays";
 	public static final String prepositions = "above|across|after|along|among|amongst|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|to|toward|towards|up|upward|with|without";
 	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
+	public static Hashtable<String, String> eqcharacters = new Hashtable<String, String>();
 	private boolean inSegment = false;
 	private boolean rightAfterSubject = false;
 	@SuppressWarnings("unused")
@@ -81,6 +83,8 @@ public class ChunkedSentence {
 	private boolean printNormTo = false;
 	private boolean printExp = false;
 	private boolean printRecover = false;
+	private String clauseModifierConstraint;
+	private String clauseModifierContraintId;
 	
 
 	
@@ -89,6 +93,8 @@ public class ChunkedSentence {
 		this.chunkedsent = chunkedsent;
 		this.conn = conn;
 		this.glosstable = glosstable;
+		this.recoverOrgans();
+		
 	}
 	/**
 	 * @param tobechunkedmarkedsent 
@@ -96,10 +102,26 @@ public class ChunkedSentence {
 	 * 
 	 */
 	public ChunkedSentence(int id, Document collapsedtree, Document tree, String tobechunkedmarkedsent,  String sentsrc, String tableprefix,Connection conn, String glosstable) {
-		this.sentsrc = sentsrc;
+		eqcharacters.put("wide", "width");
+		eqcharacters.put("long", "length");
+		eqcharacters.put("broad", "width");
+		eqcharacters.put("diam", "diameter");
+				
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
 		this.conn = conn;
+		
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select term from "+glosstable+" where category='character'");
+			while(rs.next()){
+				nouns.add(rs.getString("term"));
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		this.sentsrc = sentsrc;
 		this.sentid = id;
 		this.markedsent = tobechunkedmarkedsent;
 		//tobechunkedmarkedsent = tobechunkedmarkedsent.replaceAll("[\\[\\(]", " -LRB-/-LRB- ").replaceAll("[\\]\\)]", " -RRB-/-RRB- ").replaceAll("\\s+", " ").trim(); 
@@ -157,15 +179,19 @@ public class ChunkedSentence {
 		}		
 		this.chunkedsent = "";
 		
-		normalizeOtherINs(); //find objects for those VB/IN that without
-		normalizeThan();
-		normalizeTo();
+		
+		int discoveredchunks = 0;
+		discoveredchunks += normalizeOtherINs(); //find objects for those VB/IN that without
+		discoveredchunks +=normalizeThan();
+		discoveredchunks +=normalizeTo();
 		normalizeUnits();
+		int allchunks = chunks();
+		StanfordParser.countChunks(allchunks, discoveredchunks);
 		
 		recoverVPChunks();//recover unidentified verb phrases
 		recoverConjunctedOrgans(); //
 		findSubject(); //set the pointer to a place right after the subject, assuming the subject part is stable in chunkedtokens at this time
-		recoverNonsubjectOrgans();
+		recoverOrgans();
 		segmentSent();//insert segment marks in chunkedtokens while producing this.chunkedsent
 		
 		//TODO move this to an earlier place
@@ -175,6 +201,20 @@ public class ChunkedSentence {
 		}
 	}
 	
+	/**
+	 * count the chunks in chunkedtokens
+	 * @return
+	 */
+	private int chunks() {
+		int count = 0;
+		Iterator<String> it = this.chunkedtokens.iterator();
+		while(it.hasNext()){
+			if(it.next().matches("[^l]\\[.*")){
+				count++;
+			}
+		}
+		return count;
+	}
 	/**
 	 * scan through a chunkedtokens to find Verbs not parsed as such by the parser
 	 * find verbs by
@@ -313,11 +353,11 @@ public class ChunkedSentence {
 	 * run this after recoverConjunctedOrgans to exclude organs that are objects of VP/PP-phrases)
 	 * does not attempt to recognize conjunctions as the decisions may be context-sensitive
 	 */
-	private void recoverNonsubjectOrgans() {
+	private void recoverOrgans() {
 		for(int i = this.chunkedtokens.size()-1; i >=this.pointer; i--){
 			String t = this.chunkedtokens.get(i);
-			if(t.endsWith(">")){//TODO: not dealing with nplist at this time, may be later
-				recoverNonsubjectOrgan(i);//chunk and update chunkedtokens
+			if(t.endsWith(">") || t.endsWith(")")){//TODO: not dealing with nplist at this time, may be later
+				recoverOrgan(i);//chunk and update chunkedtokens
 			}
 		}		
 	}
@@ -326,7 +366,7 @@ public class ChunkedSentence {
 	 * 
 	 * @param last: the index of the last part of an organ name
 	 */
-	private void recoverNonsubjectOrgan(int last) {
+	private void recoverOrgan(int last) {
 		String chunk = this.chunkedtokens.get(last);
 		boolean foundm = false; //modifiers
 		boolean subjecto = false;
@@ -336,7 +376,7 @@ public class ChunkedSentence {
 			if(t.matches("\\{\\w+\\}") || t.contains("~list~")){
 				chunk = t+" "+chunk;
 				foundm = true;
-			}else if(!foundm && t.endsWith(">")){ //if m o m o, collect two chunks
+			}else if(!foundm && (t.endsWith(">") ||t.endsWith(")") )){ //if m o m o, collect two chunks
 				chunk = t+" "+chunk;
 			}else{
 				if(t.equals(",")) subjecto = true;
@@ -345,7 +385,7 @@ public class ChunkedSentence {
 		}
 		//if(i==0) subjecto = true;
 		//reformat this.chunkedtokens
-		if(subjecto || i==0){ 
+		if(subjecto || i==-1){ 
 			chunk = "z["+chunk.trim().replaceAll("<", "(").replaceAll(">", ")")+"]";
 		}else{
 			chunk = "u["+chunk.trim().replaceFirst("<", "o[(").replaceFirst(">$", ")]").replaceAll("<", "(").replaceAll(">", ")")+"]";
@@ -621,7 +661,8 @@ public class ChunkedSentence {
 	 * more/less smooth than ...
 	 * pretty good now
 	 */
-	private void normalizeThan(){
+	private int normalizeThan(){
+		int count = 0;
 		String np = "";
 		int thani = 0;
 		int firstmorei = this.chunkedtokens.size();
@@ -665,6 +706,7 @@ public class ChunkedSentence {
 							if(w.matches("\\b("+preps+"|and|that|which|but)\\b") || w.matches("\\p{Punct}")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
 								np = np.replaceAll("<", "(").replaceAll(">", ")").trim();
 								this.chunkedtokens.set(thani, "n["+np+"]");
+								count++;
 								break;
 							}else{
 								if(this.chunkedtokens.get(i).length()>0){
@@ -684,13 +726,15 @@ public class ChunkedSentence {
 			
 			}
 		}
+		return count;
 	}
 	
 	/**
 	 * expanded to <throats>
 	 * to 6 m.
 	 */
-	private void normalizeTo(){
+	private int normalizeTo(){
+		int count = 0;
 		String np = "";
 		boolean startn = false;
 		//ArrayList<String> copy = (ArrayList<String>)this.chunkedtokens.clone();
@@ -733,10 +777,11 @@ public class ChunkedSentence {
 					boolean startc = false; //find the start of the chunk
 					for(int j = i-1; j>=0; j--){
 						String t = this.chunkedtokens.get(j);
-						if(t.matches(".*?\\b("+ChunkedSentence.prepositions+"|and|or|that|which|but)\\b.*") || t.matches(".*?[>;,:].*")){
+						if(t.matches(".*?\\b("+ChunkedSentence.prepositions+"|and|or|that|which|but)\\b.*") || t.matches(".*?[>;,:].*") ||(t.matches("^\\w+\\[.*") && j!=i-1) ){ //the last condition is to avoid nested chunks. cannot immediately before w[].e.g: b[v[{placed}] o[{close}]] w[to {posterior} (shell) (margin)] ; 
 							np = np.replaceAll("<", "(").replaceAll(">", ")").replaceAll("\\s+", " ").trim();
 							//np = np.replaceAll("\\s+", " ").trim();
 							this.chunkedtokens.set(i, "w["+np+"]"); //replace "to" with np
+							count++;
 							startn = false;
 							startc = true;
 							if(this.printNormTo){
@@ -754,6 +799,7 @@ public class ChunkedSentence {
 			}
 		}
 	}
+		return count;
 }
 	/**
 	 * form a chunk if a pattern "to # unit" is found starting from i
@@ -781,9 +827,10 @@ public class ChunkedSentence {
 	 * most [of] lengths
 	 * [in] zyz arrays
 	 */
-	private void normalizeOtherINs(){
+	private int normalizeOtherINs(){
 		
 		//boolean startn = false;
+		int count = 0;
 		String preps = ChunkedSentence.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
 		for(int i = 0; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
@@ -899,6 +946,7 @@ public class ChunkedSentence {
 							System.out.println("!normalized!: "+token);
 						}
 					}
+					count++;
 				}else{ 
 					if(j-i==1){
 						//cancel the normalization attempt on this prep, return to the original chunkedtokens
@@ -921,6 +969,7 @@ public class ChunkedSentence {
 							if(this.printNorm){
 								System.out.println("!default normalized to (.|;|,|and|or|r[)!: "+token);
 							}
+							count++;
 						}
 					}
 				}
@@ -931,6 +980,7 @@ public class ChunkedSentence {
 		/*if(!startn){
 			this.chunkedtokens = copy;
 		}*/
+		return count;
 	}
 	
 
@@ -939,6 +989,9 @@ public class ChunkedSentence {
 	private boolean ishardstop(int j) {
 		String t1 = this.chunkedtokens.get(j).trim();
 		
+		if(t1.matches("^\\w\\[.*")){
+			return true;
+		}
 		if(t1.startsWith(".")){
 			return true;
 		}
@@ -1147,7 +1200,7 @@ public class ChunkedSentence {
 		if(token.matches("SG[;:\\.]SG")){
 			this.inSegment = false;
 			pointer++;
-			this.unassignedmodifier = null;
+			//this.unassignedmodifier = null;
 			return new ChunkEOL(""); //end of line/statement
 		}
 		
@@ -1322,7 +1375,7 @@ public class ChunkedSentence {
 						scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 						return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
 					}else{
-						if(scs.indexOf("m[")>=0+0){
+						if(scs.indexOf("m[")>=0){
 							this.unassignedmodifier = "{"+scs.trim().replaceAll("(m\\[|\\])", "").replaceAll("\\s+", "} {")+"}";
 						}
 						if(this.pastpointers.contains(i+"")){
@@ -1330,6 +1383,7 @@ public class ChunkedSentence {
 						}else{
 							this.pastpointers.add(i+"");
 						}
+						//if(token.matches("SG.SG")) return new ChunkEOS("");
 						return null;
 					}
 				}else{
@@ -1691,8 +1745,19 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		//	return "ChunkOf";
 		//}
 		if(token.startsWith("r[")){
-			if(token.indexOf("o[")>=0 /*|| token.indexOf("c[")>=0*/){
+			//r[p[around] o[10 mm]] should be ChunkValue
+			if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?.*("+ChunkedSentence.units+")\\]+")){
+				token = token.replaceFirst("\\[p\\[", "[m[").replaceAll("[or]\\[", "").replaceFirst("\\]+$", "");
+				this.chunkedtokens.set(id, token);
+				return "ChunkValue";
+			}else if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?\\]+")){
+				token = token.replaceFirst("\\[p\\[", "[m[").replaceAll("[or]\\[", "").replaceFirst("\\]+$", "");
+				this.chunkedtokens.set(id, token);
+				return "ChunkValue";
+			}else if(token.indexOf("o[")>=0 /*|| token.indexOf("c[")>=0*/){
 				//r[p[without] o[or r[p[with] o[{poorly} {developed} {glutinous} ({ridge})]]]] ; 
+				token = token.replaceAll("r\\[p\\[of\\]\\]", "of");
+				this.chunkedtokens.set(id, token);
 				if(token.matches(".*?\\[p\\[\\w+\\] o\\[\\w+ r\\[p\\[.*")){
 					Pattern p = Pattern.compile("(.*?\\[p\\[\\w+)(\\] o\\[)(\\w+ )(r\\[p\\[)(.*)");
 					Matcher m = p.matcher(token);
@@ -1928,11 +1993,12 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 						
 					}else{
 						for(int i = 0; i<tokens.length; i++){
-							if(Utilities.toSingular(tokens[i]).compareTo(senttag)==0){
+							if(Utilities.toSingular(tokens[i]).compareTo(senttag.replaceAll("_", ""))==0){
 								subject = subject.replaceAll("\\s+-\\s+", "-");
 								subject = "{"+subject.trim().replaceAll("[\\[\\]{}()]", "").replaceAll(" ", "} {")+"}";
 								subject = (subject + " ("+tokens[i].replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
-								this.subjecttext=subject;
+								//this.subjecttext=subject;
+								this.subjecttext = addSentmod(subject, sentmod);
 								if(subject.length()>0){
 									skipLead(subject.replaceAll("[\\[\\]{}()]", "").split("\\s+"));
 									break;
@@ -1974,6 +2040,27 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 	}
 	
 	/**
+	 * sent
+	 * @param subject: {basal} (blade)
+	 * @param sentmod basal [leaf]
+	 * @return
+	 */
+	private String addSentmod(String subject, String sentmod) {
+		if(sentmod.indexOf("[")>=0){
+			String[] tokens = subject.split("\\s+");
+			String substring = "";
+			for(int i = 0; i<tokens.length; i++){
+				if(!sentmod.matches(".*?\\b"+tokens[i].replaceAll("[{()}]", "")+"\\b.*")){
+					substring +=tokens[i]+" ";
+				}
+			}
+			substring = substring.trim();
+			substring ="{"+sentmod.replaceAll("[\\[\\]]", "").replaceAll(" ", "} {").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ")+"} "+substring;
+			return substring;
+		}
+		return subject;
+	}
+	/**
 	 * 
 	 * @param begainindex (inclusive)
 	 * @param endindex (not include)
@@ -1994,6 +2081,24 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		// TODO Auto-generated method stub
 
 	}
+	public String getTokenAt(int i) {
+		return this.chunkedtokens.get(i);
+	}
+	public void setClauseModifierConstraint(String modifier, String constraintId) {
+		this.clauseModifierConstraint = modifier;		
+		this.clauseModifierContraintId = constraintId;
+	}
+	public ArrayList<String> getClauseModifierConstraint() {//apply to all characters in this chunkedsentence
+		if(this.clauseModifierConstraint!=null){
+			ArrayList<String> mc = new ArrayList<String>();
+			mc.add(this.clauseModifierConstraint);	
+			if(this.clauseModifierContraintId!=null) mc.add(this.clauseModifierContraintId);
+			return mc;
+		}else{
+			return null;
+		}
+	}
+	
 
 	
 	
