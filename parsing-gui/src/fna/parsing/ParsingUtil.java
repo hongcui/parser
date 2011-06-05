@@ -28,8 +28,9 @@ public class ParsingUtil {
 			// File file = new File(path, dest + "/" + count + ".xml");
 			BufferedOutputStream out = new BufferedOutputStream(
 					new FileOutputStream(file));
-
+			
 			outputter.output(doc, out);
+			if(comment!=null) outputter.output(comment, out);
 			out.close(); // don't forget to close the output stream!!!
 			
 			// generate the information to the listener (gui)

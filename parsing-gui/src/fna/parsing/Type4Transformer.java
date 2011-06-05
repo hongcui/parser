@@ -177,7 +177,7 @@ public class Type4Transformer extends Thread {
 	}
 
 	private void getDescriptionFrom(Element root, int fn,  int count) {
-		// TODO Auto-generated method stub
+
 		try{
 		List<Element> divs = XPath.selectNodes(root, "/tax:taxonx/tax:taxonxBody/tax:treatment/tax:div");
 		Iterator<Element> it = divs.iterator();
