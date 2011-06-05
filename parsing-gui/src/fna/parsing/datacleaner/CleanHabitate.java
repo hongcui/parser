@@ -81,7 +81,7 @@ public class CleanHabitate extends DataCleaner{
 				word = text.substring(0, i);
 				text = text.replaceFirst("^"+word, "").trim();
 			}
-			if(Utilities.isAdv(word, new ArrayList<String>())) changed = true;
+			if(Utilities.isAdv(word, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)) changed = true;
 			if(word.matches("\\b(and|or)\\b")) changed = true;
 			if(word.matches("\\b("+ChunkedSentence.prepositions+")\\b")) changed = true;
 			if(!changed) text = word+" "+text;			
