@@ -125,7 +125,7 @@ public class StateCollector  {
 			e.printStackTrace();
 		}
 		
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable);//tag organ names
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable, true);//tag organ names
 		this.sentences = sosm.markSentences();
 		parseSentences();//create StateGroups 
 		//System.out.println(statematrix.toString());
