@@ -8,7 +8,8 @@ use strict;
 
 my $sent = "hong's mom";
 $sent =~ s#'#\\'#g;
-print $sent;
+print $sent; #escape
 
+#$dbh->prepare("select * from anytable where avalue in ('a', 'b', 'c')");
 
 

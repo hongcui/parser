@@ -44,7 +44,7 @@
 #use lib 'C:\\fna\\code\\Unsupervised\\';
 #use encoding "iso-8859-1"; #latin1
 #use encoding "cp1252"; #cp1252 is not the same as iso-8859-1, although they sometimes are all referred to as latin1!!!
-use lib 'D:\\SMART RA\\Workspace\\Unsupervised\\';
+use lib 'C:\\Documents and Settings\\hongcui\\workspace\\Unsupervised\\';
 use NounHeuristics;
 use InitialMarkup;
 use SentenceSpliter;
@@ -99,8 +99,8 @@ my $db = $prefix;
 #mark up descriptions with new tags.
 
 my $host = "localhost";
-my $user = "termsuser";
-my $password = "termspassword";
+my $user = "root";
+my $password = "root";
 my $dbh = DBI->connect("DBI:mysql:host=$host", $user, $password)
 or die DBI->errstr."\n";
 #$dbh->do("set names 'latin1'"); #set charset to latin1, i.e. cp1252.
@@ -1948,7 +1948,7 @@ my ($file, $text, @sentences,@words,@tmp,$status,$lead,$stmt,$sth, $escaped, $or
 opendir(IN, "$dir") || die "$!: $dir\n";
 while(defined ($file=readdir(IN))){
 	if($file !~ /\w/){next;}
-	print "read $file\n" if $debug;
+	print "read READ $file\n" if $debug;
 	$text = ReadFile::readfile("$dir$file");
 	#print $text."\n";
 	$original = $text;

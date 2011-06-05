@@ -136,7 +136,8 @@ my $defaultgeneraltag = "general";
 my $debug = 0;
 my $debugp = 0; #debug pattern
 
-my $kb = "knowledgebase";
+#my $kb = "knowledgebase";
+my $kb = "phenoscape";
 
 my $taglength = 150;
 
@@ -186,7 +187,7 @@ my $stop = $NounHeuristics::STOP;
 
 #prepare database
 my $haskb = kbexists();
-$haskb = 0;
+#$haskb = 0;
 setupdatabase();
 
 if($haskb){
@@ -478,7 +479,7 @@ sub importfromkb{
 	#	$sth2->execute();
 	#}
 
-	$stmt1 = "select distinct ".$prefix."_structure from ".$kb.".learnedstructures where structure !='' and not isnull(structure)";
+	$stmt1 = "select distinct structure from ".$kb.".learnedstructures where structure !='' and not isnull(structure)";
 	$sth1 = $dbh->prepare($stmt1);
 	$sth1->execute() or die $sth1->errstr."\n";
 	while($w = $sth1->fetchrow_array()){
@@ -3531,6 +3532,7 @@ sub finalizecompoundmodifier{
 	#hong 8/20/09 to avoid unmatched ( in regexp
 	$modifier =~ s#\(.*?\)# #;
 	$modifier =~ s#\(.*##;
+	$modifier =~ s#\W##g;
 	$modifier =~ s#\s+# #;
 
 	my $mcopy = $modifier;
