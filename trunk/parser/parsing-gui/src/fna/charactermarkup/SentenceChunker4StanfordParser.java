@@ -177,7 +177,9 @@ public class SentenceChunker4StanfordParser {
 				e.printStackTrace();
 			}
 		//}
-		collapseThatClause();
+		collapseThatClause();//that, which
+		collapseWhereClause();//where, when
+		
 		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable);
 		return cs;
 	}
@@ -249,15 +251,69 @@ end procedure
 		}
 	}
 
+	
+	/**
+	 *     (SBAR
+        (WHADVP (WRB where))
+        (S
+          (NP (NN spine) (NNS bases))
+          (ADJP (JJ tend)
+            (S
+              (VP (TO to)
+                (VP (VB be)
+                  (ADJP (JJ elongate))))))))
+                  
+         (SBAR
+              (WHADVP (WRB when))
+              (S
+                (NP (NN corpus) (NN cavity))
+                (VP (VBD became)
+                  (ADJP (JJ deep)))))         
+	 */
+	private void collapseWhereClause() {
+		try{
+			Element root  = tree.getRootElement();
+			List<Element> thatclauses = XPath.selectNodes(root, ".//SBAR/WHADVP/*[@text='where']"); //select WHNP elements
+			thatclauses.addAll(XPath.selectNodes(root, ".//SBAR/WHADVP/*[@text='when']"));
+			Iterator<Element> it = thatclauses.iterator();
+			while(it.hasNext()){
+				Element WHNP = it.next();
+				Element SBAR = WHNP.getParentElement();
+				if(SBAR.getName().compareTo("SBAR") !=0){
+					SBAR = SBAR.getParentElement();
+				}
+				collapseElement(SBAR, allText(SBAR), "s");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	private void extractFromlVBs(ArrayList<Element> lVBs) {
 		Iterator<Element> it = lVBs.iterator();
 		while(it.hasNext()){
 			Element lVB = it.next();
-			extractFromlVB(lVB);
+			boolean sureverb = false;
+			/*
+			 * (ROOT
+  (S
+    (NP (JJ elongate) (NN spine) (NNS bases))
+    (VP (MD may)
+      (VP (VB form)
+        (NP (JJ incipient) (NNS ribs))
+        (ADVP (RB anteriorly))))
+    (: ;)))
+			 */
+			if(lVB.getParentElement()!= null && lVB.getParentElement().getParentElement()!=null){
+				List<Element> children= lVB.getParentElement().getParentElement().getChildren();
+				if(children.get(0).getName().compareTo("MD")==0 && children.get(1).equals(lVB.getParentElement())){
+					sureverb = true;
+				}
+			}
+			extractFromlVB(lVB, sureverb);
 		}		
 	}
 
-	private void extractFromlVB(Element lVB) {
+	private void extractFromlVB(Element lVB, boolean sureverb) {
 
 		Element VP = lVB.getParentElement();
 		if(VP == null){
@@ -267,8 +323,9 @@ end procedure
 		//String chaso = getOrganFrom(child);
 		String theverb = lVB.getAttribute("text").getValue();
 		WordNetWrapper wnw = new WordNetWrapper(theverb);
-		if(theverb.length()<2 || theverb.matches("\\b(\\w+ly|ca)\\b") 
-		   ||wnw.mostlikelyPOS()== null || wnw.mostlikelyPOS().compareTo("verb") !=0){ //text of V is not a word, e.g. "x"
+		
+		if(!sureverb && (theverb.length()<2 || theverb.matches("\\b(\\w+ly|ca)\\b") 
+		   ||wnw.mostlikelyPOS()== null || wnw.mostlikelyPOS().compareTo("verb") !=0)){ //text of V is not a word, e.g. "x"
 			collapseElement(VP, "", "");
 			return;
 		}
@@ -498,6 +555,7 @@ end procedure
 					String name = ((Element)c).getName();
 					if(name.startsWith("NN")){//TODO: consider also CD(3) and PRP (them): no, let ChunkedSentence fix those cases
 						Element p = ((Element)c).getParentElement();
+						//return allText(p);
 						return checkAgainstMarkedSent(allText(p), lastIdIn(p));
 					}
 					if(name.startsWith("NP") && ((Element)c).getAttributeValue("text") != null){//already collapsed NPs
@@ -546,7 +604,7 @@ end procedure
 		this strategy (taking the last np) is problematic. 
 		Should avoid nested chunks and take up to "hairs" and not "bases".
 		test this later 12/15/10*/
-		String winner = np;
+		String onp = np;
 		int last = Integer.parseInt(idofthelastwordinnp);
 		if(np.startsWith("l[")){//adjust the index of a noun list. the idofthelastwordinnp in this case should be the last word in the list, not the first.
 			last = last+np.split("\\s+").length-1;
@@ -571,6 +629,7 @@ end procedure
 		for(int i = 0; i < words.length; i++){//find the last NN as marked in markedsent (e.g. posoftokens)
 			np +=words[i]+" ";
 		}
+		String winner = np.trim();
 		//test out: find the first nn
 		int first = lastcp - words.length +1;
 		boolean foundn = false;
@@ -595,7 +654,7 @@ end procedure
 		np = np.replaceAll("\\s+", " ").trim();
 		np2 = np2.replaceAll("\\s+", " ").trim();
 		
-		if(np.length()>0) winner=np;
+		if(np.length()>0) winner=np.trim();
 		if(np.compareTo(np2)!=0){
 			if(debug){
 			System.out.println("first NP need help");
@@ -608,11 +667,11 @@ end procedure
 				np2 = t;
 			}
 			if(np2.indexOf("l[")>=0){
-				winner = np2;
+				winner = np2.trim();
 			}else if(np2.replace(np, "").trim().matches("^("+this.conjunctions+")")){
-				winner = np2;
+				winner = np2.trim();
 			}else {
-				winner = np;
+				winner = np.trim();
 			}
 		}
 		

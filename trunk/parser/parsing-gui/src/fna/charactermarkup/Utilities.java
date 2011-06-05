@@ -369,7 +369,7 @@ public class Utilities {
 		String ch ="";
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"'");
+			ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"' order by category");
 			while(rs.next()){
 				String cat = rs.getString("category");
 				if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
@@ -408,7 +408,7 @@ public class Utilities {
 		for(int i = 0; i<words.length; i++){
 			String w = words[i];
 			if(w.indexOf("[")<0 && w.indexOf("]")<0 && left==0){
-				if(!w.matches("\\b(this|have|that|may|be)\\b")){tokens.add(w);};
+				if(!w.matches("\\b(this|have|that|may|be|which|where|when)\\b")){tokens.add(w);};
 			}else{
 				left += w.replaceAll("[^\\[]", "").length();
 				left -= w.replaceAll("[^\\]]", "").length();

@@ -12,12 +12,14 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.XPath;
 
 import fna.parsing.ParsingUtil;
 
@@ -27,51 +29,91 @@ public class SegmentIntegrator {
 	static protected String database = null;
 	static protected String username = "root";
 	static protected String password = "root";
+	private static String glosstable;
+	private String lifestyle = null;
+	private String projectfolder = null;
 	
-	public SegmentIntegrator(String database) {
+	
+	public SegmentIntegrator(String database, String projectfolder) {
 		// TODO Auto-generated constructor stub
-		collect(database);
-	}
-	
-	protected void collect(String database){
 		SegmentIntegrator.database = database;
+		if(database.endsWith("fna")){
+			SegmentIntegrator.glosstable = "fnaglossaryfixed";
+		}else if(database.endsWith("treatise")){
+			SegmentIntegrator.glosstable = "treatisehglossaryfixed";
+		} 
+		this.projectfolder = projectfolder;
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
 				conn = DriverManager.getConnection(URL);
-				//integrator();
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		try{
+			//collect life_style terms
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select distinct term from "+SegmentIntegrator.glosstable+" where category='life_style'");
+			while(rs.next()){
+				this.lifestyle += rs.getString(1)+"|";
+			}
+			this.lifestyle = lifestyle.replaceFirst("\\|$", "");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		collect(database);
+		
+	}
+	
+	protected void collect(String database){
+		integrator();
+		//randomdesc();
+		filecopier();
+		/*try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				conn = DriverManager.getConnection(URL);
+				integrator();
 				//randomdesc();
 				filecopier();
 			}
 		}
 		catch(Exception e){
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
 	private void filecopier() {
 		try{
-			File ansdirectory = new File("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\AnsKey_Benchmark_selected_sentence");
+			File ansdirectory = new File(this.projectfolder+"\\AnsKey_Benchmark_selected_sentence");
 			String ansfilename[] = ansdirectory.list();
 			for (int i = 0; i < ansfilename.length; i++) {
 				String s = "";
 				String str = "";
-				FileInputStream istream = new FileInputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_sentence\\"+ansfilename[i]);
-				InputStreamReader inread = new InputStreamReader(istream);
-				BufferedReader buff = new BufferedReader(inread);
-				while((s = buff.readLine())!=null){
-					str = str.concat(s);
+				File f = new File(this.projectfolder+"\\TestCase_Benchmark_sentence\\"+ansfilename[i]);
+				if(!f.exists()){
+					System.err.println(f.getName()+" does not exist");
+				}else{
+					FileInputStream istream = new FileInputStream(f);
+					InputStreamReader inread = new InputStreamReader(istream);
+					BufferedReader buff = new BufferedReader(inread);
+					while((s = buff.readLine())!=null){
+						str = str.concat(s);
+					}
+					FileOutputStream ostream = new FileOutputStream(this.projectfolder+"\\TestCase_Benchmark_selected_sentence\\"+ansfilename[i]); 
+					PrintStream out = new PrintStream( ostream ); 
+					out.print(str);
 				}
-				FileOutputStream ostream = new FileOutputStream("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_selected_sentence\\"+ansfilename[i]); 
-				PrintStream out = new PrintStream( ostream ); 
-				out.print(str);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
-	
+	/*
 	@SuppressWarnings("unused")
 	private void randomdesc() {
 		try{
@@ -79,7 +121,7 @@ public class SegmentIntegrator {
 			ArrayList<String> desc = new ArrayList();
 			ArrayList<String> randdesc = new ArrayList();
 			Random r = new Random();
-			Runtime run = Runtime.getRuntime();
+			//Runtime run = Runtime.getRuntime();
 			int ct = 0;
 			ResultSet rs = stmt.executeQuery("select * from markedsentence");
         	while(rs.next()){
@@ -119,6 +161,7 @@ public class SegmentIntegrator {
 			e.printStackTrace();
 		}
 	}
+	*/
 	
 	@SuppressWarnings("unused")
 	private void integrator() {
@@ -164,11 +207,11 @@ public class SegmentIntegrator {
 	private void XMLintegrator(String[] sentid, int ct, String source) {
 		try{
 			SAXBuilder builder = new SAXBuilder();
-			Document testcase = builder.build("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+sentid[0]+".xml");
+			Document testcase = builder.build(this.projectfolder+"\\TestCase_Benchmark\\"+sentid[0]+".xml");
 			Element testroot = testcase.getRootElement();
 			for(int i = 1; i < ct; i++){
 				System.out.println(sentid[i]);
-				Document next = builder.build("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark\\"+sentid[i]+".xml");
+				Document next = builder.build(this.projectfolder+"\\TestCase_Benchmark\\"+sentid[i]+".xml");
 				Element nextroot = next.getRootElement();
 				List testli = testroot.getChildren("structure");
 				List nextli = nextroot.getChildren("structure");
@@ -275,7 +318,8 @@ public class SegmentIntegrator {
 				}
 			}
 			testroot.detach();
-			File f = new File("C:\\RAMU_BACKUP\\ACADEMICS-F\\UA\\RA\\TestCase_Benchmark_sentence\\"+source+".xml");
+			testroot = lifeStyle(testroot);
+			File f = new File(this.projectfolder+"\\TestCase_Benchmark_sentence\\"+source+".xml");
 			ParsingUtil.outputXML(testroot, f, null);
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -283,11 +327,64 @@ public class SegmentIntegrator {
 	}
 
 	/**
+	 * re-annotate "trees" from structure to character lifestyle
+	 */
+	private Element lifeStyle(Element statement) {
+		try{			
+			//find life_style structures
+			List<Element> structures = XPath.selectNodes(statement, ".//structure");
+			Iterator<Element> it = structures.iterator();
+			while(it.hasNext()){
+				Element structure = it.next();
+				String name = structure.getAttributeValue("name").trim();
+				if(name.length()<=0) continue;
+				if(lifestyle.matches(".*\\b"+name+"\\b.*")){
+					if(structure.getAttribute("constraint") !=null)
+						name = structure.getAttributeValue("constraint")+" "+name;
+					//if(structure.getAttribute("constraint_parent_organ") !=null)
+					//	name = structure.getAttributeValue("constraint_parent_organ")+" "+name;
+					Element wo = (Element)XPath.selectSingleNode(statement, ".//structure[@name='whole_organism']");
+					if(wo!=null){
+						List<Element> content = structure.getContent();
+						structure.removeContent();
+						/*for(int i = 0; i<content.size(); i++){
+							Element e = content.get(i);
+							e.detach();
+							content.set(i, e);
+						}*/
+						wo.addContent(content);
+						structure.detach();
+						structure = wo;
+					}
+					structure.setAttribute("name", "whole_organism");
+					Element ch = new Element("character");
+					ch.setAttribute("name", "life_style");
+					ch.setAttribute("value", name);
+					structure.addContent(ch);
+				}
+				//keep each life_style structure
+				/*if(lifestyle.matches(".*\\b"+name+"\\b.*")){
+					if(structure.getAttribute("constraint") !=null)
+						name = structure.getAttributeValue("constraint")+" "+name;
+					structure.setAttribute("name", "whole_organism");
+					Element ch = new Element("character");
+					ch.setAttribute("name", "life_style");
+					ch.setAttribute("value", name);
+					structure.addContent(ch);
+				}*/
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return statement;
+	}
+	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		new SegmentIntegrator("benchmark_learningcurve_treatiseh_test_19");
+		//new SegmentIntegrator("benchmark_learningcurve_treatiseh_test_19");
+		new SegmentIntegrator("annotationevaluation_heuristics", "");
 	}
 
 }
