@@ -396,6 +396,7 @@ public class MainFormDbAccessor {
 				  "tab_unknown varchar(1) DEFAULT NULL, "+
 				  "tab_finalm varchar(1) DEFAULT NULL, "+
 				  "tab_gloss varchar(1) DEFAULT NULL, "+
+				  "glossary varchar(40) DEFAULT NULL, "+
 				  "option_chosen varchar(1) DEFAULT '', "+
 				  "PRIMARY KEY (prefix, time_last_accessed) ) " ; 
 		
