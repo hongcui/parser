@@ -3796,7 +3796,7 @@ sub singular{
  my $s;
  if($p eq "valves"){ return "valve"};
  if($p eq "media"){ return "media"};
- if($p eq "species"){return "species");
+ if($p eq "species"){return "species"};
  if(getnumber($p) eq "p"){
     if($p =~ /(.*?[^aeiou])ies$/){
       $s = $1.'y';
