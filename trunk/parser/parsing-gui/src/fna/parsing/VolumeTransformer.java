@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -20,8 +21,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
@@ -103,6 +106,7 @@ public class VolumeTransformer extends Thread {
 
 	}
 
+	
 	/**
 	 * Transform the extracted data to the xml format.
 	 */
@@ -112,6 +116,23 @@ public class VolumeTransformer extends Thread {
 		listener.setProgressBarVisible(false);
 	}
 	public void transform() throws ParsingException {
+		//add start
+		List idlist = new ArrayList();
+		int iteratorcount = 0;
+		String state = "", preid = "", id = "", nextstep = "";
+		String split[] = new String[3];
+		String split1[] = new String[30];
+		String latin[] = new String[100];
+		latin[0] = "a";
+		latin[1] = "b";
+		latin[2] = "c";
+		latin[3] = "d";
+		latin[4] = "e";
+		latin[5] = "f";
+		latin[6] = "g";
+		latin[7] = "h";
+		latin[8] = "i";
+		//add end
 		// get the extracted files list
 		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("EXTRACTED"));
 		int total = source.listFiles().length;
@@ -127,16 +148,17 @@ public class VolumeTransformer extends Thread {
 				Element root = doc.getRootElement();
 
 				Element treatment = new Element("treatment");
-
+				Element e2 = new Element("key");
 				List plist = XPath.selectNodes(root, "/treatment/paragraph");
-				int textcount = 0;
+				int textcount = 0, nextstepid = 0;
 				String ptexttag ="";
+				String idstorage = "1";
 				
 				for (Iterator iter = plist.iterator(); iter.hasNext();) {
 					Element pe = (Element) iter.next();
 					String style = pe.getChildText("style");
 					String text = getChildText(pe, "text");
-
+					
 					
 					if (style.matches(start) ) {
 						// process the name tag
@@ -156,15 +178,121 @@ public class VolumeTransformer extends Thread {
 					else {
 						String sm = styleMappings.getProperty(style);
 						Element e = new Element(sm);
-						e.setText(text);
-						treatment.addContent(e);
+						text=text.replaceFirst("SELECTED REFERENCES?", "").trim();
+						//Start text format change++++++++++++++++++++++++++++++++++++++++++++++++++
+						
+						//
+						
+						Element initial = new Element("initial_state");
+						Element states = new Element("state");
+						Element nextsteps = new Element("next_step");
+						
+						
+						if(sm.equalsIgnoreCase("run_in_sidehead")){
+							e2 = new Element("key");
+							e2.setAttribute(new Attribute("name", text));
+							treatment.addContent(e2);
+							idlist.clear();
+						}
+						else if(sm.equals("key")){
+							Element e1 = new Element("couplet");
+							if (text.contains(" v. ") && text.contains(" p. ")
+									&& !text.contains("Group ")) {
+								split = text.split("[0-9]+[a-z]?\\. ");
+								split1 = split[0].split("\\.");
+								preid = split1[0];
+								state = split[0].replace(preid + ".", "");
+								nextstep = text.replace(split[0], "");
+								idstorage = preid;
+								Iterator iditerator = idlist.iterator();
+								iteratorcount = 0;
+								while(iditerator.hasNext()){
+									String itemid = (String)iditerator.next();
+									if(itemid.equalsIgnoreCase(preid)){
+										iteratorcount++;
+									}
+								}
+								id = preid + latin[iteratorcount];
+								idlist.add(preid);
+								nextsteps.setText(nextstep);
+								// System.out.println(nextstep);
+							} else if (text.contains(" v. ")
+									&& text.contains(" p. ")
+									&& text.contains("Group ")) {
+								split = text.split("Group [0-9]");
+								split1 = split[0].split("\\.");
+								preid = split1[0];
+								state = split[0].replace(preid + ".", "");
+								nextstep = text.replace(split[0], "");
+								idstorage = preid;
+								Iterator iditerator = idlist.iterator();
+								iteratorcount = 0;
+								while(iditerator.hasNext()){
+									String itemid = (String)iditerator.next();
+									if(itemid.equalsIgnoreCase(preid)){
+										iteratorcount++;
+									}
+								}
+								id = preid + latin[iteratorcount];
+								idlist.add(preid);
+								nextsteps.setText(nextstep);
+								// System.out.println(nextstep);
+							} else if (!text.contains("Shifted to left margin.")&&text.contains("")) {
+								split1 = text.split("\\.");
+								preid = split1[0];
+								state = text.replace(preid + ".", "");
+								try{
+								nextstepid = Integer.parseInt(idstorage) + 1;
+								}catch(Exception excep){
+									continue;
+								}
+								nextstep = nextstepid + "a";
+								idstorage = preid;
+								Iterator iditerator = idlist.iterator();
+								iteratorcount = 0;
+								while(iditerator.hasNext()){
+									String itemid = (String)iditerator.next();
+									if(itemid.equalsIgnoreCase(preid)){
+										iteratorcount++;
+									}
+								}
+								id = preid + latin[iteratorcount];
+								idlist.add(preid);
+								nextsteps.setAttribute(new Attribute("id", nextstep));
+								//nextstep = nextid + "a";
+								 //System.out.println(preid + "   " + state + "   " + nextstep);
+							}
+							
+							initial.setAttribute(new Attribute("id", id));
+							states.setText(state);
+							
+							e1.addContent(initial);
+							e1.addContent(states);
+							e1.addContent(nextsteps);
+							e2.addContent(e1);
+						}
+						else{
+							e.setName(sm);
+							e.setText(text);
+							treatment.addContent(e);
+						}
+							
+						//end text format change++++++++++++++++++++++++++++++++++++++++++++++
+						Matcher refM=Pattern.compile("([A-Z]\\w*?,? [A-Z]\\.)+(.*?)\\.(?=\\s[A-Z]\\w*?,? [A-Z]\\.(,|\\s?\\d{4}|\\s?[A-Z]\\.)|$)").matcher(text);
+						while(refM.find()){
+							addElement("reference",refM.group(1),e);
+						}
+						//e.setText(text);
+						
+						
+	
 					}
 				}
 
 				// output the treatment to transformed
 				File xml = new File(Registry.TargetDirectory,
 						ApplicationUtilities.getProperty("TRANSFORMED") + "/" + count + ".xml");
-				ParsingUtil.outputXML(treatment, xml, null);
+				ParsingUtil.outputXML(treatment, xml ,null);
 				String error = (String)errors.get(count+"");
 				error = error ==null? "":error;
 				
@@ -412,7 +540,7 @@ public class VolumeTransformer extends Thread {
 		text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
 		
 		//authority
-		Pattern p = Pattern.compile("(.*?)((?: in|,|·|•).*)");
+		Pattern p = Pattern.compile("(.*?)((?: in|,|Â·|\\?).*)");
 		Matcher m = p.matcher(text);
 		if(m.matches()){
 			if(m.group(1).trim().compareTo("")!= 0){
@@ -432,11 +560,11 @@ public class VolumeTransformer extends Thread {
 			}
 			text = m.group(2).trim();
 		}
-		//save the segment after · or • for later
+		//save the segment after ?or ?for later
 		String ending = "";
-		int pos = text.lastIndexOf('·');
+		int pos = text.lastIndexOf('.');
 		if(pos < 0){
-			pos = text.lastIndexOf('•');
+			pos = text.lastIndexOf('?');
 		}
 		if (pos != -1) {
 			ending = text.substring(pos + 1).trim();
@@ -444,13 +572,28 @@ public class VolumeTransformer extends Thread {
 		}
 		
 		//place of publication
-		p = Pattern.compile("(.* [12]\\d\\d\\d|.*(?=·)|.*(?=•))(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ·   Yellow spinecape [For George Jones Goodman, 1904-1999
+		p = Pattern.compile("(.* [12]\\d\\d\\d|.*(?=Â·)|.*(?=.))(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
 		m = p.matcher(text);
 		
 		if(m.matches()){
 			if(m.group(1).trim().compareTo("")!= 0){
-				String pp = m.group(1).replaceFirst("^\\s*[,\\.]", "").trim();
-				addElement("place_of_publication", pp, treatment);
+				String pp = m.group(1).replaceFirst("^\\s*[,\\.]", "").trim();			
+				String pt="";
+				String pip="";
+				
+				String place_in_publication="(?mis)(.*?)(\\d*?:\\s\\d*?\\.\\s\\d*)";
+				Matcher pubm=Pattern.compile(place_in_publication).matcher(pp);
+				if(pubm.find()){
+					pt=pubm.group(1).trim();
+					pip=pubm.group(2).trim();
+				}			
+				
+				Element placeOfPub=new Element("place_of_publication");
+				addElement("publication_title",pt,placeOfPub);
+				addElement("place_in_publication",pip,placeOfPub);
+				treatment.addContent(placeOfPub);
+				//addElement("place_of_publication",pp, treatment);
+				
 				try {
 					vtDbA.add2PublicationTable(pp);
 				} catch (ParsingException e) {
@@ -498,9 +641,9 @@ public class VolumeTransformer extends Thread {
 		}
 		// format mark, common name, derivation
 		{
-			//int pos = text.lastIndexOf('·');
+			//int pos = text.lastIndexOf('?);
 			//if(pos < 0){
-			//	pos = text.lastIndexOf('•');
+			//	pos = text.lastIndexOf('?);
 			//}
 			if (ending.compareTo("") != 0) {
 				//String ending = text.substring(pos + 1).trim();
@@ -529,7 +672,7 @@ public class VolumeTransformer extends Thread {
 		return namerank.replace("_name", "");
 	}
 
-	private void addElement(String tag, String text, Element parent) {
+	private static void addElement(String tag, String text, Element parent) {
 		Element e = new Element(tag);
 		e.setText(text);
 		parent.addContent(e);
