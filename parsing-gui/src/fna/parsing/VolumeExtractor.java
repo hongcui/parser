@@ -108,6 +108,8 @@ public class VolumeExtractor extends Thread {
 			count = 1;
 			int total = wpList.size();
 			for (Iterator iter = wpList.iterator(); iter.hasNext();) {
+				//Element test = (Element)iter.next();
+				//System.out.println(test.getName());//new added
 				processParagraph((Element) iter.next());
 				listener.progress((count*100) / total);
 				//output();
@@ -132,7 +134,7 @@ public class VolumeExtractor extends Thread {
 	private void processParagraph(Element wp) throws Exception {
 		// read the paragraph style
 		Attribute att = (Attribute) XPath.selectSingleNode(wp,
-		"./w:pPr/w:pStyle/@w:val");
+		"./w:pPr/w:pStyle/@w:val");// XXX change from @w:val to w:val
 		if(att == null){//TODO: issue a warning
 			System.out.println("============================================>null");
 			return;
@@ -142,7 +144,7 @@ public class VolumeExtractor extends Thread {
 		
 		// check if a name paragraph reached, assuming a treatment starts with a Name paragraph
 		//if (style.indexOf("Name") >= 0) {
-		if (style.matches(start)){
+		if (style.matches(start)){//start = ".*?(Heading|Name).*"
 			// The code reaches to a name paragraph
 			// output the current treatment file
 			//if (treatment != null) {
@@ -186,7 +188,7 @@ public class VolumeExtractor extends Thread {
 		// for non-name paragraph, just output the text content
 		// build the <w:t> content
 		//if(style.indexOf("Name") >=0 || style.indexOf("Syn") >=0){
-		if(style.matches(start) || style.matches(names)){
+		if(style.matches(start) || style.matches(names)){//start = ".*?(Heading|Name).*",names = ".*?(Syn|Name).*"
 			extractNameParagraph(wp, pe);
 		}else{
 			extractTextParagraph(wp, pe);
