@@ -1,6 +1,3 @@
-/**
- * $Id$
- */
 package fna.parsing;
 
 import java.io.File;
@@ -402,9 +399,60 @@ public class VolumeVerifier extends Thread {
 				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subg|subsp|sect|tribe)\\s?\\.?\\s*"
 										+ last + ")",
 								Pattern.CASE_INSENSITIVE);*/
-				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subg|subsp|sect|ser|tribe)[\\.\\s]+[-a-z]+)",
+				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subsp|ser|tribe)[\\.\\s]+[-a-z]+)",
 				Pattern.CASE_INSENSITIVE); //Hong 08/04/09
 				m = p.matcher(text);
+				/*modify
+				**
+				**
+				**
+				**
+				*/
+				
+				Pattern p2 = Pattern.compile("\\.\\s*(\\D*?\\bsubg[\\.\\s]+[-a-z]+[\\s\\w\\.]*\\)[\\s\\w]*\\.\\s?[A-Z]+\\s*\\w+)",
+						Pattern.CASE_INSENSITIVE); 
+				Matcher m2 = p2.matcher(text);
+				
+				if (m2.find()) {
+					String aname = m2.group(1);
+					
+					
+					String laname = aname.toLowerCase();
+					if(namelist.indexOf("|"+laname+"|")>=0){
+						listener.info("", filename, "Repeated taxon name:"+aname+" [sub rank]");
+						return aname;
+						//System.out.println("::::::::::duplicate "+aname+" [sub rank]");//should not occur
+					}else{
+						namelist += laname+"|";
+						return aname;
+					}
+				}
+				
+				Pattern p3 = Pattern.compile("\\.\\s*(\\D*?\\bsect[\\.\\s]+[-a-z]+[\\s\\w\\.]*\\)[\\s\\w]*\\.\\s?[A-Z]+\\s*\\w+)",
+						Pattern.CASE_INSENSITIVE); 
+				Matcher m3 = p3.matcher(text);
+				
+				if (m3.find()) {
+					String aname = m3.group(1);
+					String laname = aname.toLowerCase();
+					if(namelist.indexOf("|"+laname+"|")>=0){
+						listener.info("", filename, "Repeated taxon name:"+aname+" [sub rank]");
+						return aname;
+						//System.out.println("::::::::::duplicate "+aname+" [sub rank]");//should not occur
+					}else{
+						namelist += laname+"|";
+						return aname;
+					}
+				}
+				
+				/*modify
+				**
+				**
+				**
+				**
+				**
+				*/
+				
 				if (m.find()) {
 					String aname = m.group(1);
 					String laname = aname.toLowerCase();
