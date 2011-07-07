@@ -122,7 +122,7 @@ public class VolumeTransformer extends Thread {
 		String state = "", preid = "", id = "", nextstep = "";
 		String split[] = new String[3];
 		String split1[] = new String[30];
-		String latin[] = new String[100];
+		String latin[] = new String[300];
 		latin[0] = "a";
 		latin[1] = "b";
 		latin[2] = "c";
