@@ -235,9 +235,11 @@ public class VolumeExtractor extends Thread {
 		String acase = "";
 		List rList = XPath.selectNodes(wp, "./w:r");
 
-		List tList = XPath.selectNodes(wp, "./w:r/w:t");
-		Element t0 = (Element) tList.get(0);
+		//List tList = XPath.selectNodes(wp, "./w:r/w:t");
+		//Element t0 = (Element) tList.get(0);
 		
+		
+		/*
 		if (t0.getText().matches("[0-9]+[a-z]?.*")) {
 			
 			/*
@@ -251,7 +253,7 @@ public class VolumeExtractor extends Thread {
 			pe.addContent(te);
 			*/
 			
-			
+			/*
 			Element te = new Element("text");
 			StringBuffer buffer = new StringBuffer();
 			Element e = (Element) tList.get(0);
@@ -280,10 +282,10 @@ public class VolumeExtractor extends Thread {
 				
 				
 			}
+			*/
 			
 			
-			
-		} else {
+		//} else {
 			for (Iterator ti = rList.iterator(); ti.hasNext();) {
 				Element re = (Element) ti.next();
 				// find smallCaps
@@ -328,7 +330,7 @@ public class VolumeExtractor extends Thread {
 				if (te != null)
 					pe.addContent(te);
 			}
-		}
+		//}
 	}
 
 	private void extractTextParagraph(Element wp, Element pe)
