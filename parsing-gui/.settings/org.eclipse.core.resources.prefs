@@ -1,5 +1,10 @@
-#Wed Jul 09 07:50:31 MST 2008
+#Sun Jun 12 20:43:07 MST 2011
 eclipse.preferences.version=1
 encoding//docs/log/20080707.txt=UTF-8
 encoding//docs/log/20080708.txt=UTF-8
 encoding//docs/log/20080709.txt=UTF-16
+encoding//src/fna/charactermarkup/POSTagger4StanfordParser.java=Cp1252
+encoding//src/fna/charactermarkup/StanfordParser.java=Cp1252
+encoding//src/fna/parsing/FloweringTimeParser4FNA.java=Cp1252
+encoding//src/fna/parsing/VolumeFinalizer.java=Cp1252
+encoding/<project>=Cp1252

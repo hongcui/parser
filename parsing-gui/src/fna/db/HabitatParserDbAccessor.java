@@ -45,8 +45,9 @@ public class HabitatParserDbAccessor {
 		try{
 			conn = DriverManager.getConnection(url);
 			Statement stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+this.prefix+"_habitat (source varchar(50) not null, habitat_string varchar(500), habitat_values varchar(500), primary key (source))");
-			stmt.execute("delete from "+this.prefix+"_habitat");
+			stmt.execute("drop table if exists "+this.prefix+"_habitat");
+			stmt.execute("create table if not exists "+this.prefix+"_habitat (source varchar(50) not null, habitat_string text, habitat_values varchar(500), primary key (source))");
+			//stmt.execute("delete from "+this.prefix+"_habitat");
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor error:" + e);
 			e.printStackTrace();

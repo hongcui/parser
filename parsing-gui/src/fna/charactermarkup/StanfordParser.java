@@ -72,7 +72,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword";
 				//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
