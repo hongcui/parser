@@ -136,8 +136,8 @@ my $defaultgeneraltag = "general";
 my $debug = 0;
 my $debugp = 0; #debug pattern
 
-#my $kb = "knowledgebase";
-my $kb = "phenoscape";
+my $kb = "knowledgebase";
+#my $kb = "phenoscape";
 
 my $taglength = 150;
 
@@ -371,8 +371,9 @@ if ($lm eq "plain"){
 
 print stdout "::::::::::::::::::::::::Final step: normalize tag and modifiers: \n";
 normalizetags(); ##normalization is the last step : turn all tags and modifiers to singular form, remove <NBM> tags from sentence
-prepareWordPos4Parser(); #12/15/10
+#prepareWordPos4Parser(); #12/15/10
 #resolvesentencetags(); #for future
+
 
 print stdout "Done:\n";
 
@@ -382,37 +383,38 @@ print stdout "Done:\n";
 
 #5/10/09
 #wordnet counts: total not-in-wn multiple-pos
-print "wordnet pos access: \n";
-my $t = 0;
-my $notin = 0;
-my $multi = 0;
-foreach (keys(%WNPOSRECORDS)){
-	$t++;
-	$notin++ if($WNPOSRECORDS{$_} !~/\w/);
-	$multi++ if(length($WNPOSRECORDS{$_})>1);
-	print "$_ => $WNPOSRECORDS{$_}\n";
-}
-print stdout "wordnet counts: $t $notin $multi\n";
+#print "wordnet pos access: \n";
+#my $t = 0;
+#my $notin = 0;
+#my $multi = 0;
+#foreach (keys(%WNPOSRECORDS)){
+#	$t++;
+#	$notin++ if($WNPOSRECORDS{$_} !~/\w/);
+#	$multi++ if(length($WNPOSRECORDS{$_})>1);
+#	print "$_ => $WNPOSRECORDS{$_}\n";
+#}
+#print stdout "wordnet counts: $t $notin $multi\n";
+
 
 ##################################################################################################
 ########### create wordpos4parser by copying from wordpos but leaving out some preloaded terms ###
 ##################################################################################################
 
-sub prepareWordPos4Parser{
-	my $toremove = $PROPERNOUNS."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PROPOSITION;
-	$toremove =~ s#\|#","#g;
-	$toremove = "\"".$toremove."\"";
-
-	my $stmt2 ="drop table if exists ".$prefix."_wordpos4parser";
-	my $sth2 = $dbh->prepare($stmt2);
-	$sth2->execute() or die $sth2->errstr."\n";
-	$stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.") and word rlike '[a-z]'";
-	$sth2 = $dbh->prepare($stmt2);
-	$sth2->execute() or die $sth2->errstr."\n";
-        $stmt2 ="alter table ".$prefix."_wordpos4parser add saved_flag varchar(20) default '' ";
-	$sth2 = $dbh->prepare($stmt2);
-	$sth2->execute() or die $sth2->errstr."\n";
-}
+#sub prepareWordPos4Parser{
+#	my $toremove = $PROPERNOUNS."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PROPOSITION;
+#	$toremove =~ s#\|#","#g;
+#	$toremove = "\"".$toremove."\"";
+#
+#	my $stmt2 ="drop table if exists ".$prefix."_wordpos4parser";
+#	my $sth2 = $dbh->prepare($stmt2);
+#	$sth2->execute() or die $sth2->errstr."\n";
+#	$stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.") and word rlike '[a-z]'";
+#	$sth2 = $dbh->prepare($stmt2);
+#	$sth2->execute() or die $sth2->errstr."\n";
+#        $stmt2 ="alter table ".$prefix."_wordpos4parser add saved_flag varchar(20) default '' ";
+#	$sth2 = $dbh->prepare($stmt2);
+#	$sth2->execute() or die $sth2->errstr."\n";
+#}
 
 #old subroutines
 ##print stdout "Handling 'and' and 'or':\n";
@@ -443,7 +445,7 @@ sub importfromkb{
 
 	@forbid = split(/\|/, $FORBIDDEN);
 	foreach (@forbid){
-		$stmt2 ="insert into ".$prefix."_wordpos values(\"$_\",\"f\",\"\",1,1)";
+		$stmt2 ="insert into ".$prefix."_wordpos(word, pos, role, certaintyu, certaintyl) values(\"$_\",\"f\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
 		$sth2->execute();
 	}
@@ -454,7 +456,7 @@ sub importfromkb{
 	$sth1->execute() or die $sth1->errstr."\n";
 	while($w = $sth1->fetchrow_array()){
 		if($w !~ /\w/ || $w =~/\b(?:$FORBIDDEN)\b/){next;}
-		$stmt2 ="insert into ".$prefix."_wordpos values(\"$w\",\"b\",\"\",1,1)";
+		$stmt2 ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"b\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
 		$sth2->execute();
 	}
@@ -474,7 +476,7 @@ sub importfromkb{
 	#$sth1->execute() or die $sth1->errstr."\n";
 	#while($w = $sth1->fetchrow_array()){
 	#	if($w !~ /\w/ || $w =~/\b(?:$FORBIDDEN)\b/){next;}
-	#	$stmt2 ="insert into ".$prefix."_wordpos values(\"$w\",\"b\",\"\",1,1)";
+	#	$stmt2 ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"b\",\"\",1,1)";
 	#	$sth2 = $dbh->prepare($stmt2);
 	#	$sth2->execute();
 	#}
@@ -484,7 +486,7 @@ sub importfromkb{
 	$sth1->execute() or die $sth1->errstr."\n";
 	while($w = $sth1->fetchrow_array()){
 		if($w !~ /\w/ || $w =~/\b(?:$FORBIDDEN)\b/){next;}
-		$stmt2 ="insert into ".$prefix."_wordpos values(\"$w\",\"n\",\"\",1,1)";
+		$stmt2 ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"n\",\"\",1,1)";
 		$sth2 = $dbh->prepare($stmt2);
 		$sth2->execute();
 	}
@@ -528,7 +530,7 @@ $del = $dbh->prepare('delete from '.$prefix.'_sentence');
 $del->execute();
 
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, primary key (word, pos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20), primary key (word, pos)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_wordpos');
 $del->execute();
@@ -593,7 +595,7 @@ sub addstopwords{
 		my $w = $_;
 		if($w =~/\b(?:$FORBIDDEN)\b/){next;}
 		update($w, "b", "*", "wordpos", 0);
-		#my $stmt ="insert into ".$prefix."_wordpos values(\"$w\",\"b\",\"\",1,1)";
+		#my $stmt ="insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$w\",\"b\",\"\",1,1)";
 		#my $sth = $dbh->prepare($stmt);
 		#$sth->execute();
 	}
@@ -662,7 +664,7 @@ sub addheuristicsnouns{
 			my @ns = split(/\|/,$n);
 			foreach my $w (@ns){
 				if($w =~ /(\w+)\[([spn])\]/){
-					  #my $sth = $dbh->prepare("insert into ".$prefix."_wordpos values(\"$w\",\"$2\",\"\",1,1)");
+					  #my $sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl)values(\"$w\",\"$2\",\"\",1,1)");
 		              #            $sth->execute();
 	    		      update($1, $2, "*", "wordpos", 0);
 	    		      #populate singularpluralpair table with Ns
@@ -1339,7 +1341,7 @@ sub changePOS{
     	#$certaintyu++; #6/11/09
     	$certaintyu += $increment;
     	discount($word, $oldpos, $newpos, "all");
-    	$sth = $dbh->prepare("insert into ".$prefix."_wordpos values ('$word', '$newpos', '$role', $certaintyu, 0)");
+    	$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl)values ('$word', '$newpos', '$role', $certaintyu, 0)");
     	$sth->execute() or print STDOUT "$sth->errstr\n";;
 		print "\t: change [$word($oldpos => $newpos)] role=>$role\n" if $debug;
 		$sign++;
@@ -1357,7 +1359,7 @@ sub changePOS{
     	#$certaintyu++; #6/11/09
     	$certaintyu += $increment;
     	discount($word, $oldpos, $newpos, "all");
-    	$sth = $dbh->prepare("insert into ".$prefix."_wordpos values ('$word', '$newpos', '$role', $certaintyu, 0)");
+    	$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values ('$word', '$newpos', '$role', $certaintyu, 0)");
     	$sth->execute() or print STDOUT "$sth->errstr\n";
 		print "\t: change [$word($oldpos => $newpos)] role=>$role\n" if $debug;
 		$sign++;
@@ -4980,7 +4982,7 @@ sub updatePOS{
 	($oldpos, $oldrole, $certaintyu) = $sth1->fetchrow_array();
 	if($oldpos !~ /\w/){#new word
 		$certaintyu += $increment; #6/11/09 changed from = 1 to += $increment;
-		$sth = $dbh->prepare("insert into ".$prefix."_wordpos values('$word','$pos', '$role',$certaintyu, 0)" );
+		$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values('$word','$pos', '$role',$certaintyu, 0)" );
 	    $sth->execute();
 		$new = 1;
 		print "\t: new [$word] pos=$pos, role =$role, certaintyu=$certaintyu\n" if $debug;
@@ -5053,7 +5055,7 @@ sub resolveconflicts{
 #	if($sth1->rows == 0){
 #	    #new pos, insert new record
 #		$certaintyu = 1;
-#		$sth = $dbh->prepare("insert into ".$prefix."_wordpos values(\"$word\",\"$pos\", \"$role\",$certaintyu,0)");
+#		$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$word\",\"$pos\", \"$role\",$certaintyu,0)");
 #	    $sth->execute();
 #		$new = 1;
 #		print "\t: new [$word] pos=$pos, role =$role, certaintyu=$certaintyu\n" if $debug;
@@ -5130,7 +5132,7 @@ sub mergerole{
 #	$sth->execute();
 #	if($sth->fetchrow_array() == 0){
 #	    #update
-#		$sth = $dbh->prepare("insert into ".$prefix."_wordpos values(\"$word\",\"$pos\", \"$role\",\"$certaintyu\",\"$certaintyl\")");
+#		$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values(\"$word\",\"$pos\", \"$role\",\"$certaintyu\",\"$certaintyl\")");
 #	    $sth->execute();
 #		$new = 1;
 #	}
