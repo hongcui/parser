@@ -104,7 +104,7 @@ public class SentenceOrganStateMarker {
 		for(int i = adjnouns.size()-1; i>=0; i--){
 			this.adjnounslist +=adjnouns.get(i)+"|";
 		}
-		this.adjnounslist = "[<{]*"+this.adjnounslist.replaceFirst("\\|$", "").replaceAll("\\|+", "|").replaceAll("\\|", "[}>]*|[<{]*").replaceAll(" ", "[}>]* [<{]*")+"[}>]*";
+		this.adjnounslist = this.adjnounslist.trim().length()==0? null : "[<{]*"+this.adjnounslist.replaceFirst("\\|$", "").replaceAll("\\|+", "|").replaceAll("\\|", "[}>]*|[<{]*").replaceAll(" ", "[}>]* [<{]*")+"[}>]*";
 		this.organnames = collectOrganNames();
 		this.statenames = collectStateNames();
 	}
@@ -133,8 +133,7 @@ public class SentenceOrganStateMarker {
 			loadMarked();
 		}else{
 			//Iterator<String> it = order.iterator();
-			//while(it.hasNext()){
-				
+			//while(it.hasNext()){				
 			Enumeration<String> en = sentences.keys();
 			while(en.hasMoreElements()){
 				String source = en.nextElement();
@@ -185,7 +184,7 @@ public class SentenceOrganStateMarker {
 		if(taggedsent.indexOf(">-")>=0){
 			taggedsent = taggedsent.replaceAll(">-", "#-").replaceAll("<(?=\\S+#)", "").replaceAll("#", "");
 		}
-		if(this.fixadjnn){
+		if(this.fixadjnn && this.adjnounslist!=null){
 			//if((adjnounsent.containsKey(tag)&& taggedsent.matches(".*?[<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*")) || taggedsent.matches(".*? of [<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*")){
 			if((adjnounsent.containsKey(tag)&& taggedsent.matches(".*?[<{]*\\b(?:"+adjnounslist+")[^ly ]*\\b[}>]*.*")) || taggedsent.matches(".*? of [<{]*\\b(?:"+adjnounslist+")[^ly ]*\\b[}>]*.*")){
 				taggedsent = fixInner(source, taggedsent, tag.replaceAll("\\W",""));//need to put tag in after the modifier inner
@@ -417,7 +416,7 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs;
-		String wordroletable = this.tableprefix + "_"+ApplicationUtilities.getProperty("WORDROLETABLE");
+		String wordroletable = this.tableprefix + "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
 		rs = stmt.executeQuery("select word from "+wordroletable+" where semanticrole in ('op', 'os')");
 		while(rs.next()){
 			tags.append(rs.getString("word").trim()+"|");
@@ -495,10 +494,9 @@ public class SentenceOrganStateMarker {
 		//String database="fnav19_benchmark";
 		//String database="treatiseh_benchmark";
 		//String database="plaziants_benchmark";//TODO
-
-		
-		String database="annotationevaluation";
+		//String database="annotationevaluation";
 		//String database ="phenoscape";
+		String database="markedupdatasets";
 		String username="root";
 		String password="root";
 		try{
@@ -512,7 +510,8 @@ public class SentenceOrganStateMarker {
 		}
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true);
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19_excerpt", "fnaglossaryfixed", true);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
