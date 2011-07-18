@@ -15,6 +15,7 @@ import java.util.Set;
 import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
+import fna.parsing.ApplicationUtilities;
 
 
 @SuppressWarnings("unchecked")
@@ -26,6 +27,7 @@ public class StateMatrix {
 	private Connection conn = null;
 	private String tableprefix = null;
 	private String glossarytable = null;
+	private ArrayList<String> freeterms = new ArrayList<String>();
 	//private Hashtable<State, Hashtable<State, CoocurrenceScore>> matrix = null;
 	
 	StateMatrix(Connection conn, String tableprefix,String glosstable){
@@ -227,10 +229,13 @@ public class StateMatrix {
 	}
 
 	/**
-	 * group cooccured nodes into groups, using JUNG libary.
-	 * 
+	 * In preparing for character curation:
+	 * 1. group co-occured nodes into groups, using JUNG library.
+	 * 2. other non-cooccured terms as one cluster
 	 */
 	public Object Grouping(){
+		//deal with co-occured terms
+		StringBuffer cooccurTerms = new StringBuffer();
 		//construct the graph
 		Graph<State, MyLink> g = new UndirectedSparseMultigraph<State, MyLink>();		
 		//state as node
@@ -239,16 +244,17 @@ public class StateMatrix {
 			Cell c = it.next();
 			State node1  = this.states.get(c.getCindex());
 			State node2 = this.states.get(c.getRindex());
+			cooccurTerms.append("'"+node1.getName()+"',");
+			cooccurTerms.append("'"+node2.getName()+"',");
 			int weight = c.getScore().valueSum();
-			if(weight>1){
-				System.out.println(weight+" links "+node1.getName()+" and "+node2.getName());
-			}
+			//if(weight>1){
+			//	System.out.println(weight+" links "+node1.getName()+" and "+node2.getName());
+			//}
 			g.addVertex(node1);
 			g.addVertex(node2);
 			for(int i = 0; i<weight; i++){
 				g.addEdge(new MyLink(1, edgeCount++), node1, node2);
-			}
-			
+			}			
 		}
 		/*
 		//visualize the graph
@@ -313,51 +319,103 @@ public class StateMatrix {
 		//4. Voltage Clustering: 21  groups of varied sizes
 		System.out.println("Voltage Clustering");
 		Collection clusters = null;
-		if(g.getEdgeCount()>4){
+		if(g.getEdgeCount()>4){ //the voltage clustering algorithm only works when this condition is met
 			VoltageClusterer vc = new VoltageClusterer(g, 50);
 			if(g.getEdgeCount()>4)
-			clusters = vc.cluster(50);
+				clusters = vc.cluster(50);
 			else
 				clusters = vc.cluster(g.getEdgeCount()-1);
-			saveClusters(clusters);
-		}
-		else{
+			//saveClustersInDB(clusters);
+		}else{
 			Collection<State>  stateCol = g.getVertices();
 			Set<State> stateSet = new HashSet<State>(stateCol);
 			ArrayList<Set<State>> stateList = new ArrayList<Set<State>>();
 			stateList.add(stateSet);
-			saveClusters(stateList);
-			return stateList;
+			//saveClustersInDB(stateList);
+			clusters = stateList;
+			//return stateList;
 		}
+		
+		//deal with non-cooccured terms
+		//add terms that are in WordRoles ("c") but not as cooccured.
+		//save these terms in DB
+		//save these terms in clusters for return
+		ArrayList<State> freeStates = new ArrayList<State> ();
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+
+					" where semanticrole ='c' and" +
+					" word not in (select distinct term from " +this.glossarytable+") and"+
+					" word not in ("+cooccurTerms.toString().replaceFirst(",$", "").replaceAll(",+", ",").trim()+")");
+			while(rs.next()){
+				String freeterm = rs.getString("word");
+				freeterms.add(freeterm);
+				State free = new State(freeterm);
+				freeStates.add(free);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Set<State> freeStateSet = new HashSet<State>(freeStates);
+		clusters.add(freeStateSet);		
+		saveClustersInDB(clusters);
 		return clusters==null? new ArrayList<Set<State>>() : clusters;
 	}
-	
-	private void saveClusters(Collection<Set<State>> clusters){
-		int gcount = 1;
-		Iterator<Set<State>> sets = clusters.iterator();
-		while(sets.hasNext()){
-			Set<State> states = (Set<State>)sets.next();
-			String stategroup = formGroup(states);
-			if(stategroup != null){
-				try{
+	/**
+	 * the last set in the clusters may contain a set of freestates
+	 * @param clusters
+	 */
+	private void saveClustersInDB(Collection<Set<State>> clusters){
+		try{
+			int gcount = 1;
+			Iterator<Set<State>> sets = clusters.iterator();
+			while(sets.hasNext()){
+				Set<State> states = (Set<State>)sets.next();
+				String stategroup = formGroup(states);
+				if(stategroup != null){
+					//collect info from _terms table for a set of co-occured terms, insert this set as one group
 					Statement stmt = conn.createStatement();
 					String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
 					this.tableprefix+"_terms where cooccurterm in ("+stategroup+") or term in ("+stategroup+"))";
 					System.out.println("query::"+q);
 					stmt.execute(q);
 					ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
+					//set group id
 					if(rs.next()){
 						stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
 						gcount++;
 					}
-				}catch(Exception e){
-					e.printStackTrace();
 				}
-					
 			}
+			//lastly, add this.freeterms as a set
+			Iterator<String> it = this.freeterms.iterator();
+			Statement stmt = conn.createStatement();
+			while(it.hasNext()){
+				String w = it.next();
+				ResultSet rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
+						" where sentence like '%"+w+"%'");
+				String srcs = "";
+				int count = 0;
+				if(rs.next()){
+					srcs+=rs.getString("source")+",";
+					count++;
+				}
+				srcs = srcs.replaceFirst(",$", "").replaceAll(",+", ",").trim();
+				stmt.execute("insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+w+"', '', "+count+ ", '"+srcs+"')");
+			}
+			//set group id
+			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
+			if(rs.next()){
+				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
+			}		
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-			
+					
 	}
+		
+			
+	
 
 	/**
 	 * If all states are in the glossary, ignore this set.
@@ -506,10 +564,9 @@ public class StateMatrix {
 			e.printStackTrace();
 		}			
 		if(groups.size()>0){
-		gmo.output(groups, 1);
-		return groups.size();
-		}
-		else
+			gmo.output(groups, 1);
+			return groups.size();
+		}else
 		{
 			return 0;
 		}
