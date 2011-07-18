@@ -81,16 +81,18 @@ public class VolumeMarkup {
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
 		
-		update();
+		//update();
+		
+
 	}
 	
-	public void update() throws ParsingException{
+	/*public void update() throws ParsingException{
 		listener.clear();
 		
 		List<String> tagList = new ArrayList<String>();
 		VolumeMarkupDbAccessor vmDba = new VolumeMarkupDbAccessor(this.dataPrefix, this.glossarytable);
 		try {
-			vmDba.updateData(tagList);
+			vmDba.structureTags4Curation(tagList);
 		} catch (Exception e) {
 			LOGGER.error("Couldn't perform database operation in VolumeMarkup:update", e);
 			e.printStackTrace();
@@ -98,10 +100,10 @@ public class VolumeMarkup {
 		}
 		
 		// fill in the table
-		for (int i = 0; i < tagList.size(); i++) {
+		for (int i = 1; i < tagList.size(); i++) {
 			listener.info("" + i, tagList.get(i));
 		}
-	}
+	}*/
 	//Perl would hang on any MySQL warnings or errors
 	protected void runCommand(String com) throws IOException,
 			InterruptedException {
