@@ -20,10 +20,10 @@ public class Registry {
 	
 	public static String SynonymStylePtn;	
 	
-	public static final String MARKUP_ROLE_O = "p";
+	public static final String MARKUP_ROLE_O = "op";
 	
-	public static final String MARKUP_ROLE_B = "b";
+	public static final String MARKUP_ROLE_B = "c";
 	
-	public static final String MARKUP_ROLE_VERB = "b";
+	public static final String MARKUP_ROLE_VERB = "c";
 
 }

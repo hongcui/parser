@@ -100,28 +100,29 @@ public class VolumeDehyphenizer extends Thread {
 		listener.setProgressBarVisible(false);
 		//loadStructureTab(); //done in markup already
 		loadDescriptorTab();
-		loadOthersTab();
+		//loadOthersTab();
     }
     
-    private void loadOthersTab() {
+    /*private void loadOthersTab() {
     	display.syncExec(new Runnable() {
     		public void run() {
     			mainForm.showOtherTerms();
     		}
     	});
-    }
+    }*/
 	private void loadDescriptorTab() {
 		
 		display.syncExec(new Runnable() {
 			public void run() {
 				ArrayList <String> words = null;
 				try {
-					words = vmdb.getDescriptorWords();
+					words = vmdb.descriptorTerms4Curation();
 				} catch (Exception exe){
 					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
 					exe.printStackTrace();
 				}
 				int count = 1;
+				descriptorTable.removeAll(); //clean up before a load
 				if (words != null) {
 					for (String word : words){
 						TableItem item = new TableItem(descriptorTable, SWT.NONE);
@@ -343,3 +344,4 @@ public class VolumeDehyphenizer extends Thread {
     }//
 
 }
+

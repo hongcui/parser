@@ -109,7 +109,7 @@ public class ApplicationUtilities {
 			messageBox.setMessage(message);
 			messageBox.setText(messageHeader);
 			returnVal = messageBox.open();	 
-			System.out.println(".....-----------"+returnVal);
+			//System.out.println(".....-----------"+returnVal);
 		} catch (Exception exe) {
 			LOGGER.error("couldn't open file in ApplicationUtilities:showPopUpWindow", exe);
 			exe.printStackTrace();
@@ -188,7 +188,7 @@ public class ApplicationUtilities {
 			messageBox.setMessage(message);
 			messageBox.setText(messageHeader);
 			returnVal = messageBox.open();	 
-			System.out.println("-----------"+returnVal);
+			//System.out.println("-----------"+returnVal);
 			if(returnVal==32)
 			{
 				System.out.println("currently on folder:"+tabFolder.getSelectionIndex());
