@@ -20,9 +20,10 @@ public class CharacterStateDBAccess {
 	/**
 	 * @param args
 	 */
-	private static final Logger LOGGER = Logger.getLogger(CharacterStateDBAccess.class);
-	
+	private static final Logger LOGGER = Logger.getLogger(CharacterStateDBAccess.class);	
 	private static String url = ApplicationUtilities.getProperty("database.url");
+	private String prefix = null;
+	private String glossarytable = null;
 	
 	static {
 		try {
@@ -32,6 +33,11 @@ public class CharacterStateDBAccess {
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
 			e.printStackTrace();
 		} 
+	}
+	
+	public CharacterStateDBAccess(String prefix, String glossarytable){
+		this.prefix = prefix;
+		this.glossarytable = glossarytable;
 	}
 	
 	public static void main(String[] args) throws Exception{
@@ -52,9 +58,8 @@ public class CharacterStateDBAccess {
 				String tablePrefix = MainForm.dataPrefixCombo.getText();
 				
 				//String sql = "SELECT distinct category FROM " + tablePrefix+"_character order by category";
-				String sql = "SELECT distinct category FROM fnaglossary order by category";
+				String sql = "SELECT distinct category FROM "+this.glossarytable+" order by category";
 				stmt = conn.prepareStatement(sql);
-				
 				rset = stmt.executeQuery();
 				while(rset.next()) {
 					decisions.add(rset.getString(1));
