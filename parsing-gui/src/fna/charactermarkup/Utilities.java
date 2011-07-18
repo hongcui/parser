@@ -338,7 +338,7 @@ public class Utilities {
 	 * @param w
 	 * @return null if not found
 	 */
-	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable) {
+	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
 		
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-").replaceAll(" ", "").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
@@ -355,9 +355,9 @@ public class Utilities {
 				String[] ws = w.split("-+");
 				w = ws[ws.length-1];
 			}
-			ch = lookup(w, conn, characterhash, glosstable, wc);
+			ch = lookup(w, conn, characterhash, glosstable, wc, prefix);
 			if(ch == null && wc.indexOf('-')>0){//pani_culiform
-				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc);
+				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc, prefix);
 			}
 		}
 		return ch;
@@ -365,10 +365,11 @@ public class Utilities {
 
 	private static String lookup(String w, Connection conn,
 			Hashtable<String, String> characterhash, String glosstable,
-			String wc) {
+			String wc, String prefix) {
 		String ch ="";
 		try{
 			Statement stmt = conn.createStatement();
+			//check glossarytable
 			ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"' order by category");
 			while(rs.next()){
 				String cat = rs.getString("category");
@@ -376,6 +377,18 @@ public class Utilities {
 					ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
 				}
 			}
+			//check _group_decisions and _grouped_terms
+			String q = "select distinct "+prefix+"_group_decisions.decision from " +
+					prefix+"_grouped_terms, "+prefix+"_group_decisions where term='"+w+"' or cooccurTerm='"+w+"' and " +
+					prefix+"_grouped_terms.groupId = "+prefix+"_group_decisions.groupId order by "+
+					prefix+"_group_decisions.decision";
+			rs = stmt.executeQuery(q);
+			while(rs.next()){
+				String cat = rs.getString("decision");
+				if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+					ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
+				}
+			}			
 			rs.close();
 			stmt.close();
 			if(ch.length()>0){

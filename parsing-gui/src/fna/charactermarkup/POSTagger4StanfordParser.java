@@ -368,7 +368,7 @@ public class POSTagger4StanfordParser {
 		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
 			String word = this.chunkedtokens.get(i);
 			if(word.indexOf('{')>=0 && word.indexOf('<')<0){
-				String ch = Utilities.lookupCharacter(word, conn, this.characterhash, glosstable); //remember the char for this word (this word is a word before (to|or|\\W)
+				String ch = Utilities.lookupCharacter(word, conn, this.characterhash, glosstable, tableprefix); //remember the char for this word (this word is a word before (to|or|\\W)
 				if(ch==null){
 					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
 				}else{

@@ -5,6 +5,7 @@ import java.io.*;
 
 import java.util.regex.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
@@ -25,16 +26,17 @@ public class Tree2XML {
      */
     public Tree2XML(String test) {
         // TODO Auto-generated constructor stub
-        this.test = test;
+        this.test = test.replaceAll("\\(\\s*\\)", "");
     }
     
     public Document xml(){
         if(test==null || test.trim().length()==0){
             return null;
         }
+        /*
         //out.println();
         //out.println(test);
-        String xml = "";
+
         //step 1: turn all ( to <
         test = test.replaceAll("\\(", "<");
         //System.out.println(test);
@@ -58,27 +60,64 @@ public class Tree2XML {
            // System.out.println(xml);
             m = p.matcher(xml);
         }
-        
-        xml = format(xml);
-      //  System.out.println(xml);
+        */
+        String xml = format(test);
+        //System.out.println(xml);
 		Document doc =null;
 		try {
 		     SAXBuilder builder = new SAXBuilder();
 		     ByteArrayInputStream bais = new ByteArrayInputStream(xml.getBytes());
 		     doc = builder.build(bais);
 		    } catch (Exception e) {
+		      e.printStackTrace();
 		      System.out.print("Problem parsing the xml: \n" + xml+"\n"+e.toString());
 		}
 		return doc;
     }
     
-    
+    /*
+     * @param parsed: (NP (JJ subulate) (NNS enations))
+     */
+    private String format(String parsed){
+    	int count = 0;
+    	StringBuffer xml = new StringBuffer();
+    	parsed = parsed.replaceAll("\\)", ") ").replaceAll("\\s+", " ").trim();//(NP (JJ subulate) (NNS enations) )
+        parsed = parsed.replaceAll("``", "JJ").replaceAll("\\([^A-Z/ ]+", "(PUNCT");
+       	parsed = parsed.replaceAll("(?<=\\([A-Z]{1,8}) (?!\\()", "_");//(NP (JJ_subulate) (NNS_enations))
+    	
+    	ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(parsed.split("\\s+"))); 
+    	for(int i = 0; i < tokens.size(); i++){
+    		String token = tokens.get(i);
+    		if(token.matches("\\)")){//now i-1 should have the start tag that matches this ")"
+    			xml.append(tokens.get(i-1).replaceFirst("\\(", "</")+">");
+    			tokens.remove(i-1);
+    			tokens.remove(i-1);
+    			i=i-2;
+    		}else if(token.endsWith(")")){//(JJ_subulate)
+    			token = token.replaceAll("[()]", "");
+    			String tag = token.substring(0, token.indexOf("_"));
+    			String text = token.substring(token.indexOf("_")+1);
+    			xml.append("<"+tag+" id='"+count+"' text='"+text+"'/>");//<JJ text="subulate"/>
+    			count++;
+    			tokens.remove(i);
+    			i--;
+    		}else{//(NP
+    			String tag = token.replaceFirst("\\(", "<").trim()+">";//<NP>
+    			xml.append(tag); //keep this token
+    		}
+    	}    	
+    	if(tokens.size()>0){
+    		System.err.println("error reading xml");
+    		System.exit(2);
+    	}
+       	return xml.toString();
+    }
     /**
      * <NN Heads/> will become
      * <NN text="Heads"/>
      * @param xml
      */
-    private String format(String xml) {
+    /*private String format(String xml) {
         // TODO Auto-generated method stub
         String r = "";
         int count = 0;
@@ -100,7 +139,7 @@ public class Tree2XML {
         }
         r +=xml;
         return r;
-    }
+    }*/
 
     /**
      * 
@@ -111,7 +150,7 @@ public class Tree2XML {
      * a) <S    <NP      <NP> <NN Heads/> <JJ many/> </NP> or
      * b) <S    <NP>      <NP> <NN Heads/> <JJ many/> </NP> </NP> 
      */
-
+    /*
     private String process(String part) {
         String result = "";
         part = part.trim().replaceFirst("\\)$", "").replaceAll("\\s+", " ").trim();
@@ -135,7 +174,7 @@ public class Tree2XML {
         result = result.replaceAll("\\*", "");        
         return result;
     }
-
+	*/
  
     
  /*   private void processxml(Document root) {
