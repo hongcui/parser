@@ -68,7 +68,14 @@ public class MainFormDbAccessor {
 		} 
 	}
 	
-	public void removeMarkUpData(List <String> removedTags) throws ParsingException, SQLException {
+	/**
+	 * This method is used to remove the Bad structure names from Tab4, after they are marked RED,two steps are taken:
+	 * First Step: Remove from the database (update the tag). Step Two: Keep the UI as it is with selected rows in Red color 
+	 * @param removedTags: List of structures that should be removed
+	 * @throws ParsingException
+	 * @throws SQLException
+	 */
+	public void setUnknownTags(List <String> removedTags) throws ParsingException, SQLException {
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -84,9 +91,6 @@ public class MainFormDbAccessor {
 					stmt.setString(1, tag);
 					stmt.executeUpdate();
 				}
-				
-
-
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in MainFormDbAccessor:removeMarkUpData", sqlexe);
 			sqlexe.printStackTrace();
@@ -280,6 +284,12 @@ public class MainFormDbAccessor {
 		}
 	}
 	
+	/**
+	 * This is used when Save is clicked on Step5.
+	 * @param tagTable
+	 * @throws ParsingException
+	 * @throws SQLException
+	 */
 	public void saveTagData(Table tagTable) throws ParsingException, SQLException{
 		
 		Connection conn = null;
@@ -792,7 +802,7 @@ public class MainFormDbAccessor {
 	 * This function will save terms from the Markup - (Structure tab) to database
 	 * @param terms
 	 */
-	public void saveStructureTerms
+	public void saveTermRole
 		(ArrayList<String> terms, String role)throws SQLException {
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -805,7 +815,7 @@ public class MainFormDbAccessor {
 			//stmt = conn.prepareStatement("Update "+postable+" set saved_flag ='green' where word = ?");
 			for (String term : terms) {
 				stmt.setString(1, term);
-				stmt.setString(2, "c");	
+				stmt.setString(2, role);	
 			//	stmt.setString(3,"green");
 				try {
 					stmt.execute();
@@ -833,8 +843,6 @@ public class MainFormDbAccessor {
 	}
 
 	public void removeDescriptorData_markRed(ArrayList<String> words) throws SQLException {
-		
-
 		Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
@@ -847,7 +855,6 @@ public class MainFormDbAccessor {
 				pstmt.addBatch();
 			}
 			pstmt.executeBatch();
-			
 		} catch (SQLException exe){
 			LOGGER.error("Exception in RemoveDescriptorData", exe);
 			exe.printStackTrace();
@@ -855,14 +862,11 @@ public class MainFormDbAccessor {
 			if (pstmt != null) {
 				pstmt.close();
 			}
-			
 			if (conn != null) {
 				conn.close();
 			}			
 			
 		}
-
-		
 	}
 	
 	public void createWordRoleTable(){
@@ -873,7 +877,6 @@ public class MainFormDbAccessor {
 			conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2))");			
-			
 		} catch (SQLException exe){
 			LOGGER.error("Exception in RemoveDescriptorData", exe);
 			exe.printStackTrace();
@@ -894,7 +897,7 @@ public class MainFormDbAccessor {
 		}
 	}
 
-//added newly to load the styled context for step 4 (all 3 tabs)
+//added newly to load the styled context for step 4 (all 4 tabs)
 public void getContextData(String word,StyledText context) throws SQLException, ParsingException {
 		
 		Connection conn = null;
@@ -905,7 +908,7 @@ public void getContextData(String word,StyledText context) throws SQLException, 
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '%"+word+"%' ";
+			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '% "+word+" %' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
 		
 			rs = stmt.executeQuery();
