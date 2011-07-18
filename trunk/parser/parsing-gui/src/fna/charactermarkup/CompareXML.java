@@ -806,11 +806,11 @@ public class CompareXML {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//@SuppressWarnings("unused")
-		//String database="annotationevaluation";
-		//String projectfolder="C:\\DATA\\evaluation\\fnav19";
-		
 		String database="annotationevaluation";
-		String projectfolder="C:\\DATA\\evaluation\\treatise";
+		String projectfolder="C:\\DATA\\evaluation\\fnav19";
+		
+		//String database="annotationevaluation";
+		//String projectfolder="C:\\DATA\\evaluation\\treatise";
 		
 		//String database="annotationevaluation_heuristics_fna";
 		//String projectfolder="C:\\DATA\\evaluation\\fnav19";

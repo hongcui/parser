@@ -54,7 +54,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = false;
+	private boolean finalize = true;
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = false;
@@ -242,6 +242,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
 							}
 						}
+						//sent = this.normalizeSpacesRoundNumbers(sent);
 							if(!sent.matches(".*?[;\\.]\\s*$")){
 								sent = sent+" .";
 							}

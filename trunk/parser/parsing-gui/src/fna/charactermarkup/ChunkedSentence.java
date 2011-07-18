@@ -1387,7 +1387,7 @@ public class ChunkedSentence {
 						return null;
 					}
 				}else{
-					String chara = Utilities.lookupCharacter(token, conn, characterhash, glosstable);
+					String chara = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
 					if(!founds && chara!=null){
 						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+chara+"["+token+" ";
 						founds = true;
@@ -1415,7 +1415,7 @@ public class ChunkedSentence {
 									if(t.length()>0){
 										String[] states = t.split("\\s+");
 										for(int k = 0; k < states.length; k++){
-											String ch = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable);
+											String ch = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable, tableprefix);
 											if(ch!=null){
 												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+states[k].replaceAll("[{}]", "")+" ";
 											}else{
@@ -1427,7 +1427,7 @@ public class ChunkedSentence {
 									this.pointer = j+1;
 									return new ChunkVP("b["+scs+"]"); 
 								}
-								String ch = Utilities.lookupCharacter(t, conn, characterhash, glosstable);
+								String ch = Utilities.lookupCharacter(t, conn, characterhash, glosstable, tableprefix);
 								if((!findc &&!findo) && t.matches("^[rwl]\\[.*")){
 									scs = scs.replaceFirst("^\\]\\s+", "").trim()+"] ";
 									scs += t;
@@ -1796,7 +1796,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 			
 			String chara = null;
 			if(!charword.matches("("+ChunkedSentence.more+")")){
-				chara = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable);
+				chara = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 			}
 			String afterthan = token.substring(token.indexOf(" than ")+6);
 			//Case B
@@ -1873,7 +1873,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 			last = charstring.trim();
 		}
 			
-		String c = Utilities.lookupCharacter(last, conn, characterhash, glosstable);
+		String c = Utilities.lookupCharacter(last, conn, characterhash, glosstable, tableprefix);
 		if(c!=null){
 			result += c+"["+last+"]";
 		}else if(Utilities.isVerb(last, verbs, notverbs)){

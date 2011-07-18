@@ -93,7 +93,7 @@ public class CharacterAnnotatorChunked {
 		this.text = cs.getText();
 		this.sentsrc = sentsrc;
 		Element text = new Element("text");//make <text> the first element in statement
-		text.addContent(this.text);
+		//text.addContent(this.text);
 		this.statement.addContent(text);
 		String subject= cs.getSubjectText();
 		if(!subject.equals("ignore")){
@@ -818,7 +818,7 @@ public class CharacterAnnotatorChunked {
 		String eqcharacter = ChunkedSentence.eqcharacters.get(state);
 		if(eqcharacter != null){
 			state = eqcharacter;
-			character = Utilities.lookupCharacter(eqcharacter, conn, ChunkedSentence.characterhash, this.glosstable);
+			character = Utilities.lookupCharacter(eqcharacter, conn, ChunkedSentence.characterhash, this.glosstable, this.tableprefix);
 			if(character ==null){
 				state = statecp;
 				character = charactercp;
@@ -912,7 +912,7 @@ public class CharacterAnnotatorChunked {
 		do{
 			findm = false;
 			String last = cvalue.substring(cvalue.lastIndexOf(' ')+1);
-			if(Utilities.lookupCharacter(last, conn, ChunkedSentence.characterhash, glosstable)==null && Utilities.isAdv(last, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){
+			if(Utilities.lookupCharacter(last, conn, ChunkedSentence.characterhash, glosstable, tableprefix)==null && Utilities.isAdv(last, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){
 				mall +=last+ " ";
 				cvalue = cvalue.replaceFirst(last+"$", "").trim();
 				findm = true;
@@ -931,7 +931,7 @@ public class CharacterAnnotatorChunked {
 				}
 				int end = state.indexOf(' ')== -1? state.length():state.indexOf(' ');
 				String w = state.substring(0, end);
-				if(Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable)==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){
+				if(Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix)==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){
 					m +=w+ " ";
 					w = w.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\+", "\\\\+");
 					state = state.replaceFirst(w, "").trim();
@@ -1007,7 +1007,7 @@ public class CharacterAnnotatorChunked {
 		String[] tokens = character.trim().split("\\s+");
 		String result = "";
 		for(int i = 0; i<tokens.length; i++){
-			if(Utilities.lookupCharacter(tokens[i], conn, ChunkedSentence.characterhash, glosstable)!=null){
+			if(Utilities.lookupCharacter(tokens[i], conn, ChunkedSentence.characterhash, glosstable, tableprefix)!=null){
 				 result += tokens[i]+" ";
 			}
 		}
@@ -1776,7 +1776,7 @@ public class CharacterAnnotatorChunked {
 						w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
 					}
 					w = w.replaceAll("(\\{|\\})", "");
-					chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable);
+					chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 					
 					if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
 						modifiers +=w+" ";
@@ -1909,7 +1909,7 @@ public class CharacterAnnotatorChunked {
 	private String constraintType(String w, String o) {
 		String result = null;
 		w = w.replaceAll("\\W", "");
-		String ch = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable);
+		String ch = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
 		if(ch!=null && ch.matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
 		String sw = Utilities.toSingular(w);
 		try{
