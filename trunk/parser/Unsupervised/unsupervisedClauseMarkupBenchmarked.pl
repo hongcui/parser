@@ -371,7 +371,7 @@ if ($lm eq "plain"){
 
 print stdout "::::::::::::::::::::::::Final step: normalize tag and modifiers: \n";
 normalizetags(); ##normalization is the last step : turn all tags and modifiers to singular form, remove <NBM> tags from sentence
-#prepareWordPos4Parser(); #12/15/10
+prepareWordPos4Parser(); #12/15/10
 #resolvesentencetags(); #for future
 
 
@@ -397,24 +397,36 @@ print stdout "Done:\n";
 
 
 ##################################################################################################
-########### create wordpos4parser by copying from wordpos but leaving out some preloaded terms ###
+########### set saved_flag to red for the following terms in preparation to run the Parser
+#1. words that are not in allwords table 
+#2. special words added
 ##################################################################################################
 
-#sub prepareWordPos4Parser{
-#	my $toremove = $PROPERNOUNS."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PROPOSITION;
-#	$toremove =~ s#\|#","#g;
-#	$toremove = "\"".$toremove."\"";
-#
-#	my $stmt2 ="drop table if exists ".$prefix."_wordpos4parser";
-#	my $sth2 = $dbh->prepare($stmt2);
-#	$sth2->execute() or die $sth2->errstr."\n";
-#	$stmt2 ="create table ".$prefix."_wordpos4parser select * from ".$prefix."_wordpos where word not in (".$toremove.") and word rlike '[a-z]'";
-#	$sth2 = $dbh->prepare($stmt2);
-#	$sth2->execute() or die $sth2->errstr."\n";
-#        $stmt2 ="alter table ".$prefix."_wordpos4parser add saved_flag varchar(20) default '' ";
-#	$sth2 = $dbh->prepare($stmt2);
-#	$sth2->execute() or die $sth2->errstr."\n";
-#}
+sub prepareWordPos4Parser{
+	my $toremove = $PRONOUN."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PROPOSITION."|".$stop;
+	$toremove =~ s#\|#","#g;
+	$toremove = "\"".$toremove."\"";
+	
+	my $stmt2 ="update ".$prefix."_wordpos set saved_flag='red' where word in (".$toremove.") or word not rlike '[a-z]' or word not in (select dhword from ".$prefix."_allwords)";
+	my $sth2 = $dbh->prepare($stmt2);
+	$sth2->execute() or die $sth2->errstr."\n";
+	
+	#ly words
+	$stmt2 = "select word from ".$prefix."_wordpos where word like '%ly'";
+	$sth2 = $dbh->prepare($stmt2);
+	$sth2->execute() or die $sth2->errstr."\n";
+	while(my $word = $sth2->fetchrow_array()){
+		my $nword = $word;
+		$nword =~ s#ly$##;
+		my $sth3 = $dbh->prepare("select count(*) from ".$prefix."_allwords where word='".$nword."'");
+		$sth3->execute() or die $sth3->errstr."\n";
+		my $t = $sth3->fetchrow_array();
+		if($t=~/\w/){
+			$sth3 = $dbh->prepare("update ".$prefix."_wordpos set saved_flag='red' where word='".$word."'");
+			$sth3->execute() or die $sth3->errstr."\n";
+		}
+	}
+}
 
 #old subroutines
 ##print stdout "Handling 'and' and 'or':\n";
@@ -530,7 +542,7 @@ $del = $dbh->prepare('delete from '.$prefix.'_sentence');
 $del->execute();
 
 
-$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20), primary key (word, pos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", primary key (word, pos)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 $del = $dbh->prepare('delete from '.$prefix.'_wordpos');
 $del->execute();
@@ -3799,6 +3811,9 @@ sub singular{
  if($p eq "valves"){ return "valve"};
  if($p eq "media"){ return "media"};
  if($p eq "species"){return "species"};
+ if($p eq "axes"){return "axis"};
+ if($p eq "calyces"){return "calyx"};
+ 
  if(getnumber($p) eq "p"){
     if($p =~ /(.*?[^aeiou])ies$/){
       $s = $1.'y';
@@ -5589,10 +5604,10 @@ while(defined ($file=readdir(IN))){
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
 
-  	#$text = hideBrackets($text);#not fully tested yet
-  	$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
-  	$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
-  	$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
+  	#$text = hideBrackets($text);#implemented in DeHyphenAFolder.java
+  	#$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
+  	#$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
+  	#$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
 
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
@@ -5604,7 +5619,8 @@ while(defined ($file=readdir(IN))){
 
 	#@todo: use [PERIOD] replace . etc. in brackets. Replace back when dump to disk.
 	@sentences = SentenceSpliter::get_sentences($text);#@todo: avoid splits in brackets. how? use hideBrackets.
-	my @sentcopy = @sentences;
+	#my @sentcopy = @sentences;
+	my @sentcopy = ();
 	my @validindex = ();
 	my $i = 0;
  	foreach (@sentences){
@@ -5612,6 +5628,7 @@ while(defined ($file=readdir(IN))){
 		if(!/\w+/){next;}
 		push(@validindex, $i);
 		s#\[DOT\]#.#g;
+		push(@sentcopy, $_);
 
     	#s#([^\d])\s*-\s*([^\d])#\1_\2#g;         #hyphened words: - =>_ to avoid space padding in the next step
 		s#\s*[-]+\s*([a-z])#_\1#g;                #cup_shaped, 3_nerved, 3-5 (-7)_nerved #5/30/09 add+
@@ -5660,7 +5677,9 @@ while(defined ($file=readdir(IN))){
     	if(length($oline) >=2000 ){#EOL
     		$oline = $line;
     	}
-
+		if(hasUnmatchedBrackets($oline)){
+			print STDOUT "Warning: sentence [$SENTID] has unmatched brackets\n";
+		}
     	$stmt = "insert into ".$prefix."_sentence(sentid, source, sentence, originalsent, lead, status) values($SENTID,'$source' ,'$line','$oline','$lead', '$status')";
 		$sth = $dbh->prepare($stmt);
     	$sth->execute() or die $sth->errstr."\n SQL Statement: ".$stmt."\n";
@@ -5676,6 +5695,23 @@ while(defined ($file=readdir(IN))){
 	chop($PROPERNOUNS);
 print "Total sentences = $SENTID\n";
 populateunknownwordstable();
+}
+
+sub hasUnmatchedBrackets{
+	my $text = shift;
+	my @lbrackets =("\\[", "(", "{");
+	my @rbrackets = ("\\]", ")", "}");
+	my $textcopy = $text;
+	for(my $i = 0; $i<@lbrackets; $i++){
+		$text =~ s#[^$lbrackets[$i]]##g;
+	    my $left1 = $text.length;
+	    $textcopy =~ s#[^$rbrackets[$i]]##g;
+	    my $right1 = $textcopy.length;
+	    if($left1!=$right1){
+	    	return 1;
+	    } 
+	}
+	return 0;
 }
 
 sub recordpropernouns{
