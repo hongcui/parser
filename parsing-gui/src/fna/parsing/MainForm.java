@@ -746,9 +746,9 @@ public class MainForm {
 				{
 					loadTags();
 					//should not rerun character grouping, should load results from terms table. Hong TODO 5/23/11
-					// set the decisions combo
-				//	setCharacterTabDecisions();
-					// set the groups list
+					//set the decisions combo
+					//setCharacterTabDecisions();
+					//set the groups list
 					setCharactertabGroups();
 					// show the terms that co-occured in the first group
 					loadTerms();
@@ -1271,10 +1271,10 @@ public class MainForm {
 		/* Mark Up Tab: this is fifth tab but is step 4 in annotation*/
 		/*contains 5 subtabs: 1. Run unsupervised learning perl code */
 		/*2-5: term curation subtabs, filtered by the glossarytable*/
-		/*2: "Find Structures" from sentence tags, save to WordRole */
-		/*3: "Find Descriptors" from wordpos, save to WordRole*/
-		/*4: "Find More Structures" from unknownwords, save to WordRole*/
-		/*5: "Find More Descriptors" from unknownwords, save to WordRole*/
+		/*2: "Find Structures" from sentence tags, wordpos (p,s) table; save to WordRole */
+		/*3: "Find Descriptors" from wordpos (b), save to WordRole*/
+		/*4: "Find More Structures" from allwords (dhword), save to WordRole*/
+		/*5: "Find More Descriptors" from unknownwords(dhword), save to WordRole*/
 		final TabItem markupTabItem = new TabItem(tabFolder, SWT.NONE);
 		markupTabItem.setText(ApplicationUtilities.getProperty("tab.five.name"));
 
@@ -1312,11 +1312,9 @@ public class MainForm {
 		startMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				startMarkup();
-				loadTermCurationTabs();
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
 					statusOfMarkUp[4] = true;
-					//loadOthersTab();
 				} catch (Exception exe) {
 					LOGGER.error("Couldn't save status - markup" , exe);
 					exe.printStackTrace();
@@ -1333,8 +1331,8 @@ public class MainForm {
 		tbtmFindStructureNames.setControl(composite_2);
 
 		tab5desc = new Text(composite_2, SWT.READ_ONLY | SWT.WRAP);
-		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp"));
+		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp1"));
+		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp1"));
 		tab5desc.setEditable(false);
 		tab5desc.setBounds(10, 10, 744, 39);
 		
@@ -1448,9 +1446,128 @@ public class MainForm {
 			public void widgetSelected(final SelectionEvent e) {
 				//saveStructureTerms(markupTable_Descriptor, Registry.MARKUP_ROLE_O);
 				saveStructureTerms(findStructureTable, Registry.MARKUP_ROLE_O);
+				structureContextText.setText("");
 			}
 		});
-	
+
+		/*** "Find more Structure" subtab ***/
+		TabItem findMoreStructure = new TabItem(tabFolder_1, SWT.NONE);
+		findMoreStructure.setText("Find More Structures");
+		
+		Composite composite_10 = new Composite(tabFolder_1, SWT.NONE);
+		findMoreStructure.setControl(composite_10);
+		
+		tab5desc = new Text(composite_10, SWT.READ_ONLY | SWT.WRAP);
+		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp3"));
+		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp3"));
+		tab5desc.setEditable(false);
+		tab5desc.setBounds(10, 10, 744, 39);
+		
+		findMoreStructureTable = new Table(composite_10, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
+		//findMoreStructureTable.setBounds(35, 94, 722, 216);
+		findMoreStructureTable.setBounds(10, 74, 744, 209);
+		findMoreStructureTable.setHeaderVisible(true);
+		findMoreStructureTable.setLinesVisible(true);
+		TableColumn findMoreStructTalbeColumn_Count = new TableColumn(findMoreStructureTable, SWT.NONE);
+		findMoreStructTalbeColumn_Count.setWidth(81);
+		findMoreStructTalbeColumn_Count.setText("Count");		
+		TableColumn findMoreStructTableColumn_Words = new TableColumn(findMoreStructureTable, SWT.NONE);
+		findMoreStructTableColumn_Words.setWidth(658);
+		findMoreStructTableColumn_Words.setText("StructureName");
+		findMoreStructureTable.addListener(SWT.MouseDown, new Listener() {//display context for selected structure term
+		      public void handleEvent(Event e) {		    	 
+		    	 TableItem[] selItem= findMoreStructureTable.getSelection();
+		    	 for (TableItem item : selItem) {
+	  				String str = item.getText(1);
+	  				try {
+	  					moreStructureContextText.setText("");
+						mainDb.getContextData(str, moreStructureContextText);
+					} catch (ParsingException e1) {
+						e1.printStackTrace();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}			  			
+		    	 }
+		     }
+		});
+		
+		moreStructureContextText = new StyledText(composite_10, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
+		//moreStructureContextText.setBounds(35, 334, 722, 69);
+		moreStructureContextText.setEditable(false);
+		moreStructureContextText.setDoubleClickEnabled(false);
+		moreStructureContextText.setBounds(10, 299, 744, 114);
+		
+		/*"load from last time" button*/
+		Button tab5_findMoreStructure_loadFromLastTimeButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(120, 427, 144, 25);
+		tab5_findMoreStructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
+		tab5_findMoreStructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
+		tab5_findMoreStructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//call functions to load values for all tables in order			
+				int c = loadFindMoreStructureTable(); //use unknownwords table
+				if(c==0){
+					String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
+					String message = ApplicationUtilities.getProperty("popup.load.nodata");				
+					ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
+				}
+			}			
+		});
+		Button tab5_findMoreStructure_MarkAsGoodButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_MarkAsGoodButton.setBounds(270, 427, 130, 25);
+		tab5_findMoreStructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
+		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
+		tab5_findMoreStructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int i=0;
+				for (TableItem item : findMoreStructureTable.getItems()) {
+					if (item.getChecked()) {				
+						findMoreStructureTable.getItem(i).setBackground(0,green);
+						findMoreStructureTable.getItem(i).setBackground(1,green);
+						item.setChecked(false);
+					}
+					i+=1;
+				}				
+			}
+		});
+		Button tab5_findMoreStructure_MarkAsBadButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_MarkAsBadButton.setBounds(405, 427, 130, 25);
+		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
+		tab5_findMoreStructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
+	    tab5_findMoreStructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int i=0;
+				for (TableItem item : findMoreStructureTable.getItems()) {
+					if (item.getChecked()) {				
+						findMoreStructureTable.getItem(i).setBackground(0,red);
+						findMoreStructureTable.getItem(i).setBackground(1,red);
+						item.setChecked(false);
+					}
+					i+=1;
+				}
+				//removeBadStructuresFromTable(findMoreStructureTable);
+				/*try { You don't need to run markup again ater removal!
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
+					statusOfMarkUp[4] = false;
+				} catch (Exception exe) {
+					LOGGER.error("Couldnt save status - markup" , exe);
+				} */				
+			}
+		});
+
+		Button tab5_findMoreStructure_SaveButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_SaveButton.setBounds(541, 427, 156, 25);
+		tab5_findMoreStructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
+		tab5_findMoreStructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
+		tab5_findMoreStructure_SaveButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveStructureTerms(findMoreStructureTable, Registry.MARKUP_ROLE_O);
+				moreStructureContextText.setText("");
+			}
+		});
+
 		/*"find descriptors" subtab*/
 		final TabItem tbtmFindDescriptors = new TabItem(tabFolder_1, SWT.NONE);
 		tbtmFindDescriptors.setText("Find Descriptors");
@@ -1459,8 +1576,8 @@ public class MainForm {
 		tbtmFindDescriptors.setControl(composite_7);
 
 		tab5desc = new Text(composite_7, SWT.READ_ONLY | SWT.WRAP);
-		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp"));
+		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp2"));
+		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp2"));
 		tab5desc.setEditable(false);
 		tab5desc.setBounds(10, 10, 744, 39);
 		
@@ -1518,7 +1635,7 @@ public class MainForm {
 		/*"mark as good" button */
 		final Button tab5_findDescriptor_MarkAsGoodButton = new Button(composite_7, SWT.NONE);//this button is on the markup-descriptor tab
 		tab5_findDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
-		tab5_findDescriptor_MarkAsGoodButton.setBounds(472, 418, 140, 25);
+		tab5_findDescriptor_MarkAsGoodButton.setBounds(344, 418, 140, 25);
 		tab5_findDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
 		tab5_findDescriptor_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1549,7 +1666,7 @@ public class MainForm {
 		/*"mark as bad" button*/
 		final Button tab5_findDescriptor_MarkAsBadButton = new Button(composite_7, SWT.NONE);
 		tab5_findDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-		tab5_findDescriptor_MarkAsBadButton.setBounds(344, 418, 122, 25);
+		tab5_findDescriptor_MarkAsBadButton.setBounds(472, 418, 122, 25);
 		tab5_findDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
 		tab5_findDescriptor_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1574,6 +1691,7 @@ public class MainForm {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				saveDescriptorTerms(findDescriptorTable, Registry.MARKUP_ROLE_B);
+				descriptorContextText.setText("");
 				//saveTermRole(descriptorsToSaveList, Registry.MARKUP_ROLE_B);
 				
 				//for display only show the descriptors that are red and undecided
@@ -1705,124 +1823,6 @@ public class MainForm {
 		btnLoadResultsFrom_1.setText("Load results from last time");
 		*/
 		
-	
-		/*** "Find more Structure" subtab ***/
-		TabItem findMoreStructure = new TabItem(tabFolder_1, SWT.NONE);
-		findMoreStructure.setText("Find More Structures");
-		
-		Composite composite_10 = new Composite(tabFolder_1, SWT.NONE);
-		findMoreStructure.setControl(composite_10);
-		
-		tab5desc = new Text(composite_10, SWT.READ_ONLY | SWT.WRAP);
-		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp"));
-		tab5desc.setEditable(false);
-		tab5desc.setBounds(10, 10, 744, 39);
-		
-		findMoreStructureTable = new Table(composite_10, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-		//findMoreStructureTable.setBounds(35, 94, 722, 216);
-		findMoreStructureTable.setBounds(10, 74, 744, 209);
-		findMoreStructureTable.setHeaderVisible(true);
-		findMoreStructureTable.setLinesVisible(true);
-		TableColumn findMoreStructTalbeColumn_Count = new TableColumn(findMoreStructureTable, SWT.NONE);
-		findMoreStructTalbeColumn_Count.setWidth(81);
-		findMoreStructTalbeColumn_Count.setText("Count");		
-		TableColumn findMoreStructTableColumn_Words = new TableColumn(findMoreStructureTable, SWT.NONE);
-		findMoreStructTableColumn_Words.setWidth(658);
-		findMoreStructTableColumn_Words.setText("StructureName");
-		findMoreStructureTable.addListener(SWT.MouseDown, new Listener() {//display context for selected structure term
-		      public void handleEvent(Event e) {		    	 
-		    	 TableItem[] selItem= findMoreStructureTable.getSelection();
-		    	 for (TableItem item : selItem) {
-	  				String str = item.getText(1);
-	  				try {
-	  					moreStructureContextText.setText("");
-						mainDb.getContextData(str, moreStructureContextText);
-					} catch (ParsingException e1) {
-						e1.printStackTrace();
-					} catch (SQLException e1) {
-						e1.printStackTrace();
-					}			  			
-		    	 }
-		     }
-		});
-		
-		moreStructureContextText = new StyledText(composite_10, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
-		//moreStructureContextText.setBounds(35, 334, 722, 69);
-		moreStructureContextText.setEditable(false);
-		moreStructureContextText.setDoubleClickEnabled(false);
-		moreStructureContextText.setBounds(10, 299, 744, 114);
-		
-		/*"load from last time" button*/
-		Button tab5_findMoreStructure_loadFromLastTimeButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(120, 427, 144, 25);
-		tab5_findMoreStructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
-		tab5_findMoreStructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
-		tab5_findMoreStructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//call functions to load values for all tables in order			
-				int c = loadFindMoreStructureTable(); //use unknownwords table
-				if(c==0){
-					String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-					String message = ApplicationUtilities.getProperty("popup.load.nodata");				
-					ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-				}
-			}			
-		});
-		Button tab5_findMoreStructure_MarkAsGoodButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsGoodButton.setBounds(270, 427, 130, 25);
-		tab5_findMoreStructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
-		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
-		tab5_findMoreStructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int i=0;
-				for (TableItem item : findMoreStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findMoreStructureTable.getItem(i).setBackground(0,green);
-						findMoreStructureTable.getItem(i).setBackground(1,green);
-						item.setChecked(false);
-					}
-					i+=1;
-				}				
-			}
-		});
-		Button tab5_findMoreStructure_MarkAsBadButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsBadButton.setBounds(405, 427, 130, 25);
-		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
-		tab5_findMoreStructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-	    tab5_findMoreStructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				int i=0;
-				for (TableItem item : findMoreStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findMoreStructureTable.getItem(i).setBackground(0,red);
-						findMoreStructureTable.getItem(i).setBackground(1,red);
-						item.setChecked(false);
-					}
-					i+=1;
-				}
-				//removeBadStructuresFromTable(findMoreStructureTable);
-				/*try { You don't need to run markup again ater removal!
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
-					statusOfMarkUp[4] = false;
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - markup" , exe);
-				} */				
-			}
-		});
-
-		Button tab5_findMoreStructure_SaveButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_SaveButton.setBounds(541, 427, 156, 25);
-		tab5_findMoreStructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
-		tab5_findMoreStructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
-		tab5_findMoreStructure_SaveButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				saveStructureTerms(findMoreStructureTable, Registry.MARKUP_ROLE_O);
-			}
-		});
-
 		/* "Find More Descriptors" subtab */
 		TabItem descriptor2Tab = new TabItem(tabFolder_1, SWT.NONE);
 		descriptor2Tab.setText("Find More Descriptors");
@@ -1830,8 +1830,8 @@ public class MainForm {
 		descriptor2Tab.setControl(composite_11);
 
 		tab5desc = new Text(composite_11, SWT.READ_ONLY | SWT.WRAP);
-		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
-		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp"));
+		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp4"));
+		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp4"));
 		tab5desc.setEditable(false);
 		tab5desc.setBounds(10, 10, 744, 39);
 		
@@ -1940,6 +1940,7 @@ public class MainForm {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				saveDescriptorTerms(findMoreDescriptorTable, Registry.MARKUP_ROLE_B);
+				moreDescriptorContextText.setText("");
 				//saveTermRole(descriptorsToSaveList, Registry.MARKUP_ROLE_B);
 				
 				//for display only show the descriptors that are red and undecided
@@ -2902,9 +2903,12 @@ public class MainForm {
 				nonStructureTerms.add(item.getText(1));
 			}
 		}
-		//act on nonStructureTerms: set sentences tagged with nonStructureTerms to "unknown"
+		//act on nonStructureTerms: 
+		//set sentences tagged with nonStructureTerms to "unknown"
+		//change pos from p/s to b
 		try {
 			mainDb.setUnknownTags(nonStructureTerms);
+			mainDb.changePOStoB(nonStructureTerms);
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in removing structures from database in MainForm:removeBadStructuresFromTable", exe);
 			exe.printStackTrace();
@@ -3247,7 +3251,7 @@ public class MainForm {
 		
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
 				databasename, shell.getDisplay(), markUpPerlLog, 
-				dataPrefixCombo.getText().replaceAll("-", "_").trim(), findDescriptorTable, this);
+				dataPrefixCombo.getText().replaceAll("-", "_").trim(), /*findDescriptorTable,*/ this);
 		vd.start();
 	}
 	
@@ -3708,6 +3712,7 @@ public class MainForm {
 								
 								for (ContextBean cbean : contexts){
 									TableItem item = new TableItem(contextTable, SWT.NONE);
+									//@TODO: style text here:	not possible using tableItem
 									item.setText(new String[]{cbean.getSourceText(), cbean.getSentence()});
 								}
 								

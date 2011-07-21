@@ -90,8 +90,9 @@ public class VolumeFinalizer extends Thread {
 		String postable = "wordpos4parser";
 		*/
 		String glosstable = this.glossaryPrefix;
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
-		sosm.markSentences();
+		//don't need to rerun them--they were ran at step 5-6, unknown removal and character curation
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
+		//sosm.markSentences();
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,postable,glosstable);
 		sp.POSTagging();
 		sp.parsing();
