@@ -18,6 +18,7 @@ import org.jdom.Attribute;
 import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
 import fna.parsing.ApplicationUtilities;
@@ -267,6 +268,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 										//VolumeFinalizer.replaceWithAnnotated(description, count, "/treatment/description", "FINAL", false);
 										
 										placeDescription(description, pdescID, baseroot);
+										cac.reset();
 										description = new Element("description");
 										if(this.printProgress){
 											System.out.println(pfileindex+".xml written");
@@ -423,7 +425,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	 */
 	
 	private void placeDescription(Element description, String dID, Element baseroot) {
-		// TODO Auto-generated method stub
+		/*validate description, incomplete
+		SAXBuilder builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser", true);
+		builder.setFeature("http://apache.org/xml/features/validation/schema", true);
+		builder.setProperty(
+				  "http://apache.org/xml/properties/schema/external-schemaLocation",
+				  "http://biosemantics.googlecode.com/svn/trunk/characterStatements/ characterAnnotationSchema.xsd");
+		builder.build(description);*/
+		
 		if(dID.indexOf(".txtp")>=0){
 			String pid = dID.replaceFirst("\\.txt$", "");
 			VolumeFinalizer.replaceWithAnnotated(description, baseroot, ".//description[@pid=\""+pid+"\"]");			

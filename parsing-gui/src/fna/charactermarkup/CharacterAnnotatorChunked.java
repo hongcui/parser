@@ -49,7 +49,6 @@ public class CharacterAnnotatorChunked {
 	private boolean partofinference = true;
 	private ArrayList<Element> pstructures = new ArrayList<Element>();
 	private ArrayList<Element> cstructures = new ArrayList<Element>();
-	
 	private boolean attachToLast = false; //this switch controls where a character will be attached to. "true": attach to last organ seen. "false":attach to the subject of a clause
 	private boolean printAnnotation = true;
 	private boolean debugNum = false;
@@ -85,7 +84,18 @@ public class CharacterAnnotatorChunked {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * reset annotator to process next description paragraph.
+	 */
+	public void reset(){
+		this.subjects = new ArrayList<Element>();//static so a ditto sent can see the last subject
+		this.latestelements = new ArrayList<Element>();//save the last set of elements added. independent from adding elements to <Statement>
+		this.unassignedcharacter = null;
+		this.inbrackets = false;
+		this.pstructures = new ArrayList<Element>();
+		this.cstructures = new ArrayList<Element>();
+
+	}
 	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
 		this.statement = new Element("statement");
 		this.statement.setAttribute("id", sentindex);
@@ -93,7 +103,7 @@ public class CharacterAnnotatorChunked {
 		this.text = cs.getText();
 		this.sentsrc = sentsrc;
 		Element text = new Element("text");//make <text> the first element in statement
-		//text.addContent(this.text);
+		text.addContent(this.text);
 		this.statement.addContent(text);
 		String subject= cs.getSubjectText();
 		if(!subject.equals("ignore")){
