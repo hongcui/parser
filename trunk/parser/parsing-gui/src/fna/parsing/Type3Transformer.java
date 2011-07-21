@@ -152,10 +152,10 @@ public class Type3Transformer extends Thread {
 		}
 		
 		listener.progress(60);
-		//dehypen descriptions folder
-		DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", 
-				ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix,this.glossarytable, null);
-		dhf.dehyphen();
+		//dehypen descriptions folder: may be a redundant step
+		//DeHyphenAFolder dhf = new DeHyphenAFolder(listener,target.getAbsolutePath(),"descriptions", 
+		//		ApplicationUtilities.getProperty("database.name"), perlLog,  dataprefix,this.glossarytable, null);
+		//dhf.dehyphen();
 
 	}
 	/**

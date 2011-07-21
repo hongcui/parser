@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.widgets.Text;
 
 import fna.parsing.character.Glossary;
 
@@ -31,7 +30,7 @@ public class DeHyphenAFolder {
 	private ProcessListener listener;
 	private String database;
 	@SuppressWarnings("unused")
-	private Text perlLog;
+	private VolumeDehyphenizer vd;
 	@SuppressWarnings("unused")
 	private String dataPrefix;
 	private String tablename;
@@ -40,20 +39,20 @@ public class DeHyphenAFolder {
 	private File outfolder;
 	private static final Logger LOGGER = Logger.getLogger(DeHyphenAFolder.class);
 	private Connection conn;
-    static public String num = "\\d[^a-z]+";
+    //static public String num = "\\d[^a-z]+";
     private Hashtable<String,String> mapping = new Hashtable<String, String>();
     private String glossarytable;
 	/**
 	 * 
 	 */
 	public DeHyphenAFolder(ProcessListener listener, String workdir, 
-    		String todofoldername, String database, Text perlLog, String dataPrefix, String glossarytable, Glossary glossary) {
+    		String todofoldername, String database, VolumeDehyphenizer vd, String dataPrefix, String glossarytable, Glossary glossary) {
 		this.listener = listener;
 		this.glossarytable = glossarytable;
         this.database = database;
-        this.perlLog = perlLog;
+        this.vd = vd;
         this.dataPrefix = dataPrefix;
-        this.tablename = dataPrefix+"_allwords";
+        this.tablename = dataPrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS");
         
         this.glossary = glossary;
         workdir = workdir.endsWith("/")? workdir : workdir+"/";
@@ -77,38 +76,83 @@ public class DeHyphenAFolder {
         }
 	}
 	
-	   public void dehyphen(){
+	   public boolean dehyphen(){
 
 		   if(listener!= null) listener.progress(1);
-	        fillInWords();
-	        if(listener!= null) listener.progress(50);
-
-	        DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", this.glossarytable, glossary);
-
-	        try{
-	            Statement stmt = conn.createStatement();
-	            ResultSet rs = stmt.executeQuery("select word from "+tablename+" where word like '%-%'");
-	            while(rs.next()){
-	                String word = rs.getString("word");
-	                String dhword = dh.normalFormat(word);
-	                //System.out.println(word+"===>"+dhword);
-	                //MainForm.markUpPerlLog.append(word+"===>"+dhword+"\n");
-	                mapping.put(word, dhword);
-	            }
-	        }catch(Exception e){
-	        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
-	            e.printStackTrace();
-	        }
-	        normalizeDocument();
-	        if(listener!= null) listener.progress(100);
+		   vd.showPerlMessage("Checking files...\n");
+		   if(hasUnmatchedBrackets()){
+			   vd.showPerlMessage("Files with unmatched brackets are listed above. \n");
+			   vd.showPerlMessage("Run this step again after the above identified problems are corrected.\n");
+			   listener.progress(0);
+			   return false;
+		   }else{
+			   vd.showPerlMessage("File checking completed. \n");
+			   listener.progress(5);
+			   vd.showPerlMessage("Pre-processing files... \n");
+		       fillInWords();
+		       if(listener!= null) listener.progress(50);
+	
+		       DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", this.glossarytable, glossary);
+	
+		       try{
+		            Statement stmt = conn.createStatement();
+		            ResultSet rs = stmt.executeQuery("select word from "+tablename+" where word like '%-%'");
+		            while(rs.next()){
+		                String word = rs.getString("word");
+		                String dhword = dh.normalFormat(word).replaceAll("-", "_"); //so dhwords in _allwords table are comparable to words in _wordpos and other tables.
+		                Statement stmt1 = conn.createStatement();
+		                stmt1.execute("update "+tablename+" set dhword ='"+dhword+"' where word='"+word+"'");
+		                mapping.put(word, dhword);
+		            }
+		            stmt.execute("update "+tablename+" set dhword=word where dhword is null");
+		       }catch(Exception e){
+		        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
+		            e.printStackTrace();
+		       }
+		       normalizeDocument();
+		       if(listener!= null) listener.progress(100);
+		       return true;
+		   }
 	    }
 	    
-	    private void createWordTable(){
+	   
+	   /**
+	    * 
+	    * @return pass the check or not
+	    */
+	    private boolean hasUnmatchedBrackets() {
+        	boolean has = false;
+	        try {
+	            File[] flist = folder.listFiles();
+	            for(int i= 0; i < flist.length; i++){
+	                BufferedReader reader = new BufferedReader(new FileReader(flist[i]));
+	                String line = null; 
+	                StringBuffer sb = new StringBuffer();
+	                while ((line = reader.readLine()) != null) {
+	                    line = line.replaceAll(System.getProperty("line.separator"), " ");
+	                    sb.append(line);
+	                }
+	                reader.close();
+	                String text = sb.toString();
+	                //check for unmatched brackets
+	                if(hasUnmatchedBrackets(text)){
+	                	has = true;
+	                	vd.showPerlMessage(flist[i].getName()+" contains unmatched brackets\n");
+	                }
+	            }
+	        }catch(Exception e){
+	            	LOGGER.error("Problem in VolumeDehyphenizer:check4UnmatchedBrackets", e);
+		            e.printStackTrace();
+	        }
+	        return has;
+	    }
+
+		private void createWordTable(){
 	        try{
 	            Statement stmt = conn.createStatement();
-	            String query = "create table if not exists "+tablename+" (word varchar(150) unique not null primary key, count int)";
-	            stmt.execute(query);
-	            stmt.execute("delete from "+tablename);
+	            stmt.execute("drop table if exists "+tablename);
+	            String query = "create table if not exists "+tablename+" (word varchar(150) unique not null primary key, count int, dhword varchar(150), inbrackets int default 0)";
+	            stmt.execute(query);	           
 	        }catch(Exception e){
 	        	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
 	            e.printStackTrace();
@@ -125,53 +169,114 @@ public class DeHyphenAFolder {
 	            e.printStackTrace();
 	        }
 	    }*/
+	    /**
+	     * check for unmatched brackets too.
+	     */
 	    private void fillInWords(){
 	        try {
 	            Statement stmt = conn.createStatement();
+	            ResultSet rs = null;
 	            File[] flist = folder.listFiles();
+	            int total = flist.length;
 	            for(int i= 0; i < flist.length; i++){
-	                //System.out.println("read "+flist[i].getName());
-	                //MainForm.markUpPerlLog.append("read "+flist[i].getName()+"\n");
 	                BufferedReader reader = new BufferedReader(new FileReader(flist[i]));
-	                String line = null;
+	                String line = null; 
+	                StringBuffer sb = new StringBuffer();
 	                while ((line = reader.readLine()) != null) {
+	                    line = line.replaceAll(System.getProperty("line.separator"), " ");
+	                    sb.append(line);
+	                }
+	                reader.close();
+	                String text = sb.toString();
+	                text = text.toLowerCase();
+	                text = text.replaceAll("<[^<]+?>", " ");
+	                text = text.replaceAll("\\d", " ");
+	                text = text.replaceAll("\\(", " ( ");
+	                text = text.replaceAll("\\)", " ) ");
+	                text = text.replaceAll("\\[", " [ ");
+	                text = text.replaceAll("\\]", " ] ");
+	                text = text.replaceAll("\\{", " { ");
+	                text = text.replaceAll("\\}", " } ");
+	                text = text.replaceAll("\\s+", " ").trim();
+                    String[] words = text.split("\\s+");
+                    int lround = 0;
+                    int lsquare = 0;
+                    int lcurly = 0;
+                    int inbracket = 0;
+                    for(int j = 0; j < words.length; j++){
+                        String w = words[j].trim();
+                        if(w.compareTo("(")==0) lround++;
+                        else if(w.compareTo(")")==0) lround--;
+                        else if(w.compareTo("[")==0) lsquare++;
+                        else if(w.compareTo("]")==0) lsquare--;
+                        else if(w.compareTo("{")==0) lcurly++;
+                        else if(w.compareTo("}")==0) lcurly--;
+                        else{
+                        	w = w.replaceAll("[^-a-z]", " ").trim();
+                            if(w.matches(".*?\\w.*")){
+                            	if(lround+lsquare+lcurly > 0){
+                            		inbracket = 1;
+                            	}else{
+                            		inbracket = 0;
+                            	}
+	                            int count = 1;
+	                            rs = stmt.executeQuery("select word, count, inbrackets from "+tablename+"  where word='"+w+"'");
+	                            if(rs.next()){ //normal word exist
+	                                count += rs.getInt("count");
+	                                inbracket *= rs.getInt("inbrackets");
+	                            }
+	                            stmt.execute("delete from "+tablename+" where word ='"+w+"'");
+	                            stmt.execute("insert into "+tablename+" (word, count, inbrackets) values('"+w+"', "+count+","+inbracket+")");
+	                        }
+                        }
+                    }
+                    listener.progress(5+i*45/total);
+
+	                /*while ((line = reader.readLine()) != null) {
 	                    line = line.toLowerCase();
-	                //    String linec = line;
-	                    /*if(line.matches(".*?\\d+-(?=[a-z]).*")){
-	                        line = fixNumTextMix(line, flist[i]);
-	                    }*/
 	                    line = line.replaceAll("<[^<]+?>", " "); //for xml or html docs
 	                    line = line.replaceAll(num, " ");
 	                    line = line.replaceAll("[^-a-z]", " ");
-
 	                    line = normalize(line);
-	                    
-	                    //System.err.println("line has changed from \n"+linec+" to \n"+line);
-	                
+
+	                    Statement stmt = conn.createStatement();
+                        ResultSet rs = null;
 	                    String[] words = line.split("\\s+");
 	                    for(int j = 0; j < words.length; j++){
 	                        String w = words[j].trim();
 	                        if(w.matches(".*?\\w.*")){
 	                            int count = 1;
-	                            ResultSet rs = stmt.executeQuery("select word, count from "+tablename+"  where word='"+w+"'");
+	                            rs = stmt.executeQuery("select word, count from "+tablename+"  where word='"+w+"'");
 	                            if(rs.next()){
 	                                count = rs.getInt("count")+1;
 	                            }
 	                            stmt.execute("delete from "+tablename+" where word ='"+w+"'");
-	                            stmt.execute("insert into "+tablename+" values('"+w+"', "+count+")");
+	                            stmt.execute("insert into "+tablename+" (word, count) values('"+w+"', "+count+")");
 	                        }
 	                    }
-	                }
-	                reader.close();
-	                System.out.println("File "+flist[i].getName());
+	                    rs.close();
+	                    stmt.close();
+	                }*/
 	            }
-	           
+                rs.close();
+                stmt.close();
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
 	            e.printStackTrace();
 	        }
 	    }
-	    /**
+	    private boolean hasUnmatchedBrackets(String text) {
+	    	String[] lbrackets = new String[]{"\\[", "(", "{"};
+	    	String[] rbrackets = new String[]{"\\]", ")", "}"};
+	    	for(int i = 0; i<lbrackets.length; i++){
+	    		int left1 = text.replaceAll("[^"+lbrackets[i]+"]", "").length();
+	    		int right1 = text.replaceAll("[^"+rbrackets[i]+"]", "").length();
+	    		if(left1!=right1) return true;
+	    	}
+			return false;
+		}
+
+		/**
 	     * save original text mix in File source in a table,
 	     * to be used in outputting final text
 	     * @param mix
@@ -229,25 +334,64 @@ public class DeHyphenAFolder {
 	                }
 	                reader.close();
 	                String text = sb.toString();
-	                text = normalize(text);
-
 	                text = performMapping(text);
+	                //turn "." that are in brackets as [.DOT.] for unsupervised learning pl.
+	                text = text.replaceAll("\\(", " ( ");
+	                text = text.replaceAll("\\)", " ) ");
+	                text = text.replaceAll("\\[", " [ ");
+	                text = text.replaceAll("\\]", " ] ");
+	                text = text.replaceAll("\\{", " { ");
+	                text = text.replaceAll("\\}", " } ");
+	                text = text.replaceAll("\\s+", " ").trim();
+	                int lround = 0;
+	                int lsquare = 0;
+	                int lcurly = 0;
+	                sb = new StringBuffer();
+                    String[] words = text.split("\\s+");
+	                for(int j = 0; j < words.length; j++){
+                        String w = words[j].trim();
+                        if(w.compareTo("(")==0){
+                        	lround++;
+                        	sb.append("(");
+                        }else if(w.compareTo(")")==0){
+                        	lround--;
+                        	sb.append(")");
+                        }else if(w.compareTo("[")==0){
+                        	lsquare++;
+                        	sb.append("[");
+                        }else if(w.compareTo("]")==0){
+                        	lsquare--;
+                        	sb.append("]");
+                        }else if(w.compareTo("{")==0){
+                        	lcurly++;
+                        	sb.append("{");
+                        }else if(w.compareTo("}")==0){
+                        	lcurly--;
+                        	sb.append("}");
+                        }else{
+                        	if(w.indexOf(".")>=0 && (lround+lsquare+lcurly)>0){
+                        		w = w.replaceAll("\\.", "[DOT]");
+                        	}
+                        	sb.append(w+" ");                        	
+                        }                        
+	                }
+	                text = sb.toString().replaceAll("\\s*\\(\\s*", "(").replaceAll("\\s*\\)\\s*", ")")
+	                .replaceAll("(?<=[^0-9+–-])\\(", " (").replaceAll("\\)(?=[a-z])", ") ").trim();
 	                //write back
-	                //System.out.println(text);
 	                File outf = new File(outfolder, flist[i].getName());
 	                //BufferedWriter out = new BufferedWriter(new FileWriter(flist[i]));
 	                BufferedWriter out = new BufferedWriter(new FileWriter(outf));
 	                out.write(text);
 	                out.close();
 	                //System.out.println(flist[i].getName()+" dehyphenized");
-	                //MainForm.markUpPerlLog.append(flist[i].getName()+" dehyphenized\n");
+	                vd.showPerlMessage(flist[i].getName()+" dehyphenized\n");
 	            }
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
 	            e.printStackTrace();
 	        }
 	    }
-	    
+	    /*
 	    private String normalize(String text){
 	        text = text.replaceAll("-+", "-");
 	        
@@ -266,15 +410,9 @@ public class DeHyphenAFolder {
 	        }
 	        //text = text.replaceAll("\\W-", " "); 
 	        //text = text.replaceAll("-\\W", " ");
-	        //HOng, 08/04/09 for FoC doc. "-" added in place of <dox-tags>.
-	        /*if(line.matches(".*?[a-z]- .*")){//cup-  disc-  or dish-shaped
-	            line = fixBrokenHyphens(line); //Too loose. 
-	        }*/
-	        /*if(text.matches(".*?[a-z]-[^a-z0-9].*")){//cup-  disc-  or dish-shaped
-	        text = fixBrokenHyphens(text);
-	        }*/
+
 	        return text;
-	    }
+	    }*/
 	    
 	    private String performMapping(String original){
 	        Enumeration en = mapping.keys();

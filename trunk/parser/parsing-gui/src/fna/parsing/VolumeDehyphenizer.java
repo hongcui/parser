@@ -49,14 +49,14 @@ public class VolumeDehyphenizer extends Thread {
     
     public VolumeDehyphenizer(ProcessListener listener, String workdir, 
     		String todofoldername, String database, 
-    		Display display, Text perlLog, String dataPrefix, Table descriptorTable, MainForm mainForm) {
+    		Display display, Text perlLog, String dataPrefix, /*Table descriptorTable,*/ MainForm mainForm) {
         this.listener = listener;
         //this.database = database;
         /** Synchronizing UI and background process **/
         this.display = display;
         this.perlLog = perlLog;
         this.dataPrefix = dataPrefix;
-        this.descriptorTable = descriptorTable;
+        //this.descriptorTable = descriptorTable;
         this.mainForm = mainForm;
         this.glossaryTableName = mainForm.glossaryPrefixCombo.getText();
         this.vmdb = new VolumeMarkupDbAccessor(dataPrefix, this.glossaryTableName);
@@ -86,20 +86,21 @@ public class VolumeDehyphenizer extends Thread {
             e.printStackTrace();
         }*/
      
-        this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, perlLog,  dataPrefix, this.glossaryTableName, glossary);
+        this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, this,  dataPrefix, this.glossaryTableName, glossary);
     }
 
     public void run () {
     	listener.setProgressBarVisible(true);
-    	System.out.println("Preparing files...");
-    	showPerlMessage("Preparing files...");
-    	//dehyphen();
-    	dhf.dehyphen();
-		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName);
-		vm.markup();
-		listener.setProgressBarVisible(false);
+    	//System.out.println("Preparing files...");
+    	//showPerlMessage("Preparing files...");
+       	boolean done = dhf.dehyphen();//dhf waits for all unmatched brackets are fixed.
+    	if(done){
+    		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName);
+    		vm.markup();
+    		listener.setProgressBarVisible(false);
+    	}
 		//loadStructureTab(); //done in markup already
-		loadDescriptorTab();
+		//loadDescriptorTab();
 		//loadOthersTab();
     }
     
@@ -110,6 +111,7 @@ public class VolumeDehyphenizer extends Thread {
     		}
     	});
     }*/
+    /*
 	private void loadDescriptorTab() {
 		
 		display.syncExec(new Runnable() {
@@ -131,7 +133,7 @@ public class VolumeDehyphenizer extends Thread {
 					}
 				}
 			}});
-	}
+	}*/
 	
 	public void showPerlMessage(final String message) {
 		display.syncExec(new Runnable() {
