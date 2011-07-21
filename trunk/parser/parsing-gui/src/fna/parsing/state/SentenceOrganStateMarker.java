@@ -68,18 +68,24 @@ public class SentenceOrganStateMarker {
 		try{
 			Statement stmt = conn.createStatement();
 			//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
-			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence from "+this.tableprefix+"_sentence");
-			while(rs.next()){
+			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence from "+this.tableprefix+"_sentence order by sentid desc");
+			String dittos = "";
+			while(rs.next()){//read sent in in reversed order
+				String tag = rs.getString("tag");
+				String sent = rs.getString("sentence");
 				String source = rs.getString("source");
-				String text = stringColors(rs.getString("sentence").replaceAll("</?[BNOM]>", ""));
-				text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
-				text = text.replaceAll("&#176;", "°");
-				String sent = rs.getString("modifier")+"##"+rs.getString("tag")+"##"+text;
-
-				//String sent = rs.getString("tag")+"##"+rs.getString("sentence").replaceAll("</?[BNOM]>", "").replaceAll(" & ", " and ");
-				//order.add(source);				
-
-				sentences.put(source, sent);
+				if(tag.compareTo("ditto")==0){ //attach ditto to the previous sentence
+					dittos = sent.trim()+" "+dittos;
+					//sentences.put(source, ""); //make ditto sent id's disappear
+				}else{
+					sent =sent.trim() +" "+ dittos.trim();
+					dittos = "";
+					String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
+					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
+					text = text.replaceAll("&#176;", "°");
+					text = rs.getString("modifier")+"##"+tag+"##"+text;
+					sentences.put(source, text);
+				}
 			}
 			//collect adjnouns
 			stmt = conn.createStatement();
@@ -139,12 +145,16 @@ public class SentenceOrganStateMarker {
 				String source = en.nextElement();
 				//String source = it.next();
 				String sent = (String)sentences.get(source);
-				String[] splits = sent.split("##");
-				String modifier = splits[0];
-				String tag = splits[1];
-				sent = splits[2].trim().replaceAll("\\b("+this.ignoredstrings+")\\b", "");
-				String taggedsent = markASentence(source, modifier, tag.trim(), sent);
-				sentences.put(source, taggedsent); 
+				String taggedsent = "";
+				//if(sent.trim().length()>0){
+					String[] splits = sent.split("##");
+					String modifier = splits[0];
+					String tag = splits[1];
+					sent = splits[2].trim().replaceAll("\\b("+this.ignoredstrings+")\\b", "");
+					taggedsent = markASentence(source, modifier, tag.trim(), sent);
+				//}
+				System.out.println(taggedsent);
+				sentences.put(source, taggedsent);
 				try{
 					Statement stmt1 = conn.createStatement();
 					ResultSet rs = stmt1.executeQuery("select sentid from "+this.tableprefix+"_sentence where source='"+source+"'");
@@ -381,7 +391,7 @@ public class SentenceOrganStateMarker {
 				}
 			}
 			
-			/* try this for treatise
+			/*wordroles only holds word not in glossary, so need to use glossary to mark a sentence as well.*/
 			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category not in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style')");
 			while(rs.next()){
 				String term = rs.getString("term").trim();
@@ -389,7 +399,7 @@ public class SentenceOrganStateMarker {
 				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
 				if(!statestring.matches(".*\\b"+term+"\\b.*"))
 					statestring+=("|"+ term);
-			}*/
+			}
 		}catch (Exception e){
 				e.printStackTrace();
 		}
@@ -437,7 +447,9 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromSentences(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs;
-		/*rs = stmt.executeQuery("select distinct tag from sentence where tag not like '% %'");
+		
+		/*tag terms are already in WORDROLES
+		 * rs = stmt.executeQuery("select distinct tag from sentence where tag not like '% %'");
 		while(rs.next()){
 			String tag = rs.getString("tag");
 			if(tag == null || tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0){continue;}
@@ -463,7 +475,7 @@ public class SentenceOrganStateMarker {
 	
 	protected void organNameFromGloss(StringBuffer tags, Statement stmt)
 			throws SQLException {
-		ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative')");
+		ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure')");
 		while(rs.next()){
 			String term = rs.getString("term").trim();
 			if(term == null){continue;}
@@ -511,7 +523,7 @@ public class SentenceOrganStateMarker {
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19_excerpt", "fnaglossaryfixed", true);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
