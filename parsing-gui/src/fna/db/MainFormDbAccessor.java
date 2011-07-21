@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -68,6 +69,30 @@ public class MainFormDbAccessor {
 		} 
 	}
 	
+	/**
+	 * change pos for these removedtags to 'b' in wordpos table
+	 * @param removedTags
+	 * @throws ParsingException
+	 * @throws SQLException
+	 */
+	public void changePOStoB(List <String> removedTags) throws ParsingException, SQLException {
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		try {
+			conn = DriverManager.getConnection(url);
+			String tablePrefix = MainForm.dataPrefixCombo.getText();
+			String sql = "update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" set pos = 'b' where word = ?";
+			stmt = conn.prepareStatement(sql);
+			for (String tag : removedTags) {
+				stmt.setString(1, tag);
+				stmt.executeUpdate();
+			}			
+		}catch(Exception sqlexe){
+			LOGGER.error("Couldn't update wordpos table in MainFormDbAccessor:changePOStoB", sqlexe);
+			sqlexe.printStackTrace();
+			throw new ParsingException("Error Accessing the database" , sqlexe);
+		}
+	}
 	/**
 	 * This method is used to remove the Bad structure names from Tab4, after they are marked RED,two steps are taken:
 	 * First Step: Remove from the database (update the tag). Step Two: Keep the UI as it is with selected rows in Red color 
@@ -876,7 +901,8 @@ public class MainFormDbAccessor {
 		try {
 			conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
-			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2))");			
+			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE"));
+			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2), primary key(word, semanticrole))");			
 		} catch (SQLException exe){
 			LOGGER.error("Exception in RemoveDescriptorData", exe);
 			exe.printStackTrace();
@@ -897,8 +923,8 @@ public class MainFormDbAccessor {
 		}
 	}
 
-//added newly to load the styled context for step 4 (all 4 tabs)
-public void getContextData(String word,StyledText context) throws SQLException, ParsingException {
+	//added newly to load the styled context for step 4 (all 4 sub-tabs)
+	public void getContextData(String word,StyledText context) throws SQLException, ParsingException {
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
@@ -908,17 +934,39 @@ public void getContextData(String word,StyledText context) throws SQLException, 
 			//Class.forName(driverPath);
 			conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '% "+word+" %' or tag = '"+word+"'";
+			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '%"+word+"%' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
-		
 			rs = stmt.executeQuery();
 			context.cut();
-			while (rs.next()) {
+			String text = "";
+			while (rs.next()) { //collect sentences
 				String src = rs.getString("source");
 				String sentence = rs.getString("sentence");
-				System.out.println(src+"::"+sentence+" \r\n");
-				context.append(src+"::"+sentence+" \r\n");
-				
+				text += src+"::"+sentence+"\r\n";
+				//System.out.println(src+"::"+sentence+" \r\n");
+				//context.append(src+"::"+sentence+" \r\n");
+			}	
+			//format sentences
+			ArrayList<StyleRange> srs = new ArrayList<StyleRange>();
+			int length = word.length();
+			String placeholder = "";
+			for(int i = 0; i < length; i++){
+				placeholder +="#";
+			}
+			String textcopy = text;
+			while(text.indexOf(word)>=0){
+				int start = text.indexOf(word);
+				text=text.replaceFirst(word, placeholder);
+				StyleRange sr = new StyleRange();
+				sr.start = start;
+				sr.length = length;
+				sr.fontStyle = SWT.BOLD;
+				srs.add(sr);
+			}
+			context.append(textcopy);
+			context.setStyleRanges(srs.toArray(new StyleRange[]{}));
+			
+			
 				/*int start = context.getText().length();
 				StyleRange styleRange = new StyleRange();
 				styleRange.start = start;
@@ -933,8 +981,7 @@ public void getContextData(String word,StyledText context) throws SQLException, 
 					// styleRange.foreground = display.getSystemColor(SWT.COLOR_BLUE);
 					contextStyledText.setStyleRange(styleRange);
 				}*/
-			}
-
+			//}
 		} catch (SQLException exe) {
 			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
 			exe.printStackTrace();

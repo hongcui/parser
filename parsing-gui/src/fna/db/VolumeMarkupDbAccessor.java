@@ -31,13 +31,13 @@ import fna.parsing.ApplicationUtilities;
 import fna.parsing.ParsingException;
 
 public class VolumeMarkupDbAccessor {
-	public static String PRONOUN ="all|each|every|some|few|individual|both|other";
-	public static String NUMBERS = "zero|one|ones|first|two|second|three|third|thirds|four|fourth|fourths|quarter|five|fifth|fifths|six|sixth|sixths|seven|seventh|sevenths|eight|eighths|eighth|nine|ninths|ninth|tenths|tenth";
-	public static String CHARACTERS ="lengths|length|lengthed|width|widths|widthed|heights|height|character|characters|distribution|distributions|outline|outlines|profile|profiles|feature|features|form|forms|mechanism|mechanisms|nature|natures|shape|shapes|shaped|size|sizes|sized";
-	public static String PREPOSITION ="above|across|after|along|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|toward|towards|up|upward|with|without";
-	public static String CLUSTERSTRINGS = "group|groups|clusters|cluster|arrays|array|series|fascicles|fascicle|pairs|pair|rows|number|numbers|\\d+";
-	public static String SUBSTRUCTURESTRINGS = "part|parts|area|areas|portion|portions";
-	public static String STOP ="a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
+	//public static String PRONOUN ="all|each|every|some|few|individual|both|other";
+	//public static String NUMBERS = "zero|one|ones|first|two|second|three|third|thirds|four|fourth|fourths|quarter|five|fifth|fifths|six|sixth|sixths|seven|seventh|sevenths|eight|eighths|eighth|nine|ninths|ninth|tenths|tenth";
+	//public static String CHARACTERS ="lengths|length|lengthed|width|widths|widthed|heights|height|character|characters|distribution|distributions|outline|outlines|profile|profiles|feature|features|form|forms|mechanism|mechanisms|nature|natures|shape|shapes|shaped|size|sizes|sized";
+	//public static String PREPOSITION ="above|across|after|along|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|toward|towards|up|upward|with|without";
+	//public static String CLUSTERSTRINGS = "group|groups|clusters|cluster|arrays|array|series|fascicles|fascicle|pairs|pair|rows|number|numbers|\\d+";
+	//public static String SUBSTRUCTURESTRINGS = "part|parts|area|areas|portion|portions";
+	//public static String STOP ="a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
 
 	/**
 	 * @param args
@@ -81,6 +81,13 @@ public class VolumeMarkupDbAccessor {
 				String tag = rs.getString("tag");
 				populateCurationList(tagList, tag); //select tags for curation
 			}
+			sql = "select distinct word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos in ('p', 's') and saved_flag !='red' order by word";
+			stmt = conn.prepareStatement(sql);
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String tag = rs.getString("word");
+				populateCurationList(tagList, tag); //select tags for curation
+			}
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:updateData", sqlexe);
 			sqlexe.printStackTrace();
@@ -113,13 +120,14 @@ public class VolumeMarkupDbAccessor {
 		 
 	 	try {
 			conn = DriverManager.getConnection(url);
-			String sql = "select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("UNKNOWNWORDS")+
-			" where flag = 'unknown' and" +
-			" word not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where saved_flag='red') order by word";
+			String sql = "select dhword from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS")+
+			" where " +
+			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where saved_flag='red') and" +
+			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+") order by dhword";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			while (rs.next()) {
-				String word = rs.getString("word");
+				String word = rs.getString("dhword");
 				populateCurationList(curationList, word);
 			}
 	
@@ -190,7 +198,7 @@ public class VolumeMarkupDbAccessor {
 			}			
 		} catch (SQLException exe) {
 			LOGGER.error("Error in getting words as descriptors: " +
-					"mainFormDbAccessor.getDescriptorWords", exe);
+					"mainFormDbAccessor.descriptorTerms4Curation", exe);
 			exe.printStackTrace();
 		} finally {
 			if(rset != null) {
@@ -220,18 +228,7 @@ public class VolumeMarkupDbAccessor {
 	 * @param w
 	 */
 	private void populateDescriptorList(ArrayList<String> words, String w) {
-		/*
-		public static String PRONOUN ="all|each|every|some|few|individual|both|other";
-		public static String NUMBERS = "zero|one|ones|first|two|second|three|third|thirds|four|fourth|fourths|quarter|five|fifth|fifths|six|sixth|sixths|seven|seventh|sevenths|eight|eighths|eighth|nine|ninths|ninth|tenths|tenth";
-		public static String CHARACTERS ="lengths|length|lengthed|width|widths|widthed|heights|height|character|characters|distribution|distributions|outline|outlines|profile|profiles|feature|features|form|forms|mechanism|mechanisms|nature|natures|shape|shapes|shaped|size|sizes|sized";
-		public static String PREPOSITION ="above|across|after|along|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|toward|towards|up|upward|with|without";
-		public static String CLUSTERSTRINGS = "group|groups|clusters|cluster|arrays|array|series|fascicles|fascicle|pairs|pair|rows|number|numbers";
-		public static String SUBSTRUCTURESTRINGS = "part|parts|area|areas|portion|portions";
-		public static String STOP ="a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
-		*/
-		StringBuffer ignored = new StringBuffer();
 		if(w.matches(".*?\\w.*")){
-			if(! w.matches("\\b("+PRONOUN+"|"+NUMBERS+"|"+CHARACTERS+"|"+PREPOSITION+"|"+CLUSTERSTRINGS+"|"+SUBSTRUCTURESTRINGS+"|"+STOP+"|\\w+[_-]shaped|\\w+ly|NUM)\\b") && w.indexOf("+")<0){
 				String wc = w;
 				if(w.indexOf("-")>=0 || w.indexOf("_")>=0){
 					String[] ws = w.split("[_-]");
@@ -256,25 +253,6 @@ public class VolumeMarkupDbAccessor {
 					LOGGER.error("Error in VolumeMarkupDbAccess.populateDescriptorList", exe);
 					exe.printStackTrace();
 				}
-			}else{
-				//save ignored words
-				ignored.append("'"+w+"',");
-			}
-		}else{
-			//save ignored words
-			ignored.append("'"+w+"',");
-		}		
-		//set save_flag for all in ignored, so they will not be reloaded
-		if(ignored.toString().trim().length()>0){
-			try{
-				Connection conn = DriverManager.getConnection(url);
-				Statement stmt = conn.createStatement();
-				String update = "update "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" set saved_flag='red' where word in ("+ignored.toString().trim().replaceFirst(",$", "")+")";					 			
-				stmt.execute(update);
-			}catch (SQLException sqlexe){
-				LOGGER.error("Error in VolumeMarkupDbAccess.populateDescriptorList", sqlexe);
-				sqlexe.printStackTrace();
-			}
 		}
 	}
 
