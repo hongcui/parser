@@ -14,28 +14,24 @@ import org.jdom.xpath.XPath;
 
 public class V27_Extractor {
 	Element treatment = new Element("treatment");
+	static int i=0;
 	//protected XMLOutputter outputter;
 
 	public static void main(String[] args) throws Exception {
-		int count = 1, i=0;
+		int count = 1;
 		V27_Extractor extractor = new V27_Extractor();
 		SAXBuilder builder = new SAXBuilder();
-		Document doc = builder.build("C:/Users/Li Chen/Desktop/FNA/v27/document.xml");
+		Document doc = builder.build("d:/Library Project/V8/document.xml");
 		Element root = doc.getRootElement();
 		List wpList = XPath.selectNodes(root, "/w:document/w:body/w:p");
-
 		Iterator iter = wpList.iterator();
 		while (iter.hasNext()) {
 			extractor.processParagraph((Element) iter.next());
-			count++;
-			if (count > 100) {
-				i++;
-				count = 1;
-				extractor.output(i);
-				extractor.createtreatment();
-				//break;
-			}
+			//break;
 		}
+		i++;
+		extractor.output(i);
+		extractor.createtreatment();
 		//Document doc1 = new Document(treatment);
 		//XMLOutputter outputter = new XMLOutputter();
 		//String file = "d:/result.xml";
@@ -46,6 +42,8 @@ public class V27_Extractor {
 
 	private void processParagraph(Element wp) throws Exception {
 		Element pe = new Element("paragraph");
+		Boolean isbold = false;
+		StringBuffer buffer = new StringBuffer();
 		Attribute att = (Attribute) XPath.selectSingleNode(wp,"./w:pPr/w:pStyle/@w:val");
 		String style = "";
 		if (att != null) {
@@ -78,6 +76,7 @@ public class V27_Extractor {
 				if (rPre != null) {
 					Element bold = (Element) XPath.selectSingleNode(rPre,"./w:b");
 					if (bold != null) {
+						isbold = true;
 						bold = new Element("bold");
 						pe.addContent(bold);
 					}
@@ -95,6 +94,7 @@ public class V27_Extractor {
 					Element text = new Element("text");
 					text.setText(te.getText());
 					pe.addContent(text);
+					buffer.append(te.getText());
 				}
 				// process text end
 				
@@ -103,13 +103,21 @@ public class V27_Extractor {
 				//}
 			}
 		}
+		//System.out.println(buffer.toString().replaceAll("\\s+", " "));
+		String text = buffer.toString().replaceAll("\\s+", " ");
+		if(text.matches("^\\d*\\.*\\s*[A-Z]{2}.*")||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&isbold == true)||(text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe).*\\d+\\s*\\.\\s*\\d+.*"))){
+			if(!text.contains("SELECTED REFERENCE")){
+				i++;
+				output(i);
+				createtreatment();
+			}
+		}
 		treatment.addContent(pe);
-		//System.out.println(treatment.getContentSize());
 	}
 
 	private void output(int i) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
-		String file = "C:/Users/Li Chen/Desktop/FNA/v27/Extracted/" + i + ".xml";
+		String file = "d:/Library Project/V8/Extracted/" + i + ".xml";
 		Document doc = new Document(treatment);
 		BufferedOutputStream out = new BufferedOutputStream(
 				new FileOutputStream(file));
@@ -119,5 +127,6 @@ public class V27_Extractor {
 		treatment = new Element("treatment");
 	}
 }
+
 
 
