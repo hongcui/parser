@@ -16,26 +16,36 @@ public class V8_Transformer {
 	static int partdetecter, count;
 	static Hashtable hashtable = new Hashtable();
 	public static void main(String[] args) throws Exception{
-		File extracted = new File("C:/Users/Li Chen/Desktop/Library Project/Library Project/Extracted");	
+		ObjectOutputStream outputStream = null;
+		outputStream = new ObjectOutputStream(new FileOutputStream("d:/Library Project/V8/namemapping.bin"));
+		String taxonname = null;
+		Hashtable mapping = new Hashtable();
+		File extracted = new File("d:/Library Project/V8/Extracted");	
 		File[] files = extracted.listFiles();
 		for(int i = 1; i<=files.length; i++){
 			count = i;
 			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build("C:/Users/Li Chen/Desktop/Library Project/Library Project/Extracted/" + i + ".xml");
+			Document doc = builder.build("d:/Library Project/V8/Extracted/" + i + ".xml");
 			Element root = doc.getRootElement();
 			List paralist = XPath.selectNodes(root, "/treatment/paragraph");
 			//System.out.println(paralist.get(4).toString());
 			V8_Transformer transformer = new V8_Transformer();
 			transformer.createtreatment();
 			if(partdetecter == 0){
-				transformer.processparagraph(paralist);
+				taxonname = transformer.processparagraph(paralist);
+				if(taxonname == null){
+					taxonname = "taxon name";
+				}
+				mapping.put(i, taxonname);
 			}else{
 				transformer.processparagraph2(paralist);
 			}
 			transformer.output(i);
-		} 
+		}
+		outputStream.writeObject(mapping);
 	}
-	private void processparagraph(List paralist) throws Exception{
+	private String processparagraph(List paralist) throws Exception{
+		String taxonname = null;
 		Iterator paraiter = paralist.iterator();
 		int familydetecter = 0;
 		while(paraiter.hasNext()){
@@ -57,11 +67,12 @@ public class V8_Transformer {
 			if(text.contains("that are not pertinent in this volume")){
 				partdetecter = 1;
 			}
-			if(text.contains("Family")&text.matches("[A-Z]+.+")){//Family Name
+			if((text.contains("Family")|text.contains("family"))&text.matches("[A-Z]+.+")){//Family Name
 				familydetecter = 1;
 				Element familyname = new Element("Family_Name");
 				familyname.setText(text);
 				treatment.addContent(familyname);
+				taxonname = text;
 			}
 			else if(familydetecter == 1 ){//Author
 				Element author = new Element("Author");
@@ -70,7 +81,7 @@ public class V8_Transformer {
 				
 				familydetecter = 0;
 			}
-			else if(bolddetecter == 1&!text.matches("[0-9]+\\..+")){//Description
+			else if(bolddetecter == 1&!text.matches("[0-9]+\\w*\\..+")){//Description
 				Element description = new Element("Description");
 				description.setText(text);
 				treatment.addContent(description);
@@ -84,6 +95,7 @@ public class V8_Transformer {
 				Element genename = new Element("Gene_Name");
 				genename.setText(text);
 				treatment.addContent(genename);
+				taxonname = text;
 			}
 			else if(text.matches("SELECTED REFERENCE.+")){//Reference
 				Element reference = new Element("Reference");
@@ -107,7 +119,7 @@ public class V8_Transformer {
 								dot = semi[i].split("\\.");
 								flowtime = dot[0];
 								habi = dot[1];
-								File habitatout = new File("C:/Users/Li Chen/Desktop/Library Project/Library Project/habitat/" + count + ".txt");
+								File habitatout = new File("d:/Library Project/V8/habitat/" + count + ".txt");
 								habitatout.delete();
 								FileWriter fw = new FileWriter(habitatout, true);
 								fw.append(habi + "\r\n");
@@ -125,7 +137,7 @@ public class V8_Transformer {
 						else if(semi[i].contains(".,")){
 							distri = semi[i];
 							distribution.setText(distri);
-							File distributionout = new File("C:/Users/Li Chen/Desktop/Library Project/Library Project/distribution/" + count + ".txt");
+							File distributionout = new File("d:/Library Project/V8/distribution/" + count + ".txt");
 							distributionout.delete();
 							FileWriter fw = new FileWriter(distributionout, true);
 							fw.append(distri + "\r\n");
@@ -144,10 +156,11 @@ public class V8_Transformer {
 					treatment.addContent(distribution);
 					treatment.addContent(elevation);
 			}
-			else if(bolddetecter == 1&text.matches("[0-9]+\\..+")){//Species name
+			else if(bolddetecter == 1&text.matches("\\d+\\w*\\..+")){//Species name
 				Element speciesname = new Element("Species_Name");
 				speciesname.setText(text);
 				treatment.addContent(speciesname);
+				taxonname = text;
 			}
 			else{
 				if(text.matches("[0-9]+\\..+\\.")){//Key without next step
@@ -180,6 +193,7 @@ public class V8_Transformer {
 				}
 			}
 		}
+		return taxonname;
 	}
 	private void processparagraph2(List paralist) throws Exception{
 		Iterator paraiter = paralist.iterator();
@@ -227,7 +241,7 @@ public class V8_Transformer {
 	}
 	private void output(int i) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
-		String file = "C:/Users/Li Chen/Desktop/Library Project/Library Project/Transformed/" + i + ".xml";
+		String file = "d:/Library Project/V8/Transformed/" + i + ".xml";
 		Document doc = new Document(treatment);
 		BufferedOutputStream out = new BufferedOutputStream(
 				new FileOutputStream(file));
@@ -237,4 +251,3 @@ public class V8_Transformer {
 		treatment = new Element("treatment");
 	}
 }
-
