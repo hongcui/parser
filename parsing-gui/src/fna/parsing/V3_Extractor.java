@@ -1,8 +1,11 @@
 package fna.parsing;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 
 import javax.swing.JFileChooser;
@@ -14,38 +17,39 @@ public class V3_Extractor {
 	static Element treatment = new Element("treatment");
 
 	public static void main(String[] args) throws Exception {
-		final JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Extractor");
-		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int result = fc.showOpenDialog(fc);
-		File resource = null;
-		if (result == JFileChooser.APPROVE_OPTION) {
-			resource = fc.getSelectedFile();
-		}
+		//File resource = new File("d:/Library Project/work3/part2/vol03h Taxon HTML/vol03h Taxon HTML");
+		File resource = new File("d:/Library Project/work3/part2/vol03m Taxon HTML/vol03m Taxon HTML");
 		// new
 		// File("D:/Library Project/work3/part2/vol03h Taxon HTML/vol03h Taxon HTML");
 		File[] files = resource.listFiles();
-		org.jsoup.select.Elements paras, bolds, As;
+		org.jsoup.select.Elements paras, bolds;
 		org.jsoup.nodes.Element pe;
 		org.jsoup.nodes.Document doc;
-		String content = null, spicename = null;
+		String content = null, spicename = null,stage = "",content1 = "";
 		V3_Extractor ex = new V3_Extractor();
 		for (int i = 0; i < files.length; i++) {
+			stage = "";
+			content1="";
 			if (files[i].getName().contains(".html")) {
 				int selectdetecter = 0;
 				doc = org.jsoup.Jsoup.parse(files[i], "UTF-8");
 				paras = doc.select("p");
 				bolds = doc.select("b");
-				As = doc.select("A");
 				Iterator<org.jsoup.nodes.Element> paraiter = paras.iterator();
 				Iterator<org.jsoup.nodes.Element> bolditer = paras.iterator();
 				Element para = null;
-				if(!As.isEmpty()&bolds.size()>=2){
-					spicename = bolds.get(0).ownText() + " "  + bolds.get(1).ownText() + "......name";
-					para = new Element("paragraph");
-					para.setText(spicename);
-					treatment.addContent(para);
+				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[i])));
+				while((stage = br.readLine())!=null){
+					if(stage.contains("<P>")){
+						break;
+					}
+					content1 = content1 + stage + "\r\n";
 				}
+				content1 = content1.replaceAll("</*(A|B|I)\\s*(NAME=\"\\d*\")*>", "").replaceAll("\\s+", " ");
+				spicename = content1 + "......name";
+				para = new Element("paragraph");
+				para.setText(spicename);
+				treatment.addContent(para);
 				while (paraiter.hasNext()) {
 					boolean bool = true;
 					pe = (org.jsoup.nodes.Element) paraiter.next();
@@ -65,16 +69,15 @@ public class V3_Extractor {
 						treatment.addContent(para);
 					}
 				}
-				String name = files[i].getName().replaceAll(".html", "");
-				ex.outputter(name);
+				ex.outputter(i+1);
 				ex.createtreatment();
 			}
 		}
 	}
 
-	private void outputter(String filename) throws Exception {
+	private void outputter(int filename) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
-		String file = "C:/Users/Li Chen/Desktop/FNA/V3/Extracted/" + filename
+		String file = "d:/Library Project/work3/part2/Extracted/" + filename
 				+ ".xml";
 		Document doc = new Document(treatment);
 		BufferedOutputStream out = new BufferedOutputStream(
@@ -86,6 +89,4 @@ public class V3_Extractor {
 		treatment = new Element("treatment");
 	}
 }
-
-
 
