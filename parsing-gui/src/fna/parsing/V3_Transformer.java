@@ -4,6 +4,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.ObjectOutputStream;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,15 +20,12 @@ import org.jdom.xpath.XPath;
 public class V3_Transformer {
 	Element treatment = new Element("treatment");
 	public static void main(String[] args)throws Exception{
-		final JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Transformer");
-		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int result = fc.showOpenDialog(fc);
-		File resource = null;
+		ObjectOutputStream outputStream = null;
+		outputStream = new ObjectOutputStream(new FileOutputStream("d:/Library Project/work3/part2/namemapping.bin"));
+		String taxonname = null;
+		Hashtable mapping = new Hashtable();
+		File resource = new File("d:/Library Project/work3/part2/Extracted");
 		String filename = null;
-		if(result == JFileChooser.APPROVE_OPTION){
-			resource = fc.getSelectedFile();
-		}
 		File[] files = resource.listFiles();
 		Document doc = null;
 		for(int i = 0; i<files.length; i++){
@@ -37,12 +36,19 @@ public class V3_Transformer {
 			List paralist = XPath.selectNodes(root, "/treatment/paragraph");
 			V3_Transformer transformer = new V3_Transformer();
 			transformer.createtreatment();
-			transformer.processparagraph(paralist,filename);
+			taxonname = transformer.processparagraph(paralist,filename);
 			transformer.output(filename);
+			if(taxonname == null){
+				taxonname = "taxon name";
+			}
+			System.out.println(taxonname);
+			mapping.put(i, taxonname);
 		} 
+		outputStream.writeObject(mapping);
 	}
 
-	private void processparagraph(List paralist, String filename)throws Exception{
+	private String processparagraph(List paralist, String filename)throws Exception{
+		String taxonname = null;
 		Iterator paraiter = paralist.iterator();
 		int familydetecter = 0;
 		while(paraiter.hasNext()){
@@ -54,7 +60,7 @@ public class V3_Transformer {
 				bolddetecter = 1;
 				text = text.replaceAll("......false", "");
 			}
-			if(text.contains("......name")){
+			if(text.contains("......name")&!text.matches("\\s*\\.*name")){
 				fnamedetecter = 1;
 				text = text.replaceAll("......name", "");
 			}
@@ -65,6 +71,7 @@ public class V3_Transformer {
 				Element familyname = new Element("Family_Name");
 				familyname.setText(text);
 				treatment.addContent(familyname);
+				taxonname = text;
 			}
 			else if(familydetecter == 1 ){//Author
 				Element author = new Element("Author");
@@ -86,6 +93,7 @@ public class V3_Transformer {
 				Element genename = new Element("Gene_Name");
 				genename.setText(text);
 				treatment.addContent(genename);
+				taxonname = text;
 			}
 			else if(text.matches("SELECTED REFERENCE.+")){//Reference
 				Element reference = new Element("Reference");
@@ -109,7 +117,7 @@ public class V3_Transformer {
 								dot = semi[i].split("\\.");
 								flowtime = dot[0];
 								habi = dot[1];
-								File habitatout = new File("C:/Users/Li Chen/Desktop/FNA/V3/habitat/" + filename + ".txt");
+								File habitatout = new File("d:/Library Project/work3/part2/habitat/" + filename + ".txt");
 								habitatout.delete();
 								FileWriter fw = new FileWriter(habitatout, true);
 								fw.append(habi + "\r\n");
@@ -127,7 +135,7 @@ public class V3_Transformer {
 						else if(semi[i].contains(".,")){
 							distri = semi[i];
 							distribution.setText(distri);
-							File distributionout = new File("C:/Users/Li Chen/Desktop/FNA/V3/distribution/" + filename + ".txt");
+							File distributionout = new File("d:/Library Project/work3/part2/distribution/" + filename + ".txt");
 							distributionout.delete();
 							FileWriter fw = new FileWriter(distributionout, true);
 							fw.append(distri + "\r\n");
@@ -150,6 +158,7 @@ public class V3_Transformer {
 				Element speciesname = new Element("Species_Name");
 				speciesname.setText(text);
 				treatment.addContent(speciesname);
+				taxonname = text;
 			}
 			else{
 				if(text.matches("[0-9]+\\..+\\.")){//Key without next step
@@ -163,17 +172,20 @@ public class V3_Transformer {
 					treatment.addContent(key);
 				}
 				else{//Discussion
-					Element discussion = new Element("Discussion");
-					discussion.setText(text);
-					treatment.addContent(discussion);
+					if(!text.matches("\\s*\\.*name")){
+						Element discussion = new Element("Discussion");
+						discussion.setText(text);
+						treatment.addContent(discussion);
+					}
 				}
 			}
 		}
+		return taxonname;
 	}
 
 	private void output(String filename)throws Exception{
 		XMLOutputter outputter = new XMLOutputter();
-		String file = "C:/Users/Li Chen/Desktop/FNA/V3/Transformed/" + filename;
+		String file = "d:/Library Project/work3/part2/Transformed/" + filename;
 		Document doc = new Document(treatment);
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 		outputter.output(doc, out);
@@ -183,5 +195,3 @@ public class V3_Transformer {
 		treatment = new Element("treatment");
 	}
 }
-
-
