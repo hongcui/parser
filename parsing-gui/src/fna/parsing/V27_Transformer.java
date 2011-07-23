@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -22,18 +23,22 @@ public class V27_Transformer {
 	static int partdetecter, count;
 	static Hashtable hashtable = new Hashtable();
 	public static void main(String[] args) throws Exception{
-		File extracted = new File("C:/Users/Li Chen/Desktop/FNA/v27/Extracted");	
+		ObjectOutputStream outputStream = null;
+		outputStream = new ObjectOutputStream(new FileOutputStream("d:/Library Project/work4/namemapping.bin"));
+		String taxonname = null;
+		Hashtable mapping = new Hashtable();
+		File extracted = new File("d:/Library Project/work4/Extracted");	
 		File[] files = extracted.listFiles();
 		for(int i = 1; i<=files.length; i++){
 			count = i;
 			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build("C:/Users/Li Chen/Desktop/FNA/v27/Extracted/" + i + ".xml");
+			Document doc = builder.build("d:/Library Project/work4/Extracted/" + i + ".xml");
 			Element root = doc.getRootElement();
 			List paralist = XPath.selectNodes(root, "/treatment/paragraph");
 			//System.out.println(paralist.get(4).toString());
 			V27_Transformer transformer = new V27_Transformer();
 			transformer.createtreatment();
-			transformer.processparagraph(paralist);
+			taxonname = transformer.processparagraph(paralist);
 			/*
 			if(partdetecter == 0){
 				transformer.processparagraph2(paralist);
@@ -42,11 +47,17 @@ public class V27_Transformer {
 			}
 			*/
 			transformer.output(i);
-		} 
+			if(taxonname == null){
+				taxonname = "taxon name";
+			}
+			mapping.put(i, taxonname);
+		}
+		outputStream.writeObject(mapping);
 	}
-	private void processparagraph(List paralist) throws Exception{
-		File habitatout = new File("C:/Users/Li Chen/Desktop/FNA/v27/habitat/" + count + ".txt");
-		File distriout = new File("C:/Users/Li Chen/Desktop/FNA/v27/distribution/" + count + ".txt");
+	private String processparagraph(List paralist) throws Exception{
+		String taxonname = null;
+		File habitatout = new File("d:/Library Project/work4/habitat/" + count + ".txt");
+		File distriout = new File("d:/Library Project/work4/distribution/" + count + ".txt");
 		Iterator paraiter = paralist.iterator();
 		int familydetecter = 0;
 		while(paraiter.hasNext()){
@@ -103,6 +114,7 @@ public class V27_Transformer {
 					Element familyname = new Element("Family_Name");
 					familyname.setText(text);
 					treatment.addContent(familyname);
+					taxonname = text;
 					//System.out.println(text);
 				}
 				else if(text.matches("[A-Z]\\w+\\s[A-Z]\\.\\s[A-Z].*")){//Author
@@ -122,22 +134,23 @@ public class V27_Transformer {
 					infrataxa.setText(text);
 					treatment.addContent(infrataxa);
 				}
-				else if(text.matches("[0-9]+\\. {0,5}[A-Z]{2}.+")){//Gene name
+				else if(text.matches("[0-9]+\\w*\\. {0,5}[A-Z]{2}.+")||(text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe).*\\d+\\s*\\.\\s*\\d+.*"))){//Gene name
 					Element genename = new Element("Gene_Name");
 					genename.setText(text);
 					treatment.addContent(genename);
+					taxonname = text;
 				}
 				else if(text.matches("SELECTED REFERENCE.+")){//Reference
 					Element reference = new Element("Reference");
 					reference.setText(text);
 					treatment.addContent(reference);
 				}
-				else if(text.matches("Capsules (matur|fairly|rare|common|unknown|uncommon).+")){//Distribution
+				else if((text.matches(".*[A-Z]\\.[A-Z]\\..*")&text.contains("elevations")&text.contains(";"))||(text.contains(".,")&text.contains("elevations")&text.contains(";"))|(text.contains(".,")&text.contains(";")&text.matches(".*\\d+.\\d+.*"))|(text.matches("Capsule.*"))|(text.matches("Uncommon.*"))){//Distribution
 					Element Flowertime = new Element("Flower_Time");
 					Element Habitat = new Element("Habitat");
 					Element Elevation = new Element("Elevation");
 					Element Distribution = new Element("Distribution");
-					
+					//System.out.println(text);
 					String dot[] = new String[5];
 					dot = text.split("\\.");
 					String ft = dot[0];
@@ -148,9 +161,9 @@ public class V27_Transformer {
 					String elevation, distri;
 					try{
 						elevation = semi[1];
+					
+						distri = text.replaceAll(ft.replace("(", "\\(").replace(")", "\\)") + "\\.", "").replaceAll(habit + ";", "").replaceAll(elevation.replace("(", "\\(").replace(")", "\\)") + ";", "");
 					}catch(Exception e){continue;}
-
-					distri = text.replaceAll(ft.replace("(", "\\(").replace(")", "\\)") + "\\.", "").replaceAll(habit + ";", "").replaceAll(elevation.replace("(", "\\(").replace(")", "\\)") + ";", "");
 					BufferedWriter bwh, bwd;
 					bwh = new BufferedWriter(new FileWriter(habitatout, true));
 					bwd = new BufferedWriter(new FileWriter(distriout, true));
@@ -169,10 +182,11 @@ public class V27_Transformer {
 					treatment.addContent(Elevation);
 					treatment.addContent(Distribution);
 				}
-				else if(bolddetecter == 1&text.matches("[0-9]+\\..+")){//Species name
+				else if(bolddetecter == 1&text.matches("^\\d+\\w*\\..+")){//Species name
 					Element speciesname = new Element("Species_Name");
 					speciesname.setText(text);
 					treatment.addContent(speciesname);
+					taxonname = text;
 				}
 				else{
 					if(text.matches("[0-9]+\\..+\\.")){//Key without next step
@@ -206,10 +220,11 @@ public class V27_Transformer {
 				}
 			}		
 		}
+		return taxonname;
 	}
 	private void output(int i) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
-		String file = "C:/Users/Li Chen/Desktop/FNA/v27/Transformed/" + i + ".xml";
+		String file = "d:/Library Project/work4/Transformed/" + i + ".xml";
 		Document doc = new Document(treatment);
 		BufferedOutputStream out = new BufferedOutputStream(
 				new FileOutputStream(file));
@@ -219,4 +234,4 @@ public class V27_Transformer {
 		treatment = new Element("treatment");
 	}
 }
-
+	
