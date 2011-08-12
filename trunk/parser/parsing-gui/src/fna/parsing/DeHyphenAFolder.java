@@ -137,7 +137,7 @@ public class DeHyphenAFolder {
 	                //check for unmatched brackets
 	                if(hasUnmatchedBrackets(text)){
 	                	has = true;
-	                	vd.showPerlMessage(flist[i].getName()+" contains unmatched brackets\n");
+	                	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains unmatched brackets\n");
 	                }
 	            }
 	        }catch(Exception e){
@@ -369,8 +369,12 @@ public class DeHyphenAFolder {
                         	lcurly--;
                         	sb.append("}");
                         }else{
-                        	if(w.indexOf(".")>=0 && (lround+lsquare+lcurly)>0){
+                        	if(w.matches(".*?[.?;:!].*?") && (lround+lsquare+lcurly)>0){
                         		w = w.replaceAll("\\.", "[DOT]");
+                        		w = w.replaceAll("\\?", "[QST]");
+                        		w = w.replaceAll(";", "[SQL]");
+                        		w = w.replaceAll(":", "[QLN]");
+                        		w = w.replaceAll("!", "[EXM]");
                         	}
                         	sb.append(w+" ");                        	
                         }                        

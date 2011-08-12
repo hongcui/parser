@@ -1325,7 +1325,7 @@ public class MainForm {
 		
 		/*structure subtab*/
 		final TabItem tbtmFindStructureNames = new TabItem(tabFolder_1, SWT.NONE);
-		tbtmFindStructureNames.setText("Find Structure Names");
+		tbtmFindStructureNames.setText("Remove Non-Structure Terms");
 
 		final Composite composite_2 = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFindStructureNames.setControl(composite_2);
@@ -1336,7 +1336,7 @@ public class MainForm {
 		tab5desc.setEditable(false);
 		tab5desc.setBounds(10, 10, 744, 39);
 		
-		findStructureTable = new Table(composite_2, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
+		findStructureTable = new Table(composite_2, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION );
 		final TableColumn findStructureTableColumn_Count = new TableColumn(findStructureTable, SWT.NONE);
 		findStructureTableColumn_Count.setWidth(81);
 		findStructureTableColumn_Count.setText("Count");
@@ -1347,7 +1347,7 @@ public class MainForm {
 		findStructureTable.setBounds(10, 74, 744, 209);
 		findStructureTable.setLinesVisible(true);
 		findStructureTable.setHeaderVisible(true);
-		findStructureTable.addListener(SWT.MouseDown, new Listener() {//display context for selected structure term
+		findStructureTable.addListener(SWT.Selection, new Listener() {//display context for selected structure term
 		      public void handleEvent(Event e) {		    	 
 		    	 TableItem[] selItem= findStructureTable.getSelection();
 		    	 for (TableItem item : selItem) {
@@ -1375,7 +1375,7 @@ public class MainForm {
 	    /*Load button*/
 		Button tab5_findstructure_loadFromLastTimeButton = new Button(composite_2, SWT.NONE);
 		tab5_findstructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
-		tab5_findstructure_loadFromLastTimeButton.setBounds(171, 433, 175, 25);
+		tab5_findstructure_loadFromLastTimeButton.setBounds(171, 433, 155, 25);
 		tab5_findstructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
 		tab5_findstructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -1390,34 +1390,15 @@ public class MainForm {
 			}			
 		});
 	    
-		/*"mark as good" button*/
+		/*"mark as bad" button*/
+		
 		Button tab5_findstructure_MarkAsGoodButton = new Button(composite_2, SWT.NONE);
-		tab5_findstructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
-		tab5_findstructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
-		tab5_findstructure_MarkAsGoodButton.setBounds(352, 434, 132, 23);
+		tab5_findstructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
+		tab5_findstructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
+		tab5_findstructure_MarkAsGoodButton.setBounds(342, 433, 132, 25);
 		tab5_findstructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				int i=0;
-				for (TableItem item : findStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findStructureTable.getItem(i).setBackground(0,green);
-						findStructureTable.getItem(i).setBackground(1,green);
-						item.setChecked(false);
-					}
-					i+=1;
-				}
-				
-			}
-		});
-		
-		/*"mark as bad" button*/
-		final Button tab5_findstructure_MarkAsBadButton = new Button(composite_2, SWT.NONE);
-		tab5_findstructure_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
-		tab5_findstructure_MarkAsBadButton.setBounds(489, 434, 127, 23);
-		tab5_findstructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-	    tab5_findstructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
 				int i=0;
 				for (TableItem item : findStructureTable.getItems()) {
 					if (item.getChecked()) {				
@@ -1427,20 +1408,41 @@ public class MainForm {
 					}
 					i+=1;
 				}
-				//removeBadStructuresFromTable(findStructureTable);
-				/*try { You don't need to run markup again ater removal!
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
-					statusOfMarkUp[4] = false;
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - markup" , exe);
-				} */				
+				
 			}
 		});
 		
-	    /*"save" button*/
+		/*"mark others as good" button*/
+		final Button tab5_findstructure_MarkAsBadButton = new Button(composite_2, SWT.NONE);
+		tab5_findstructure_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOtherGoodTTT"));
+		tab5_findstructure_MarkAsBadButton.setBounds(479, 433, 140, 25);
+		tab5_findstructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersGood"));
+	    tab5_findstructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int i=0;
+				for (TableItem item : findStructureTable.getItems()) {
+					if (!item.getBackground(1).equals(red)) {				
+						findStructureTable.getItem(i).setBackground(0,green);
+						findStructureTable.getItem(i).setBackground(1,green);
+						item.setChecked(false);
+					}
+					i+=1;
+				}
+				//removeBadStructuresFromTable(findStructureTable);
+				//try { You don't need to run markup again ater removal!
+				//	mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
+				//	statusOfMarkUp[4] = false;
+				//} catch (Exception exe) {
+				//	LOGGER.error("Couldnt save status - markup" , exe);
+				//} 				
+			}
+		});
+		
+		
+	    /*"Save" button*/
 	    final Button tab5_findstructure_SaveButton = new Button(composite_2, SWT.NONE);
 		tab5_findstructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));// save good structure names here.
-		tab5_findstructure_SaveButton.setBounds(622, 434, 132, 23);
+		tab5_findstructure_SaveButton.setBounds(622, 433, 132, 25);
 		tab5_findstructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findstructure_SaveButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1450,127 +1452,9 @@ public class MainForm {
 			}
 		});
 
-		/*** "Find more Structure" subtab ***/
-		TabItem findMoreStructure = new TabItem(tabFolder_1, SWT.NONE);
-		findMoreStructure.setText("Find More Structures");
-		
-		Composite composite_10 = new Composite(tabFolder_1, SWT.NONE);
-		findMoreStructure.setControl(composite_10);
-		
-		tab5desc = new Text(composite_10, SWT.READ_ONLY | SWT.WRAP);
-		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp3"));
-		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp3"));
-		tab5desc.setEditable(false);
-		tab5desc.setBounds(10, 10, 744, 39);
-		
-		findMoreStructureTable = new Table(composite_10, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-		//findMoreStructureTable.setBounds(35, 94, 722, 216);
-		findMoreStructureTable.setBounds(10, 74, 744, 209);
-		findMoreStructureTable.setHeaderVisible(true);
-		findMoreStructureTable.setLinesVisible(true);
-		TableColumn findMoreStructTalbeColumn_Count = new TableColumn(findMoreStructureTable, SWT.NONE);
-		findMoreStructTalbeColumn_Count.setWidth(81);
-		findMoreStructTalbeColumn_Count.setText("Count");		
-		TableColumn findMoreStructTableColumn_Words = new TableColumn(findMoreStructureTable, SWT.NONE);
-		findMoreStructTableColumn_Words.setWidth(658);
-		findMoreStructTableColumn_Words.setText("StructureName");
-		findMoreStructureTable.addListener(SWT.MouseDown, new Listener() {//display context for selected structure term
-		      public void handleEvent(Event e) {		    	 
-		    	 TableItem[] selItem= findMoreStructureTable.getSelection();
-		    	 for (TableItem item : selItem) {
-	  				String str = item.getText(1);
-	  				try {
-	  					moreStructureContextText.setText("");
-						mainDb.getContextData(str, moreStructureContextText);
-					} catch (ParsingException e1) {
-						e1.printStackTrace();
-					} catch (SQLException e1) {
-						e1.printStackTrace();
-					}			  			
-		    	 }
-		     }
-		});
-		
-		moreStructureContextText = new StyledText(composite_10, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
-		//moreStructureContextText.setBounds(35, 334, 722, 69);
-		moreStructureContextText.setEditable(false);
-		moreStructureContextText.setDoubleClickEnabled(false);
-		moreStructureContextText.setBounds(10, 299, 744, 114);
-		
-		/*"load from last time" button*/
-		Button tab5_findMoreStructure_loadFromLastTimeButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(120, 427, 144, 25);
-		tab5_findMoreStructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
-		tab5_findMoreStructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
-		tab5_findMoreStructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				//call functions to load values for all tables in order			
-				int c = loadFindMoreStructureTable(); //use unknownwords table
-				if(c==0){
-					String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-					String message = ApplicationUtilities.getProperty("popup.load.nodata");				
-					ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-				}
-			}			
-		});
-		Button tab5_findMoreStructure_MarkAsGoodButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsGoodButton.setBounds(270, 427, 130, 25);
-		tab5_findMoreStructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
-		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
-		tab5_findMoreStructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				int i=0;
-				for (TableItem item : findMoreStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findMoreStructureTable.getItem(i).setBackground(0,green);
-						findMoreStructureTable.getItem(i).setBackground(1,green);
-						item.setChecked(false);
-					}
-					i+=1;
-				}				
-			}
-		});
-		Button tab5_findMoreStructure_MarkAsBadButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsBadButton.setBounds(405, 427, 130, 25);
-		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
-		tab5_findMoreStructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-	    tab5_findMoreStructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				int i=0;
-				for (TableItem item : findMoreStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findMoreStructureTable.getItem(i).setBackground(0,red);
-						findMoreStructureTable.getItem(i).setBackground(1,red);
-						item.setChecked(false);
-					}
-					i+=1;
-				}
-				//removeBadStructuresFromTable(findMoreStructureTable);
-				/*try { You don't need to run markup again ater removal!
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
-					statusOfMarkUp[4] = false;
-				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - markup" , exe);
-				} */				
-			}
-		});
-
-		Button tab5_findMoreStructure_SaveButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_SaveButton.setBounds(541, 427, 156, 25);
-		tab5_findMoreStructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
-		tab5_findMoreStructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
-		tab5_findMoreStructure_SaveButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				saveStructureTerms(findMoreStructureTable, Registry.MARKUP_ROLE_O);
-				moreStructureContextText.setText("");
-			}
-		});
-
 		/*"find descriptors" subtab*/
 		final TabItem tbtmFindDescriptors = new TabItem(tabFolder_1, SWT.NONE);
-		tbtmFindDescriptors.setText("Find Descriptors");
+		tbtmFindDescriptors.setText("Remove Non-Descriptor terms");
 
 		final Composite composite_7 = new Composite(tabFolder_1, SWT.NONE);
 		tbtmFindDescriptors.setControl(composite_7);
@@ -1591,7 +1475,7 @@ public class MainForm {
 		final TableColumn findDescriptorTableColumn_Words = new TableColumn(findDescriptorTable, SWT.LEFT);
 		findDescriptorTableColumn_Words.setWidth(659);
 		findDescriptorTableColumn_Words.setText("Descriptors");
-		findDescriptorTable.addListener(SWT.MouseDown, new Listener() {
+		findDescriptorTable.addListener(SWT.Selection, new Listener() {
 		      public void handleEvent(Event e) {
 		    	 TableItem[] selItem= findDescriptorTable.getSelection();
 		    	 for (TableItem item : selItem) {
@@ -1632,18 +1516,18 @@ public class MainForm {
 
 			}			
 		});
-		/*"mark as good" button */
+		/*"mark as bad" button */
 		final Button tab5_findDescriptor_MarkAsGoodButton = new Button(composite_7, SWT.NONE);//this button is on the markup-descriptor tab
-		tab5_findDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
-		tab5_findDescriptor_MarkAsGoodButton.setBounds(344, 418, 140, 25);
-		tab5_findDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
+		tab5_findDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
+		tab5_findDescriptor_MarkAsGoodButton.setBounds(344, 433, 120, 25);
+		tab5_findDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
 		tab5_findDescriptor_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				TableItem [] items = findDescriptorTable.getItems();
 				for (TableItem item : items) {
 					if (item.getChecked()) {
-						item.setBackground(0, green);
-						item.setBackground(1, green);	
+						item.setBackground(0, red);
+						item.setBackground(1, red);	
 						item.setChecked(false);
 					}
 				}
@@ -1663,18 +1547,18 @@ public class MainForm {
 		});
 
 	
-		/*"mark as bad" button*/
+		/*"mark others as good" button*/
 		final Button tab5_findDescriptor_MarkAsBadButton = new Button(composite_7, SWT.NONE);
-		tab5_findDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-		tab5_findDescriptor_MarkAsBadButton.setBounds(472, 418, 122, 25);
-		tab5_findDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
+		tab5_findDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersGood"));
+		tab5_findDescriptor_MarkAsBadButton.setBounds(472, 433, 140, 25);
+		tab5_findDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersGoodTTT"));
 		tab5_findDescriptor_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				TableItem [] items = findDescriptorTable.getItems();
 				for (TableItem item : items) {
-					if (item.getChecked()) {
-						item.setBackground(0, red);
-						item.setBackground(1, red);	
+					if (!item.getBackground(1).equals(red)) {
+						item.setBackground(0, green);
+						item.setBackground(1, green);	
 						item.setChecked(false);
 					}
 				}
@@ -1684,7 +1568,7 @@ public class MainForm {
 		
 		/*save button*/
 		Button tab5_findDescriptor_SaveButton = new Button(composite_7, SWT.NONE);
-		tab5_findDescriptor_SaveButton.setBounds(619, 418, 135, 25);
+		tab5_findDescriptor_SaveButton.setBounds(619, 433, 135, 25);
 		tab5_findDescriptor_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
 		tab5_findDescriptor_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findDescriptor_SaveButton.addSelectionListener(new SelectionAdapter() {
@@ -1822,6 +1706,127 @@ public class MainForm {
 		btnLoadResultsFrom_1.setBounds(459, 427, 172, 25);
 		btnLoadResultsFrom_1.setText("Load results from last time");
 		*/
+
+		/*** "Find more Structure" subtab ***/
+		TabItem findMoreStructure = new TabItem(tabFolder_1, SWT.NONE);
+		findMoreStructure.setText("Find More Structures");
+		
+		Composite composite_10 = new Composite(tabFolder_1, SWT.NONE);
+		findMoreStructure.setControl(composite_10);
+		
+		tab5desc = new Text(composite_10, SWT.READ_ONLY | SWT.WRAP);
+		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp3"));
+		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp3"));
+		tab5desc.setEditable(false);
+		tab5desc.setBounds(10, 10, 744, 39);
+		
+		findMoreStructureTable = new Table(composite_10, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
+		//findMoreStructureTable.setBounds(35, 94, 722, 216);
+		findMoreStructureTable.setBounds(10, 74, 744, 209);
+		findMoreStructureTable.setHeaderVisible(true);
+		findMoreStructureTable.setLinesVisible(true);
+		TableColumn findMoreStructTalbeColumn_Count = new TableColumn(findMoreStructureTable, SWT.NONE);
+		findMoreStructTalbeColumn_Count.setWidth(81);
+		findMoreStructTalbeColumn_Count.setText("Count");		
+		TableColumn findMoreStructTableColumn_Words = new TableColumn(findMoreStructureTable, SWT.NONE);
+		findMoreStructTableColumn_Words.setWidth(658);
+		findMoreStructTableColumn_Words.setText("StructureName");
+		findMoreStructureTable.addListener(SWT.Selection, new Listener() {//display context for selected structure term
+		      public void handleEvent(Event e) {		    	 
+		    	 TableItem[] selItem= findMoreStructureTable.getSelection();
+		    	 for (TableItem item : selItem) {
+	  				String str = item.getText(1);
+	  				try {
+	  					moreStructureContextText.setText("");
+						mainDb.getContextData(str, moreStructureContextText);
+					} catch (ParsingException e1) {
+						e1.printStackTrace();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}			  			
+		    	 }
+		     }
+		});
+		
+		moreStructureContextText = new StyledText(composite_10, SWT.BORDER | SWT.V_SCROLL|SWT.H_SCROLL);
+		//moreStructureContextText.setBounds(35, 334, 722, 69);
+		moreStructureContextText.setEditable(false);
+		moreStructureContextText.setDoubleClickEnabled(false);
+		moreStructureContextText.setBounds(10, 299, 744, 114);
+		
+		/*"load from last time" button*/
+		Button tab5_findMoreStructure_loadFromLastTimeButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(120, 433, 144, 25);
+		tab5_findMoreStructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
+		tab5_findMoreStructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
+		tab5_findMoreStructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//call functions to load values for all tables in order			
+				int c = loadFindMoreStructureTable(); //use unknownwords table
+				if(c==0){
+					String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
+					String message = ApplicationUtilities.getProperty("popup.load.nodata");				
+					ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
+				}
+			}			
+		});
+		/*"mark as good*/
+		Button tab5_findMoreStructure_MarkAsGoodButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_MarkAsGoodButton.setBounds(270, 433, 130, 25);
+		tab5_findMoreStructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
+		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
+		tab5_findMoreStructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int i=0;
+				for (TableItem item : findMoreStructureTable.getItems()) {
+					if (item.getChecked()) {				
+						findMoreStructureTable.getItem(i).setBackground(0,green);
+						findMoreStructureTable.getItem(i).setBackground(1,green);
+						item.setChecked(false);
+					}
+					i+=1;
+				}				
+			}
+		});
+		
+		/*mark others as bad*/
+		Button tab5_findMoreStructure_MarkAsBadButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_MarkAsBadButton.setBounds(405, 433, 130, 25);
+		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersBadTTT"));
+		tab5_findMoreStructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersBad"));
+	    tab5_findMoreStructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				int i=0;
+				for (TableItem item : findMoreStructureTable.getItems()) {
+					if (!item.getBackground(1).equals(green)) {				
+						findMoreStructureTable.getItem(i).setBackground(0,red);
+						findMoreStructureTable.getItem(i).setBackground(1,red);
+						item.setChecked(false);
+					}
+					i+=1;
+				}
+				//removeBadStructuresFromTable(findMoreStructureTable);
+				/*try { You don't need to run markup again ater removal!
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), false);
+					statusOfMarkUp[4] = false;
+				} catch (Exception exe) {
+					LOGGER.error("Couldnt save status - markup" , exe);
+				} */				
+			}
+		});
+
+		Button tab5_findMoreStructure_SaveButton = new Button(composite_10, SWT.NONE);
+		tab5_findMoreStructure_SaveButton.setBounds(541, 433, 156, 25);
+		tab5_findMoreStructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
+		tab5_findMoreStructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
+		tab5_findMoreStructure_SaveButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				saveStructureTerms(findMoreStructureTable, Registry.MARKUP_ROLE_O);
+				moreStructureContextText.setText("");
+			}
+		});
 		
 		/* "Find More Descriptors" subtab */
 		TabItem descriptor2Tab = new TabItem(tabFolder_1, SWT.NONE);
@@ -1851,7 +1856,7 @@ public class MainForm {
 		TableColumn findMoreDescriptorTableColumn_Words= new TableColumn(findMoreDescriptorTable, SWT.NONE);
 		findMoreDescriptorTableColumn_Words.setWidth(658);
 		findMoreDescriptorTableColumn_Words.setText("Descriptor Name");
-		findMoreDescriptorTable.addListener(SWT.MouseDown, new Listener() {//display context for selected structure term
+		findMoreDescriptorTable.addListener(SWT.Selection, new Listener() {//display context for selected structure term
 		      public void handleEvent(Event e) {		    	 
 		    	 TableItem[] selItem= findMoreDescriptorTable.getSelection();
 		    	 for (TableItem item : selItem) {
@@ -1867,9 +1872,9 @@ public class MainForm {
 		    	 }
 		     }
 		});
-
+		/*load button*/
 		Button tab5_findMoreDescriptor_loadFromLastTimeButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_loadFromLastTimeButton.setBounds(114, 430, 180, 25);
+		tab5_findMoreDescriptor_loadFromLastTimeButton.setBounds(114, 433, 180, 25);
 		tab5_findMoreDescriptor_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
 		tab5_findMoreDescriptor_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
 		tab5_findMoreDescriptor_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
@@ -1885,9 +1890,9 @@ public class MainForm {
 			}			
 		});
 
-		
+		/*mark as good*/
 		Button tab5_findMoreDescriptor_MarkAsGoodButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_MarkAsGoodButton.setBounds(300, 430, 134, 25);
+		tab5_findMoreDescriptor_MarkAsGoodButton.setBounds(300, 433, 134, 25);
 		tab5_findMoreDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
 		tab5_findMoreDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
 		tab5_findMoreDescriptor_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
@@ -1914,15 +1919,16 @@ public class MainForm {
 				}*/
 			}
 		});
+		/*mark others as bad*/
 		Button tab5_findMoreDescriptor_MarkAsBadButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_MarkAsBadButton.setBounds(440, 430, 142, 25);
-		tab5_findMoreDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-		tab5_findMoreDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
+		tab5_findMoreDescriptor_MarkAsBadButton.setBounds(440, 433, 142, 25);
+		tab5_findMoreDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersBad"));
+		tab5_findMoreDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersBadTTT"));
 		tab5_findMoreDescriptor_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				TableItem [] items = findMoreDescriptorTable.getItems();
 				for (TableItem item : items) {
-					if (item.getChecked()) {
+					if (!item.getBackground(1).equals(green)) {
 						item.setBackground(0, red);
 						item.setBackground(1, red);
 						item.setChecked(false);
@@ -1933,7 +1939,7 @@ public class MainForm {
 		});
 
 		Button tab5_findMoreDescriptor_SaveButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_SaveButton.setBounds(592, 430, 160, 25);
+		tab5_findMoreDescriptor_SaveButton.setBounds(592, 433, 160, 25);
 		tab5_findMoreDescriptor_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
 		tab5_findMoreDescriptor_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findMoreDescriptor_SaveButton.addSelectionListener(new SelectionAdapter() {
