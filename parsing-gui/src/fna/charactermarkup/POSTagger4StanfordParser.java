@@ -220,7 +220,13 @@ public class POSTagger4StanfordParser {
 		}
 		return "";
 	}
-
+		
+		
+/**remove all bracketed text such as "leaves large (or small as in abc)"
+ * do not remove brackets that are part of numerical expression : 2-6 (-10)
+ * @param str: "leaves large (or small as in abc)"
+ * @return: "leaves large"
+ */
 	private String handleBrackets(String str) {
 		//remove nested brackets left by pl such as (petioles (2-)4-8 cm)
 		//String p1 ="\\([^()]*?[a-zA-Z][^()]*?\\)";
