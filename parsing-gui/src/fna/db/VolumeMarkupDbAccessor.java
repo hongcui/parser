@@ -23,7 +23,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
@@ -88,6 +90,7 @@ public class VolumeMarkupDbAccessor {
 				String tag = rs.getString("word");
 				populateCurationList(tagList, tag); //select tags for curation
 			}
+			deduplicateSort(tagList);
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:updateData", sqlexe);
 			sqlexe.printStackTrace();
@@ -104,6 +107,14 @@ public class VolumeMarkupDbAccessor {
 			}			
 		}
     }
+
+
+	private void deduplicateSort(List<String> tagList) {
+		HashSet<String> set = new HashSet<String>(tagList);
+		String[] sorted = set.toArray(new String[]{}); 
+		Arrays.sort(sorted);
+		tagList = Arrays.asList(sorted);
+	}
     
     
     /**
@@ -121,7 +132,7 @@ public class VolumeMarkupDbAccessor {
 	 	try {
 			conn = DriverManager.getConnection(url);
 			String sql = "select dhword from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS")+
-			" where " +
+			" where inbrackets=0 and dhword not like '%\\_%' and " +
 			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where saved_flag='red') and" +
 			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+") order by dhword";
 			stmt = conn.prepareStatement(sql);
@@ -130,7 +141,7 @@ public class VolumeMarkupDbAccessor {
 				String word = rs.getString("dhword");
 				populateCurationList(curationList, word);
 			}
-	
+			this.deduplicateSort(curationList);
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:contentTerms4Curation", sqlexe);
 			sqlexe.printStackTrace();
@@ -195,7 +206,8 @@ public class VolumeMarkupDbAccessor {
 				while(rset.next()){
 					populateDescriptorList(words, rset.getString("word"));
 				}	
-			}			
+			}
+			deduplicateSort(words);
 		} catch (SQLException exe) {
 			LOGGER.error("Error in getting words as descriptors: " +
 					"mainFormDbAccessor.descriptorTerms4Curation", exe);
