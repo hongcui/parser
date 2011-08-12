@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fna.parsing.ApplicationUtilities;
+
 
 
 
@@ -32,17 +34,15 @@ public class POSTagger4StanfordParser {
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	private boolean printList = false;
 	private String tableprefix = null;
-	private String postable = null;
 	private String glosstable = null;
 	
 
 	/**
 	 * 
 	 */
-	public POSTagger4StanfordParser(Connection conn, String tableprefix, String postable, String glosstable) {
+	public POSTagger4StanfordParser(Connection conn, String tableprefix, String glosstable) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
-		this.postable = postable;
 		this.glosstable = glosstable;
 	}
 	
@@ -123,66 +123,18 @@ public class POSTagger4StanfordParser {
 					str = m.group(3);
 				}
 				str = str.replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±(?!\\s+\\d)","moreorless");
+
+
+				str = handleBrackets(str);
+				
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
+				
 				if(containsArea){
 					str = strnum;
+					str = handleBrackets(str);
 				}
-
-				
-				//threeing
-				str = str.replaceAll("(?<=\\d)-(?=\\{)", " - "); //this is need to keep "-" in 5-{merous} after 3ed (3-{merous} and not 3 {merous}) 
-	            //Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
-	            Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
-				//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
-				//Pattern pattern5 = Pattern.compile("[\\d±\\+\\–\\-\\—°²:½/¼\"“”\\_´\\×µ%\\*\\{\\}\\[\\]=]+");
-				//Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");
-				Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?![a-z])"); //not including individual "-", would turn 3-branched to 3 branched 
-				//Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])"); //condense multiple 0s.
-				Pattern pattern6 = Pattern.compile("(?<=\\s)[0\\s]+(?=\\s)");
-				//Pattern pattern5 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
-	           //[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
-				Pattern pattern7 = Pattern.compile("[(\\[]\\s*\\d+\\s*[)\\]]"); // deal with ( 2 ), (23) is dealt with by NumericalHandler.numberpattern
-				
-
-				Matcher	 matcher1 = pattern3.matcher(str);
-	           //str = matcher1.replaceAll(" 0 ");
-				str = matcher1.replaceAll("0");
-				matcher1.reset();
-	           
-	           /*matcher1 = pattern4.matcher(str);
-	           str = matcher1.replaceAll("0");
-	           matcher1.reset();*/
-	           
-	           matcher1 = pattern5.matcher(str);//single numbers
-	           str = matcher1.replaceAll("0");
-	           matcher1.reset();
-	           
-	           /* should not remove space around 0, because: pollen 70-80% 3-porate should keep 2 separate numbers: 70-80% and 3-porate
-	            * 
-	           String scptemp = str;
-	           matcher1 = pattern6.matcher(str);//remove space around 0
-	           str = matcher1.replaceAll("0");
-	           if(!scptemp.equals(str)){
-	        	   System.out.println();
-	           }
-	           matcher1.reset();*/
-	           
-	           matcher1 = pattern7.matcher(str);//added for (2)
-	           str = matcher1.replaceAll("0");
-	           matcher1.reset();
-	           //further normalization
-	           
-	           
-	           //3 -{many} or 3- {many}=> {3-many}
-	           str = str.replaceAll("0\\s*-\\s*", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
-	           
-	           //2-or-{3-lobed} => {2-or-3-lobed}
-	           str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{]\\b(?=3-(to|or)-3\\S+\\})", " {");
-
-	           
-	           
-	           
-	           if(strcp.compareTo(str)!=0){
+				str = Utilities.threeingSentence(str);
+   	            if(strcp.compareTo(str)!=0){
 	        	   System.out.println("orig sent==>"+ strcp);
 	        	   System.out.println("rmarked==>"+ strcp2);
 	        	   System.out.println("threed-sent==>"+ str);
@@ -212,9 +164,9 @@ public class POSTagger4StanfordParser {
 	        	   word = word.replaceAll("[<>{}]", "").trim();
 	        	   String p = "";
 	        	   if(word.length()>0 && !word.matches("\\W") && !word.matches("("+ChunkedSentence.prepositions+")") &&!word.matches("("+ChunkedSentence.stop+")")){
-		        	   ResultSet rs1 = stmt1.executeQuery("select pos from "+this.tableprefix+"_"+this.postable+" where word='"+word+"'");
+		        	   ResultSet rs1 = stmt1.executeQuery("select semanticrole from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+word+"'");
 		       		   if(rs1.next()){
-		       			   p = rs1.getString("pos");
+		       			   p = rs1.getString("semanticrole");
 		       		   }
 	        	   }
 	       		   
@@ -235,12 +187,12 @@ public class POSTagger4StanfordParser {
 	       			   sb.append(word+"/NNS ");
 	       		   }else if(word.matches("as-\\S+")){ //as-wide-as
 	       		   	   sb.append(word+"/RB ");
-	       		   }else if(p.contains("p")){ //<inner> larger.
+	       		   }else if(p.contains("op")){ //<inner> larger.
 	       				//System.out.println(rs1.getString(2));
 	       			   sb.append(word+"/NNS ");
-	       		   }else if(p.contains("s") || pos.indexOf('<') >=0){
+	       		   }else if(p.contains("os") || pos.indexOf('<') >=0){
 	       			   sb.append(word+"/NN ");
-	       		   }else if(p.contains("b")|| pos.indexOf('{') >=0){
+	       		   }else if(p.contains("c")|| pos.indexOf('{') >=0){
 	       			   	//ResultSet rs3 = stmt1.executeQuery("select word from wordpos4parser where word='"+word+"' and certaintyl>5");
 	       				ResultSet rs2 = stmt1.executeQuery("select word from Brown.wordfreq where word='"+word+"' and freq>79");//1/largest freq in wordpos = 79/largest in brown
 	       				if(rs2.next()){
@@ -268,6 +220,43 @@ public class POSTagger4StanfordParser {
 		}
 		return "";
 	}
+
+	private String handleBrackets(String str) {
+		//remove nested brackets left by pl such as (petioles (2-)4-8 cm)
+		//String p1 ="\\([^()]*?[a-zA-Z][^()]*?\\)";
+		//String p2 = "\\[[^\\]\\[]*?[a-zA-Z][^\\]\\[]*?\\]";
+		//String p3 = "\\{[^{}]*?[a-zA-Z][^{}]*?\\}";				
+		if(str.matches(".*?\\(.*?[a-zA-Z].*?\\).*") || str.matches(".*?\\[.*?[a-zA-Z].*?\\].*")){ 
+			String[] pretokens = str.split("\\s+");
+			str = Utilities.threeingSentence(str);
+			String[] tokens = str.split("\\s+");
+			StringBuffer bracketfree = new StringBuffer();
+			boolean inbracket = false;
+			for(int i=0; i<tokens.length; i++){
+				if(tokens[i].matches("[(\\[].*")){
+					inbracket = true;
+				}
+				if(!inbracket){
+					if(tokens[i].compareTo("3")==0){
+						bracketfree.append(pretokens[i]+" ");
+					}else{
+						bracketfree.append(tokens[i]+" ");
+					}
+				}												
+				if(tokens[i].matches(".*[)\\]]")){
+					inbracket = false;
+				}
+			}
+			str = bracketfree.toString().trim();
+			if(str.matches(".*?\\(\\s+?\\s+\\).*")){//2n=20( ? ), 30 => 2n=20?, 30
+				str = str.replaceAll("\\(\\s+?\\s+\\)", "?");
+			}
+			//str = str.replaceAll(p1, "").replaceAll(p2, "").replaceAll("\\s+", " ").trim();					
+		}
+		return str;
+	}
+
+	
 	
 		/**
 		 * make  "suffused with dark blue and purple or green" one token
@@ -575,7 +564,7 @@ public class POSTagger4StanfordParser {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "wordpos4parser", "fnaglossaryfixed");
+		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "fnaglossaryfixed");
 		
 		//String str="<Cypselae> {tan} , {subcylindric} , {subterete} to 5-{angled} , 8–10 {mm} , {indistinctly} 8–10-{ribbed}";
 		//String src="364.txt-15";

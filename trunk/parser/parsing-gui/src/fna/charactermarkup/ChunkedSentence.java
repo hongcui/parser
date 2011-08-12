@@ -88,11 +88,12 @@ public class ChunkedSentence {
 	
 
 	
-	public ChunkedSentence(ArrayList<String> chunkedtokens, String chunkedsent, Connection conn, String glosstable){
+	public ChunkedSentence(ArrayList<String> chunkedtokens, String chunkedsent, Connection conn, String glosstable, String tableprefix){
 		this.chunkedtokens = chunkedtokens;
 		this.chunkedsent = chunkedsent;
 		this.conn = conn;
 		this.glosstable = glosstable;
+		this.tableprefix = tableprefix;
 		this.recoverOrgans();
 		
 	}
@@ -1087,7 +1088,7 @@ public class ChunkedSentence {
 		}else{
 			this.rightAfterSubject = false;
 		}
-		return ck;
+		return ck==null? new ChunkEOS(".") : ck;
 		
 	}
 	/**
@@ -1280,7 +1281,8 @@ public class ChunkedSentence {
 			scs =(scs.trim().length()>0? scs.trim()+"] ": "")+"m["+this.unassignedmodifier.replaceAll("[{}]", "")+" ";
 			this.unassignedmodifier = null;
 		}
-		for(int i = this.pointer; i<this.chunkedtokens.size(); i++){
+		int i = 0;
+		for(i = this.pointer; i<this.chunkedtokens.size(); i++){
 			token = this.chunkedtokens.get(i);
 			token = token.matches(".*?\\d.*")? NumericalHandler.originalNumForm(token):token;
 			if(token.length()==0){
@@ -1391,6 +1393,11 @@ public class ChunkedSentence {
 					if(!founds && chara!=null){
 						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+chara+"["+token+" ";
 						founds = true;
+						if(i+1==this.chunkedtokens.size()){ //reach the end of chunkedtokens
+							scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
+							this.pointer = i+1;
+							return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
+						}
 					}else if(founds && chara!=null && scs.matches(".*?"+chara+"\\[.*")){ //coloration coloration: dark blue
 						scs += token+" ";
 					}else if(founds){
@@ -1488,6 +1495,9 @@ public class ChunkedSentence {
 					}
 				}
 			}
+		}
+		if(i==this.chunkedtokens.size()){
+			this.pointer = this.chunkedtokens.size();
 		}
 		return null;
 	}
