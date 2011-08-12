@@ -82,7 +82,6 @@ public class VolumeFinalizer extends Thread {
 		String posedfile = Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("POSED");
 		String parsedfile =Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("PARSED");
 		String database = ApplicationUtilities.getProperty("database.name");
-		String postable = ApplicationUtilities.getProperty("POSTABLE");
 		/*
 		String posedfile = "FNAv19posedsentences.txt";		
 		String parsedfile = "FNAv19parsedsentences.txt";
@@ -91,9 +90,9 @@ public class VolumeFinalizer extends Thread {
 		*/
 		String glosstable = this.glossaryPrefix;
 		//don't need to rerun them--they were ran at step 5-6, unknown removal and character curation
-		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
-		//sosm.markSentences();
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,postable,glosstable);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
+		sosm.markSentences();
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable);
 		sp.POSTagging();
 		sp.parsing();
 		sp.extracting();
