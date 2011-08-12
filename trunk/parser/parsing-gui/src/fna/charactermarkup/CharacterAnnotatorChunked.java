@@ -619,7 +619,7 @@ public class CharacterAnnotatorChunked {
 
 	private ArrayList<Element> lastStructures() {
 		ArrayList<Element> parents;
-		if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("structure") ==0){
+		if(this.latestelements.size()> 0 && this.latestelements.get(this.latestelements.size()-1).getName().compareTo("structure") ==0){
 			parents = this.latestelements;
 		}else{
 			parents = this.subjects;

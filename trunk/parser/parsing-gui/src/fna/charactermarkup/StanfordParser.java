@@ -102,9 +102,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			while(rs.next()){
 				String src = rs.getString(1);
 				String str = rs.getString(2);
-				//if(src.compareTo("1273.txt-14")!=0){
-				//	continue;
-				//}
+				if(src.compareTo("157.txt-22")!=0){
+					continue;
+				}
 				//TODO: may need to fix "_"
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
@@ -317,12 +317,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
 		sent = sent.replaceAll("n\\s*=", "n=");
 		sent = sent.replaceAll("x\\s*=", "x=");
-		
+
 		//sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").replaceAll("\\s+", " ").trim();
 		sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim();
-
+		sent = sent.replaceAll("(?<=\\d) (?=\\?)", ""); //deals especially x=[9 ? , 13] 12, 19 cases
+		sent = sent.replaceAll("(?<=\\?) (?=,)", "");
 		if(sent.matches(".*?[nx]=.*")){
-			sent = sent.replaceAll("(?<=\\d)\\s*,\\s*(?=\\d)", ","); //remove spaces around , for chromosome only so numericalHandler.numericalPattern can "3" them into one 3. Other "," connecting two numbers needs spaces to avoid being "3"-ed (fruits 10, 3 of them large) 
+			sent = sent.replaceAll("(?<=[\\d?])\\s*,\\s*(?=\\d)", ","); //remove spaces around , for chromosome only so numericalHandler.numericalPattern can "3" them into one 3. Other "," connecting two numbers needs spaces to avoid being "3"-ed (fruits 10, 3 of them large) 
 		}
 		sent = sent.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", ".");//2 . 5 => 2.5
 		sent = sent.replaceAll("(?<=\\d)\\.(?=\\d[nx]=)", " . "); //pappi 0.2n=12
@@ -498,7 +499,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String text = "ovary more than two to three-fourths to one half superior. ";
 		//System.out.println(StanfordParser.ratio2number(text));
 		//String text="<pollen> 70-100% 3-{porate} , {mean} 25 um .";
-		//System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
+		String text="x = [ 9 ? , 13 , 15 ] 17 , 18 , 19 .";
+		System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
 		
 		
 		//String database = "phenoscape";
