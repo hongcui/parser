@@ -6,6 +6,29 @@
 #Newer development of unsupervised clause markup is done on unsupervisedClauseMarkupBenchmarked.pl
 #The latter implements some additional new or replacement module to achieve ideas discussed in the FNAv19BenchmarkDocumentation.doc
 
+#July 28, 2011 Hong Cui How to create KB from checked wordroles and glossaryfixed tables
+#execute following sql statements: [note, learnedmodifier will be empty]
+#create table fnaknowledgebase.learnedstructures
+#SELECT word as structure FROM annotationevaluation.fnav19_wordroles f where semanticrole in ('op', 'os');
+#
+#create table fnaknowledgebase.learnedboundarywords
+#SELECT word FROM annotationevaluation.fnav19_wordroles f where semanticrole in ('c');
+#
+#create table fnaknowledgebase.learnedmodifiers
+#SELECT word as modifier FROM annotationevaluation.fnav19_wordroles f where semanticrole in ('m');
+#
+#insert into fnaknowledgebase.learnedstructures (structure)
+#select term from annotationevaluation.fnaglossaryfixed where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style') 
+#and term not in (select structure from fnaknowledgebase.learnedstructures);
+#
+#insert into fnaknowledgebase.learnedboundarywords (word)
+#select term from annotationevaluation.fnaglossaryfixed where category not in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'life_style') 
+#and term not in (select word from fnaknowledgebase.learnedboundarywords);
+
+
+
+
+
 #Nov 10, 2008 Hong Cui
 #TODO:  Done: de-hypenization for documents (done in java)
 #		2) identify common-substructures such as blades, base, etc. See also 5)
@@ -136,7 +159,7 @@ my $defaultgeneraltag = "general";
 my $debug = 0;
 my $debugp = 0; #debug pattern
 
-my $kb = "knowledgebase";
+my $kb = "fnaknowledgebase";
 #my $kb = "phenoscape";
 
 my $taglength = 150;
@@ -440,8 +463,9 @@ sub kbexists{
 
 my $test = $dbh->prepare('show databases') or die $dbh->errstr."\n";
 $test->execute() or die $test->errstr."\n";
-my ($database, $removedb);
-while($database = $test->fetchrow_array()){
+my $database;
+while(($database) = $test->fetchrow_array()){
+	#print $database."\n";
 	if($database eq $kb){
 		return 1;
 	}
@@ -3522,7 +3546,8 @@ sub finalizecompoundtag{
 		my $foundam = 0;
 		my $r = "";
 		foreach my $w (@words){
-			if($checkedmodifiers{$w} == 1 or $sentence =~ /<N>$w/){
+			my $escapedw = escapePerlRegexp($w);
+			if($checkedmodifiers{$w} == 1 or $sentence =~ /<N>$escapedw/){
 				$foundam = 1;
 				$r = $r." ".$w;
 			}
@@ -3980,6 +4005,12 @@ sub wrapupmarkup{
 sub escape{
 	my $line = shift;
 	$line =~ s#([\(\)\[\]\{\}\.\|\-\+\?\'\*])#\\\\\1#g;
+	return $line;
+}
+
+sub escapePerlRegexp{
+	my $line = shift;
+	$line=~ s#([\(\)\[\]\{\}\.\|\-\+\?\*])#\\\1#g;
 	return $line;
 }
 
@@ -5605,10 +5636,6 @@ while(defined ($file=readdir(IN))){
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
 
   	#$text = hideBrackets($text);#implemented in DeHyphenAFolder.java
-  	#$text =~ s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
-  	#$text =~ s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
-  	#$text =~ s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
-
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
   	$text =~ s#(\w)([:;\.])(\w)#$1$2 $3#g; #absent;blade => absent; blade
@@ -5628,8 +5655,18 @@ while(defined ($file=readdir(IN))){
 		if(!/\w+/){next;}
 		push(@validindex, $i);
 		s#\[DOT\]#.#g;
+		s#\[QST\]#?#g;
+		s#\[SQL\]#;#g;
+		s#\[QLN\]#:#g;
+		s#\[EXM\]#!#g;
 		push(@sentcopy, $_);
 
+		#remove bracketed text from sentence (keep those in originalsent);
+		#this step will not be able to remove nested brackets, such as (petioles (2-)4-8 cm).
+		#nested brackets will be removed after threedsent step in POSTagger4StanfordParser.java
+  		s#\([^()]*?[a-zA-Z][^()]*?\)# #g;  #remove (.a.)
+  		s#\[[^\]\[]*?[a-zA-Z][^\]\[]*?\]# #g;  #remove [.a.]
+  		s#{[^{}]*?[a-zA-Z][^{}]*?}# #g; #remove {.a.}
     	#s#([^\d])\s*-\s*([^\d])#\1_\2#g;         #hyphened words: - =>_ to avoid space padding in the next step
 		s#\s*[-]+\s*([a-z])#_\1#g;                #cup_shaped, 3_nerved, 3-5 (-7)_nerved #5/30/09 add+
 		s#(\W)# \1 #g;                            #add space around nonword char
