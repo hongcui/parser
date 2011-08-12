@@ -68,23 +68,29 @@ public class SentenceOrganStateMarker {
 		try{
 			Statement stmt = conn.createStatement();
 			//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
-			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence from "+this.tableprefix+"_sentence order by sentid desc");
+			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
 			String dittos = "";
+			//merge ditto sentences with previous sentences
 			while(rs.next()){//read sent in in reversed order
 				String tag = rs.getString("tag");
 				String sent = rs.getString("sentence");
 				String source = rs.getString("source");
+				String osent = rs.getString("originalsent");
 				if(tag.compareTo("ditto")==0){ //attach ditto to the previous sentence
 					dittos = sent.trim()+" "+dittos;
 					//sentences.put(source, ""); //make ditto sent id's disappear
 				}else{
 					sent =sent.trim() +" "+ dittos.trim();
+					osent =osent.trim() +" "+ dittos.trim();
 					dittos = "";
 					String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 					text = text.replaceAll("&#176;", "°");
 					text = rs.getString("modifier")+"##"+tag+"##"+text;
 					sentences.put(source, text);
+					//update originalsent
+					Statement st = conn.createStatement();
+					st.execute("update "+this.tableprefix+"_sentence set originalsent='"+osent+"' where source='"+source+"'");
 				}
 			}
 			//collect adjnouns
