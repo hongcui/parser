@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import fna.parsing.state.StateCollector;
@@ -43,6 +46,7 @@ public class Utilities {
 		word = word.toLowerCase().replaceAll("\\W", "");
 		//check cache
 		singulars.put("axis", "axis");
+		singulars.put("axes", "axis");
 		singulars.put("bases", "base");
 		singulars.put("boss", "boss");
 		singulars.put("buttress", "buttress");
@@ -58,7 +62,7 @@ public class Utilities {
 		singulars.put("teeth", "tooth");
 		singulars.put("valves", "valve");
 		
-		plurals.put("axis", "axis");
+		plurals.put("axis", "axes");
 		plurals.put("base", "bases");		
 		plurals.put("groove", "grooves");
 		plurals.put("len", "lens");
@@ -363,34 +367,44 @@ public class Utilities {
 		return ch;
 	}
 
+	
 	private static String lookup(String w, Connection conn,
 			Hashtable<String, String> characterhash, String glosstable,
 			String wc, String prefix) {
 		String ch ="";
+		HashSet<String> chs = new HashSet<String>();
 		try{
 			Statement stmt = conn.createStatement();
 			//check glossarytable
 			ResultSet rs = stmt.executeQuery("select distinct category from "+glosstable+" where term = '"+w+"' or term ='_"+w+"' order by category");
 			while(rs.next()){
 				String cat = rs.getString("category");
-				if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
-					ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
-				}
+				chs.add(cat);
+				//if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+				//	ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
+				//}
 			}
 			//check _group_decisions and _grouped_terms
-			String q = "select distinct "+prefix+"_group_decisions.decision from " +
-					prefix+"_grouped_terms, "+prefix+"_group_decisions where term='"+w+"' or cooccurTerm='"+w+"' and " +
-					prefix+"_grouped_terms.groupId = "+prefix+"_group_decisions.groupId order by "+
-					prefix+"_group_decisions.decision";
+			String q = "select distinct "+prefix+"_group_decisions.decision from  "+
+			prefix+"_group_decisions where groupId in (SELECT groupId FROM "+
+			prefix+"_grouped_terms f where term = '"+w+"' or cooccurTerm='"+
+			w+"') order by "+prefix+"_group_decisions.decision";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String cat = rs.getString("decision");
-				if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
-					ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
-				}
+				chs.add(cat);
+				//if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+				//	ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
+				//}
 			}			
 			rs.close();
 			stmt.close();
+			String[] charas = chs.toArray(new String[]{});
+ 			Arrays.sort(charas);
+ 			
+ 			for(String character: charas){
+ 				ch += character.replaceAll("\\s+", "_")+"_or_";
+ 			}
 			if(ch.length()>0){
 				ch = ch.replaceFirst(Utilities.or+"$", "");
 				characterhash.put(wc, ch);
@@ -434,11 +448,64 @@ public class Utilities {
 		}
 		return tokens;
 	}
+	
+	public static String threeingSentence(String str) {
+		//threeing
+		str = str.replaceAll("(?<=\\d)-(?=\\{)", " - "); //this is need to keep "-" in 5-{merous} after 3ed (3-{merous} and not 3 {merous}) 
+		//Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
+		Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
+		//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
+		//Pattern pattern5 = Pattern.compile("[\\d±\\+\\–\\-\\—°²:½/¼\"“”\\_´\\×µ%\\*\\{\\}\\[\\]=]+");
+		//Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");
+		Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?![a-z])"); //not including individual "-", would turn 3-branched to 3 branched 
+		//Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])"); //condense multiple 0s.
+		Pattern pattern6 = Pattern.compile("(?<=\\s)[0\\s]+(?=\\s)");
+		//Pattern pattern5 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
+         //[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
+		Pattern pattern7 = Pattern.compile("[(\\[]\\s*\\d+\\s*[)\\]]"); // deal with ( 2 ), (23) is dealt with by NumericalHandler.numberpattern
+		
+
+		Matcher	 matcher1 = pattern3.matcher(str);
+         //str = matcher1.replaceAll(" 0 ");
+		str = matcher1.replaceAll("0");
+		matcher1.reset();
+         
+         /*matcher1 = pattern4.matcher(str);
+         str = matcher1.replaceAll("0");
+         matcher1.reset();*/
+         
+         matcher1 = pattern5.matcher(str);//single numbers
+         str = matcher1.replaceAll("0");
+         matcher1.reset();
+         
+         /* should not remove space around 0, because: pollen 70-80% 3-porate should keep 2 separate numbers: 70-80% and 3-porate
+		* 
+         String scptemp = str;
+         matcher1 = pattern6.matcher(str);//remove space around 0
+         str = matcher1.replaceAll("0");
+         if(!scptemp.equals(str)){
+		   System.out.println();
+         }
+         matcher1.reset();*/
+         
+         matcher1 = pattern7.matcher(str);//added for (2)
+         str = matcher1.replaceAll("0");
+         matcher1.reset();
+         //further normalization
+         
+         
+         //3 -{many} or 3- {many}=> {3-many}
+         str = str.replaceAll("0\\s*-\\s*", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
+         
+         //2-or-{3-lobed} => {2-or-3-lobed}
+         str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{]\\b(?=3-(to|or)-3\\S+\\})", " {");
+		return str;
+	}
 
 	public static void main(String[] argv){
 		//Utilities.lookupCharacter(w, conn, characterhash)
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
-		System.out.println(Utilities.toSingular("septa"));
+		System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
 	}
 }

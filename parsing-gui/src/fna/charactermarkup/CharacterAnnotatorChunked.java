@@ -295,9 +295,15 @@ public class CharacterAnnotatorChunked {
 				}
 			}else if(ck instanceof ChunkNonSubjectOrgan){
 				String content = ck.toString().replaceFirst("^u\\[", "").replaceFirst("\\]$", "");
-				String m = content.substring(0, content.indexOf("o[")).replaceAll("m\\[", "{").replaceAll("\\]", "}");
-				String o = content.substring(content.indexOf("o[")).replaceAll("o\\[", "").replaceAll("\\]", "");
-				ArrayList<Element> structures = createStructureElements(m+o/*, false*/);
+				String structure = "";
+				if(content.indexOf("o[")>=0){
+					String m = content.substring(0, content.indexOf("o[")).replaceAll("m\\[", "{").replaceAll("\\]", "}");
+					String o = content.substring(content.indexOf("o[")).replaceAll("o\\[", "").replaceAll("\\]", "");
+					structure = m+o;
+				}else{
+					structure = content;
+				}
+				ArrayList<Element> structures = createStructureElements(structure/*, false*/);
 				updateLatestElements(structures);
 			}else if(ck instanceof ChunkPrep){
 				/*String content = ck.toString();
@@ -403,7 +409,7 @@ public class CharacterAnnotatorChunked {
 				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]$", ""), this.subjects);
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkBracketed){
-				annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn, glosstable), true); //no need to updateLatestElements
+				annotateByChunk(new ChunkedSentence(ck.getChunkedTokens(), ck.toString(), conn, glosstable, this.tableprefix), true); //no need to updateLatestElements
 				this.inbrackets =false;
 			}else if(ck instanceof ChunkSBAR){
 				ArrayList<Element> subjectscopy = this.subjects;
@@ -433,21 +439,29 @@ public class CharacterAnnotatorChunked {
 						//this will not work for misidentified nouns before "that/which" statements, in "of/among which", and other cases
 					}
 				}
-				//this.unassignedmodifiers = null;
-				
-				//there may be a difference in length
-				/*int diff = ck.toString().length();
-				Iterator<String> it = ck.getChunkedTokens().iterator();
-				while(it.hasNext()){
-					diff = diff - (it.next().length()+1);
-				}
-				String content = ck.toString().substring(diff+1);//that resembles tacks, "that" not in chunkedtokens
-				String connector=ck.toString().substring(0, diff+1).trim();*/
-				String content = ck.toString().substring(ck.toString().indexOf(" ")+1);
 				String connector = ck.toString().substring(0,ck.toString().indexOf(" "));
-				ChunkedSentence newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable);
+				String content = ck.toString().substring(ck.toString().indexOf(" ")+1);
+				ChunkedSentence newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable, this.tableprefix);
+				if(connector.compareTo("when")==0){//rewrite content and its chunkedTokens
+					int end = ck.toString().indexOf(",") > 0? ck.toString().indexOf(",") : ck.toString().indexOf(".");
+					String modifier = ck.toString().substring(0, end).trim();//when mature, 
+					content = ck.toString().substring(ck.toString().indexOf(",")+1).trim();
+					//adjust chunkedTokens
+					ck.setChunkedTokens(Utilities.breakText(content));					
+					newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable, this.tableprefix);
+
+					//attach modifier to the last characters
+					if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("character")==0){
+						Iterator<Element> it = this.latestelements.iterator();
+						while(it.hasNext()){
+							this.addAttribute(it.next(), "modifier", modifier);
+						}
+					}else{ //this when clause is a modifier for the subclause
+						newcs.unassignedmodifier = modifier;						
+					}
+				}
 				newcs.setInSegment(true);
-				if(connector.compareTo("where") == 0 || connector.compareTo("when") == 0){
+				if(connector.compareTo("where") == 0){
 					//retrieve the last non-comma, non-empty chunk					
 					int p = cs.getPointer()-2;
 					String last = "";
@@ -1124,9 +1138,13 @@ public class CharacterAnnotatorChunked {
 	private void processPrep(ChunkPrep ck) {
 		String ckstring = ck.toString(); //r[{} {} p[of] o[.....]]
 		String modifier = ckstring.substring(0, ckstring.indexOf("p[")).replaceFirst("^r\\[", "").replaceAll("[{}]", "").trim();
-		String pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
-		String object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";	
-
+		//sometime o[] is not here as in ckstring=r[p[at or above]] {middle}
+		//String pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
+		//String object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";	
+		int objectindex = ckstring.indexOf("]", ckstring.indexOf("p[")+1);
+		String pp = ckstring.substring(ckstring.indexOf("p["), objectindex).replaceAll("(\\w\\[|])", "");
+		String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\w\\[|])", "")+"]";
+		
 		//TODO: r[p[in] o[outline]] or r[p[with] o[irregular ventral profile]]
 		if(characterPrep(ckstring)){
 			return;		
@@ -1460,7 +1478,7 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private void addAttribute(Element e, String attribute, String value) {
-		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+;\\s+", ";");
+		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+;\\s+", ";").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+")\\b", "").trim();
 		if(this.evaluation && attribute.startsWith("constraint_")) attribute="constraint"; 
@@ -1505,14 +1523,18 @@ public class CharacterAnnotatorChunked {
 				for(int j = 0; j<organsafterOf.size(); j++){
 					String a = organsafterOf.get(j).getAttributeValue("name");
 					//String pattern = a+"[ ]+of[ ]+[0-9]+.*"+b+"[,\\.]"; //consists-of
-					String pattern = "("+b+"|"+Utilities.plural(b)+")"+"[ ]+of[ ]+[0-9]+.*"+"("+a+"|"+Utilities.plural(a)+")"+"[ ]?(,|;|\\.|and|or|plus)"; //consists-of
-					String query = "select * from "+this.tableprefix+"_sentence where sentence rlike '"+pattern+"'";
-					ResultSet rs  = stmt.executeQuery(query);
-					if(rs.next()){
-						result = "consist_of";
-						break;
+					if(a.length()>0 && b.length()>0){
+						String pb = Utilities.plural(b);
+						String pa = Utilities.plural(a);
+						String pattern = "("+b+"|"+pb+")"+"[ ]+of[ ]+[0-9]+.*"+"("+a+"|"+pa+")"+"[ ]?(,|;|\\.|and|or|plus)"; //consists-of
+						String query = "select * from "+this.tableprefix+"_sentence where sentence rlike '"+pattern+"'";
+						ResultSet rs  = stmt.executeQuery(query);
+						if(rs.next()){
+							result = "consist_of";
+							break;
+						}
+						rs.close();
 					}
-					rs.close();
 				}				
 			}	
 			stmt.close();

@@ -25,7 +25,7 @@ import org.jdom.output.XMLOutputter;
 public class NumericalHandler  {
 
 	//static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
-	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
+	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
 	static private boolean debug = false;
 	
 	public NumericalHandler() {
