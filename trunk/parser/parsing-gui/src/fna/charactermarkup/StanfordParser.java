@@ -55,7 +55,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = false;
+	private boolean finalize = true;
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = false;
@@ -102,9 +102,6 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			while(rs.next()){
 				String src = rs.getString(1);
 				String str = rs.getString(2);
-				if(src.compareTo("157.txt-22")!=0){
-					continue;
-				}
 				//TODO: may need to fix "_"
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
@@ -225,7 +222,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				}else{
 					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
 					//if(i !=2793 && text.startsWith("(ROOT")){//FNAv19 865[162.txt-0], 310, 1638 (SentenceOrganStateMarkup); 5262[466.txt-14]
-					if(i !=2562 && i!=7555 && i!=7838 && text.startsWith("(ROOT")){//treatiseh
+					if(/*194.txt-5*&&*/ text.startsWith("(ROOT")){//treatiseh
 					//if(/*i != 2468 && i != 3237 &&i != 9555 && i != 9504 &&*/ i !=2018 && i !=2793 && text.startsWith("(ROOT")){//bhl	
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);

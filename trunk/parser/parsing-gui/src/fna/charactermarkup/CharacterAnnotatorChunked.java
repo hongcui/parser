@@ -650,7 +650,7 @@ public class CharacterAnnotatorChunked {
 		if(n.indexOf("constraint")>=0){
 			n = n.replaceFirst("constraint\\[", "").replaceFirst("\\]$", ""); //n holds times....
 		}
-		if(n.indexOf("n[")==0){//1.5–2.5 times n[{longer} than (throat)]
+		if(n.indexOf("n[")>=0 ){//1.5–2.5 times n[{longer} than (throat)]
 			//content = "n["+content.replace("n[", "");
 			content = v.replaceFirst("(^| )(?=\\d)", " size[")+"] constraint["+n.replaceFirst("n\\[", "").trim(); //m[usually] 1.5-2
 			return this.processTHAN(content, parents);
@@ -667,8 +667,7 @@ public class CharacterAnnotatorChunked {
 			n = "constraint["+n.replaceAll("[o|z]\\[", ""); //times o[(bodies)] => constraint[times (bodies)]
 			content = "size["+v+"] "+n;
 			return this.processTHAN(content, parents);	
-		}
-		else if(n.indexOf("a[")==0 || n.indexOf(" a[")>0){ //characters:1–3 times {pinnately} {lobed}
+		}else if(n.indexOf("a[")==0 || n.indexOf(" a[")>0){ //characters:1–3 times {pinnately} {lobed}
 			String times = n.substring(0, n.indexOf(' '));
 			n = n.substring(n.indexOf(' ')+1);
 			n = n.replaceFirst("a\\[", "").replaceFirst("\\]$", "");
@@ -745,11 +744,11 @@ public class CharacterAnnotatorChunked {
 				Iterator<Element> it = charas.iterator();
 				while(it.hasNext()){
 					Element e = it.next();
-					if(parts[1].indexOf("(")>=0){
-						this.addAttribute(e, "constraint", this.listStructureNames(parts[1]));
-					}else{
+					//if(parts[1].indexOf("(")>=0){
+					//	this.addAttribute(e, "constraint", this.listStructureNames(parts[1]));
+					//}else{
 						this.addAttribute(e, "constraint", parts[1].replaceAll("(\\(|\\)|\\{|\\}|\\w*\\[|\\])", ""));
-					}
+				   //}
 					if(object!=null){
 						this.addAttribute(e, "constraintid", this.listStructureIds(structures));//TODO: check: some constraints are without constraintid
 					}
