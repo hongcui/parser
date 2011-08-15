@@ -76,11 +76,13 @@ public class VolumeMarkupDbAccessor {
     	ResultSet rs = null;
 		try {
 			conn = DriverManager.getConnection(url);
-			String sql = "select distinct tag from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' order by tag";
+			String sql = "select distinct tag as structure from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' " +
+			"union select plural as structure from "+this.tablePrefix+"_singularplural"+","+ this.tablePrefix+"_sentence where singular=tag "+
+			"order by structure"; 		
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			while (rs.next()) {
-				String tag = rs.getString("tag");
+				String tag = rs.getString("structure");
 				populateCurationList(tagList, tag); //select tags for curation
 			}
 			sql = "select distinct word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos in ('p', 's') and saved_flag !='red' order by word";
