@@ -82,7 +82,9 @@ public class POSTagger4StanfordParser {
 			lookupCharacters(str);//populate charactertokens
 	        if(this.charactertokensReversed.contains("color") || this.charactertokensReversed.contains("coloration")){
 	        	str = normalizeColorPatterns();
+	        	lookupCharacters(str);
 	        }
+	        
 	        if(str.indexOf(" to ")>=0 ||str.indexOf(" or ")>=0){
 	        	if(this.printList){
 					System.out.println(str);
@@ -362,7 +364,10 @@ public class POSTagger4StanfordParser {
 		ArrayList<String> amb = new ArrayList<String>();
 		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
 			String word = this.chunkedtokens.get(i);
-			if(word.indexOf('{')>=0 && word.indexOf('<')<0){
+			if(word.indexOf("~list~")>0){
+				String ch = word.substring(0, word.indexOf("~list~")).replaceAll("\\W", "").replaceFirst("ttt$", "");
+				this.charactertokensReversed.add(ch);
+			}else if(word.indexOf('{')>=0 && word.indexOf('<')<0){
 				String ch = Utilities.lookupCharacter(word, conn, this.characterhash, glosstable, tableprefix); //remember the char for this word (this word is a word before (to|or|\\W)
 				if(ch==null){
 					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
