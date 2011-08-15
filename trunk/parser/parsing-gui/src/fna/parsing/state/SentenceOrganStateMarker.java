@@ -54,8 +54,8 @@ public class SentenceOrganStateMarker {
 		this.fixadjnn = fixadjnn;
 		try{
 				Statement stmt = conn.createStatement();
+				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
 				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
-				stmt.execute("delete from "+this.tableprefix+"_markedsentence");
 				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 				colors = this.colorsFromGloss();
 		}catch(Exception e){
