@@ -1299,7 +1299,7 @@ public class MainForm {
 		/*"run perl" subtab*/
 		markUpPerlLog = new Text(composite_9, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
 		markUpPerlLog.setBounds(10, 103, 744, 250);
-		markUpPerlLog.setEnabled(false);
+		markUpPerlLog.setEnabled(true);
 
 		markupProgressBar = new ProgressBar(composite_9, SWT.NONE);
 		markupProgressBar.setBounds(7, 434, 432, 17);
@@ -1500,7 +1500,7 @@ public class MainForm {
 		
 		/*"load results from last time" button*/
 		Button tab5_findDescriptor_loadFromLastTimeButton = new Button(composite_7, SWT.NONE);
-		tab5_findDescriptor_loadFromLastTimeButton.setBounds(182, 418, 152, 25);
+		tab5_findDescriptor_loadFromLastTimeButton.setBounds(171, 433, 155, 25);
 		tab5_findDescriptor_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
 		tab5_findDescriptor_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
 		tab5_findDescriptor_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
@@ -1519,7 +1519,7 @@ public class MainForm {
 		/*"mark as bad" button */
 		final Button tab5_findDescriptor_MarkAsGoodButton = new Button(composite_7, SWT.NONE);//this button is on the markup-descriptor tab
 		tab5_findDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkBad"));
-		tab5_findDescriptor_MarkAsGoodButton.setBounds(344, 433, 120, 25);
+		tab5_findDescriptor_MarkAsGoodButton.setBounds(342, 433, 132, 25);
 		tab5_findDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkBadTTT"));
 		tab5_findDescriptor_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1550,7 +1550,7 @@ public class MainForm {
 		/*"mark others as good" button*/
 		final Button tab5_findDescriptor_MarkAsBadButton = new Button(composite_7, SWT.NONE);
 		tab5_findDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersGood"));
-		tab5_findDescriptor_MarkAsBadButton.setBounds(472, 433, 140, 25);
+		tab5_findDescriptor_MarkAsBadButton.setBounds(479, 433, 140, 25);
 		tab5_findDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersGoodTTT"));
 		tab5_findDescriptor_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1568,7 +1568,7 @@ public class MainForm {
 		
 		/*save button*/
 		Button tab5_findDescriptor_SaveButton = new Button(composite_7, SWT.NONE);
-		tab5_findDescriptor_SaveButton.setBounds(619, 433, 135, 25);
+		tab5_findDescriptor_SaveButton.setBounds(622, 433, 132, 25);
 		tab5_findDescriptor_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
 		tab5_findDescriptor_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findDescriptor_SaveButton.addSelectionListener(new SelectionAdapter() {
@@ -1756,7 +1756,7 @@ public class MainForm {
 		
 		/*"load from last time" button*/
 		Button tab5_findMoreStructure_loadFromLastTimeButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(120, 433, 144, 25);
+		tab5_findMoreStructure_loadFromLastTimeButton.setBounds(171, 433, 155, 25);
 		tab5_findMoreStructure_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
 		tab5_findMoreStructure_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
 		tab5_findMoreStructure_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
@@ -1773,7 +1773,7 @@ public class MainForm {
 		});
 		/*"mark as good*/
 		Button tab5_findMoreStructure_MarkAsGoodButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsGoodButton.setBounds(270, 433, 130, 25);
+		tab5_findMoreStructure_MarkAsGoodButton.setBounds(342, 433, 132, 25);
 		tab5_findMoreStructure_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
 		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
 		tab5_findMoreStructure_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
@@ -1793,7 +1793,7 @@ public class MainForm {
 		
 		/*mark others as bad*/
 		Button tab5_findMoreStructure_MarkAsBadButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_MarkAsBadButton.setBounds(405, 433, 130, 25);
+		tab5_findMoreStructure_MarkAsBadButton.setBounds(479, 433, 132, 25);
 		tab5_findMoreStructure_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersBadTTT"));
 		tab5_findMoreStructure_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersBad"));
 	    tab5_findMoreStructure_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
@@ -1818,7 +1818,7 @@ public class MainForm {
 		});
 
 		Button tab5_findMoreStructure_SaveButton = new Button(composite_10, SWT.NONE);
-		tab5_findMoreStructure_SaveButton.setBounds(541, 433, 156, 25);
+		tab5_findMoreStructure_SaveButton.setBounds(622, 433, 132, 25);
 		tab5_findMoreStructure_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
 		tab5_findMoreStructure_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findMoreStructure_SaveButton.addSelectionListener(new SelectionAdapter() {
@@ -1874,7 +1874,7 @@ public class MainForm {
 		});
 		/*load button*/
 		Button tab5_findMoreDescriptor_loadFromLastTimeButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_loadFromLastTimeButton.setBounds(114, 433, 180, 25);
+		tab5_findMoreDescriptor_loadFromLastTimeButton.setBounds(171, 433, 155, 25);
 		tab5_findMoreDescriptor_loadFromLastTimeButton.setText(ApplicationUtilities.getProperty("termCurationLoad"));
 		tab5_findMoreDescriptor_loadFromLastTimeButton.setToolTipText(ApplicationUtilities.getProperty("termCurationLoadTTT"));
 		tab5_findMoreDescriptor_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
@@ -1892,7 +1892,7 @@ public class MainForm {
 
 		/*mark as good*/
 		Button tab5_findMoreDescriptor_MarkAsGoodButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_MarkAsGoodButton.setBounds(300, 433, 134, 25);
+		tab5_findMoreDescriptor_MarkAsGoodButton.setBounds(342, 433, 132, 25);
 		tab5_findMoreDescriptor_MarkAsGoodButton.setText(ApplicationUtilities.getProperty("termCurationMarkGood"));
 		tab5_findMoreDescriptor_MarkAsGoodButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkGoodTTT"));
 		tab5_findMoreDescriptor_MarkAsGoodButton.addSelectionListener(new SelectionAdapter() {
@@ -1921,7 +1921,7 @@ public class MainForm {
 		});
 		/*mark others as bad*/
 		Button tab5_findMoreDescriptor_MarkAsBadButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_MarkAsBadButton.setBounds(440, 433, 142, 25);
+		tab5_findMoreDescriptor_MarkAsBadButton.setBounds(479, 433, 140, 25);
 		tab5_findMoreDescriptor_MarkAsBadButton.setText(ApplicationUtilities.getProperty("termCurationMarkOthersBad"));
 		tab5_findMoreDescriptor_MarkAsBadButton.setToolTipText(ApplicationUtilities.getProperty("termCurationMarkOthersBadTTT"));
 		tab5_findMoreDescriptor_MarkAsBadButton.addSelectionListener(new SelectionAdapter() {
@@ -1939,7 +1939,7 @@ public class MainForm {
 		});
 
 		Button tab5_findMoreDescriptor_SaveButton = new Button(composite_11, SWT.NONE);
-		tab5_findMoreDescriptor_SaveButton.setBounds(592, 433, 160, 25);
+		tab5_findMoreDescriptor_SaveButton.setBounds(622, 433, 132, 25);
 		tab5_findMoreDescriptor_SaveButton.setText(ApplicationUtilities.getProperty("termCurationSave"));
 		tab5_findMoreDescriptor_SaveButton.setToolTipText(ApplicationUtilities.getProperty("termCurationSaveTTT"));
 		tab5_findMoreDescriptor_SaveButton.addSelectionListener(new SelectionAdapter() {
@@ -2076,7 +2076,7 @@ public class MainForm {
 			}
 		});
 		saveTagButton.setBounds(580, 251, 174, 23);
-		saveTagButton.setText("Save tagged sentences");
+		saveTagButton.setText("Save Tagged Sentences");
 
 		final Button loadTagButton = new Button(composite_6, SWT.NONE);
 		loadTagButton.setToolTipText("Load sentences to be tagged");
@@ -3258,7 +3258,7 @@ public class MainForm {
 		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
 				databasename, shell.getDisplay(), markUpPerlLog, 
 				dataPrefixCombo.getText().replaceAll("-", "_").trim(), /*findDescriptorTable,*/ this);
-		vd.start();
+		vd.start();		
 	}
 	
 	private void startFinalize() {
