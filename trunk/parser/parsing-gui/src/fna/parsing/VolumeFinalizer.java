@@ -40,11 +40,13 @@ public class VolumeFinalizer extends Thread {
     private Connection conn = null;
     private String glossaryPrefix;
     private static String version="$Id$";
+    private static boolean standalone = false;
+    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5";
     
     public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn, String glossaryPrefix) {
         /*glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO
         */
-        this.listener = listener;
+        if(!standalone) this.listener = listener;
         this.dataPrefix = dataPrefix;
         this.conn = conn;
         this.glossaryPrefix = glossaryPrefix;
@@ -53,12 +55,14 @@ public class VolumeFinalizer extends Thread {
 
 	
 	public void run () {
-		listener.setProgressBarVisible(true);
+		if(!standalone) listener.setProgressBarVisible(true);
 		outputFinal();
 
 
         //check for errors
-        File fileList= new File(Registry.TargetDirectory+"\\final\\");
+        File fileList= null;
+        if(!standalone) fileList = new File(Registry.TargetDirectory+"\\final\\");
+        if(standalone) fileList = new File(this.standalonefolder+"\\final\\");
         if(fileList.list().length==0)
         {
             //show error popup
@@ -66,9 +70,9 @@ public class VolumeFinalizer extends Thread {
             ApplicationUtilities.showPopUpWindow("Error executing step 7", "Error",SWT.ERROR);
             
         }
-        listener.setProgressBarVisible(false);
+        if(!standalone) listener.setProgressBarVisible(false);
 
-        //listener.setProgressBarVisible(false);
+
 
     }
     /**
@@ -76,7 +80,7 @@ public class VolumeFinalizer extends Thread {
      * @throws ParsingException
      */
     public void outputFinal() throws ParsingException {
-		listener.progress(20);
+    	if(!standalone)  listener.progress(10);
 		//updateGlossary(); //active this later 4/2011
 		
 		String posedfile = Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("POSED");
@@ -90,13 +94,15 @@ public class VolumeFinalizer extends Thread {
 		*/
 		String glosstable = this.glossaryPrefix;
 		//don't need to rerun them--they were ran at step 5-6, unknown removal and character curation
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
-		sosm.markSentences();
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
+		//sosm.markSentences();
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable);
 		sp.POSTagging();
+		if(!standalone) listener.progress(50);
 		sp.parsing();
+		if(!standalone) listener.progress(80);
 		sp.extracting();
-		listener.progress(40);
+		if(!standalone) listener.progress(100);
 	}
 	
 	
@@ -151,14 +157,15 @@ public class VolumeFinalizer extends Thread {
     }
 
 	public static Element getBaseRoot(String fileindex, int order){
-		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
-		//File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
+		File source = null;
+		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
+		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
 		int total = source.listFiles().length;
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			System.out.println("finalizing "+fileindex);
 			
-			listener.progress(40+(order*60/total));
+			if(!standalone) listener.progress(40+(order*60/total));
 			File file = new File(source, fileindex + ".xml");
 			Document doc = builder.build(file);
 			
@@ -175,27 +182,29 @@ public class VolumeFinalizer extends Thread {
 
 	
 	public static void outputFinalXML(Element root, String fileindex, String targetstring) {
-		
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		//File target = new File("C:\\DATA\\FNA-v19\\target\\final");
+		File target = null;
+		if(!standalone) target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		if(standalone) target = new File(standalonefolder+"\\target\\final");
 		File result = new File(target, fileindex + ".xml");
 		Comment comment = new Comment("produced by "+VolumeFinalizer.version+System.getProperty("line.separator"));
 		//Comment comment = null;
 		ParsingUtil.outputXML(root, result, comment);
-		listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
+		if(!standalone) listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
 	}
 
 	public void replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
-		File source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
-		//File source = new File("C:\\DATA\\FNA-v19\\target\\transformed"); 
+		File source = null;
+		File target = null;
+		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
+		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
 		int total = source.listFiles().length;
-		File target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		//File target = new File("C:\\DATA\\FNA-v19\\target\\final");
+		if(!standalone)  target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
+		if(standalone)  target = new File(standalonefolder+"\\target\\final");
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			for (int count = 1; count <= total; count++) {
 				System.out.println("finalizing "+count);
-				listener.progress(40+(count*60/total));
+				if(!standalone) listener.progress(40+(count*60/total));
 				File file = new File(source, count + ".xml");
 				Document doc = builder.build(file);
 				Element root = doc.getRootElement();	
@@ -229,7 +238,7 @@ public class VolumeFinalizer extends Thread {
 				File result = new File(target, count + ".xml");
 				ParsingUtil.outputXML(root, result, null);
 
-				listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
+				if(!standalone) listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
 			}
         } catch (Exception e) {
             e.printStackTrace();
