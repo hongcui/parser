@@ -186,7 +186,7 @@ public class HabitatParser4FNA implements Learn2Parse{
 			if(ns[i].compareTo("") !=0){
 				//escape 
 				ns[i] = ns[i].replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]");
-				s = s.replaceAll("\\b"+ns[i]+"\\b", l+ns[i]+r);
+				s = s.replaceAll("\\b"+Pattern.quote(ns[i])+"\\b", l+ns[i]+r);
 			}
 		}
 		return s;
