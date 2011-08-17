@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -158,7 +159,6 @@ public class VolumeTransformer extends Thread {
 					Element pe = (Element) iter.next();
 					String style = pe.getChildText("style");
 					String text = getChildText(pe, "text");
-					
 					
 					if (style.matches(start) ) {
 						// process the name tag
