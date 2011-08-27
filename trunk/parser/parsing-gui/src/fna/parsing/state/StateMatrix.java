@@ -28,6 +28,7 @@ public class StateMatrix {
 	private String tableprefix = null;
 	private String glossarytable = null;
 	private ArrayList<String> freeterms = new ArrayList<String>();
+	private String blockedterms = "absent|lacking|present"; //may be paired with any term, therefore should be blocked
 	//private Hashtable<State, Hashtable<State, CoocurrenceScore>> matrix = null;
 	
 	StateMatrix(Connection conn, String tableprefix,String glosstable){
@@ -39,17 +40,19 @@ public class StateMatrix {
 		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
-			//stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
-			stmt.execute("delete from "+tableprefix+"_terms");
-			//stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
-			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
-			stmt.execute("delete from "+tableprefix+"_grouped_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, decision varchar(200), primary key(groupId))");
-			stmt.execute("delete from "+tableprefix+"_group_decisions");
+			stmt.execute("drop table if exists "+tableprefix+"_terms");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
+			stmt.execute("drop table if exists "+tableprefix+"_grouped_terms");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
+			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+			stmt.execute("drop table if exists "+tableprefix+"_term_category");
+			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200))");
+			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
-		}		
+		}
+		
 	}
 
 	/**
@@ -62,18 +65,21 @@ public class StateMatrix {
 			State s = (State)it.next();
 			states.add(s);
 		}
-		this.conn = conn;
-		Statement stmt = null;
+		this.conn = conn;		
 		this.tableprefix = tableprefix;
 		this.glossarytable = glosstable;
+		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
+			stmt.execute("drop table if exists "+tableprefix+"_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
-			stmt.execute("delete from "+tableprefix+"_terms");
+			stmt.execute("drop table if exists "+tableprefix+"_grouped_terms");
 			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
-			//stmt.execute("delete from terms");
+			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
-			//stmt.execute("delete from terms");
+			stmt.execute("drop table if exists "+tableprefix+"_term_category");
+			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200))");
+			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -244,17 +250,22 @@ public class StateMatrix {
 			Cell c = it.next();
 			State node1  = this.states.get(c.getCindex());
 			State node2 = this.states.get(c.getRindex());
-			cooccurTerms.append("'"+node1.getName()+"',");
-			cooccurTerms.append("'"+node2.getName()+"',");
-			int weight = c.getScore().valueSum();
-			//if(weight>1){
-			//	System.out.println(weight+" links "+node1.getName()+" and "+node2.getName());
-			//}
-			g.addVertex(node1);
-			g.addVertex(node2);
-			for(int i = 0; i<weight; i++){
-				g.addEdge(new MyLink(1, edgeCount++), node1, node2);
-			}			
+			String term1 = node1.getName();
+			String term2 = node2.getName();
+			if(!term1.matches("("+this.blockedterms+")") && !term2.matches("("+this.blockedterms+")") &&
+			   (!inGlossary(term1) || !inGlossary(term2))){
+				cooccurTerms.append("'"+node1.getName()+"',");
+				cooccurTerms.append("'"+node2.getName()+"',");
+				int weight = c.getScore().valueSum();
+				//if(weight>1){
+				System.out.println(weight+" links "+node1.getName()+" and "+node2.getName());
+				//}
+				g.addVertex(node1);
+				g.addVertex(node2);
+				for(int i = 0; i<weight; i++){
+					g.addEdge(new MyLink(1, edgeCount++), node1, node2);
+				}
+			}
 		}
 		/*
 		//visualize the graph
@@ -319,7 +330,7 @@ public class StateMatrix {
 		//4. Voltage Clustering: 21  groups of varied sizes
 		System.out.println("Voltage Clustering");
 		Collection clusters = null;
-		if(g.getEdgeCount()>4){ //the voltage clustering algorithm only works when this condition is met
+		if(g.getEdgeCount()>4){ //the voltage clustering algorithm works only when this condition is met
 			VoltageClusterer vc = new VoltageClusterer(g, 50);
 			if(g.getEdgeCount()>4)
 				clusters = vc.cluster(50);
@@ -363,12 +374,28 @@ public class StateMatrix {
 		saveClustersInDB(clusters);
 		return clusters==null? new ArrayList<Set<State>>() : clusters;
 	}
+	
+	private boolean inGlossary(String term) {
+		term = term.replaceAll(".*_", "");
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select term from "+this.glossarytable+" where term ='"+term+"'");
+			if(rs.next()){
+				return true;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	/**
 	 * the last set in the clusters may contain a set of freestates
 	 * @param clusters
 	 */
 	private void saveClustersInDB(Collection<Set<State>> clusters){
 		try{
+			Statement stmt = conn.createStatement();
 			int gcount = 1;
 			Iterator<Set<State>> sets = clusters.iterator();
 			while(sets.hasNext()){
@@ -376,11 +403,20 @@ public class StateMatrix {
 				String stategroup = formGroup(states);
 				if(stategroup != null){
 					//collect info from _terms table for a set of co-occured terms, insert this set as one group
-					Statement stmt = conn.createStatement();
-					String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) (select distinct term, cooccurTerm, frequency, sourceFiles from "+
-					this.tableprefix+"_terms where cooccurterm in ("+stategroup+") or term in ("+stategroup+"))";
-					System.out.println("query::"+q);
-					stmt.execute(q);
+					String[] terms = stategroup.replace("'", "").split("\\s*,\\s*");
+					Arrays.sort(terms);
+					for(int i = 0; i < terms.length; i++){
+						for(int j = i+1; j >terms.length; j++){
+							if(!inGlossary(terms[i]) || !inGlossary(terms[j])){
+								String[] info = freqsource(terms[i], terms[j]); //search for frequency and source files info for the term pair
+								if(info!=null){
+									String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+terms[i]+"', '"+terms[j]+"',"+Integer.parseInt(info[0])+",'"+info[1]+"')";
+									System.out.println("query::"+q);
+									stmt.execute(q);
+								}
+							}
+						}
+					}
 					ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
 					//set group id
 					if(rs.next()){
@@ -391,7 +427,7 @@ public class StateMatrix {
 			}
 			//lastly, add this.freeterms as a set
 			Iterator<String> it = this.freeterms.iterator();
-			Statement stmt = conn.createStatement();
+			//Statement stmt = conn.createStatement();
 			while(it.hasNext()){
 				String w = it.next();
 				ResultSet rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
@@ -409,7 +445,8 @@ public class StateMatrix {
 			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
 			if(rs.next()){
 				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
-			}		
+			}
+			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -418,12 +455,36 @@ public class StateMatrix {
 		
 			
 	
+	/**
+	 * not to include the same term pair in two different clusters/groups. This is done by using the "grouped" column in the _terms table
+	 * @param term1
+	 * @param term2
+	 * @return the frequency [0] the two terms appear as a pair in a list of source files[1]
+	 */
+	private String[] freqsource(String term1, String term2) {
+		String[] info = new String[2];
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
+			if(rs.next()){
+				info[0] = rs.getString(1);
+				info[1] = rs.getString(2);
+				stmt.executeQuery("update "+this.tableprefix+"_terms set grouped='y' where (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
+				stmt.close();
+				return info;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	/**
 	 * If all states are in the glossary, ignore this set.
 	 * Otherwise, form a group
+	 * 
 	 * @param states
-	 * @return
+	 * @return 't1', 't2', 't3',...,'tn'
 	 */
 	private String formGroup(Set<State> states) {
 		boolean keep = false;
