@@ -42,12 +42,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -101,7 +103,7 @@ public class MainForm {
 	}
 	private Combo combo;
 	
-	
+	private Connection conn;
 	private Combo modifierListCombo;
 	private Table finalizerTable;
 	private Table transformationTable;
@@ -202,6 +204,8 @@ public class MainForm {
 	private boolean [] sortedBy ;
 	/* This is the sort label picture */
 	private Label sortLabel;
+	/*this is the co-occur frequency label*/
+	private Label label; 
 	/* This will all the groups removed edges from the graph */
 	private static HashMap<String, ArrayList<String>> removedEdges 
 		= new HashMap<String, ArrayList<String>>();
@@ -253,6 +257,9 @@ public class MainForm {
 	private Text txtThisLastStep;
 	private Table findMoreStructureTable;
 	private Table findMoreDescriptorTable;
+	protected String[] categories; //used to populate decision list combo in step 6.
+	private boolean unpaired;
+	
 	
 	//////////////////methods///////////////////////
 	
@@ -278,7 +285,17 @@ public class MainForm {
 	 * Open the window
 	 */
 	public void open() throws Exception {
-		final Display display = Display.getDefault();
+		//final Display display = Display.getDefault();
+	    DeviceData data = new DeviceData();
+
+	    data.tracking = true;
+
+	    final Display display = new Display(data);
+
+	    Sleak sleak = new Sleak();
+
+	    sleak.open();
+	    
 		 red = display.getSystemColor(SWT.COLOR_RED);
 		 green = display.getSystemColor(SWT.COLOR_GREEN);
 		
@@ -492,7 +509,10 @@ public class MainForm {
 					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))){
 						charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossaryPrefixCombo.getText().trim());
 						// set the decisions combo
-						setCharacterTabDecisions();
+						categories = setCharacterTabDecisions();
+						comboDecision.setItems(categories);
+						comboDecision.setText(categories[0]);
+						processedGroups.clear();
 						// set the groups list
 						setCharactertabGroups();
 						// show the terms that co-occured in the first group
@@ -748,6 +768,7 @@ public class MainForm {
 					//should not rerun character grouping, should load results from terms table. Hong TODO 5/23/11
 					//set the decisions combo
 					//setCharacterTabDecisions();
+					processedGroups.clear();
 					//set the groups list
 					setCharactertabGroups();
 					// show the terms that co-occured in the first group
@@ -2255,17 +2276,65 @@ public class MainForm {
 		else{*/
 		btnSave.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
-				((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision(comboDecision.getText());
+				/*if(unpaired){ //use a different machanism to save the unpaired term/decisions 
+					Control[] children = termsGroup.getChildren();
+					//loop through children for Group (hold term1) and Text (holds category)
+					//save to the final term-category table
+					for(int i = 1; i < children.length; i++){
+						if(children[i] instanceof Text && children[i-1] instanceof Group){
+							String term = children[i-1].getToolTipText();
+							String decision = ((Text)(children[i])).getText();
+							charDb.saveTermCategory(groupsCombo.getText().replace("Group_", ""),term, decision);
+						}
+					}
+					//update processed group
+					String savedGroupName = groupsCombo.getText();
+					processedGroups.put(savedGroupName, savedGroupName);				
+					Set <String> processed = processedGroups.keySet();
+					processedGroupsTable.removeAll();
+					for (String groupName : processed) {
+						TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
+						item.setText(groupName);
+					}
+					//set "saved" in groupInfo
+					((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
+					((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision("done");
+
+				}else{*/
 				
-				ArrayList<TermsDataBean> terms = new ArrayList<TermsDataBean>();				
-				ArrayList <CoOccurrenceBean> cooccurrences = groupInfo.get(groupsCombo.getText()).getCooccurrences();								
 				try {
-					
+					String decision4group = comboDecision.getText();
+					if(unpaired){
+						Control[] children = termsGroup.getChildren();
+						//loop through children for Group (hold term1) and Text (holds category)
+						//save to the final term-category table
+						for(int i = 1; i < children.length; i++){
+							if(children[i] instanceof Text && children[i-1] instanceof Group){
+								String term = children[i-1].getToolTipText();
+								String decision = ((Text)(children[i])).getText();
+								int choice = 0;
+								if(decision.trim().length()<1){
+									choice = ApplicationUtilities.showPopUpWindow(
+											ApplicationUtilities.getProperty("popup.char.missing"),
+											ApplicationUtilities.getProperty("popup.header.warning"), 
+											SWT.YES | SWT.NO);
+								}
+								if(choice == SWT.NO) return;
+								charDb.saveTermCategory(groupsCombo.getText().replace("Group_", ""),term, decision);
+							}
+						}	
+						decision4group = "done";
+					}
+					ArrayList<TermsDataBean> terms = new ArrayList<TermsDataBean>();				
+					ArrayList <CoOccurrenceBean> cooccurrences = groupInfo.get(groupsCombo.getText()).getCooccurrences();								
+
+					((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setSaved(true);
+					((CharacterGroupBean)groupInfo.get(groupsCombo.getText())).setDecision(decision4group);
+
 					/*Save the decision first */
-					charDb.saveDecision(cooccurrences.get(0).getGroupNo(), comboDecision.getText());
+					charDb.saveDecision(cooccurrences.get(0).getGroupNo(), decision4group);
 					
-					/*Save the rest of the Character tab */
+					/*Save the terms remain in the group */
 					for (CoOccurrenceBean cbean : cooccurrences) {
 						TermsDataBean tbean = new TermsDataBean();
 						tbean.setFrequency(Integer.parseInt(cbean.getFrequency().getText()));
@@ -2289,7 +2358,7 @@ public class MainForm {
 						terms.add(tbean);
 					}
 					
-					/* Save to terms table */
+					/* update terms table, keeping on the terms remains in the group */
 					charDb.saveTerms(terms);
 					
 				} catch (Exception exe) {
@@ -2304,9 +2373,10 @@ public class MainForm {
 				for (String groupName : processed) {
 					TableItem item = new TableItem(processedGroupsTable, SWT.NONE);
 					item.setText(groupName);
-				}				
+				}		
+				//}//if(unpaired)
 
-				/** Logic for remaining terms goes here */
+				/** Logic for the terms removed from the groups goes here */
 				if (noOfTermGroups <= getNumberOfGroupsSaved() && isTermsNotGrouped()) {
 					int choice = 0;
 					if(charStatePopUp){
@@ -2340,6 +2410,7 @@ public class MainForm {
 
 				}
 			}
+
 		});
 	//	}
 		
@@ -3262,13 +3333,15 @@ public class MainForm {
 	}
 	
 	private void startFinalize() {
+		
 		ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
-		Connection conn = null;
+		//Connection conn = null;
 		try{
 			if(conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
+			this.mainDb.finalizeTermCategoryTable();
 			VolumeFinalizer vf = new VolumeFinalizer(listener, 
 					dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim());
 			vf.start();
@@ -3327,7 +3400,7 @@ public class MainForm {
 		try {
 			 if(mainDb.loadTagsTableData(tagTable)==0){
 				 //StateCollectorBootstrapper sct = new StateCollectorBootstrapper(ApplicationUtilities.getProperty("database.name"), MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim()); /*TODO: debug*/
-				Connection conn = null;
+				//Connection conn = null;
 				try{
 					if(conn == null){
 						Class.forName("com.mysql.jdbc.Driver");
@@ -3344,7 +3417,7 @@ public class MainForm {
 				 sct.collect();
 				 sct.saveStates();
 				  XMLFileCount = sct.grouping4GraphML();
-				 conn.close();
+				 //conn.close();
 				 
 			 }
 		} catch (Exception exe) {
@@ -3453,7 +3526,7 @@ public class MainForm {
 	/**
 	 * This function will set the decisions for the character tab, step 5.
 	 */
-	private void setCharacterTabDecisions() {
+	private String[] setCharacterTabDecisions() {
 		ArrayList<String> decisions = new ArrayList<String> ();
 		
 		try {
@@ -3467,8 +3540,9 @@ public class MainForm {
 		for (String decision : decisions) {
 			strDecisions[count++] = decision;
 		}
-		comboDecision.setItems(strDecisions);
-		comboDecision.setText(strDecisions[0]);
+		return strDecisions;
+		//comboDecision.setItems(strDecisions);
+		//comboDecision.setText(strDecisions[0]);
 	}
 	
 	/**
@@ -3679,6 +3753,10 @@ public class MainForm {
 	        removedTermsGroup.setBounds(rect);
 			
 		}
+		unpaired = false;
+		if(unPairedTerms(terms)){
+			unpaired = true;
+		}
 		
 		if (terms!=null && terms.size() != 0) {
 			int radio_button_count=0;
@@ -3686,12 +3764,10 @@ public class MainForm {
 				radio_button_count+=1;
 				CoOccurrenceBean cbean = new CoOccurrenceBean();
 				if (!(tbean.getTerm1() == null) && !tbean.getTerm1().equals("")) {
-					
-				Group term1Group = new Group(termsGroup, SWT.NONE);
-				term1Group.setToolTipText(tbean.getTerm1());
-				term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
-				cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
-
+					Group term1Group = new Group(termsGroup, SWT.NONE);
+					term1Group.setToolTipText(tbean.getTerm1());
+					term1Group.setBounds(term1.x, term1.y, term1.width, term1.height);
+					cbean.setTerm1(new TermBean(term1Group, removedTermsGroup, true, tbean.getTerm1()));
 				}
 				
 				if (!(tbean.getTerm2() == null) && !tbean.getTerm2().equals("")) {
@@ -3699,6 +3775,12 @@ public class MainForm {
 					term2Group.setToolTipText(tbean.getTerm2());
 					term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
 					cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
+				}else if(Integer.parseInt(groupsCombo.getText().replaceFirst("Group_", "")) ==noOfTermGroups && unpaired){ //fill combo boxes in place of term2 for the last group of the terms
+					Text term1decision = new Text(termsGroup, SWT.BORDER);
+					term1decision.setBounds(term2.x, term2.y+5, term2.width, term2.height-10);
+					term1decision.setToolTipText("select a category for the term");
+					term1decision.setEditable(true);
+					cbean.setText(term1decision);
 				}
 				
 				cbean.setGroupNo(tbean.getGroupId());
@@ -3714,10 +3796,25 @@ public class MainForm {
 						if (button.getSelection()) {
 							contextTable.removeAll();
 							try {
+								//first show glossary defintions for the two terms in a pair
+								String t1 = tbean.getTerm1();
+								String t2 = tbean.getTerm2();
+								if(conn == null){
+									Class.forName("com.mysql.jdbc.Driver");
+									String URL = ApplicationUtilities.getProperty("database.url");
+									conn = DriverManager.getConnection(URL);
+								}								
+								String ch1 = fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								String ch2 = fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
+								TableItem item = new TableItem(contextTable, SWT.NONE);
+								item.setText(new String[]{t1+":", ch1});
+								item = new TableItem(contextTable, SWT.NONE);
+								item.setText(new String[]{t2+":", ch2});
+								//then show source sentences for the two terms
 								
 								for (ContextBean cbean : contexts){
-									TableItem item = new TableItem(contextTable, SWT.NONE);
+									item = new TableItem(contextTable, SWT.NONE);
 									//@TODO: style text here:	not possible using tableItem
 									item.setText(new String[]{cbean.getSourceText(), cbean.getSentence()});
 								}
@@ -3739,7 +3836,7 @@ public class MainForm {
 					saved = true;
 				}
 				
-				Label label = new Label(termsGroup, SWT.NONE);
+				label = new Label(termsGroup, SWT.NONE);
 				label.setBounds(frequencyLabel.x, frequencyLabel.y, frequencyLabel.width, frequencyLabel.height);
 				label.setText(tbean.getFrequency()+ "");
 				label.setToolTipText("Frequency of co-occurrence");
@@ -3757,6 +3854,22 @@ public class MainForm {
 		removedScrolledComposite.setMinSize(removedTermsGroup.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		CharacterGroupBean charGrpBean = new CharacterGroupBean(cooccurrences, groupsCombo.getText(), saved);
 		groupInfo.put(groupsCombo.getText(), charGrpBean);
+	}
+	
+	/**
+	 * check and see if Terms contains only term1s
+	 * @param terms
+	 * @return
+	 */
+	private boolean unPairedTerms(ArrayList<TermsDataBean> terms) {
+		Iterator<TermsDataBean> it = terms.iterator();
+		while(it.hasNext()){
+			TermsDataBean tdb = it.next();
+			if(!(tdb.getTerm2()==null || tdb.getTerm2().length()==0)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -3829,6 +3942,7 @@ public class MainForm {
 	 * This function creates remaining terms group for the character tab.
 	 */
 	private void showRemainingTerms() {
+		unpaired = false;
 		ArrayList<TermsDataBean> terms = null;
 		term1.y = 10;
 		term2.y = 10;
@@ -3923,10 +4037,24 @@ public class MainForm {
 						if (button.getSelection()) {
 							contextTable.removeAll();
 							try {
+								//first show glossary defintions for the two terms in a pair
+								String t1 = tbean.getTerm1();
+								String t2 = tbean.getTerm2();
+								if(conn == null){
+									Class.forName("com.mysql.jdbc.Driver");
+									String URL = ApplicationUtilities.getProperty("database.url");
+									conn = DriverManager.getConnection(URL);
+								}								
+								String ch1 = fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								String ch2 = fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
-								
+								TableItem item = new TableItem(contextTable, SWT.NONE);
+								item.setText(new String[]{t1+":", ch1});
+								item = new TableItem(contextTable, SWT.NONE);
+								item.setText(new String[]{t2+":", ch2});
+								//then show source sentences for the two terms
 								for (ContextBean cbean : contexts){
-									TableItem item = new TableItem(contextTable, SWT.NONE);
+									item = new TableItem(contextTable, SWT.NONE);
 									item.setText(new String[]{cbean.getSourceText(), cbean.getSentence()});
 								}								
 								
