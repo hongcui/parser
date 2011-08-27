@@ -96,6 +96,7 @@ public class VolumeDehyphenizer extends Thread {
        	boolean done = dhf.dehyphen();//dhf waits for all unmatched brackets are fixed.
     	if(done){
     		VolumeMarkup vm = new VolumeMarkup(listener, display, perlLog, dataPrefix, this.glossaryTableName);
+    		resetPerlMessage(); //clean up perlLog box
     		vm.markup();
     		listener.setProgressBarVisible(false);
     	}
@@ -135,6 +136,14 @@ public class VolumeDehyphenizer extends Thread {
 			}});
 	}*/
 	
+    public void resetPerlMessage() {
+		display.syncExec(new Runnable() {
+			public void run() {
+				perlLog.setText("");
+			}
+		});
+	}
+    
 	public void showPerlMessage(final String message) {
 		display.syncExec(new Runnable() {
 			public void run() {
