@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 /* This bean represents a row in the Character tab terms area */
 
@@ -15,7 +16,7 @@ public class CoOccurrenceBean {
 	private String [] sourceFiles;
 	private int groupNo;
 	private String keep;
-	
+	private Text text4unpaired;
 	/**
 	 * @return the keep
 	 */
@@ -29,6 +30,13 @@ public class CoOccurrenceBean {
 		this.keep = keep;
 	}
 
+	public void setText(Text textbox){
+		this.text4unpaired = textbox;
+	}
+	
+	public Text getText(){
+		return this.text4unpaired;
+	}
 	public CoOccurrenceBean(TermBean term1, TermBean term2,
 			Button contextButton, Label frequency, String[] sourceFiles,
 			int groupNo, String keep) {

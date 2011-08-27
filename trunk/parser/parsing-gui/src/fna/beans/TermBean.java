@@ -107,6 +107,7 @@ public class TermBean {
 								 *  make the context and frequency label invisible*/
 								cbean.getFrequency().setVisible(false);
 								cbean.getContextButton().setVisible(false);
+								if(cbean.getText()!=null) cbean.getText().setVisible(false);
 							}
 							
 							break;
@@ -118,12 +119,14 @@ public class TermBean {
 							&& cbean.getTerm2().getTermText().equals(termText)){
 						cbean.getFrequency().setVisible(false);
 						cbean.getContextButton().setVisible(false);
+						if(cbean.getText()!=null) cbean.getText().setVisible(false);
 						break;
 					} else if (cbean.getTerm2() == null 
 							&& cbean.getTerm1().termGroup.getParent() != parentGroup
 							&& cbean.getTerm1().getTermText().equals(termText)){
 						cbean.getFrequency().setVisible(false);
 						cbean.getContextButton().setVisible(false);
+						if(cbean.getText()!=null) cbean.getText().setVisible(false);
 						break;
 					}
 
@@ -171,7 +174,7 @@ public class TermBean {
 						/* Make the context button and the frequency label visible again*/
 						cbean.getContextButton().setVisible(true);
 						cbean.getFrequency().setVisible(true);
-						
+						if(cbean.getText()!=null) cbean.getText().setVisible(true);						
 						break;
 					}
 				}				
@@ -182,12 +185,14 @@ public class TermBean {
 						&& cbean.getTerm2().getTermText().equals(termText)){
 					cbean.getFrequency().setVisible(true);
 					cbean.getContextButton().setVisible(true);
+					if(cbean.getText()!=null) cbean.getText().setVisible(true);
 					break;
 				} else if (cbean.getTerm2() == null 
 						&& cbean.getTerm1().termGroup.getParent() == parentGroup
 						&& cbean.getTerm1().getTermText().equals(termText)) {
 					cbean.getFrequency().setVisible(true);
 					cbean.getContextButton().setVisible(true);
+					if(cbean.getText()!=null) cbean.getText().setVisible(true);
 					break;
 				}
 			}
