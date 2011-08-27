@@ -113,6 +113,7 @@ import prefuse.visual.VisualItem;
 			// -------------------------
 	        
 	        Display d = new Display(vis);
+	        
 	        //d.setSize(400, 400);
 	        d.setBounds(100, 100, 100, 100);
 	        d.pan(200, 200);
