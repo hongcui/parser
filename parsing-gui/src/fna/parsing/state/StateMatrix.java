@@ -431,10 +431,10 @@ public class StateMatrix {
 			while(it.hasNext()){
 				String w = it.next();
 				ResultSet rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
-						" where sentence like '%"+w+"%'");
+						" where sentence like '% "+w+" %'");
 				String srcs = "";
 				int count = 0;
-				if(rs.next()){
+				while(rs.next()){
 					srcs+=rs.getString("source")+",";
 					count++;
 				}
