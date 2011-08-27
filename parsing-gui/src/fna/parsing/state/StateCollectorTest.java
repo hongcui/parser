@@ -54,13 +54,14 @@ public class StateCollectorTest extends StateCollector {
 	 */
 	protected void parseSentence(String source, String sent){
 		String scopy = sent;
+		sent = sent.replaceAll("\\}-\\{", "-").replaceAll("\\}-c-\\{", "-c-");
 		Pattern p = Pattern.compile("\\b(to|or)\\b");
 		Matcher m = p.matcher(sent);
 		if(m.find()){
 			System.out.println("from sent ["+source+"]:"+sent);
 			
 			//Pattern p1 = Pattern.compile("((?:\\{\\w+}\\s)+|\\s*(,|or|to)\\s*)+\\s*(to|or|nor)\\s*(?:\\{\\w+\\}\\s)+");
-			Pattern p1 = Pattern.compile("(?:\\{\\w+}\\s)+\\s*(or|to)\\s*(?:\\{\\w+\\}\\s*)+");
+			Pattern p1 = Pattern.compile("(?:\\{[\\w-]+}\\s)+\\s*(or|to)\\s*(?:\\{[\\w-]+\\}\\s*)+"); //add - for {dark-c-brown}
 			//Pattern p1 = Pattern.compile("(?:(?:\\{\\w+}\\s)+\\s*(or|to)\\s*)+(?:\\{\\w+\\}\\s*)+");
 			Matcher m1 = p1.matcher(sent);
 			while(m1.find()){
@@ -76,7 +77,7 @@ public class StateCollectorTest extends StateCollector {
 				//sent = sent.substring(m1.end()); take from after (or|to) instead
 				sent = sent.substring(m1.end(1)+1); //3 for "or|to "
 				matched = matched.replaceFirst("^[\\s,]*", "").replaceAll("[{}]", "");
-				matched = split(matched, endofseg);
+				matched = split(matched, endofseg).replaceAll("-c-", "-");
 				if(matched.length() > 0 && ! mstring.matches(".*?(ed|ing)}.*? to .*")){ //ignore "reduced to", but take "reduced or"
 					add2matrix(matched, source);
 					System.out.println("\t====::"+matched); //deal with two "to"/"or" in one match: {distalmost} {linear} to {narrowly} {elliptic} , {bractlike} , {spinulose} to {irregularly} {dentate} or {shallowly} {lobed} .
