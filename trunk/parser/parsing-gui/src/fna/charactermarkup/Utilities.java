@@ -343,7 +343,7 @@ public class Utilities {
 	 * @return null if not found
 	 */
 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
-		
+		if(w.trim().length()==0) return null;
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-").replaceAll(" ", "").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
@@ -384,14 +384,11 @@ public class Utilities {
 				//	ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
 				//}
 			}
-			//check _group_decisions and _grouped_terms
-			String q = "select distinct "+prefix+"_group_decisions.decision from  "+
-			prefix+"_group_decisions where groupId in (SELECT groupId FROM "+
-			prefix+"_grouped_terms f where term = '"+w+"' or cooccurTerm='"+
-			w+"') order by "+prefix+"_group_decisions.decision";
+			//check _term_category table
+			String q = "select distinct category from "+prefix+"_term_category where term='"+w+"' order by category";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
-				String cat = rs.getString("decision");
+				String cat = rs.getString("category");
 				chs.add(cat);
 				//if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
 				//	ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
