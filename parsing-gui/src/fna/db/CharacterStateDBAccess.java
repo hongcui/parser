@@ -24,7 +24,7 @@ public class CharacterStateDBAccess {
 	private static String url = ApplicationUtilities.getProperty("database.url");
 	private String prefix = null;
 	private String glossarytable = null;
-	
+	private Connection conn = null;
 	static {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
@@ -36,6 +36,11 @@ public class CharacterStateDBAccess {
 	}
 	
 	public CharacterStateDBAccess(String prefix, String glossarytable){
+		try{
+			this.conn = DriverManager.getConnection(url);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		this.prefix = prefix;
 		this.glossarytable = glossarytable;
 	}
@@ -49,12 +54,12 @@ public class CharacterStateDBAccess {
 	
 	public void getDecisionCategory(ArrayList<String> decisions) throws SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		try {
 			
-				conn = DriverManager.getConnection(url);
+				//conn = DriverManager.getConnection(url);
 				String tablePrefix = MainForm.dataPrefixCombo.getText();
 				
 				//String sql = "SELECT distinct category FROM " + tablePrefix+"_character order by category";
@@ -79,15 +84,15 @@ public class CharacterStateDBAccess {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
 	
 	public ArrayList<TermsDataBean> getTerms(String group) throws SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		
@@ -95,11 +100,11 @@ public class CharacterStateDBAccess {
 		ArrayList<TermsDataBean > coOccurrences =null;
 		if(group!=null && group.trim()!=""){
 			
-			coOccurrences = new ArrayList<TermsDataBean>();
+		coOccurrences = new ArrayList<TermsDataBean>();
 				
 		try {
 			
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select * from " + tablePrefix +"_grouped_terms " +
 					"where groupId=" + group+ " order by frequency desc";
@@ -135,9 +140,9 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		}
@@ -146,7 +151,7 @@ public class CharacterStateDBAccess {
 	}
 	
 	public ArrayList<ContextBean> getContext(String [] sourceFiles) throws Exception {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		ArrayList<ContextBean> contexts = new ArrayList<ContextBean>();
@@ -158,7 +163,7 @@ public class CharacterStateDBAccess {
 		
 		sql = sql.substring(0, sql.lastIndexOf(",")) + ")";
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			rset = pstmt.executeQuery();
 			
@@ -180,9 +185,9 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		return contexts;
@@ -193,11 +198,11 @@ public class CharacterStateDBAccess {
 		if(terms == null || terms.size()==0) {
 			return false;
 		}
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null; 
 		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_grouped_terms where groupId=?";
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, terms.get(0).getGroupId());
 			pstmt.execute();
@@ -236,9 +241,9 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		
@@ -246,13 +251,13 @@ public class CharacterStateDBAccess {
 	}
 	
 	public String getDecision(int groupId) throws SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		String decision = "";
 		ResultSet rset = null;
-		String sql = "select decision from " + MainForm.dataPrefixCombo.getText().trim() +"_group_decisions where groupId=?" ;
+		String sql = "select category from " + MainForm.dataPrefixCombo.getText().trim() +"_group_decisions where groupId=?" ;
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, groupId);
 			rset = pstmt.executeQuery();
@@ -270,9 +275,9 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		
@@ -282,12 +287,12 @@ public class CharacterStateDBAccess {
 	
 	public ArrayList<String> getProcessedGroups() throws SQLException {
 		ArrayList<String> processedGroups = new ArrayList<String>();
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = "select groupId from " + MainForm.dataPrefixCombo.getText().trim() +"_group_decisions order by groupId";
 		ResultSet rset = null;
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			rset = pstmt.executeQuery();
 			
@@ -306,9 +311,9 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		return processedGroups;
@@ -316,13 +321,13 @@ public class CharacterStateDBAccess {
 	
 	public boolean saveDecision(int groupId, String decision) throws SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_group_decisions where groupId=?" ;
 		try {
 			
 			/*Delete existing information */
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, groupId);
 			pstmt.execute();
@@ -342,12 +347,46 @@ public class CharacterStateDBAccess {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		return true;
+	}
+
+	/**
+	 * save term/category to term_category table that is created in StateMatrix.java 
+	 * @param term
+	 * @param decision
+	 */
+	public boolean saveTermCategory(String groupID, String term, String decision) {
+		//Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_term_category where term=?" ;
+		try {
+			/*Delete existing information */
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, term);
+			pstmt.execute();
+			
+			/* Insert the new decision */
+			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category values (?,?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, term);
+			pstmt.setString(2, decision);
+			pstmt.execute();
+			pstmt.close();
+			
+			/*savedecision for groupID*/
+			this.saveDecision(Integer.parseInt(groupID), "done");
+			
+		} catch (Exception exe) {
+			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTermCategory", exe);
+			exe.printStackTrace();
+		} 
+		return true;
+		
 	}
 
 }
