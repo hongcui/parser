@@ -46,7 +46,7 @@ public class MainFormDbAccessor {
 
 
 	private static final Logger LOGGER = Logger.getLogger(MainFormDbAccessor.class);
-	
+	private static Connection conn = null;
 	 
 	public static void main(String[] args) throws Exception {
 
@@ -57,12 +57,13 @@ public class MainFormDbAccessor {
 	
 	private static String url = ApplicationUtilities.getProperty("database.url");
 	
-	static {
-		Statement stmt = null;
-		Connection conn = null;
+	public MainFormDbAccessor(){
+		//Statement stmt = null;
+		//Connection conn = null;
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-		} catch (ClassNotFoundException e) {
+			conn = DriverManager.getConnection(url);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
 			e.printStackTrace();
@@ -76,10 +77,10 @@ public class MainFormDbAccessor {
 	 * @throws SQLException
 	 */
 	public void changePOStoB(List <String> removedTags) throws ParsingException, SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" set pos = 'b' where word = ?";
 			stmt = conn.prepareStatement(sql);
@@ -102,12 +103,12 @@ public class MainFormDbAccessor {
 	 */
 	public void setUnknownTags(List <String> removedTags) throws ParsingException, SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
 			
 				//Class.forName(driverPath);
-				conn = DriverManager.getConnection(url);
+				//conn = DriverManager.getConnection(url);
 				String tablePrefix = MainForm.dataPrefixCombo.getText();
 				String sql = "update "+tablePrefix+"_sentence set tag = 'unknown' where tag = ?";
 				stmt = conn.prepareStatement(sql);
@@ -130,9 +131,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}			
+			//if (conn != null) {
+			//	conn.close();
+			//}			
 			
 		}
 	}
@@ -141,10 +142,10 @@ public class MainFormDbAccessor {
 		ResultSet rs = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt_select = null;
-		Connection conn = null;
+		//Connection conn = null;
 		try {
 			//Class.forName(driverPath);
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select distinct tag from "+tablePrefix+"_sentence where tag != 'unknown' and tag is not null order by tag asc";
 			stmt = conn.prepareStatement(sql);
@@ -184,9 +185,9 @@ public class MainFormDbAccessor {
 			if (stmt_select != null) {
 				stmt_select.close();
 			}
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
@@ -202,12 +203,12 @@ public class MainFormDbAccessor {
 	public int loadTagsTableData(Table tagTable) throws ParsingException, SQLException {
 		
 		PreparedStatement stmt = null;
-		Connection conn = null;
+		//Connection conn = null;
 		ResultSet rs = null;
 		
 		try {
 			//Class.forName(driverPath);
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' or isnull(tag) order by sentence";
 			stmt = conn.prepareStatement(sql);
@@ -240,16 +241,16 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
 	
 	public void updateContextData(int sentid, StyledText contextStyledText) throws SQLException, ParsingException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		
@@ -259,7 +260,7 @@ public class MainFormDbAccessor {
 		
 		try {
 			//Class.forName(driverPath);
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select * from "+tablePrefix+"_sentence where sentid > ? and sentid < ?";
 			stmt = conn.prepareStatement(sql);
@@ -302,9 +303,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
@@ -317,14 +318,14 @@ public class MainFormDbAccessor {
 	 */
 	public void saveTagData(Table tagTable) throws ParsingException, SQLException{
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		PreparedStatement stmt_update = null;
 		ResultSet rs = null;
 		
 		try {
 			//Class.forName(driverPath);
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			
 			
 			for (TableItem item : tagTable.getItems()) {
@@ -370,9 +371,9 @@ public class MainFormDbAccessor {
 				stmt_update.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+		//	}
 						
 		}
 	}
@@ -380,11 +381,11 @@ public class MainFormDbAccessor {
 	//added March 1st
 	public void glossaryPrefixRetriever(List <String> datasetPrefixes) 
 	throws ParsingException, SQLException{
-		Connection conn = null;
+		//Connection conn = null;
 		Statement stmt = null;
 		ResultSet rset = null;
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
 			rset = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='markedupdatasets' and table_name like '%glossaryfixed'");
 			while (rset.next()) {
@@ -403,9 +404,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 						
 		}
 		
@@ -416,7 +417,7 @@ public class MainFormDbAccessor {
 	public void datasetPrefixRetriever(List <String> datasetPrefixes) 
 		throws ParsingException, SQLException{
 		
-		Connection conn = null;
+		//Connection conn = null;
 		Statement stmt = null;
 		ResultSet rset = null;
 		
@@ -436,7 +437,7 @@ public class MainFormDbAccessor {
 				  "PRIMARY KEY (prefix, time_last_accessed) ) " ; 
 		
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
 			stmt.execute(createprefixTable);
 			rset = stmt.executeQuery("select * from datasetprefix order by time_last_accessed desc");
@@ -456,9 +457,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 						
 		}
 		
@@ -468,13 +469,13 @@ public class MainFormDbAccessor {
 	public String getLastAccessedDataSet(int option_chosen) 
 	throws ParsingException, SQLException{
 	
-	Connection conn = null;
+	//Connection conn = null;
 	Statement stmt = null;
 	ResultSet rset = null;
 	String recent = null;
 	
 	try {
-		conn = DriverManager.getConnection(url);
+		//conn = DriverManager.getConnection(url);
 		stmt = conn.createStatement();
 		rset = stmt.executeQuery("select * from datasetprefix where option_chosen= '"+option_chosen+"' order by time_last_accessed desc");
 		if (rset.next()) {
@@ -509,11 +510,11 @@ public class MainFormDbAccessor {
 	public void saveOtherTerms(HashMap<String, String> otherTerms) 
 		throws SQLException{
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String postable = tablePrefix+ "_"+ApplicationUtilities.getProperty("POSTABLE");
 			
 			stmt = conn.prepareStatement("insert into "+postable+"(word,pos) values (?,?)");
@@ -540,9 +541,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
@@ -550,13 +551,13 @@ public class MainFormDbAccessor {
 	public void savePrefixData(String prefix, String glossaryName, int optionChosen) 
 	throws ParsingException, SQLException{
 	
-	Connection conn = null;
+	//Connection conn = null;
 	PreparedStatement stmt = null;
 	ResultSet rset = null;
 	
 	try {
 		if (!prefix.equals("")) {
-			conn = DriverManager.getConnection(url);		
+			//conn = DriverManager.getConnection(url);		
 			/*stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
 					prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 0,'"+glossaryName+"','"+optionChosen+"')");*/
 			stmt = conn.prepareStatement("select prefix from datasetprefix where prefix='"+prefix+"'");
@@ -595,9 +596,9 @@ public class MainFormDbAccessor {
 			stmt.close();
 		}
 		
-		if (conn != null) {
-			conn.close();
-		}
+		//if (conn != null) {
+		//	conn.close();
+		//}
 		
 		
 					
@@ -607,12 +608,12 @@ public class MainFormDbAccessor {
 	public void loadStatusOfMarkUp(boolean [] markUpStatus, String dataPrefix) 
 		throws 	ParsingException, SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		try {
 			if(dataPrefix != null && !dataPrefix.equals("")) {
-				conn = DriverManager.getConnection(url);
+			//	conn = DriverManager.getConnection(url);
 				stmt = conn.prepareStatement("select * from datasetprefix where prefix ='" + dataPrefix + "'");
 				rset = stmt.executeQuery();
 				
@@ -683,9 +684,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+	//		if (conn != null) {
+		//		conn.close();
+			//}
 			
 		}
 		
@@ -694,7 +695,7 @@ public class MainFormDbAccessor {
 	
 	public void saveStatus(String tab, String prefix, boolean status) throws SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		int tabStatus = 0;
 		//Lookup
@@ -731,7 +732,7 @@ public class MainFormDbAccessor {
 		 } 
 		
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			stmt = conn.prepareStatement("update datasetprefix set " + tab + "= " + tabStatus + 
 					" where prefix='" + prefix +"'");
 			stmt.executeUpdate();
@@ -745,9 +746,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 		
@@ -755,11 +756,11 @@ public class MainFormDbAccessor {
 	
 
 	public void removeDescriptorData(List<String> words) throws SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement("delete from "+tablePrefix+"_wordpos where pos=? and word=?");
 			for (String word : words) {
 				pstmt.setString(1, "b");
@@ -776,22 +777,22 @@ public class MainFormDbAccessor {
 				pstmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}			
+			//if (conn != null) {
+			//	conn.close();
+			//}			
 			
 		}
 	}
 	
 	public ArrayList<String> getUnknownWords()throws SQLException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		ArrayList<String> unknownWords = new ArrayList<String>();
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try{
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			stmt = conn.prepareStatement("select word from "+tablePrefix+"_unknownwords " +
 					"where flag = ?");
 			stmt.setString(1, "unknown");
@@ -814,9 +815,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+				//conn.close();
+			//}
 			
 		}		
 		
@@ -829,11 +830,11 @@ public class MainFormDbAccessor {
 	 */
 	public void saveTermRole
 		(ArrayList<String> terms, String role)throws SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
 			
 			stmt = conn.prepareStatement("Insert into "+wordrolesable+" (word,semanticrole) values (?,?)");
@@ -860,19 +861,19 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+			//if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}		
 	}
 
 	public void removeDescriptorData_markRed(ArrayList<String> words) throws SQLException {
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red' where pos=? and word=?");
 			for (String word : words) {
 				pstmt.setString(1, "b");
@@ -887,19 +888,19 @@ public class MainFormDbAccessor {
 			if (pstmt != null) {
 				pstmt.close();
 			}
-			if (conn != null) {
-				conn.close();
-			}			
+			//if (conn != null) {
+			//	conn.close();
+			//}			
 			
 		}
 	}
 	
 	public void createWordRoleTable(){
-		Connection conn = null;
+		//Connection conn = null;
 		Statement stmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		try {
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE"));
 			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2), primary key(word, semanticrole))");			
@@ -912,9 +913,9 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}		
+			//if (conn != null) {
+			//	conn.close();
+			//}		
 			}catch(Exception e){
 				LOGGER.error("Exception in RemoveDescriptorData", e);
 				e.printStackTrace();
@@ -926,13 +927,13 @@ public class MainFormDbAccessor {
 	//added newly to load the styled context for step 4 (all 4 sub-tabs)
 	public void getContextData(String word,StyledText context) throws SQLException, ParsingException {
 		
-		Connection conn = null;
+		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		
 		try {
 			//Class.forName(driverPath);
-			conn = DriverManager.getConnection(url);
+			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			String sql = "select source,sentence from "+tablePrefix+"_sentence where sentence like '% "+word+" %' or sentence like '"+word+" %' or sentence like '% "+word+"'  or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
@@ -998,12 +999,50 @@ public class MainFormDbAccessor {
 				stmt.close();
 			}
 			
-			if (conn != null) {
-				conn.close();
-			}
+		//	if (conn != null) {
+			//	conn.close();
+			//}
 			
 		}
 	}
+	
+	/**
+	 * merge grouped_terms and group_decision table and add data into 
+	 * term_category table, which may already have data
+	 */
+	public void finalizeTermCategoryTable() {
+		String prefix = MainForm.dataPrefixCombo.getText();
+		try{
+			Statement stmt = conn.createStatement();
+			String q = "select distinct groupId, category from "+ prefix+"_group_decisions where category !='done'"; //"done" was a fake decision for unpaired terms
+			ResultSet rs = stmt.executeQuery(q);
+			while(rs.next()){
+				int gid = rs.getInt(1);
+				String cat = rs.getString(2);
+				Statement stmt2 = conn.createStatement();
+				ResultSet rs2 = stmt2.executeQuery("select term, cooccurTerm from "+prefix+"_grouped_terms where groupId ="+gid);
+				while(rs2.next()){
+					String t1 = rs2.getString(1);
+					String t2 = rs2.getString(2);
+					insert2TermCategoryTable(t1, cat);
+					if(t2!=null && t2.trim().length()>0) insert2TermCategoryTable(t2, cat);
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void insert2TermCategoryTable(String term, String cat) throws SQLException {
+		String sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category values (?,?)";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, term);
+		pstmt.setString(2, cat);
+		pstmt.execute();		
+	}
+	
+	
 
 
 }
