@@ -73,6 +73,7 @@ import fna.beans.ContextBean;
 import fna.beans.TermBean;
 import fna.beans.TermRoleBean;
 import fna.beans.TermsDataBean;
+import fna.charactermarkup.Utilities;
 import fna.db.CharacterStateDBAccess;
 import fna.db.MainFormDbAccessor;
 import fna.db.VolumeMarkupDbAccessor;
@@ -236,6 +237,7 @@ public class MainForm {
 	Color red = colordisplay.getSystemColor(SWT.COLOR_RED);
 	Color green = colordisplay.getSystemColor(SWT.COLOR_GREEN);*/
 	Color red;
+	Color white;
 	Color green;
 	private Text step3_desc;
 	private Text tab2desc; 	   
@@ -1422,9 +1424,14 @@ public class MainForm {
 			public void widgetSelected(SelectionEvent e) {
 				int i=0;
 				for (TableItem item : findStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findStructureTable.getItem(i).setBackground(0,red);
-						findStructureTable.getItem(i).setBackground(1,red);
+					if (item.getChecked()) {	
+						if(findStructureTable.getItem(i).getBackground()==red){
+							findStructureTable.getItem(i).setBackground(0,white);
+							findStructureTable.getItem(i).setBackground(1,white);
+						}else{
+							findStructureTable.getItem(i).setBackground(0,red);
+							findStructureTable.getItem(i).setBackground(1,red);
+						}
 						item.setChecked(false);
 					}
 					i+=1;
@@ -1547,9 +1554,15 @@ public class MainForm {
 				TableItem [] items = findDescriptorTable.getItems();
 				for (TableItem item : items) {
 					if (item.getChecked()) {
-						item.setBackground(0, red);
-						item.setBackground(1, red);	
+						if(item.getBackground()==red){
+							item.setBackground(0,white);
+							item.setBackground(1,white);
+						}else{
+							item.setBackground(0, red);
+							item.setBackground(1, red);	
+						}
 						item.setChecked(false);
+						
 					}
 				}
 				/*TableItem [] items = findDescriptorTable.getItems();
@@ -1802,9 +1815,14 @@ public class MainForm {
 			public void widgetSelected(SelectionEvent e) {
 				int i=0;
 				for (TableItem item : findMoreStructureTable.getItems()) {
-					if (item.getChecked()) {				
-						findMoreStructureTable.getItem(i).setBackground(0,green);
-						findMoreStructureTable.getItem(i).setBackground(1,green);
+					if (item.getChecked()) {
+						if(findStructureTable.getItem(i).getBackground()==green){
+							findStructureTable.getItem(i).setBackground(0,white);
+							findStructureTable.getItem(i).setBackground(1,white);
+						}else{
+							findMoreStructureTable.getItem(i).setBackground(0,green);
+							findMoreStructureTable.getItem(i).setBackground(1,green);
+						}
 						item.setChecked(false);
 					}
 					i+=1;
@@ -1921,8 +1939,13 @@ public class MainForm {
 				TableItem [] items = findMoreDescriptorTable.getItems();
 				for (TableItem item : items) {
 					if (item.getChecked()) {
-						item.setBackground(0, green);
-						item.setBackground(1, green);
+						if(item.getBackground()==green){
+							item.setBackground(0,white);
+							item.setBackground(1,white);
+						}else{
+							item.setBackground(0, green);
+							item.setBackground(1, green);
+						}
 						item.setChecked(false);
 					}
 				}
@@ -3939,10 +3962,11 @@ public class MainForm {
 	//6. Go to 1
 	
 	/**
-	 * This function creates remaining terms group for the character tab.
+	 * This function creates remaining terms group for the character tab,
+	 * as a unpaired group
 	 */
 	private void showRemainingTerms() {
-		unpaired = false;
+		
 		ArrayList<TermsDataBean> terms = null;
 		term1.y = 10;
 		term2.y = 10;
@@ -4005,6 +4029,11 @@ public class MainForm {
 			
 		}
 		
+		unpaired = false;
+		if(unPairedTerms(terms)){
+			unpaired = true;
+		}
+		
 		if (terms.size() != 0) {
 			
 			for (final TermsDataBean tbean : terms) {
@@ -4023,6 +4052,12 @@ public class MainForm {
 					term2Group.setToolTipText(tbean.getTerm2());
 					term2Group.setBounds(term2.x, term2.y, term2.width, term2.height);
 					cbean.setTerm2(new TermBean(term2Group, removedTermsGroup, true, tbean.getTerm2()));
+				}else if(Integer.parseInt(groupsCombo.getText().replaceFirst("Group_", "")) >=noOfTermGroups && unpaired){ //fill combo boxes in place of term2 for the last group of the terms
+					Text term1decision = new Text(termsGroup, SWT.BORDER);
+					term1decision.setBounds(term2.x, term2.y+5, term2.width, term2.height-10);
+					term1decision.setToolTipText("select a category for the term");
+					term1decision.setEditable(true);
+					cbean.setText(term1decision);
 				}
 				
 				cbean.setGroupNo(tbean.getGroupId());
@@ -4140,7 +4175,7 @@ public class MainForm {
 			for (String key : keys){	
 				CharacterGroupBean charBean = groupInfo.get(key);
 				if (charBean.isSaved()){
-					terms.addAll(getTermsInformation (charBean, groupNo));
+					terms.addAll(getRemovedTermsInformation (charBean, groupNo));
 				}
 				
 			}			
@@ -4148,6 +4183,64 @@ public class MainForm {
 		
 		return terms;
 	}
+	
+	/**
+	 * This is a helper internal function that gets the specific removed 
+	 * terms information from the character tab's removed terms'
+	 * Remove duplicate words, remove words already in glossary, and sort all words in one colume, i.e. term1
+	 * @param charGroupBean
+	 * @param groupNo
+	 * @return
+	 */
+	private ArrayList <TermsDataBean> getRemovedTermsInformation (CharacterGroupBean charGroupBean, int groupNo){
+		
+		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();	
+		ArrayList <CoOccurrenceBean> cooccurrences = charGroupBean.getCooccurrences();
+		String words = "";
+		for (CoOccurrenceBean  bean : cooccurrences) {
+			
+			if(bean.getTerm1() != null) {
+				if (!bean.getTerm1().isTogglePosition()) {
+					String t1 = bean.getTerm1().getTermText().getText();
+					words = words.replaceFirst("\\|$", "");
+					if(!t1.matches("("+words+")") && !Utilities.inGlossary(t1, conn, this.glossaryPrefixCombo.getText(), this.dataPrefixCombo.getText())){
+						words +=t1+"|";
+						TermsDataBean tbean = new TermsDataBean();
+						tbean.setFrequency(Integer.parseInt(bean.getFrequency().getText()));
+						tbean.setSourceFiles(bean.getSourceFiles());
+						tbean.setGroupId(groupNo);
+						tbean.setTerm1(t1);
+						tbean.setTerm2("");
+						terms.add(tbean);
+					}
+					// Remove the term from the original group of removed terms
+					bean.setTerm1(null);
+				}
+		    }
+
+			if(bean.getTerm2() != null) {
+				if (!bean.getTerm2().isTogglePosition()) {
+					String t2 = bean.getTerm2().getTermText().getText();
+					words = words.replaceFirst("\\|$", "");
+					if(!t2.matches("("+words+")")&& !Utilities.inGlossary(t2, conn, this.glossaryPrefixCombo.getText(), this.dataPrefixCombo.getText())){
+						words +=t2+"|";
+						TermsDataBean tbean = new TermsDataBean();
+						tbean.setFrequency(Integer.parseInt(bean.getFrequency().getText()));
+						tbean.setSourceFiles(bean.getSourceFiles());
+						tbean.setGroupId(groupNo);
+						tbean.setTerm1(t2);
+						tbean.setTerm2("");
+						terms.add(tbean);
+					}
+					// Remove the term from the original group of removed terms
+					bean.setTerm2(null);
+				}
+		    }
+		}
+
+		return terms;
+	}
+	
 	/**
 	 * This is a helper internal function that gets the specific removed 
 	 * terms information from the character tab's removed terms'
@@ -4155,7 +4248,7 @@ public class MainForm {
 	 * @param groupNo
 	 * @return
 	 */
-	private ArrayList <TermsDataBean> getTermsInformation (CharacterGroupBean charGroupBean, int groupNo){
+	/*private ArrayList <TermsDataBean> getRemovedTermsInformation (CharacterGroupBean charGroupBean, int groupNo){
 		
 		ArrayList <TermsDataBean> terms = new ArrayList<TermsDataBean>();	
 		ArrayList <CoOccurrenceBean> cooccurrences = charGroupBean.getCooccurrences();
@@ -4169,7 +4262,7 @@ public class MainForm {
 			if(bean.getTerm1() != null) {
 				if (!bean.getTerm1().isTogglePosition()) {
 					tbean.setTerm1(bean.getTerm1().getTermText().getText());
-					/* Remove the term from the original group of removed terms*/
+					//Remove the term from the original group of removed terms
 					bean.setTerm1(null);
 					
 			    } else {
@@ -4182,7 +4275,7 @@ public class MainForm {
 			if (bean.getTerm2() != null){
 				if(!bean.getTerm2().isTogglePosition()){
 					tbean.setTerm2(bean.getTerm2().getTermText().getText());
-					/* Remove the term from the original group of removed terms*/
+					// Remove the term from the original group of removed terms
 					bean.setTerm2(null);
 					
 			    } else {
@@ -4202,7 +4295,7 @@ public class MainForm {
 		}
 		
 		return terms;
-	}
+	}*/
 	
 	/**
 	 * This function checks how 
