@@ -212,21 +212,25 @@ public class CharacterStateDBAccess {
 			pstmt = conn.prepareStatement(sql);
 			
 			for (TermsDataBean tbean : terms) {
-				pstmt.setInt(1, tbean.getGroupId());
-				pstmt.setString(2, tbean.getTerm1()==null?"":tbean.getTerm1());
-				pstmt.setString(3, tbean.getTerm2()==null?"":tbean.getTerm2());
-				pstmt.setInt(4, tbean.getFrequency());
-				pstmt.setString(5, tbean.getKeep()==null?"":tbean.getKeep());
+				String t1 = tbean.getTerm1()==null?"":tbean.getTerm1();
+				String t2 = tbean.getTerm2()==null?"":tbean.getTerm2();
 				
-				String [] files = tbean.getSourceFiles();
-				String sourceFile = "";
-				for (String file : files) {
-					sourceFile += file + ",";
-				}
-				sourceFile = sourceFile.substring(0, sourceFile.lastIndexOf(","));
+					pstmt.setInt(1, tbean.getGroupId());
+					pstmt.setString(2, t1);
+					pstmt.setString(3, t2);
+					pstmt.setInt(4, tbean.getFrequency());
+					pstmt.setString(5, tbean.getKeep()==null?"":tbean.getKeep());
+					
+					String [] files = tbean.getSourceFiles();
+					String sourceFile = "";
+					for (String file : files) {
+						sourceFile += file + ",";
+					}
+					sourceFile = sourceFile.substring(0, sourceFile.lastIndexOf(","));
+					
+					pstmt.setString(6, sourceFile);
+					pstmt.addBatch();
 				
-				pstmt.setString(6, sourceFile);
-				pstmt.addBatch();
 			}
 			
 			pstmt.executeBatch();
