@@ -15,6 +15,7 @@ import java.util.Set;
 import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
+import fna.charactermarkup.Utilities;
 import fna.parsing.ApplicationUtilities;
 
 
@@ -41,9 +42,9 @@ public class StateMatrix {
 		try{
 			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+tableprefix+"_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_terms (term varchar(100), cooccurTerm varchar(100), frequency int(4), grouped varchar(2) default 'n', sourceFiles varchar(2000),  primary key(term, cooccurTerm))");
 			stmt.execute("drop table if exists "+tableprefix+"_grouped_terms");
-			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000), primary key(term, cooccurTerm))");
+			stmt.execute("create table if not exists "+tableprefix+"_grouped_terms (groupId int, term varchar(100), cooccurTerm varchar(100), frequency int(4), keep varchar(20), sourceFiles varchar(2000))");
 			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 			stmt.execute("drop table if exists "+tableprefix+"_term_category");
@@ -253,7 +254,7 @@ public class StateMatrix {
 			String term1 = node1.getName();
 			String term2 = node2.getName();
 			if(!term1.matches("("+this.blockedterms+")") && !term2.matches("("+this.blockedterms+")") &&
-			   (!inGlossary(term1) || !inGlossary(term2))){
+			   (!Utilities.inGlossary(term1, conn, this.glossarytable, this.tableprefix) || !Utilities.inGlossary(term2, conn, this.glossarytable, this.tableprefix))){
 				cooccurTerms.append("'"+node1.getName()+"',");
 				cooccurTerms.append("'"+node2.getName()+"',");
 				int weight = c.getScore().valueSum();
@@ -375,19 +376,7 @@ public class StateMatrix {
 		return clusters==null? new ArrayList<Set<State>>() : clusters;
 	}
 	
-	private boolean inGlossary(String term) {
-		term = term.replaceAll(".*_", "");
-		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select term from "+this.glossarytable+" where term ='"+term+"'");
-			if(rs.next()){
-				return true;
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return false;
-	}
+
 
 	/**
 	 * the last set in the clusters may contain a set of freestates
@@ -406,10 +395,10 @@ public class StateMatrix {
 					String[] terms = stategroup.replace("'", "").split("\\s*,\\s*");
 					Arrays.sort(terms);
 					for(int i = 0; i < terms.length; i++){
-						for(int j = i+1; j >terms.length; j++){
-							if(!inGlossary(terms[i]) || !inGlossary(terms[j])){
+						for(int j = i+1; j <terms.length; j++){
+							if(!Utilities.inGlossary(terms[i], conn, this.glossarytable, this.tableprefix) || !Utilities.inGlossary(terms[j], conn, this.glossarytable, this.tableprefix)){
 								String[] info = freqsource(terms[i], terms[j]); //search for frequency and source files info for the term pair
-								if(info!=null){
+								if(info!=null && info[1].split(",").length>=3){ //include only the terms apprears 3 or more times.
 									String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+terms[i]+"', '"+terms[j]+"',"+Integer.parseInt(info[0])+",'"+info[1]+"')";
 									System.out.println("query::"+q);
 									stmt.execute(q);
@@ -431,7 +420,7 @@ public class StateMatrix {
 			while(it.hasNext()){
 				String w = it.next();
 				ResultSet rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
-						" where sentence like '% "+w+" %'");
+						" where sentence like '% "+w+" %' or sentence like '"+w+" %' or sentence like '% "+w+"'");
 				String srcs = "";
 				int count = 0;
 				while(rs.next()){
@@ -469,7 +458,7 @@ public class StateMatrix {
 			if(rs.next()){
 				info[0] = rs.getString(1);
 				info[1] = rs.getString(2);
-				stmt.executeQuery("update "+this.tableprefix+"_terms set grouped='y' where (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
+				stmt.execute("update "+this.tableprefix+"_terms set grouped='y' where (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
 				stmt.close();
 				return info;
 			}
