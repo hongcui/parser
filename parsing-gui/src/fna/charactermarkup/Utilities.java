@@ -53,6 +53,7 @@ public class Utilities {
 		singulars.put("callus", "callus");
 		singulars.put("frons", "frons");
 		singulars.put("grooves", "groove");
+		singulars.put("interstices", "interstice");
 		singulars.put("lens", "len");
 		singulars.put("media", "media");
 		singulars.put("midnerves", "midnerve");
@@ -65,6 +66,7 @@ public class Utilities {
 		plurals.put("axis", "axes");
 		plurals.put("base", "bases");		
 		plurals.put("groove", "grooves");
+		plurals.put("interstice", "interstices");
 		plurals.put("len", "lens");
 		plurals.put("media", "media");
 		plurals.put("midnerve", "midnerves");
@@ -413,8 +415,33 @@ public class Utilities {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param term
+	 * @param conn
+	 * @param glosstable
+	 * @return
+	 */
+	public static boolean inGlossary(String term, Connection conn, String glosstable, String prefix) {
+		term = term.replaceAll(".*[_-]", "");
+		String termcopy = term;
+		term = term.replaceFirst("(semi|sub|un)", "");
+		boolean in = false;
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select term, category from "+glosstable+" where term ='"+term+"'");
+			if(rs.next()){
+				String cat = rs.getString("category");
+				in = true;
+				Statement stmt1 = conn.createStatement();
+				stmt1.execute("insert into "+prefix+"_term_category (term, category) values ('"+termcopy+"', '"+cat+"')");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return in;
+	}
 	
-
 	public static String plural(String b) {
 		return Utilities.plurals.get(b);
 	}
