@@ -4372,7 +4372,7 @@ public class MainForm {
 		int count = 0;
 		try {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			vmdb.structureTags4Curation(words);			
+			words= (ArrayList<String>)vmdb.structureTags4Curation(words);			
 			if (words != null) {
 				for (String word : words){
 					count++;
@@ -4398,7 +4398,7 @@ public class MainForm {
 		int count = 0;
 		try {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			words = vmdb.descriptorTerms4Curation();
+			words = (ArrayList<String>)vmdb.descriptorTerms4Curation();
 			if (words != null) {
 				for (String word : words){
 					count++;
@@ -4421,7 +4421,7 @@ public class MainForm {
 		int count = 0;
 		try {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			vmdb.contentTerms4Curation(words);
+			words=(ArrayList<String>)vmdb.contentTerms4Curation(words);
 			if (words != null) {
 				for (String word : words){
 					count++;
@@ -4442,7 +4442,7 @@ public class MainForm {
 		int count = 0;
 		try {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			vmdb.contentTerms4Curation(words);
+			words = (ArrayList<String>)vmdb.contentTerms4Curation(words);
 			if (words != null) {
 				for (String word : words){
 					count++;
