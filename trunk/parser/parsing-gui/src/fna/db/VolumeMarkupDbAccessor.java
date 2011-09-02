@@ -70,7 +70,7 @@ public class VolumeMarkupDbAccessor {
      * @throws ParsingException
      * @throws SQLException
      */
-    public void structureTags4Curation(List <String> tagList) throws  ParsingException, SQLException {
+    public ArrayList<String> structureTags4Curation(List <String> tagList) throws  ParsingException, SQLException {
     	Connection conn = null;
     	PreparedStatement stmt = null;
     	ResultSet rs = null;
@@ -92,7 +92,7 @@ public class VolumeMarkupDbAccessor {
 				String tag = rs.getString("word");
 				populateCurationList(tagList, tag); //select tags for curation
 			}
-			deduplicateSort(tagList);
+			return deduplicateSort(tagList);
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:updateData", sqlexe);
 			sqlexe.printStackTrace();
@@ -111,11 +111,15 @@ public class VolumeMarkupDbAccessor {
     }
 
 
-	private void deduplicateSort(List<String> tagList) {
+	private ArrayList<String> deduplicateSort(List<String> tagList) {
 		HashSet<String> set = new HashSet<String>(tagList);
 		String[] sorted = set.toArray(new String[]{}); 
 		Arrays.sort(sorted);
-		tagList = Arrays.asList(sorted);
+		ArrayList<String> results = new ArrayList<String>();
+		for(int i=0; i<sorted.length; i++){
+			results.add(sorted[i]);
+		}
+		return results;
 	}
     
     
@@ -126,7 +130,7 @@ public class VolumeMarkupDbAccessor {
      * @throws ParsingException
      * @throws SQLException
      */
-    public void contentTerms4Curation(List <String> curationList) throws  ParsingException, SQLException {
+    public ArrayList<String> contentTerms4Curation(List <String> curationList) throws  ParsingException, SQLException {
     	Connection conn = null;
     	PreparedStatement stmt = null;
     	ResultSet rs = null;
@@ -143,7 +147,7 @@ public class VolumeMarkupDbAccessor {
 				String word = rs.getString("dhword");
 				populateCurationList(curationList, word);
 			}
-			this.deduplicateSort(curationList);
+			return this.deduplicateSort(curationList);
 		} catch (SQLException sqlexe) {
 			LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:contentTerms4Curation", sqlexe);
 			sqlexe.printStackTrace();
@@ -209,7 +213,7 @@ public class VolumeMarkupDbAccessor {
 					populateDescriptorList(words, rset.getString("word"));
 				}	
 			}
-			deduplicateSort(words);
+			return deduplicateSort(words);
 		} catch (SQLException exe) {
 			LOGGER.error("Error in getting words as descriptors: " +
 					"mainFormDbAccessor.descriptorTerms4Curation", exe);
