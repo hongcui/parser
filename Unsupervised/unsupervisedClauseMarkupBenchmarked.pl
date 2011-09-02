@@ -129,7 +129,11 @@ use strict;
 use DBI;
 
 #commandline:
-#perl unsupervisedClauseMarkupBenchmarked.pl D:\SMART RA\Work Folders\FOC-v7\target\descriptions markedupdatasets plain focv7
+#perl unsupervisedClauseMarkupBenchmarked.pl D:\SMART RA\Work Folders\FOC-v7\target\descriptions(convert the xlsx file into a text file and put it into the folder format: structure: character value) markedupdatasets(change to phenoscape) plain focv7(change to fish)
+#new commandline:
+#cd workspace\parser\Unsupervised
+#perl unsupervisedClauseMarkupBenchmarked.pl "C:\Users\Zilong Chang\workspace\target\sources" phenoscape plain fish >output.txt
+
 #$ARGV[0] = $ARGV[0]." ".$ARGV[1]." ".$ARGV[2];
 #$ARGV[1] = $ARGV[3];
 #$ARGV[2] = $ARGV[4];
@@ -364,6 +368,7 @@ phraseclause(); #does not make new discoveries, work on remaining null tagged cl
 print stdout "::::::::::::::::::::::::Ditto: \n";
 ditto(); #does not make new discoveries, work on remaining null tagged clauses.
 print stdout "::::::::::::::::::::::::Of: \n";
+#comment if slow
 of(); #need knowledge of structural hierarchy, should be the last learning module
 print stdout "::::::::::::::::::::::::Pronoun/character/proposition/errours noun subjects: \n";
 pronouncharactersubject(); #no new discoveries
@@ -565,6 +570,11 @@ $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
+$del = $dbh->prepare('drop table if exists '.$prefix.'_allwords');
+$del->execute() or print STDOUT "$del->errstr\n";
+$create = $dbh->prepare('create table if not exists '.$prefix.'_allwords (word varchar(150) not null unique, count int(11), dhword varchar(150), inbrackets int(11), primary key (word)) engine=innodb');
+$create->execute() or print STDOUT "$create->errstr\n";
+
 $del = $dbh->prepare('drop table if exists '.$prefix.'_wordpos');
 $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", primary key (word, pos)) engine=innodb');
@@ -686,7 +696,7 @@ sub addclusterstrings{
 	}
 }
 
-###lateral/laterals terminal/terminals: blades of mid cauline spatulate or oblong to obovate or lanceolate , 6 – 35 × 1 – 15 cm , bases auriculate , auricles deltate to lanceolate , ± straight , acute , margins usually pinnately lobed , lobes ± deltate to lanceolate , not constricted at bases , terminals usually larger than laterals , entire or dentate .
+###lateral/laterals terminal/terminals: blades of mid cauline spatulate or oblong to obovate or lanceolate , 6 Â– 35 Ã— 1 Â– 15 cm , bases auriculate , auricles deltate to lanceolate , Â± straight , acute , margins usually pinnately lobed , lobes Â± deltate to lanceolate , not constricted at bases , terminals usually larger than laterals , entire or dentate .
 sub addheuristicsnouns{
 	my @nouns = NounHeuristics::heurnouns($dir, "");
 	#EOL:@nouns = ("angle[s]", "angles[p]", "base[s]", "bases[p]", "cell[s]", "cells[p]", "depression[s]", "depressions[p]", "ellipsoid[s]", "ellipsoids[p]", "eyespot[s]", "eyespots[p]", "face[s]", "faces[p]", "flagellum[s]", "flagella[p]", "flange[s]", "flanges[p]", "globule[s]", "globules[p]", "groove[s]", "grooves[p]", "line[s]", "lines[p]", "lobe[s]", "lobes[p]", "margin[s]", "margins[p]", "membrane[s]", "membranes[p]", "notch[s]", "notches[p]", "plastid[s]", "plastids[p]", "pore[s]", "pores[p]", "pyrenoid[s]", "pyrenoids[p]", "quarter[s]", "quarters[p]", "ridge[s]", "ridges[p]", "rod[s]", "rods[p]", "row[s]", "rows[p]", "sample[s]", "samples[p]", "sediment[s]", "sediments[p]", "side[s]", "sides[p]", "vacuole[s]", "vacuoles[p]", "valve[s]", "valves[p]");
@@ -711,6 +721,9 @@ sub addheuristicsnouns{
 	    		      		$w =~ s#\w\w\w\[p\]$##g;
 	    		      		if($pn =~ /^$w/ || $w=~/^$pn/){
 	    		      			$sg =~ s#\[s\]$##g;
+
+
+
 	    		      			$pl =~ s#\[p\]$##g;
 	    		      			addsingularpluralpair($sg, $pl);
 	    		      			$pn = "";
@@ -922,6 +935,7 @@ sub resolvenmb{
 			$sth1 = $dbh->prepare("delete from ".$prefix."_wordpos where word = '$word' and pos ='s'");
 			$sth1->execute() or print STDOUT "$sth1->errstr\n";
 			#reset tags
+
 			$sth1 = $dbh->prepare("update ".$prefix."_sentence set modifier='', tag =NULL where tag ='$word' or tag like '% $word'");
 			$sth1->execute() or print STDOUT "$sth1->errstr\n";
 			$NONS .="$word|";
@@ -1265,6 +1279,7 @@ sub adjectivesubjects{
 return $flag;
 }
 
+
 #discover new modifiers using and/or pattern
 #for "modifier and/or unknown boundary" pattern or "unknown and/or modifier boundary" pattern, make "unknown" a modifier
 sub discovernewmodifiers{	#each modifier is one word
@@ -1454,13 +1469,13 @@ sub getpartsfromparenttag{
 ############################################################################################
 #deal with "herbs or lianas" cases
 #examples:
-#<cypsela_or_palea_unit> cypsela / palea unit ± obovate, 2 . 5 – 4 mm</cypsela_or_palea_unit>
-#<biennial_or_short_lived_perennial> biennials or short_lived , usually monocarpic perennials , 10 – 100 cm ; cf:
-#<biennial_or_monocarpic_perennial> biennials or monocarpic perennials , 100 – 220 cm ;
-#<(leaf) blade_or_lobe> leaf blades or lobes orbiculate to linear , 1 – 5 × 1 – 5 mm .
+#<cypsela_or_palea_unit> cypsela / palea unit Â± obovate, 2 . 5 Â– 4 mm</cypsela_or_palea_unit>
+#<biennial_or_short_lived_perennial> biennials or short_lived , usually monocarpic perennials , 10 Â– 100 cm ; cf:
+#<biennial_or_monocarpic_perennial> biennials or monocarpic perennials , 100 Â– 220 cm ;
+#<(leaf) blade_or_lobe> leaf blades or lobes orbiculate to linear , 1 Â– 5 Ã— 1 Â– 5 mm .
 #<(outer)floret> and (3) outer florets pistillate, ???
-#staminate or bisexual paleae readily falling , ( 1 – ) 3 – 5 , erect to apically somewhat spreading or incurved in fruit , slightly surpassing pistillate paleae ;
-#annuals , biennials , or short_lived perennials , 20 – 100 cm .
+#staminate or bisexual paleae readily falling , ( 1 Â– ) 3 Â– 5 , erect to apically somewhat spreading or incurved in fruit , slightly surpassing pistillate paleae ;
+#annuals , biennials , or short_lived perennials , 20 Â– 100 cm .
 #deep_seated woody tap_roots and caudices .
 
 #patterns: b: boundary; n:structures; m:modifier; &:and/or//; u:unknown words
@@ -2164,12 +2179,12 @@ sub ditto{
 	#before 3/24/09
 	#my ($sth, $sentid, $sentence, $bptn, $wptn, $ptn, $conj, $sth2);
 
-	##$conj = "(?:[^a-z0-9<_]|\\b(?\:and|or|/|to)\\b)"; #± <b>distalmost</b> <b>reduced</b> , ± <b>bractlike</b> .
+	##$conj = "(?:[^a-z0-9<_]|\\b(?\:and|or|/|to)\\b)"; #Â± <b>distalmost</b> <b>reduced</b> , Â± <b>bractlike</b> .
 	##$bptn = "\\s*(?:</?B>)\\s*";  #boundary pattern
 	##$wptn = "(?:.*?)"; #text pattern
 	##$ptn = "^".$conj."?".$bptn.$wptn.$bptn.$conj."+"; #sentence starts with at least 3 boundary words
 
-	#$conj = "(?:\\b(?\:and|or|/|to)\\b)"; #± <B>distalmost</B> <B>reduced</B> <B>,</B> <B>±</B> <b>bractlike</b> <B>.</B>
+	#$conj = "(?:\\b(?\:and|or|/|to)\\b)"; #Â± <B>distalmost</B> <B>reduced</B> <B>,</B> <B>Â±</B> <b>bractlike</b> <B>.</B>
 	#$bptn = "\\s*(?:</?B>)\\s*";  #boundary pattern
 	#$wptn = "(?:.*?)"; #text pattern
 	#$ptn = "^".$conj."?".$bptn.$wptn.$bptn.$conj."*"; #sentence starts with at least 3 boundary words
@@ -2255,22 +2270,22 @@ sub phraseclause{
 ############################################################################################
 
 #dealing with x of y cases:
-#1.	“sub-structure of structure” pattern: sub-structure string = "part|parts|area|areas|portion|portions"
+#1.	Â“sub-structure of structureÂ” pattern: sub-structure string = "part|parts|area|areas|portion|portions"
 #Example: blades of undivided cauline leaves oblong , ovate.
-#Example: <(sterile [floret] corolla) lobe>corolla lobes of sterile 10 – 15 mm , spreading ;
+#Example: <(sterile [floret] corolla) lobe>corolla lobes of sterile 10 Â– 15 mm , spreading ;
 #Example: <(bisexual floret) [corolla]> of bisexual florets pinkish. </(bisexual floret) [corolla]>
 
-#2.	 “structure of sub-structure” pattern:
+#2.	 Â“structure of sub-structureÂ” pattern:
 #Example: <calyculus>Calyculi of appressed bractlets.
 
-#3.	“structure of count” pattern:
+#3.	Â“structure of countÂ” pattern:
 #Example: <calyculus>Calyculi of ca . 18 , reflexed to recurved
 # <floret>Florets of 1 , 2 , or 3 + kinds in a head :</floret>
 
-#4.	“clusters of structure” pattern
+#4.	Â“clusters of structureÂ” pattern
 #Example: <root> clusters of fibrous root.</root>
 #outer series of bristlelike scales , inner of plumose bristles . (made up of, case 2)
-#Note: other “cluster” terms include “arrays” (as in “arrays of heads”. Cf: ”heads in corymbiform arrays.”), “series”, etc.
+#Note: other Â“clusterÂ” terms include Â“arraysÂ” (as in Â“arrays of headsÂ”. Cf: Â”heads in corymbiform arrays.Â”), Â“seriesÂ”, etc.
 
 #in order to distinct case 1 and 2, need knowledge about the hierarchy of structures.
 #need records of adjectivesubjects (e.g. inner) to deal with cases such as  "apices of inner": modifiers table istypemodifier=1
@@ -2515,8 +2530,8 @@ sub choosesubstructure{
 	}
 
 	#check evidence 2: struct with substruct: blades <b>with</b> [bm?] margin
-	#e.g. <n>phyllaries</n> <b>many</b> <b>in</b>  <b>4 – 6 </b> series , unequal , <m>outer</m> and <m>mid </m><b>with</b> appressed <n>bases</n> and <b>spreading</b> , <b>lanceolate</b> to <b>ovate</b> , spiny_fringed , <n>terminal</n> appendages , <b>at</b> least <m>mid </m>spine_tipped , <m><b>innermost</b></m> <b>with</b> <b>erect</b> , <b>flat</b> , <b>entire</b> , <b>spineless</b> <n>apices</n> .
-	#<n>pappi</n> <b>fuscous</b> to <b>purplish</b> , <m>outer</m> scales  <b>25 – 30 , <</b> b> <b>0</</b> b> .  <b>2 – <</b> b> <b>1</</b> b> mm , contrasting <b>with</b>  <b>35 – 40 + , 5 – 7 + </b> mm <m>inner</m> <b>bristles</b> .
+	#e.g. <n>phyllaries</n> <b>many</b> <b>in</b>  <b>4 Â– 6 </b> series , unequal , <m>outer</m> and <m>mid </m><b>with</b> appressed <n>bases</n> and <b>spreading</b> , <b>lanceolate</b> to <b>ovate</b> , spiny_fringed , <n>terminal</n> appendages , <b>at</b> least <m>mid </m>spine_tipped , <m><b>innermost</b></m> <b>with</b> <b>erect</b> , <b>flat</b> , <b>entire</b> , <b>spineless</b> <n>apices</n> .
+	#<n>pappi</n> <b>fuscous</b> to <b>purplish</b> , <m>outer</m> scales  <b>25 Â– 30 , <</b> b> <b>0</</b> b> .  <b>2 Â– <</b> b> <b>1</</b> b> mm , contrasting <b>with</b>  <b>35 Â– 40 + , 5 Â– 7 + </b> mm <m>inner</m> <b>bristles</b> .
 	#
 	my $ptn = "(<[A-Z]>)*".$struct1."(</[A-Z]>)* <B>with</B> .* ?(<[A-Z]>)*".$struct2."(</[A-Z]>)*";
 	$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where  (tag != 'ignore' or isnull(tag)) and  sentence rlike '$ptn' ");
@@ -2833,7 +2848,7 @@ sub pronouncharactersubject{
 	#	tagsentwmt($sentid, $sentence, $modifier, $tag, "pronouncharactersubject[pronoun subject]");
 	#}
 
-	#errous noun cases : ligules surpassing phyllaries by 15 – 20 mm
+	#errous noun cases : ligules surpassing phyllaries by 15 Â– 20 mm
 
 	$sth = $dbh->prepare("select sentid, sentence, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and tag not rlike ' (and|nor|or) ' and tag not like '%[%' and sentence collate utf8_bin not rlike concat('^[^N]*<N>',tag) ");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
@@ -3026,6 +3041,7 @@ sub tagsentwmt{
 
 	while($tag =~ /^($stop|$FORBIDDEN)\b/){
 		$tag =~ s#^($stop|$FORBIDDEN)\b\s*##g;
+
 	}
 
 	#from ending
@@ -3035,6 +3051,7 @@ sub tagsentwmt{
 
 	while($tag =~ /\b($stop|$FORBIDDEN|\w+ly)$/){
 		$tag =~ s#\s*\b($stop|$FORBIDDEN|\w+ly)$##g;
+
 	}
 
 	$modifier =~ s#\b($PRONOUN)\b##g; #5/11/09 check 4974, 7269
@@ -3235,6 +3252,7 @@ sub tagunknowns{
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($sentid, $sent) = $sth->fetchrow_array()){
 		$sent =~ s#<\S+?>##g; #remove any existing tag
+
 		$sent = annotateSent($sent, $n, $o, $m, $b, $b1, $z);
 		$sth1 = $dbh->prepare("update ".$prefix."_sentence set sentence ='$sent' where sentid =".$sentid);
 		$sth1->execute() or print STDOUT "$sth1->errstr\n";
@@ -5017,6 +5035,7 @@ sub addsingularpluralpair{
 sub updatePOS{
    my ($word, $pos, $role, $increment) = @_;
    my ($sth1, $sth, $new, $oldpos, $oldrole, $certaintyu, $certaintyl, $newwordflag);
+
    if($word =~ /(\b|_)(NUM|$NUMBERS|$CLUSTERSTRINGS|$CHARACTER)\b/ and $pos =~/[nsp]/){
    	return 0;
    }
@@ -5240,6 +5259,7 @@ sub checkposinfo{
 	$word =~ s#\s+$##;
 	$word =~ s#^\s*##;
 	if($word =~ /^\d+/){
+
 		my @temp = ("b", "", "1/1");
 	    $results[0] = \@temp;
 	    return @results;
@@ -5532,7 +5552,7 @@ sub plural{
       $plural = $word."es";
     }elsif($word =~ /(.*?)([^aeiouy])y$/){
       $plural = $1.$2."ies";
-    }elsif($word =~ /(.*?)(?:([^f])feï¿½([oaelr])f)$/){
+    }elsif($word =~ /(.*?)(?:([^f])feÃ¯Â¿Å“([oaelr])f)$/){
       $plural = $1.$2.$3."ves";
     }elsif($word =~ /(.*?)(x|s)is$/){
       $plural = $1.$2."es";
@@ -5579,36 +5599,49 @@ sub plural{
 
 sub hideBrackets{
 	my $text = shift;
-	my $hidden = "";
-	while($text=~/(.*?)(\([^()]*?[a-zA-Z][^()]*?\))(.*)/){
-		my $p1 = $1;
-		my $p2 = $2;
-		$text = $3;
-		$p2 =~ s#\.#\[DOT\]#g;
-		$hidden .= $p1.$p2;
-	}
-	$hidden .=$text;
-	$text = $hidden;
-	$hidden = "";
-	while($text=~/(.*?)(\[[^\[\]]*?[a-zA-Z][^\[\]]*?\])(.*)/){
-		my $p1 = $1;
-		my $p2 = $2;
-		$text = $3;
-		$p2 =~ s#\.#\[DOT\]#g;
-		$hidden .= $p1.$p2;
-	}
-	$hidden .=$text;
-	$text = $hidden;
-	$hidden = "";
-	while($text=~/(.*?)({[^{}]*?[a-zA-Z][^{}]*?})(.*)/){
-		my $p1 = $1;
-		my $p2 = $2;
-		$text = $3;
-		$p2 =~ s#\.#\[DOT\]#g;
-		$hidden .= $p1.$p2;
-	}
-	$hidden .=$text;
+	$text =~ s/([\(\)\[\]\{\}])/ \1 /g;
 
+	my $lround=0;
+	my $lsquare=0;
+	my $lcurly=0;
+
+	my $hidden="";
+
+	my @tokens = split(/[\s]+/, $text);
+
+	foreach (@tokens){
+		if($_ eq "("){
+			$lround++;
+			$hidden .= "(";	
+		}elsif($_ eq ")"){
+			$lround--;
+			$hidden .= ")";
+		}elsif($_ eq "["){
+			$lsquare++;
+			$hidden .= "[";
+		}elsif($_ eq "]"){
+			$lsquare--;
+			$hidden .= "]";
+		}elsif($_ eq "{"){
+			$lcurly++;
+			$hidden .= "{";
+		}elsif($_ eq "}"){
+			$lcurly--;
+			$hidden .= "}";
+		}else{
+			if($lround+$lsquare+$lcurly>0){
+				if(/.*?[\.\?\;\:\!].*?/){
+					s/\./\[DOT\]/g;
+					s/\?/\[QST\]/g;
+					s/\;/\[SQL\]/g;
+					s/\:/\[QLN\]/g;
+					s/\!/\[EXM\]/g;
+				}
+			}
+			$hidden .= $_;
+			$hidden .= " ";
+		}
+	}	
 	return $hidden;
 }
 
@@ -5623,6 +5656,7 @@ while(defined ($file=readdir(IN))){
 	if($file !~ /\w/){next;}
 	#print "read $file\n" if $debug;
 	$text = ReadFile::readfile("$dir$file");
+	$text =~ s#["']##g;
 	#print $text."\n";
 	$text =~ s#\s*-\s*to\s+# to #g; #4/7/09 plano - to
 	$text =~ s#[-\s]+shaped#-shaped#g; #5/30/09
@@ -5635,7 +5669,7 @@ while(defined ($file=readdir(IN))){
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
 
-  	#$text = hideBrackets($text);#implemented in DeHyphenAFolder.java
+  	$text = hideBrackets($text);#implemented in DeHyphenAFolder.java
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
   	$text =~ s#(\w)([:;\.])(\w)#$1$2 $3#g; #absent;blade => absent; blade
@@ -5643,6 +5677,8 @@ while(defined ($file=readdir(IN))){
   	$text =~ s#(\sdiam)\s+(\.)#$1$2#g; #diam . =>diam.
   	$text =~ s#(\sca)\s+(\.)#$1$2#g;  #ca . =>ca.
   	$text =~ s#(\d\s+(cm|mm|dm|m)\s*)\.(\s+[^A-Z])#$1\[DOT\]$3#g;
+  	
+  	
 
 	#@todo: use [PERIOD] replace . etc. in brackets. Replace back when dump to disk.
 	@sentences = SentenceSpliter::get_sentences($text);#@todo: avoid splits in brackets. how? use hideBrackets.
@@ -5802,9 +5838,9 @@ sub getfirstnwords{
 }
 
 #extract the segment matching $line from $original, mainly to get original case and parentheses
-#$line: pappi , 20 ï¿½ 40 mm , usually noticeably shorter than corolla .
-#$orginal:... Pappi (white or tawny), 20ï¿½40mm, usually noticeably shorter than corolla. ...
-#Pollen 70–100% 3-porate, mean 25 µm
+#$line: pappi , 20 Ã¯Â¿Å“ 40 mm , usually noticeably shorter than corolla .
+#$orginal:... Pappi (white or tawny), 20Ã¯Â¿Å“40mm, usually noticeably shorter than corolla. ...
+#Pollen 70Â–100% 3-porate, mean 25 Âµm
 sub getOriginal{
 	my ($line, $original, $file) = @_;
 
