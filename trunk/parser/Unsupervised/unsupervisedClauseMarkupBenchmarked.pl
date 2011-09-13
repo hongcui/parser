@@ -3512,7 +3512,7 @@ sub normalizemodifiers{
 
  		#4/29/09
 	#modifier with and/or/plus
-	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence where tag rlike ' (and|or|nor|plus|to) ' order by length(tag) desc");
+	$sth = $dbh->prepare("select sentid, sentence, tag, modifier from ".$prefix."_sentence where tag rlike '[_ ](and|or|nor|plus|to)[ _]' order by length(tag) desc");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 
  	while(($sentid, $sentence, $tag, $modifier) = $sth->fetchrow_array()){
@@ -3552,7 +3552,7 @@ sub finalizecompoundtag{
 	my @conj = ();
 	push(@conj, "");
 
-	while($tag =~ /(^.*?) (and|or|nor|plus) (.*)/){
+	while($tag =~ /(^.*?)[_ ](and|or|nor|plus)[_ ](.*)/){
 		push(@parts, $1);
 		push(@conj, $2);
 		$tag = $3;
@@ -5750,9 +5750,10 @@ while(defined ($file=readdir(IN))){
     	if(length($oline) >=2000 ){#EOL
     		$oline = $line;
     	}
-		if(hasUnmatchedBrackets($oline)){
-			print STDOUT "Warning: sentence [$SENTID] has unmatched brackets\n";
-		}
+    	#checked in DeHyenAFolder.java
+		#if(hasUnmatchedBrackets($oline)){
+		#	print STDOUT "Warning: sentence [id = $SENTID] has unmatched brackets\n";
+		#}
     	$stmt = "insert into ".$prefix."_sentence(sentid, source, sentence, originalsent, lead, status) values($SENTID,'$source' ,'$line','$oline','$lead', '$status')";
 		$sth = $dbh->prepare($stmt);
     	$sth->execute() or die $sth->errstr."\n SQL Statement: ".$stmt."\n";
