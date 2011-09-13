@@ -48,19 +48,22 @@ public class VolumeMarkupDbAccessor {
     private static String url = ApplicationUtilities.getProperty("database.url");
 	private String tablePrefix = null ;
 	private String glossarytable;
-    static {
-		try {
-			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
-			e.printStackTrace();
-		}
-	}
+	private Connection conn = null;
+   
     
     public VolumeMarkupDbAccessor(String dataPrefix, String glossarytable){
     	this.tablePrefix = dataPrefix;
     	this.glossarytable = glossarytable;
+    	try {
+    			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+    			conn = DriverManager.getConnection(url);
+    	} catch (Exception e) {
+    				// TODO Auto-generated catch block
+    			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
+    			e.printStackTrace();
+    	}
+    		
+	
     }
 	
     
@@ -71,11 +74,11 @@ public class VolumeMarkupDbAccessor {
      * @throws SQLException
      */
     public ArrayList<String> structureTags4Curation(List <String> tagList) throws  ParsingException, SQLException {
-    	Connection conn = null;
+    	
     	PreparedStatement stmt = null;
     	ResultSet rs = null;
 		try {
-			conn = DriverManager.getConnection(url);
+
 			String sql = "select distinct tag as structure from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' " +
 			"union select plural as structure from "+this.tablePrefix+"_singularplural"+","+ this.tablePrefix+"_sentence where singular=tag "+
 			"order by structure"; 		
@@ -103,10 +106,7 @@ public class VolumeMarkupDbAccessor {
 			}
 			if (stmt != null) {
 				stmt.close();
-			}
-			if (conn != null) {
-				conn.close();
-			}			
+			}		
 		}
     }
 
@@ -131,12 +131,12 @@ public class VolumeMarkupDbAccessor {
      * @throws SQLException
      */
     public ArrayList<String> contentTerms4Curation(List <String> curationList) throws  ParsingException, SQLException {
-    	Connection conn = null;
+    	
     	PreparedStatement stmt = null;
     	ResultSet rs = null;
 		 
 	 	try {
-			conn = DriverManager.getConnection(url);
+			
 			String sql = "select dhword from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS")+
 			" where inbrackets=0 and dhword not like '%\\_%' and " +
 			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where saved_flag='red') and" +
@@ -158,10 +158,7 @@ public class VolumeMarkupDbAccessor {
 			}
 			if (stmt != null) {
 				stmt.close();
-			}
-			if (conn != null) {
-				conn.close();
-			}			
+			}		
 		}
     }
     /**
@@ -172,7 +169,7 @@ public class VolumeMarkupDbAccessor {
      */
 	private void populateCurationList(List<String> curationList, String word) {
 		try{
-			Connection conn = DriverManager.getConnection(url);
+			
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+word+"'");
 			if(rs.next()){
@@ -199,11 +196,11 @@ public class VolumeMarkupDbAccessor {
 	public ArrayList<String> descriptorTerms4Curation() throws SQLException {
 		
 		ArrayList<String> words = new ArrayList<String>();
-		Connection conn = null;
+		
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		try {
-			conn = DriverManager.getConnection(url);
+		
 			//stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and word not in (select distinct term from "+this.glossarytable+")");
 			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and saved_flag !='red' order by word");
 			stmt.setString(1, "b");
@@ -227,9 +224,6 @@ public class VolumeMarkupDbAccessor {
 				stmt.close();
 			}
 			
-			if(conn != null){
-				conn.close();
-			}
 		}
 		
 		return words;
@@ -253,7 +247,7 @@ public class VolumeMarkupDbAccessor {
 					w = ws[ws.length-1];
 				}
 				try {
-					Connection conn = DriverManager.getConnection(url);
+
 					Statement stmt = conn.createStatement();
 					ResultSet rset = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+w+"'");					 
 					if(rset.next()){//in glossary
@@ -281,7 +275,7 @@ public class VolumeMarkupDbAccessor {
 	 */
 	private void add2WordRolesTable(String w, String role) {
 		try {
-			Connection conn = DriverManager.getConnection(url);
+
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select * from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+w+"' and semanticrole='"+role+"'");
 			if(!rs.next()){
@@ -303,11 +297,11 @@ public class VolumeMarkupDbAccessor {
 public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 		
 		ArrayList<String> words = new ArrayList<String>();
-		Connection conn = null;
+		
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		try {
-			conn = DriverManager.getConnection(url);
+			
 			//Populate descriptor Hong TODO 5/23/11
 			//stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos4parser where pos=? and word not in (select distinct term from "+this.glossarytable+") and saved_flag not in ('green','red')");
 			stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and word not in (select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+") and saved_flag not in ('red')");
@@ -330,9 +324,6 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 				stmt.close();
 			}
 			
-			if(conn != null){
-				conn.close();
-			}
 		}
 		
 		return words;
@@ -347,11 +338,11 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 		ArrayList<String> words = new ArrayList<String>();
 		ArrayList<String> flag = new ArrayList<String>();
 		ArrayList<ArrayList> wordsAndFlag = new ArrayList<ArrayList>();
-		Connection conn = null;
+		
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		try {
-			conn = DriverManager.getConnection(url);
+		
 			//Populate descriptor Hong TODO 5/23/11
 			//stmt = conn.prepareStatement("select word from "+this.tablePrefix+"_wordpos4parser where pos=? and word not in (select distinct term from "+this.glossarytable+") and saved_flag not in ('green','red')");
 			stmt = conn.prepareStatement("select word,saved_flag from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos=? and word not in (select word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+")");
@@ -374,11 +365,7 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 			
 			if(stmt != null) {
 				stmt.close();
-			}
-			
-			if(conn != null){
-				conn.close();
-			}
+			}			
 		}
 		wordsAndFlag.add(words);
 		wordsAndFlag.add(flag);
