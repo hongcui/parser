@@ -1009,6 +1009,8 @@ public class MainFormDbAccessor {
 	/**
 	 * merge grouped_terms and group_decision table and add data into 
 	 * term_category table, which may already have data
+	 * also add newly learned structure term to the table for category "structure"
+	 * This makes term_category contain all new terms learned from a volume of text
 	 */
 	public void finalizeTermCategoryTable() {
 		String prefix = MainForm.dataPrefixCombo.getText();
@@ -1027,6 +1029,15 @@ public class MainFormDbAccessor {
 					insert2TermCategoryTable(t1, cat);
 					if(t2!=null && t2.trim().length()>0) insert2TermCategoryTable(t2, cat);
 				}
+			}
+			
+			//insert structure terms
+			q = "select distinct word from "+prefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where semanticrole in ('op', 'os') and " +
+					"and word not in (select distinct term from "+MainForm.glossaryPrefixCombo.getText()+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure'))";
+			rs = stmt.executeQuery(q);
+			while(rs.next()){
+				String t = rs.getString(1);
+				insert2TermCategoryTable(t, "structure");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
