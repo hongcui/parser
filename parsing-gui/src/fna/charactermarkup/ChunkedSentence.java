@@ -531,11 +531,21 @@ public class ChunkedSentence {
 	private void disambiguateThose() {
 		Pattern p = null;
 		if(this.chunkedsent.indexOf(" those r[p[of")>0){
-			p = Pattern.compile("((?:.*?SG\\WSG.*|^)<(.*?)>.*?)those(\\s+r?\\[?p?\\[?of.*)");
+			//p = Pattern.compile("((?:.*?SG\\WSG.*|^)<(.*?)>.*?)those(\\s+r?\\[?p?\\[?of.*)");
+			p = Pattern.compile("((?:.*?SG\\WSG.*|^)(?:z\\[\\(|<)(.*?)(?:>|\\)\\]).*?)those(\\s+r?\\[?p?\\[?of.*)");
 			Matcher m = p.matcher(this.chunkedsent);
 			while(m.matches()){
 				String noun = m.group(2);
 				int indexOfthose = m.group(1).split("\\s+").length;
+				//in case there are to~12~cm, need to adjust indexOfthose
+				String textbeforethose = m.group(1);
+				Pattern pt = Pattern.compile("(.*?)\\b(to~\\d+~(?:"+this.units+").*?)\\b(.*)");
+				Matcher mt = pt.matcher(textbeforethose);
+				while(mt.matches()){
+					textbeforethose = mt.group(3);
+					indexOfthose += mt.group(2).replaceAll("[^~]", "").length();
+					mt = pt.matcher(textbeforethose);
+				}
 				//update chunkedsent and chunkedtokens
 				//"those" may be included in a chunk
 				String token = this.chunkedtokens.get(indexOfthose);
@@ -602,7 +612,7 @@ public class ChunkedSentence {
 		if(chunk.indexOf(keyword)>=0){
 			return i;
 		}		
-		System.out.println("Wrong chunks in ChunkedSentence");
+		System.out.println("Wrong chunks in ChunkedSentence, System exiting.");
 		System.exit(1); //should never reach here
 		return 0;
 	}
@@ -1232,7 +1242,8 @@ public class ChunkedSentence {
 					Constructor cons = c.getConstructor(String.class);
 					pointer++;
 					//deal with any unassignedmodifier when EOS is approached.
-					if(this.unassignedmodifier != null && this.chunkedtokens.get(pointer).matches("(SG)?\\W(SG)?")){
+					//if(this.unassignedmodifier != null && this.chunkedtokens.get(pointer).matches("(SG)?\\W(SG)?")){
+					if(this.unassignedmodifier != null){ //did not see why the 2nd condition is needed. Here, assuming any unassigned modifier should be applied to the next valid chunk
 						token = token.replaceFirst("\\[", "["+this.unassignedmodifier+" ");
 						this.unassignedmodifier = null;
 					}
@@ -1607,7 +1618,7 @@ public class ChunkedSentence {
 			if(t.matches("^[{<(]*("+ChunkedSentence.units+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
-				adjustPointer4DotLong(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
+				adjustPointer4Dot(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
 				numerics = numerics.replaceAll("[{(<>)}]", "").trim();
 				if(numerics.contains("×")){
 					return new ChunkArea(numerics);
@@ -1646,19 +1657,19 @@ public class ChunkedSentence {
 	
 	
 	/**
-	 * needed for cases like "10 cm . long/broad/wide/thick", skip ". long"
+	 * needed for cases like "10 cm . long/broad/wide/thick", skip ". "
 	 * @param pointer2
 	 */
-	private void adjustPointer4DotLong(int pointer) {
-		boolean iscase = false;
+	private void adjustPointer4Dot(int pointer) {
+		//boolean iscase = false;
 		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().length()==0){
 			pointer++;
 		}
 		if(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().matches("\\.")){//optional
-			pointer++;
+			this.pointer++;
 		}
 		
-		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().length()==0){
+		/*while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().length()==0){
 			pointer++;
 		}
 		while(this.chunkedtokens.size()>pointer && this.chunkedtokens.get(pointer).trim().matches("[{(<]?(long|broad|wide|thick)[})>]?")){//required
@@ -1667,7 +1678,7 @@ public class ChunkedSentence {
 		}
 		if(iscase){
 			this.pointer = pointer;
-		}
+		}*/
 	}
 	/**
 	 * 
@@ -1760,7 +1771,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				token = token.replaceFirst("\\[p\\[", "[m[").replaceAll("[or]\\[", "").replaceFirst("\\]+$", "");
 				this.chunkedtokens.set(id, token);
 				return "ChunkValue";
-			}else if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?\\]+")){
+			}else if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?\\]+") && !token.matches(".*[×x]\\].*")){//r[p[at] o[30×]] is not a value
 				token = token.replaceFirst("\\[p\\[", "[m[").replaceAll("[or]\\[", "").replaceFirst("\\]+$", "");
 				this.chunkedtokens.set(id, token);
 				return "ChunkValue";
@@ -1925,7 +1936,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				senttag = rs.getString(2).trim();
 				senttag = senttag.compareTo("general")==0? "whole_organism" : senttag;
 				sentmod = rs.getString(1).trim();
-				this.text = rs.getString(3);
+				this.text = rs.getString(3); //has to use originalsent, because it is "ditto"-fixed (in SentenceOrganStateMarker.java)
 			}
 			rs = stmt.executeQuery("select rmarkedsent from "+this.tableprefix+"_markedsentence where source ='"+sentsrc+"'");
 			if(rs.next()){
@@ -1952,7 +1963,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				String subject = "";
 				String [] tokens = text.split("\\s+");
 				if(senttag.indexOf("[")<0){ 
-					if(senttag.indexOf(" ")>=0){// a , c, and/or b
+					if(senttag.matches(".*\\b(or|and|plus)\\b.*")){// a , c, and/or b
 						int or = senttag.lastIndexOf(" or ");
 						int and = senttag.lastIndexOf(" and ");
 						int ind = or < and ? and : or;

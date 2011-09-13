@@ -15,6 +15,7 @@ import org.jdom.Attribute;
 import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
@@ -178,7 +179,8 @@ public class SentenceChunker4StanfordParser {
 			}
 		//}
 		collapseThatClause();//that, which
-		collapseWhereClause();//where, when
+		collapseWhereClause();//where
+		collapseWhenClause(); //when
 		
 		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable);
 		return cs;
@@ -261,21 +263,13 @@ end procedure
             (S
               (VP (TO to)
                 (VP (VB be)
-                  (ADJP (JJ elongate))))))))
-                  
-         (SBAR
-              (WHADVP (WRB when))
-              (S
-                (NP (NN corpus) (NN cavity))
-                (VP (VBD became)
-                  (ADJP (JJ deep)))))         
+                  (ADJP (JJ elongate))))))))       
 	 */
 	private void collapseWhereClause() {
 		try{
 			Element root  = tree.getRootElement();
-			List<Element> thatclauses = XPath.selectNodes(root, ".//SBAR/WHADVP/*[@text='where']"); //select WHNP elements
-			thatclauses.addAll(XPath.selectNodes(root, ".//SBAR/WHADVP/*[@text='when']"));
-			Iterator<Element> it = thatclauses.iterator();
+			List<Element> whereclauses = XPath.selectNodes(root, ".//SBAR/WHADVP/*[@text='where']"); //select WHNP elements
+			Iterator<Element> it = whereclauses.iterator();
 			while(it.hasNext()){
 				Element WHNP = it.next();
 				Element SBAR = WHNP.getParentElement();
@@ -288,6 +282,118 @@ end procedure
 			e.printStackTrace();
 		}
 	}
+	
+    /*(SBAR
+            (WHADVP (WRB when))
+            (S
+              (NP (NN corpus) (NN cavity))
+              (VP (VBD became)
+                (ADJP (JJ deep)))))
+      (, ,)               
+   
+      (SBAR
+      	(WHADVP (WRB when))
+      	(S
+        	(ADJP (JJ axillary))))
+      (, ,)
+       	
+     (ADVP
+              (ADJP
+                (WHADVP (WRB when))
+                (JJ terminal))
+              (PP (IN with)
+                (ADVP (RB moreorless))))
+            (NP
+              (NP (JJ well-defined) (JJ central) (NNS axis))
+              (CC and)
+              (NP (JJ shorter) (NN side) (NNS branches)))))   	
+              
+      (NP (WRB when) (JJ terminal))
+              (, ,)
+             
+      (ADJP
+                (WHADVP (WRB when))
+                (JJ pubescent))
+              (, ,))  
+              
+   (SBAR
+        (WHADVP (WRB when)
+          (ADJP (JJ hydrated) (, ,) (JJ obscured)))
+        (FRAG
+          (ADJP
+            (WHADVP (WRB when))
+            (JJ desiccated)))))
+    (. .)))                
+	 */
+	/**
+	 * a when-clause ends at a ","
+	 * collect from when to nearest ,
+	 * collapse the element of when (WRB, IN, or any wired tag when appears with)
+	 * e.g., the last example above will be collapsed as: note WRB is changed to WHENCLS 
+	    (SBAR
+        (WHADVP (WHENCLS when hydrated)
+          (ADJP (, ,) (JJ obscured)))
+        (FRAG
+          (ADJP
+            (WHADVP (WHENCLS when desiccated))
+            ))))
+        (. .))) 
+	 */
+	private void collapseWhenClause() {
+		try{
+			Element root  = tree.getRootElement();
+			List<Element> whenclauses = XPath.selectNodes(root, ".//*[@text='when']"); //select any element containing "when"
+			for(int i = 0; i < whenclauses.size(); i++){
+				Element WHEN = whenclauses.get(i);
+				//collect words/leaf nodes after "when" until a [,.] is found
+				//growing the text in WHEN while removing included leaf nodes
+				String text = "s[when "+collectText4New(WHEN, root).trim()+"]";
+				WHEN.setAttribute("text", text);
+				WHEN.setName("WHENCLS");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * following text order, collect text for new element "when" until a , or . is reached
+	 * @param e
+	 * @return
+	 */
+	private String collectText4New(Element when, Element root){
+		StringBuffer text = new StringBuffer();
+		Iterator<Element> all = root.getDescendants(new ElementFilter());
+		boolean findwhen = false;
+		ArrayList<Element> toberemoved = new ArrayList<Element>();
+		while(all.hasNext()){
+			Element e = all.next();
+			if(findwhen){
+				if(e.getAttribute("text")!=null){
+					String t =e.getAttributeValue("text");
+					if(t.matches("[\\.:;,]")){
+						text.append(t).append(" ");
+						toberemoved.add(e);
+						break;
+					}else if(text.length()>0 && t.matches("\\w+\\[.*")){ 
+						//match: when {terminal} ........ r[p[with]] {moreorless} l[{well-defined} {central} (axis) and {shorter} (side) (branches)] ,
+						//not match: when r[p[in] flower] , .... 
+						break;
+					}else{
+						text.append(t).append(" ");
+						toberemoved.add(e);
+					}
+				}
+			}else if(e.equals(when)){
+				findwhen = true;
+			}			
+		}		
+		
+		for(int i = 0; i<toberemoved.size(); i++){
+			toberemoved.get(i).detach();
+		}
+		return text.toString().trim();
+	}
+	
 	private void extractFromlVBs(ArrayList<Element> lVBs) {
 		Iterator<Element> it = lVBs.iterator();
 		while(it.hasNext()){

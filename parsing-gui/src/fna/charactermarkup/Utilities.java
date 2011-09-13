@@ -346,7 +346,8 @@ public class Utilities {
 	 */
 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
-		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-").replaceAll(" ", "").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
+		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String ch = characterhash.get(w);
@@ -387,7 +388,7 @@ public class Utilities {
 				//}
 			}
 			//check _term_category table
-			String q = "select distinct category from "+prefix+"_term_category where term='"+w+"' order by category";
+			String q = "select distinct category from "+prefix+"_term_category where term='"+w+"' and category !='structure' order by category";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String cat = rs.getString("category");

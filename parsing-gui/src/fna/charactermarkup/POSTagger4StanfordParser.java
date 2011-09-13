@@ -128,7 +128,6 @@ public class POSTagger4StanfordParser {
 
 
 				str = handleBrackets(str);
-				
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
 				
 				if(containsArea){
