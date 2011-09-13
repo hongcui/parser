@@ -46,7 +46,7 @@ public class CharacterAnnotatorChunked {
 	private String notInModifier = "a|an|the";
 	private String lifestyle = "";
 	private String characters = "";
-	private boolean partofinference = true;
+	private boolean partofinference = false;
 	private ArrayList<Element> pstructures = new ArrayList<Element>();
 	private ArrayList<Element> cstructures = new ArrayList<Element>();
 	private boolean attachToLast = false; //this switch controls where a character will be attached to. "true": attach to last organ seen. "false":attach to the subject of a clause
@@ -61,11 +61,12 @@ public class CharacterAnnotatorChunked {
 	/**
 	 * 
 	 */
-	public CharacterAnnotatorChunked(Connection conn, String tableprefix, String glosstable) {
+	public CharacterAnnotatorChunked(Connection conn, String tableprefix, String glosstable, boolean evaluation) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
-		if(this.evaluation) this.partofinference = false;
+		this.evaluation = evaluation;
+		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
 		try{
 			//collect life_style terms
 			Statement stmt = conn.createStatement();
@@ -104,9 +105,11 @@ public class CharacterAnnotatorChunked {
 		this.sentsrc = sentsrc;
 		Element text = new Element("text");//make <text> the first element in statement
 		text.addContent(this.text);
-		this.statement.addContent(text);
+		if(!this.evaluation) this.statement.addContent(text);
 		String subject= cs.getSubjectText();
-		if(!subject.equals("ignore")){
+		if(subject==null && cs.getPointer()==0){
+			annotateByChunk(cs, false);
+		}else if(!subject.equals("ignore")){
 			if(subject.equals("ditto")){
 				reestablishSubject();	
 			}else{
@@ -252,6 +255,7 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private void annotateByChunk(ChunkedSentence cs, boolean inbrackets) {
+		if(cs == null) return;
 		this.inbrackets = inbrackets;
 		
 		while(cs.hasNext()){
@@ -293,6 +297,8 @@ public class CharacterAnnotatorChunked {
 				if(this.partofinference){
 					this.cstructures.addAll(this.subjects);
 				}
+				cs.setInSegment(true);
+				cs.setRightAfterSubject(true);
 			}else if(ck instanceof ChunkNonSubjectOrgan){
 				String content = ck.toString().replaceFirst("^u\\[", "").replaceFirst("\\]$", "");
 				String structure = "";
@@ -417,10 +423,10 @@ public class CharacterAnnotatorChunked {
 					this.subjects = latest("structure", this.latestelements);
 				}else{
 					int p = cs.getPointer()-2;
-					String last = "";
+					String last = ""; //the chunk before ck??
 					do{
 						last = cs.getTokenAt(p--);
-					}while(!last.matches(".*?\\w.*"));
+					}while(!last.matches(".*?\\S.*"));
 					String constraintId = null;
 					if(last.matches(".*?\\)\\]+")){
 						constraintId = "o"+(this.structid-1);
@@ -443,13 +449,21 @@ public class CharacterAnnotatorChunked {
 				String content = ck.toString().substring(ck.toString().indexOf(" ")+1);
 				ChunkedSentence newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable, this.tableprefix);
 				if(connector.compareTo("when")==0){//rewrite content and its chunkedTokens
-					int end = ck.toString().indexOf(",") > 0? ck.toString().indexOf(",") : ck.toString().indexOf(".");
+					Pattern p = Pattern.compile("[\\.,:;]");
+					Matcher m = p.matcher(ck.toString());
+					int end = 0;
+					if(m.find()){
+						end = m.start();
+					}
+					//int end = ck.toString().indexOf(",") > 0? ck.toString().indexOf(",") : ck.toString().indexOf(".");
 					String modifier = ck.toString().substring(0, end).trim();//when mature, 
-					content = ck.toString().substring(ck.toString().indexOf(",")+1).trim();
-					//adjust chunkedTokens
-					ck.setChunkedTokens(Utilities.breakText(content));					
-					newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable, this.tableprefix);
-
+					content = ck.toString().substring(end).replaceAll("^\\W+", "").trim();
+					if(content.length()>0){
+						ck.setChunkedTokens(Utilities.breakText(content));					
+						newcs = new ChunkedSentence(ck.getChunkedTokens(), content, conn, glosstable, this.tableprefix);
+					}else{
+						newcs = null;
+					}
 					//attach modifier to the last characters
 					if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("character")==0){
 						Iterator<Element> it = this.latestelements.iterator();
@@ -457,10 +471,11 @@ public class CharacterAnnotatorChunked {
 							this.addAttribute(it.next(), "modifier", modifier);
 						}
 					}else{ //this when clause is a modifier for the subclause
-						newcs.unassignedmodifier = modifier;						
+						if(newcs!=null) newcs.unassignedmodifier = "m["+modifier+"]";
+						else cs.unassignedmodifier = "m["+modifier+"]";
 					}
 				}
-				newcs.setInSegment(true);
+
 				if(connector.compareTo("where") == 0){
 					//retrieve the last non-comma, non-empty chunk					
 					int p = cs.getPointer()-2;
@@ -472,7 +487,7 @@ public class CharacterAnnotatorChunked {
 					if(last.matches(".*?\\)\\]+")) constraintId = "o"+(this.structid-1);				
 					cs.setClauseModifierConstraint(last.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\)|\\()", ""), constraintId);
 				}
-
+				if(newcs!=null) newcs.setInSegment(true);
 				annotateByChunk(newcs, false); //no need to updateLatestElements				
 				this.subjects = subjectscopy;//return to original status
 				cs.setClauseModifierConstraint(null, null); //return to original status
@@ -673,6 +688,25 @@ public class CharacterAnnotatorChunked {
 			n = n.replaceFirst("a\\[", "").replaceFirst("\\]$", "");
 			n = "m["+v+" "+times+"] "+n;
 			return this.processSimpleCharacterState(n, parents);
+		}else if(content.indexOf("[")<0){ //{forked} {moreorless} unevenly ca . 3-4 times , 
+			//content = 3-4 times; v = 3-4; n=times
+			//marked as a constraint to the last character "forked". "ca." should be removed from sentences in SentenceOrganStateMarker.java
+			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
+			if(lastelement.getName().compareTo("character")==0){
+				Iterator<Element> it = this.latestelements.iterator();
+				while(it.hasNext()){
+					lastelement = it.next();
+					if(cs.unassignedmodifier != null && cs.unassignedmodifier.trim().length()!=0){
+						lastelement.setAttribute("modifier", cs.unassignedmodifier);
+						cs.unassignedmodifier = null;
+					}
+					lastelement.setAttribute("constraint", content);
+				}
+			}else if(lastelement.getName().compareTo("structure")==0){
+				return null; //parsing failure
+			}
+			return this.latestelements;
+			
 		}
 		return null;
 	}
@@ -1452,7 +1486,8 @@ public class CharacterAnnotatorChunked {
 		rela.setAttribute("negation", negation+"");
 		//rela.setAttribute("symmetric", symmetric+"");
 		//rela.setAttribute("inference_method", inferencemethod);
-		if(modifier.length()>0 && modifier.indexOf("m[")>=0){
+		//if(modifier.length()>0 && modifier.indexOf("m[")>=0){
+		if(modifier.length()>0){
 			addAttribute(rela, "modifier", modifier.replaceAll("m\\[|\\]", ""));
 		}
 		addClauseModifierConstraint(cs, rela);

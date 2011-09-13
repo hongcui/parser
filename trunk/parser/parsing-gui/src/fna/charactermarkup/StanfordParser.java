@@ -55,20 +55,22 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = false;
+	private boolean evaluation = false;
 	/**
 	 * 
 	 */
-	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix, String glosstable) {
+	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix, String glosstable, boolean evaluation) {
 		// TODO Auto-generated constructor stub
 		this.posedfile = new File(posedfile); 
 		this.parsedfile = new File(parsedfile);
 		this.database = database;
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
+		this.evaluation = evaluation;
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -103,6 +105,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
+				//if(src.compareTo("56.txt-7")!=0) continue;
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -200,7 +203,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Matcher m = null;
 			Tree2XML t2x = null;
 			Document doc = null;
-			CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(conn, this.tableprefix, glosstable);
+			CharacterAnnotatorChunked cac = new CharacterAnnotatorChunked(conn, this.tableprefix, glosstable, this.evaluation);
 			SentenceChunker4StanfordParser ex = null;
 			Element statement = null;
 			ChunkedSentence cs = null;
@@ -241,7 +244,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							}
 						}
 						//sent = this.normalizeSpacesRoundNumbers(sent);
-							if(!sent.matches(".*?[;\\.]\\s*$")){
+							if(!sent.matches(".*? [;\\.]\\s*$")){//at 30x. => at 30x. .
 								sent = sent+" .";
 							}
 							sent = sent.replaceAll("<\\{?times\\}?>", "times");
@@ -363,7 +366,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("\\+(?![\\d()\\]\\[×-])", "+ ");
 		sent = sent.replaceAll("(?<=(\\d))\\s*\\?\\s*(?=[\\d)\\]])", "?"); // (0? )
 		sent = sent.replaceAll("\\s*-\\s*", "-"); // 1 - 2 => 1-2, 4 - {merous} => 4-{merous}
-		
+		sent = sent.replaceAll("(?<=[\\d\\+-][\\)\\]])\\s+(?=[\\(\\[][\\d-])", "");//2(–3) [–6]  ??
 		//%,°, and ×
 		sent = sent.replaceAll("(?<![a-z])\\s+%", "%").replaceAll("(?<![a-z])\\s+°", "°").replaceAll("(?<![a-z ])\\s*×\\s*(?![ a-z])", "×");
 		/*if(sent.indexOf(" -{")>=0){//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
@@ -496,7 +499,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String text = "ovary more than two to three-fourths to one half superior. ";
 		//System.out.println(StanfordParser.ratio2number(text));
 		//String text="<pollen> 70-100% 3-{porate} , {mean} 25 um .";
-		String text="x = [ 9 ? , 13 , 15 ] 17 , 18 , 19 .";
+		//String text="x = [ 9 ? , 13 , 15 ] 17 , 18 , 19 .";
+		String text="<stamens> 2 ( – 3 ) [ – 6 ] , {exserted} ";
 		System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
 		
 		
@@ -530,12 +534,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String database = "bhl_benchmark";
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
 		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_parsedsentences.txt";
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_posedsentences.txt";
+		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_parsedsentences.txt";
 		String database = "markedupdatasets";
 		
 
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav5", "fnaglossaryfixed");
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav4", "fnaglossaryfixed", false);
 
 		//sp.POSTagging();
 		//sp.parsing();

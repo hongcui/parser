@@ -82,7 +82,7 @@ public class Tree2XML {
     	int count = 0;
     	StringBuffer xml = new StringBuffer();
     	parsed = parsed.replaceAll("\\)", ") ").replaceAll("\\s+", " ").trim();//(NP (JJ subulate) (NNS enations) )
-        parsed = parsed.replaceAll("``", "JJ").replaceAll("\\([^A-Z/ ]+", "(PUNCT");
+        parsed = parsed.replaceAll("``", "JJ").replaceAll("\\(-LRB-", "(PUNCT").replaceAll("\\([^A-Z/ ]+", "(PUNCT");
        	parsed = parsed.replaceAll("(?<=\\([A-Z]{1,8}) (?!\\()", "_");//(NP (JJ_subulate) (NNS_enations))
     	
     	ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(parsed.split("\\s+"))); 
