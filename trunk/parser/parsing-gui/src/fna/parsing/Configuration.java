@@ -152,11 +152,11 @@ public class Configuration {
 		btnType.addMouseListener(new MouseListener() {
 			public void mouseUp(MouseEvent mEvent){
 				shell.setVisible(false);
-				new Type4Document().showType4Document();
+				String xml = new Type4Document().showType4Document();
 				if(!shell.isDisposed()) {
 					shell.dispose();
 				}
-				MainForm.launchMarker("type4");
+				MainForm.launchMarker("type4:"+xml);
 				System.exit(0);
 			}
 			

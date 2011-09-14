@@ -80,7 +80,7 @@ public class DeHyphenAFolder {
 
 		   if(listener!= null) listener.progress(1);
 		   vd.showPerlMessage("Checking files...\n");
-		   if(hasUnmatchedBrackets()){
+		   if(hasProblems()){
 			   vd.showPerlMessage("Files with unmatched brackets are listed above. \n");
 			   vd.showPerlMessage("Run this step again after the above identified problems are corrected.\n");
 			   listener.progress(0);
@@ -120,7 +120,7 @@ public class DeHyphenAFolder {
 	    * 
 	    * @return pass the check or not
 	    */
-	    private boolean hasUnmatchedBrackets() {
+	    private boolean hasProblems() {
         	boolean has = false;
 	        try {
 	            File[] flist = folder.listFiles();
@@ -137,7 +137,18 @@ public class DeHyphenAFolder {
 	                //check for unmatched brackets
 	                if(hasUnmatchedBrackets(text)){
 	                	has = true;
-	                	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains unmatched brackets\n");
+	                	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains unmatched brackets in \""+text+"\"\n");
+	                }
+	                //check for missing spaces between text and numbers: 
+	                if(text.matches(".*[a-zA-Z]\\d.*") || text.matches(".*\\d[a-zA-Z].*")){
+	                	//has =true; //ant descriptions contain "Mf4"
+	                 	vd.showPerlMessage(flist[i].getAbsolutePath()+" misses a space between a word and a number in \""+text+"\"\n");      	       
+	                }
+	                //check for (?)
+	                if(text.matches(".*?\\(\\s*\\?\\s*\\).*")){
+	                	has =true;
+	                 	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains expression (?) in \""+text+"\"\n");  
+	                 	vd.showPerlMessage("Change (?) to an text expression such as (not certain)");
 	                }
 	            }
 	        }catch(Exception e){

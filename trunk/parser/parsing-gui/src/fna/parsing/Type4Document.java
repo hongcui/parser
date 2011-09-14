@@ -27,6 +27,7 @@ public class Type4Document {
 	private ConfigurationDbAccessor configDb = new ConfigurationDbAccessor();
 	private static final Logger LOGGER = Logger.getLogger(Type3Document.class);
 	private Text text;
+	private String xml;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -36,7 +37,7 @@ public class Type4Document {
 	/**
 	 * @wbp.parser.entryPoint
 	 */
-	public void showType4Document() {
+	public String showType4Document() {
 		final Display display = Display.getDefault();
 		
 		final Shell shell = new Shell();
@@ -51,6 +52,7 @@ public class Type4Document {
 		final Combo combo = new Combo(group, SWT.NONE);
 		combo.setBounds(114, 11, 109, 10);
 		combo.setText("TaxonX");
+		combo.add("Phenoscape");
 		
 		Button button = new Button(group, SWT.NONE);
 		button.setBounds(408, 360, 75, 25);
@@ -59,6 +61,7 @@ public class Type4Document {
 			public void mouseUp(MouseEvent mEvent){
 				String [] paragraphs = text.getText().split("\r\n");
 				try {
+					xml = combo.getText();
 					configDb.saveParagraphTagDetails(combo.getText(), paragraphs);
 					ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
 							ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
@@ -74,7 +77,7 @@ public class Type4Document {
 			public void mouseDoubleClick(MouseEvent mEvent) {}
 		});
 		
-		Button button_1 = new Button(group, SWT.NONE);
+		/*Button button_1 = new Button(group, SWT.NONE);
 		button_1.setBounds(498, 360, 75, 25);
 		button_1.setText("Skip");
 		button_1.addMouseListener(new MouseListener(){
@@ -84,7 +87,7 @@ public class Type4Document {
 			
 			public void mouseDown(MouseEvent mEvent) { }
 			public void mouseDoubleClick(MouseEvent mEvent) {}
-		});
+		})*/;
 		
 		Label label = new Label(group, SWT.NONE);
 		label.setBounds(10, 40, 482, 15);
@@ -110,5 +113,6 @@ public class Type4Document {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
+		return xml;
 	}
 }

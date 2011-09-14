@@ -89,6 +89,7 @@ public class MainForm {
 
 
 	@SuppressWarnings("unused")
+	private String type4xml;
 	private Combo combo_1_1_1;
 	private ProgressBar markupProgressBar;
 	private Table findStructureTable;
@@ -273,9 +274,12 @@ public class MainForm {
 	
 	public static void launchMarker(String type) {
 		try {
-			
 			MainForm window = new MainForm();
-			window.type = type ;
+			String[] info = type.split(":");
+			window.type = info[0] ;
+			if(window.type.compareTo("type4")==0 && info.length>1){
+				window.setType4XML(info[1]);
+			}
 			window.open();
 		} catch (Exception e) {
 			LOGGER.error("Error Launching application", e);
@@ -287,16 +291,12 @@ public class MainForm {
 	 * Open the window
 	 */
 	public void open() throws Exception {
-		//final Display display = Display.getDefault();
-	    DeviceData data = new DeviceData();
-
+		final Display display = Display.getDefault();
+	    /*DeviceData data = new DeviceData();
 	    data.tracking = true;
-
 	    final Display display = new Display(data);
-
 	    Sleak sleak = new Sleak();
-
-	    sleak.open();
+	    sleak.open();*/
 	    
 		 red = display.getSystemColor(SWT.COLOR_RED);
 		 green = display.getSystemColor(SWT.COLOR_GREEN);
@@ -1816,9 +1816,9 @@ public class MainForm {
 				int i=0;
 				for (TableItem item : findMoreStructureTable.getItems()) {
 					if (item.getChecked()) {
-						if(findStructureTable.getItem(i).getBackground()==green){
-							findStructureTable.getItem(i).setBackground(0,white);
-							findStructureTable.getItem(i).setBackground(1,white);
+						if(findMoreStructureTable.getItem(i).getBackground()==green){
+							findMoreStructureTable.getItem(i).setBackground(0,white);
+							findMoreStructureTable.getItem(i).setBackground(1,white);
 						}else{
 							findMoreStructureTable.getItem(i).setBackground(0,green);
 							findMoreStructureTable.getItem(i).setBackground(1,green);
@@ -3246,7 +3246,12 @@ public class MainForm {
 		ProcessListener listener = 
 			new ProcessListener(transformationTable, transformationProgressBar, 
 					shell.getDisplay());
-		Type4Transformer transformer = new Type4Transformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		Type4Transformer transformer = null;
+		if(this.type4xml.compareToIgnoreCase("taxonx") ==0){
+			transformer = new Type4Transformer4TaxonX(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		}else if(this.type4xml.compareToIgnoreCase("phenoscape") ==0){
+			transformer = new Type4Transformer4Phenoscape(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		}
 		transformer.start();
 	}
 	private void clearTransformation() {
@@ -3452,7 +3457,7 @@ public class MainForm {
 	
 	private void updateContext(int sentid) throws ParsingException {
 		contextStyledText.setText("");
-		tagListCombo.setText("");
+		//tagListCombo.setText("");
 		
 		
 		try {
@@ -3885,6 +3890,7 @@ public class MainForm {
 	 * @return
 	 */
 	private boolean unPairedTerms(ArrayList<TermsDataBean> terms) {
+		if(terms==null) return false;
 		Iterator<TermsDataBean> it = terms.iterator();
 		while(it.hasNext()){
 			TermsDataBean tdb = it.next();
@@ -4372,7 +4378,8 @@ public class MainForm {
 		int count = 0;
 		try {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			words= (ArrayList<String>)vmdb.structureTags4Curation(words);			
+			words = vmdb.structureTags4Curation(words);			
+
 			if (words != null) {
 				for (String word : words){
 					count++;
@@ -4457,4 +4464,11 @@ public class MainForm {
 		return count;
 	}
 	
+	private void setType4XML(String schema){
+		this.type4xml = schema;
+	}
+	
+	private String getType4XML(){
+		return this.type4xml;
+	}
 }
