@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+//import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -181,7 +181,7 @@ public class VolumeTransformer extends Thread {
 						text=text.replaceFirst("SELECTED REFERENCES?", "").trim();
 						//Start text format change++++++++++++++++++++++++++++++++++++++++++++++++++
 						
-						//
+						//key
 						
 						Element initial = new Element("initial_state");
 						Element states = new Element("state");

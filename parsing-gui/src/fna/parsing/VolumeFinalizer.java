@@ -96,7 +96,7 @@ public class VolumeFinalizer extends Thread {
 		//don't need to rerun them--they were ran at step 5-6, unknown removal and character curation
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, this.dataPrefix, this.glossaryPrefix, true);
 		//sosm.markSentences();
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		sp.POSTagging();
 		if(!standalone) listener.progress(50);
 		sp.parsing();
