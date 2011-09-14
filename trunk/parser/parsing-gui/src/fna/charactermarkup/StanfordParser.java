@@ -55,7 +55,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = false;
+	private boolean finalize = true;
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = false;
@@ -534,12 +534,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String database = "bhl_benchmark";
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
 		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_parsedsentences.txt";
+		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_posedsentences.txt";
+		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_parsedsentences.txt";
+		String posedfile = "C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_posedsentences.txt";
+		String parsedfile="C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_parsedsentences.txt";
 		String database = "markedupdatasets";
 		
 
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav4", "fnaglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav4", "fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "taxon_ants", "antglossaryfixed", false);
 
 		//sp.POSTagging();
 		//sp.parsing();
