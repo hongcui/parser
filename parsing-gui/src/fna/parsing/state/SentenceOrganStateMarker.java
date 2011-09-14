@@ -81,11 +81,12 @@ public class SentenceOrganStateMarker {
 					//sentences.put(source, ""); //make ditto sent id's disappear
 				}else{
 					sent =sent.trim() +" "+ dittos.trim();
-					osent =osent.trim() +" "+ dittos.trim();
+					if(osent.indexOf(dittos.trim())<0) osent =osent.trim() +" "+ dittos.trim(); //put a check here so dittos are not added multiple times when the user runs the Parser mutiple times on one document collection
 					dittos = "";
 					String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 					text = text.replaceAll("&#176;", "°");
+					text = text.replaceAll("\\bca\\s*\\.", "ca");
 					text = rs.getString("modifier")+"##"+tag+"##"+text;
 					sentences.put(source, text);
 					//update originalsent

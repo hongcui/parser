@@ -355,10 +355,11 @@ public class StateMatrix {
 		ArrayList<State> freeStates = new ArrayList<State> ();
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+
+			String q = "select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+
 					" where semanticrole ='c' and" +
 					" mid(word, locate('_', word)+1) not in (select distinct term from " +this.glossarytable+") and"+
-					" word not in ("+cooccurTerms.toString().replaceFirst(",$", "").replaceAll(",+", ",").trim()+")");
+					" word not in ("+cooccurTerms.toString().replaceFirst(",$", "").replaceAll(",+", ",").trim()+")";
+			ResultSet rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String freeterm = rs.getString("word");
 				if(freeterm.indexOf("_")<0){//ignore terms such as lance_linear
