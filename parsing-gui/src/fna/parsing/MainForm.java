@@ -1425,12 +1425,12 @@ public class MainForm {
 				int i=0;
 				for (TableItem item : findStructureTable.getItems()) {
 					if (item.getChecked()) {	
-						if(findStructureTable.getItem(i).getBackground()==red){
-							findStructureTable.getItem(i).setBackground(0,white);
-							findStructureTable.getItem(i).setBackground(1,white);
+						if(item.getBackground(1).equals(red)){
+							item.setBackground(0,white);
+							item.setBackground(1,white);
 						}else{
-							findStructureTable.getItem(i).setBackground(0,red);
-							findStructureTable.getItem(i).setBackground(1,red);
+							item.setBackground(0,red);
+							item.setBackground(1,red);
 						}
 						item.setChecked(false);
 					}
@@ -1554,7 +1554,7 @@ public class MainForm {
 				TableItem [] items = findDescriptorTable.getItems();
 				for (TableItem item : items) {
 					if (item.getChecked()) {
-						if(item.getBackground()==red){
+						if(item.getBackground().equals(red)){
 							item.setBackground(0,white);
 							item.setBackground(1,white);
 						}else{
@@ -1816,12 +1816,12 @@ public class MainForm {
 				int i=0;
 				for (TableItem item : findMoreStructureTable.getItems()) {
 					if (item.getChecked()) {
-						if(findMoreStructureTable.getItem(i).getBackground()==green){
-							findMoreStructureTable.getItem(i).setBackground(0,white);
-							findMoreStructureTable.getItem(i).setBackground(1,white);
+						if(item.getBackground().equals(green)){
+							item.setBackground(0,white);
+							item.setBackground(1,white);
 						}else{
-							findMoreStructureTable.getItem(i).setBackground(0,green);
-							findMoreStructureTable.getItem(i).setBackground(1,green);
+							item.setBackground(0,green);
+							item.setBackground(1,green);
 						}
 						item.setChecked(false);
 					}
@@ -1939,7 +1939,7 @@ public class MainForm {
 				TableItem [] items = findMoreDescriptorTable.getItems();
 				for (TableItem item : items) {
 					if (item.getChecked()) {
-						if(item.getBackground()==green){
+						if(item.getBackground().equals(green)){
 							item.setBackground(0,white);
 							item.setBackground(1,white);
 						}else{
