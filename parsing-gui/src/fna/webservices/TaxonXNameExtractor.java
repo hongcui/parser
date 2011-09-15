@@ -97,9 +97,11 @@ public class TaxonXNameExtractor {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String sourcedir = "Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\taxonX-ants";
+		//String sourcedir = "Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\taxonX-ants";
+		String sourcedir = "Z:\\DATA\\Plazi\\2ndFetchFromPlazi\\taxonX-fish";
 		String database="markedupdatasets";
-		String table="antnames";
+		//String table="antnames";
+		String table="fishnames";
 		TaxonXNameExtractor tne = new TaxonXNameExtractor(sourcedir, database, table);
 		tne.extract();
 	}
