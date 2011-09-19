@@ -50,25 +50,22 @@ public abstract class Type4Transformer extends Thread {
 		this.dataprefix = dataprefix;
 		/* Remove this hardcoding later*/
 		//dataprefix = "plazi_ants";
-	}
-	
-	public Type4Transformer() {
 		if(!target.exists()){
 			target.mkdir();
 		}
 		
-		File d = new File(target, "descriptions");
-		if(!d.exists()){
-			d.mkdir();
-		}
-		
-		File t = new File(target, "transformed");
-		if(!t.exists()){
-			t.mkdir();
-		}
-		
+		Utilities.resetFolder(target, "description");
+		Utilities.resetFolder(target, "transformed");
+		Utilities.resetFolder(target, "description-dehyphened");
+		Utilities.resetFolder(target, "markedup");
+		Utilities.resetFolder(target, "final");
+		Utilities.resetFolder(target, "co-occurrence");
 		
 	}
+
+
+
+	
 	
 	public void run(){
 		listener.setProgressBarVisible(true);
