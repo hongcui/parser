@@ -210,7 +210,7 @@ public class VolumeMarkupDbAccessor {
 					populateDescriptorList(words, rset.getString("word"));
 				}	
 			}
-			return deduplicateSort(words);
+			words = deduplicateSort(words);
 		} catch (SQLException exe) {
 			LOGGER.error("Error in getting words as descriptors: " +
 					"mainFormDbAccessor.descriptorTerms4Curation", exe);
@@ -225,8 +225,7 @@ public class VolumeMarkupDbAccessor {
 			}
 			
 		}
-		
-		return words;
+	return words;	
 	}
 	
 	/**
