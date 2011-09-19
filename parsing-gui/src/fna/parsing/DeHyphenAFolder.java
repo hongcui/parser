@@ -68,7 +68,7 @@ public class DeHyphenAFolder {
                 String URL = ApplicationUtilities.getProperty("database.url");
                 conn = DriverManager.getConnection(URL);
                 //createNumTextMixTable();
-                createWordTable();
+                createAllWordsTable();
             }
         }catch(Exception e){
         	LOGGER.error("Database is down! (VolumeDehyphenizer)", e);
@@ -81,7 +81,8 @@ public class DeHyphenAFolder {
 		   if(listener!= null) listener.progress(1);
 		   vd.showPerlMessage("Checking files...\n");
 		   if(hasProblems()){
-			   vd.showPerlMessage("Files with unmatched brackets are listed above. \n");
+			   vd.showPerlMessage("");
+			   vd.showPerlMessage("Files with problems are listed above. \n");
 			   vd.showPerlMessage("Run this step again after the above identified problems are corrected.\n");
 			   listener.progress(0);
 			   return false;
@@ -122,6 +123,7 @@ public class DeHyphenAFolder {
 	    */
 	    private boolean hasProblems() {
         	boolean has = false;
+        	int problemcount = 0;
 	        try {
 	            File[] flist = folder.listFiles();
 	            for(int i= 0; i < flist.length; i++){
@@ -137,17 +139,17 @@ public class DeHyphenAFolder {
 	                //check for unmatched brackets
 	                if(hasUnmatchedBrackets(text)){
 	                	has = true;
-	                	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains unmatched brackets in \""+text+"\"\n");
+	                	vd.showPerlMessage((++problemcount)+": "+flist[i].getAbsolutePath()+" contains unmatched brackets in \""+text+"\"\n");
 	                }
 	                //check for missing spaces between text and numbers: 
 	                if(text.matches(".*[a-zA-Z]\\d.*") || text.matches(".*\\d[a-zA-Z].*")){
 	                	//has =true; //ant descriptions contain "Mf4"
-	                 	vd.showPerlMessage(flist[i].getAbsolutePath()+" misses a space between a word and a number in \""+text+"\"\n");      	       
+	                 	//vd.showPerlMessage((++problemcount)+": "+flist[i].getAbsolutePath()+" misses a space between a word and a number in \""+text+"\"\n");      	       
 	                }
 	                //check for (?)
 	                if(text.matches(".*?\\(\\s*\\?\\s*\\).*")){
 	                	has =true;
-	                 	vd.showPerlMessage(flist[i].getAbsolutePath()+" contains expression (?) in \""+text+"\"\n");  
+	                 	vd.showPerlMessage((++problemcount)+": "+flist[i].getAbsolutePath()+" contains expression (?) in \""+text+"\"\n");  
 	                 	vd.showPerlMessage("Change (?) to an text expression such as (not certain)");
 	                }
 	            }
@@ -158,7 +160,7 @@ public class DeHyphenAFolder {
 	        return has;
 	    }
 
-		private void createWordTable(){
+		private void createAllWordsTable(){
 	        try{
 	            Statement stmt = conn.createStatement();
 	            stmt.execute("drop table if exists "+tablename);

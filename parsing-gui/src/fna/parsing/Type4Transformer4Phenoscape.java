@@ -33,9 +33,7 @@ public class Type4Transformer4Phenoscape extends Type4Transformer {
 	/**
 	 * 
 	 */
-	public Type4Transformer4Phenoscape() {
-		super();
-	}
+
 
 	/* do one thing: 
 	 * take out description element and save them in a seperate folder.
