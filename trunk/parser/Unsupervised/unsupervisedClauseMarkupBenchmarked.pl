@@ -163,8 +163,8 @@ my $defaultgeneraltag = "general";
 my $debug = 0;
 my $debugp = 0; #debug pattern
 
-my $kb = "fnaknowledgebase";
-#my $kb = "phenoscape";
+#my $kb = "fnaknowledgebase";
+my $kb = "phenoscape";
 
 my $taglength = 150;
 
@@ -218,6 +218,7 @@ my $haskb = kbexists();
 setupdatabase();
 
 if($haskb){
+	print stdout "importing from knowledgebase: $kb\n";
 	importfromkb();
 }
 
@@ -369,7 +370,7 @@ print stdout "::::::::::::::::::::::::Ditto: \n";
 ditto(); #does not make new discoveries, work on remaining null tagged clauses.
 print stdout "::::::::::::::::::::::::Of: \n";
 #comment if slow
-of(); #need knowledge of structural hierarchy, should be the last learning module
+#of(); #need knowledge of structural hierarchy, should be the last learning module
 print stdout "::::::::::::::::::::::::Pronoun/character/proposition/errours noun subjects: \n";
 pronouncharactersubject(); #no new discoveries
 print stdout "::::::::::::::::::::::::Finalize ignored sentences: \n";## 3/24/09
@@ -570,11 +571,6 @@ $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
-$del = $dbh->prepare('drop table if exists '.$prefix.'_allwords');
-$del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_allwords (word varchar(150) not null unique, count int(11), dhword varchar(150), inbrackets int(11), primary key (word)) engine=innodb');
-$create->execute() or print STDOUT "$create->errstr\n";
-
 $del = $dbh->prepare('drop table if exists '.$prefix.'_wordpos');
 $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", primary key (word, pos)) engine=innodb');
@@ -750,7 +746,7 @@ sub  posbysuffix{
 	$sth = $dbh->prepare("select word from ".$prefix."_unknownwords where word rlike '$pattern' and flag= 'unknown'");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($unknownword) = $sth->fetchrow_array()){
-		if($unknownword =~/^(.*?)($SUFFIX)$/){
+		if($unknownword=~/^[a-zA-Z0-9_-]+$/ and $unknownword =~/^(.*?)($SUFFIX)$/){
 			if(containsuffix($unknownword, $1, $2)){
 				update($unknownword, "b", "*", "wordpos", 0);
 				print "posbysuffix set $unknownword a boundary word\n" if $debug;
@@ -1934,7 +1930,7 @@ sub unknownwordbootstrapping{
 	$sth = $dbh->prepare($q);
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($word) = $sth->fetchrow_array()){
-		if($word !~ /_($nouns)$/i){
+		if($word=~/^[a-zA-Z0-9_-]+$/ and $word !~ /_($nouns)$/i){
 			$b .=$word."|" if ($b !~ /\b$word\b/ && $word !~/\b($FORBIDDEN)\b/);
 			update($word, "b", "", "wordpos", 1);
 		}
@@ -3159,14 +3155,14 @@ sub knowntags{
 	$sth = $dbh->prepare("select word from ".$prefix."_wordpos where pos ='p' or pos = 's'");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($word) = $sth->fetchrow_array()){
-		$n .= $word."|" if length($word)>0;
+		$n .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 	}
 	if($mode eq "singletag"){
 		#additional nouns from tags
 		$sth = $dbh->prepare("select distinct tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and tag not like '% %' and tag not like '%[%' and tag not in (select word from ".$prefix."_wordpos where pos ='p' or pos = 's')");
 		$sth->execute() or print STDOUT "$sth->errstr\n";
 		while(($word) = $sth->fetchrow_array()){
-			$n .= $word."|";
+			$n .= $word."|" if  $word=~/^[a-zA-Z0-9_ -]+$/;
 		}
 	}
 	chop($n);
@@ -3177,7 +3173,7 @@ sub knowntags{
 		$sth->execute() or print STDOUT "$sth->errstr\n";
 		while(($word) = $sth->fetchrow_array()){
 			$word =~ s#[\[\]]##g;
-			$o .= $word."|" if length($word)>0;
+			$o .= $word."|" if  $word=~/^[a-zA-Z0-9_ -]+$/;
 		}
 		chop($o);
 	}
@@ -3192,7 +3188,7 @@ sub knowntags{
 	}
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($word) = $sth->fetchrow_array()){
-		$m .= $word."|" if length($word)>0;
+		$m .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 	}
 	chop($m);
 
@@ -3203,9 +3199,9 @@ sub knowntags{
 		if($word =~/^[-\(\)\[\]\{\}\.\|\+\*\?]$/){
 			$b1 .= "\\".$word."|"; #b1 includes punct marks, not need for \b when matching
 		}elsif($word !~/\w/ && $word ne "/"){
-			$b1 .= $word."|" if length($word)>0;;
+			$b1 .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 		}else{
-			$b .= $word."|" if length($word)>0;
+			$b .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 		}
 	}
 	chop($b);
@@ -3216,7 +3212,7 @@ sub knowntags{
 	$sth = $dbh->prepare("select word from ".$prefix."_wordpos where pos ='z'");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($word) = $sth->fetchrow_array()){
-			$z .= $word."|" if length($word)>1;
+			$z .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 	}
 	chop($z);
 
@@ -4787,9 +4783,10 @@ sub followedbyn{
 	my $sth = $dbh->prepare("select word from ".$prefix."_wordpos where pos ='p' or pos = 's'");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($word) = $sth->fetchrow_array()){
-		$knownnouns .= $word."|" if length($word)>0;
+		$knownnouns .= $word."|" if $word=~/^[a-zA-Z0-9_-]+$/;
 	}
-	chop($knownnouns);
+	$knownnouns =~ s#\|+#|#g;
+	$knownnouns =~ s#\|\s*$##;
 	if ($sentence =~/(.*?)\b($knownnouns)\b/){
 		my $inbetween = $1;
 		return 1 if $inbetween !~ /\b($PROPOSITION)\b/;
@@ -5816,17 +5813,31 @@ sub populateunknownwordstable{
 			$word = "\\".$word if $word eq "'";
 			$word = "\\".$word if $word eq "\\";
 			print $word."\n";
-			my $sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', '$word')");
-			$sth->execute() or print STDOUT $sth->errstr."\n";
+			#my $sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', '$word')");
+			#$sth->execute() or print STDOUT $sth->errstr."\n";
+			insertintounknown($word, $word);
 			update($word, "b", "", "wordpos", 1);
 		}else{
-			my $sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', 'unknown')");
-			$sth->execute() or print STDOUT $sth->errstr."\n";
+			insertintounknown($word, "unknown");
+			#my $sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', 'unknown')");
+			#$sth->execute() or print STDOUT $sth->errstr."\n";
 		}
 		$count++;
 	}
 	print "Total words = $count\n";
 }
+
+sub insertintounknown{
+	my ($word, $tag) = @_;
+	if($word !~/^[a-zA-Z0-9_-]+$/){return;}
+	my $sth = $dbh->prepare("select count(word) from ".$prefix."_unknownwords where word = '".$word."'");
+	$sth->execute() or print STDOUT $sth->errstr."\n";
+	my ($count) = $sth->fetchrow_array();
+	if($count==0){
+		$sth = $dbh->prepare("insert into ".$prefix."_unknownwords values ('$word', '$tag')");
+		$sth->execute() or print STDOUT $sth->errstr."\n";
+	}	
+};
 
 sub getfirstnwords{
 	########return the first up to $n words of $sentence as an array, excluding
