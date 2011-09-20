@@ -3852,6 +3852,9 @@ sub singular{
  if($p eq "species"){return "species"};
  if($p eq "axes"){return "axis"};
  if($p eq "calyces"){return "calyx"};
+ if($p eq "frons"){return "frons"};
+ if($p eq "grooves") {return "groove"};
+ if($p eq "nerves") {return "nerve"};
  
  if(getnumber($p) eq "p"){
     if($p =~ /(.*?[^aeiou])ies$/){
