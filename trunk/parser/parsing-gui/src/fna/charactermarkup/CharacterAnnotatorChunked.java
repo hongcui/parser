@@ -109,6 +109,8 @@ public class CharacterAnnotatorChunked {
 		String subject= cs.getSubjectText();
 		if(subject==null && cs.getPointer()==0){
 			annotateByChunk(cs, false);
+		}else if(subject.equals("measurements")){
+			this.annotatedMeasurements(this.text);
 		}else if(!subject.equals("ignore")){
 			if(subject.equals("ditto")){
 				reestablishSubject();	
@@ -470,9 +472,14 @@ public class CharacterAnnotatorChunked {
 						while(it.hasNext()){
 							this.addAttribute(it.next(), "modifier", modifier);
 						}
-					}else{ //this when clause is a modifier for the subclause
-						if(newcs!=null) newcs.unassignedmodifier = "m["+modifier+"]";
-						else cs.unassignedmodifier = "m["+modifier+"]";
+					}else{ 
+						if(newcs!=null) newcs.unassignedmodifier = "m["+modifier+"]";//this when clause is a modifier for the subclause
+						else{
+							if(this.latestelements.get(this.latestelements.size()-1).getName().compareTo("comma")==0){
+								this.latestelements.remove(this.latestelements.size()-1); //remove comma, so what follows when-clause may refer to the structure mentioned before as in <apex> r[p[of] o[(scape)]] , s[when laid {straight} {back} r[p[from] o[its (insertion)]] ,] just touches the {midpoint} r[p[of] o[the {posterior} (margin)]] r[p[in] o[(fullface)]] {view} ; 
+							}
+							cs.unassignedmodifier = "m["+modifier.replaceAll("(\\w+\\[|\\]|\\(|\\)|\\{|\\})", "")+"]";
+						}
 					}
 				}
 
@@ -2058,6 +2065,35 @@ public class CharacterAnnotatorChunked {
 	public void setInBrackets(boolean b){
 		this.inbrackets = b;
 	}
+	
+	/**
+	 * 
+	 * @param measurements: CI 72 - 75 (74 ), SI 99 - 108 (102 ), PeNI 73 - 83 (73 ), LPeI 46 - 53 (46 ), DPeI 135 - 155 (145 ). 
+	 */	
+	private void annotatedMeasurements(String measurements) {
+		measurements = measurements.replaceAll("–", "-");
+		Element whole  = new Element("whole_organism");
+		this.statement.addContent(whole);
+		ArrayList<Element> parent = new ArrayList<Element>();
+		parent.add(whole);
+		//select delimitor
+		int comma = measurements.replaceAll("[^,]", "").length();
+		int semi = measurements.replaceAll("[^;]", "").length();
+		String del = comma > semi ? "," : ";";
+		String[] values = measurements.split(del);
+		for(int i = 0; i < values.length; i++){
+			String value = values[i].replaceFirst("[,;\\.]\\s*$", "");
+			//separate char from values
+			String chara = value.replaceFirst("\\s+\\d.*", "");
+			String vstring = value.replaceFirst("^"+chara, "").trim();
+			//seperate modifiers from vlu in case there is any
+			String vlu = vstring.replaceFirst("\\s+[a-zA-Z].*", "").trim();
+			String modifier = vstring.substring(vlu.length()).trim();
+			modifier = modifier.length()>0? "m["+modifier+"]" : null;
+			vlu = vlu.replaceAll("(?<=\\d)\\s*\\.\\s*(?=\\d)", ".");
+			this.annotateNumericals(vlu.trim(), chara.trim(), modifier, parent, false);
+		}
+	}
 
 	/**
 	 * @param args
@@ -2066,5 +2102,4 @@ public class CharacterAnnotatorChunked {
 		// TODO Auto-generated method stub
 
 	}
-
 }
