@@ -49,6 +49,13 @@ public class Type2Transformer extends Thread {
 	public Type2Transformer(ProcessListener listener, String dataprefix) {
 		this.listener = listener;
 		this.dataprefix = dataprefix;
+		File target = new File(Registry.TargetDirectory);
+		Utilities.resetFolder(target, "descriptions");
+		Utilities.resetFolder(target, "transformed");
+		Utilities.resetFolder(target, "descriptions-dehyphened");
+		Utilities.resetFolder(target, "markedup");
+		Utilities.resetFolder(target, "final");
+		Utilities.resetFolder(target, "co-occurrence");
 	}
 
 	public void run(){

@@ -62,6 +62,13 @@ public class Type3Transformer extends Thread {
 		this.dataprefix = dataprefix;
 		this.glossarytable=glossarytable;
 		outputter = new XMLOutputter(Format.getPrettyFormat());
+		File target = new File(Registry.TargetDirectory);
+		Utilities.resetFolder(target, "descriptions");
+		Utilities.resetFolder(target, "transformed");
+		Utilities.resetFolder(target, "descriptions-dehyphened");
+		Utilities.resetFolder(target, "markedup");
+		Utilities.resetFolder(target, "final");
+		Utilities.resetFolder(target, "co-occurrence");
 	}	
 	
 	private void saveSeeds(){
