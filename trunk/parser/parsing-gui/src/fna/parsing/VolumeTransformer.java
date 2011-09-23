@@ -104,7 +104,13 @@ public class VolumeTransformer extends Thread {
 			LOGGER.error("VolumeTransformer : Database error in constructor", e);
 			e.printStackTrace();
 		}	
-
+		File target = new File(Registry.TargetDirectory);
+		Utilities.resetFolder(target, "descriptions");
+		Utilities.resetFolder(target, "transformed");
+		Utilities.resetFolder(target, "descriptions-dehyphened");
+		Utilities.resetFolder(target, "markedup");
+		Utilities.resetFolder(target, "final");
+		Utilities.resetFolder(target, "co-occurrence");
 	}
 
 	

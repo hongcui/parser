@@ -2173,7 +2173,7 @@ public class MainForm {
 		final Button applyToAllButton = new Button(composite_6, SWT.NONE);
 		applyToAllButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				applyTagToAll();
+				applyTagToAll();//also check the next box automatically								
 			}
 		});
 		applyToAllButton.setText(ApplicationUtilities.getProperty("Apply2Checked"));
@@ -3478,13 +3478,19 @@ public class MainForm {
 		if (tag == null || tag.equals(""))
 			return;
 		
-		for (TableItem item : tagTable.getItems()) {
-			//if (item.hashCode() == hashCodeOfItem) {
-			if (item.getChecked()) {
-				item.setText(2, modifier);
-				item.setText(3, tag);
+		TableItem[] items = tagTable.getItems();
+		int i = 0;
+		for (; i<items.length; i++) {
+			//if (item.hashCode() == hashCodeOfItem) {			
+			if (items[i].getChecked()) {
+				items[i].setText(2, modifier);
+				items[i].setText(3, tag);
+				break;
 			}
 		}
+		//now check the next item
+		i++;
+		items[i].setChecked(true);
 	}
 	
 	/**

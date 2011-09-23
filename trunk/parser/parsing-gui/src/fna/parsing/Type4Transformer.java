@@ -54,9 +54,9 @@ public abstract class Type4Transformer extends Thread {
 			target.mkdir();
 		}
 		
-		Utilities.resetFolder(target, "description");
+		Utilities.resetFolder(target, "descriptions");
 		Utilities.resetFolder(target, "transformed");
-		Utilities.resetFolder(target, "description-dehyphened");
+		Utilities.resetFolder(target, "descriptions-dehyphened");
 		Utilities.resetFolder(target, "markedup");
 		Utilities.resetFolder(target, "final");
 		Utilities.resetFolder(target, "co-occurrence");
