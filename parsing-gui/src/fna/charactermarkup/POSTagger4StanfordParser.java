@@ -35,6 +35,7 @@ public class POSTagger4StanfordParser {
 	private boolean printList = false;
 	private String tableprefix = null;
 	private String glosstable = null;
+	private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]+\\s+[<{]*view[}>]*)(\\s.*)");
 	
 
 	/**
@@ -44,6 +45,7 @@ public class POSTagger4StanfordParser {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
+		
 	}
 	
 	/**
@@ -124,8 +126,16 @@ public class POSTagger4StanfordParser {
 				if(m.matches()){
 					str = m.group(3);
 				}
-				str = str.replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±(?!\\s+\\d)","moreorless");
-
+				if(str.indexOf("±")>=0){
+					str = str.replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±(?!\\s+\\d)","moreorless");
+				}
+				if(str.matches(".*?\\bin\\s+[a-z_<>{} -]+\\s+[<{]?view[}>]?\\b.*")){//ants: "in full-face view"
+					Matcher vm = viewptn.matcher(str);
+					while(vm.matches()){
+						str = vm.group(1)+" {"+vm.group(2).replaceAll("[<>{}]", "").replaceAll("\\s+", "-")+"} "+vm.group(3); 
+						vm = viewptn.matcher(str);
+					}
+				}
 
 				str = handleBrackets(str);
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
@@ -171,7 +181,9 @@ public class POSTagger4StanfordParser {
 		       		   }
 	        	   }
 	       		   
-	        	   if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
+	        	   if(word.matches("in-.*?-view")){
+	        		   sb.append(word+"/RB ");
+	        	   }else if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("becoming")==0 || word.compareTo("about")==0){
 	        		   sb.append(word+"/RB ");

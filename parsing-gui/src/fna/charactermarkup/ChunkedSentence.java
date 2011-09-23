@@ -1936,7 +1936,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				senttag = rs.getString(2).trim();
 				senttag = senttag.compareTo("general")==0? "whole_organism" : senttag;
 				sentmod = rs.getString(1).trim();
-				this.text = rs.getString(3); //has to use originalsent, because it is "ditto"-fixed (in SentenceOrganStateMarker.java)
+				this.text = rs.getString(3); //has to use originalsent, because it is "ditto"-fixed (in SentenceOrganStateMarker.java) and perserve capitalization for measurements markup
 			}
 			rs = stmt.executeQuery("select rmarkedsent from "+this.tableprefix+"_markedsentence where source ='"+sentsrc+"'");
 			if(rs.next()){
@@ -2056,10 +2056,16 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				}
 			}
 		}else{
-			this.subjecttext = "ignore";
+			if(this.text.matches(".*?[A-Z]{2,}.*")){ //this.text must be originalsent where captalization is perserved.
+				this.subjecttext = "measurements";
+			}else{
+				this.subjecttext = "ignore";
+			}
 		}
 	}
 	
+	
+
 	/**
 	 * sent
 	 * @param subject: {basal} (blade)
