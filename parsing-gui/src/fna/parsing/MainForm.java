@@ -3489,8 +3489,11 @@ public class MainForm {
 			}
 		}
 		//now check the next item
-		i++;
-		items[i].setChecked(true);
+		if(i+1<items.length){
+			i++;
+			items[i].setChecked(true);
+			items[i-1].setChecked(false);
+		}
 	}
 	
 	/**
