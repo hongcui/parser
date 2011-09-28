@@ -5726,7 +5726,12 @@ while(defined ($file=readdir(IN))){
 
     	my $line = $sentences[$_];
     	my $oline = $sentcopy[$_];
-    	$oline =~ s#\[DOT\]#.#g;
+    	$oline =~ s#(\d)\s*\[\s*DOT\s*\]\s*(\d)#$1.$2#g;
+    	$oline =~ s#\[\s*DOT\s*\]#.#g; #a space may have been introduced
+		$oline =~ s#\[\s*QST\s*\]#?#g;
+		$oline =~ s#\[\s*SQL\s*\]#;#g;
+		$oline =~ s#\[\s*QLN\s*\]#:#g;
+		$oline =~ s#\[\s*EXM\s*\]#!#g;
     	$line =~ s#'# #g; #remove all ' to avoid escape problems
     	$oline =~ s#'# #g;
     	@words = getfirstnwords($line, $N); # "w1 w2 w3"
