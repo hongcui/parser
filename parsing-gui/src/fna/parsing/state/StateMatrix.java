@@ -429,6 +429,9 @@ public class StateMatrix {
 					count++;
 				}
 				srcs = srcs.replaceFirst(",$", "").replaceAll(",+", ",").trim();
+				if(srcs.length()>2000){
+					srcs = srcs.substring(0, 1999);
+				}
 				stmt.execute("insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+w+"', '', "+count+ ", '"+srcs+"')");
 			}
 			//set group id
