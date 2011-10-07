@@ -58,7 +58,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private boolean finalize = true;
 	//private boolean debug = true;
 	private boolean printSent = true;
-	private boolean printProgress = false;
+	private boolean printProgress = true;
 	private boolean evaluation = false;
 	/**
 	 * 
@@ -538,13 +538,17 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_parsedsentences.txt";
 		//String posedfile = "C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_posedsentences.txt";
 		//String parsedfile="C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_parsedsentences.txt";
-		String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_posedsentences.txt";
-		String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_parsedsentences.txt";
+		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_posedsentences.txt";
+		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_parsedsentences.txt";
+		String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
+		String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
+		
 		String database = "markedupdatasets";
 		
 
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav4", "fnaglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "pheno_fish", "antglossaryfixed", false);
 
 		//sp.POSTagging();
 		//sp.parsing();

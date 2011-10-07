@@ -56,6 +56,7 @@ public class CharacterAnnotatorChunked {
 	private boolean printAttach = false;
 	private boolean evaluation = true;
 	private String sentsrc;
+	private boolean nosubject;
 
 	
 	/**
@@ -66,6 +67,7 @@ public class CharacterAnnotatorChunked {
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
 		this.evaluation = evaluation;
+		this.nosubject = false;
 		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
 		try{
 			//collect life_style terms
@@ -95,6 +97,7 @@ public class CharacterAnnotatorChunked {
 		this.inbrackets = false;
 		this.pstructures = new ArrayList<Element>();
 		this.cstructures = new ArrayList<Element>();
+		this.nosubject = false;
 
 	}
 	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
@@ -108,6 +111,7 @@ public class CharacterAnnotatorChunked {
 		if(!this.evaluation) this.statement.addContent(text);
 		String subject= cs.getSubjectText();
 		if(subject==null && cs.getPointer()==0){
+			this.nosubject = true;
 			annotateByChunk(cs, false);
 		}else if(subject.equals("measurements")){
 			this.annotatedMeasurements(this.text);
