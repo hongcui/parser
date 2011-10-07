@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
@@ -66,10 +67,12 @@ public class VolumeExtractor extends Thread {
 	// private String tribegennamestyle = "smallCaps";
 	protected static String start = ".*?(Heading|Name).*"; // starts a treatment
 	// public static String start = ""; //starts a treatment
-	protected String names = ".*?(Syn|Name).*"; // other interesting names worth
-												// parsing
+	protected String names = ".*?(Syn|Name).*"; // other interesting names worth parsing
+	protected String key = ".*?-Key.*";											
 	public String tribegennamestyle = "caps";
 	protected static String ignorednames = "incertae sedis";
+	private boolean debug = false;
+	private boolean keydebug = true;
 
 	public VolumeExtractor(String source, String target,
 			ProcessListener listener) {
@@ -102,7 +105,7 @@ public class VolumeExtractor extends Thread {
 			// build the root element from the xml file
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(source + "document.xml");
-			System.out.println(source + "document.xml");
+			if(debug) System.out.println(source + "document.xml");
 			Element root = doc.getRootElement();
 
 			// find all <w:p> tags
@@ -143,12 +146,11 @@ public class VolumeExtractor extends Thread {
 		Attribute att = (Attribute) XPath.selectSingleNode(wp,
 				"./w:pPr/w:pStyle/@w:val");// XXX change from @w:val to w:val
 		if (att == null) {// TODO: issue a warning
-			System.out
-					.println("============================================>null");
+			if(debug) System.out.println("============================================>null");
 			return;
 		}
 		String style = att.getValue();
-		System.out.println(style);
+		if(debug) System.out.println(style);
 
 		// check if a name paragraph reached, assuming a treatment starts with a
 		// Name paragraph
@@ -163,15 +165,8 @@ public class VolumeExtractor extends Thread {
 							&& !treatment.getChild("paragraph")
 									.getChild("text").getTextTrim()
 									.matches(".*?" + ignorednames + ".*")
-							&& treatment.getChildren("paragraph").size() >= 2) { // must
-																					// contain
-																					// style
-																					// and
-																					// text,
-																					// must
-																					// contain
-																					// >=2
-																					// paragraphs
+							&& treatment.getChildren("paragraph").size() >= 2) { 
+						// must contain style and text, must contain >=2 paragraphs
 						/*
 						 * It is not possible for a treatment to just have a
 						 * name Heading4 /Taxa incertae sedis from FoC v22, taxa
@@ -189,14 +184,14 @@ public class VolumeExtractor extends Thread {
 
 			// logger.info("processing: " + count);
 			// create a new output file
-			createTreatment();
+			treatment = new Element("treatment");
 		}
 		populateTreatment(wp, style);
 	}
 
-	protected void createTreatment() {
+	/*protected void createTreatment() {
 		treatment = new Element("treatment");
-	}
+	}*/
 
 	protected void populateTreatment(Element wp, String style)
 			throws JDOMException {
@@ -206,28 +201,59 @@ public class VolumeExtractor extends Thread {
 		Element pe = new Element("paragraph");
 		pe.addContent(se);
 
-		// for non-name paragraph, just output the text content
-		// build the <w:t> content
-		// if(style.indexOf("Name") >=0 || style.indexOf("Syn") >=0){
-
-		/*
-		 * start to change
-		 */
-		if (style.matches(start) || style.matches(names)) {// start =
-															// ".*?(Heading|Name).*",names
-															// =
-															// ".*?(Syn|Name).*"
+		if (style.matches(start) || style.matches(names)) {
 			extractNameParagraph(wp, pe);
-		} else {
+		}else if(style.matches(key)){
+			extractKeyParagraph(wp, pe); //try to separate a key "statement" from "determination"
+		}else {		
 			extractTextParagraph(wp, pe);
 		}
 
-		/*
-		 * end change
-		 */
-
 		// add the element to the treatment (root) element
 		treatment.addContent(pe);
+	}
+
+	/**
+	 * wp containing the text, to be formated as "statement # determination", then add to pe
+	 * @param wp
+	 * @param pe
+	 */
+	private void extractKeyParagraph(Element wp, Element pe) throws JDOMException{
+		StringBuffer formatted = new StringBuffer();
+		List<Element> text = XPath.selectNodes(wp, "./w:r/w:tab");
+		Iterator<Element> it = text.iterator();
+		while(it.hasNext()){
+			Element t = it.next();			
+			t.setText("###");
+			t.setName("t");
+		}
+		
+		text = XPath.selectNodes(wp, "./w:r/w:t");
+		it = text.iterator();
+		while(it.hasNext()){
+			Element t = it.next();			
+			formatted.append(t.getTextTrim()+" ");
+		}
+		/*
+		List<Element> text = XPath.selectNodes(wp, "./w:r/w:t");
+		Iterator<Element> it = text.iterator();
+		while(it.hasNext()){
+			Element t = it.next();			
+			if(t.getAttribute("space", Namespace.XML_NAMESPACE) != null && t.getAttributeValue("space", Namespace.XML_NAMESPACE).compareTo("preserve")==0){
+				String temp = t.getTextTrim();
+				if(temp.length()>0) formatted.append(" ### ").append(temp+" ");
+			}else{
+				formatted.append(t.getTextTrim()+" ");
+			}
+		}
+		*/
+		
+		Element te = new Element("text");
+		String t = formatted.toString().trim();
+		te.setText(t);
+		pe.addContent(te);
+		if(keydebug) System.out.println(t);
+		
 	}
 
 	private void extractNameParagraph(Element wp, Element pe)
@@ -235,102 +261,50 @@ public class VolumeExtractor extends Thread {
 		String acase = "";
 		List rList = XPath.selectNodes(wp, "./w:r");
 
-		//List tList = XPath.selectNodes(wp, "./w:r/w:t");
-		//Element t0 = (Element) tList.get(0);
-		
-		
-		/*
-		if (t0.getText().matches("[0-9]+[a-z]?.*")) {
-			
-			/*
-			Element te = new Element("text");
-			StringBuffer buffer = new StringBuffer();
-			for(Iterator iter = tList.iterator();iter.hasNext();){
-				Element e = (Element)iter.next();
-				buffer.append(e.getText());
+		for (Iterator ti = rList.iterator(); ti.hasNext();) {
+			Element re = (Element) ti.next();
+			// find smallCaps
+			Element rpr = (Element) XPath.selectSingleNode(re, "./w:rPr"); // Genus,
+																			// Tribe
+																			// names
+																			// are
+																			// in
+																			// smallCaps
+			if (rpr != null
+					&& XPath.selectSingleNode(rpr, "./w:"
+							+ tribegennamestyle) != null) {
+				acase = tribegennamestyle;
+			} else {
+				acase = "";
 			}
-			te.setText(buffer.toString().replaceAll("\\s", " "));
-			pe.addContent(te);
-			*/
-			
-			/*
-			Element te = new Element("text");
+			// collect text
 			StringBuffer buffer = new StringBuffer();
-			Element e = (Element) tList.get(0);
-			te.setText(e.getText());
+			List textList = XPath.selectNodes(re, "./w:t");
+			for (Iterator it = textList.iterator(); it.hasNext();) {
+				Element wt = (Element) it.next();
+				String tmp = wt.getText();
+				buffer.append(tmp).append(" ");
+			}
+			// }
+			String text = buffer.toString().replaceAll("\\s+", " ").trim();
+			;
+			// build the elements
+			Element te = null;
+			if (text.matches(".*?\\S.*")) { // not an empty string or a
+											// number of spaces
+				te = new Element("text");
+				te.setText(text);
+			}
+			if(debug) System.out.println("Name: " + acase + " : " + text);
+			Attribute ca = null;
+			if (!acase.equals("") && te != null) {
+				ca = new Attribute("case", tribegennamestyle);
+				te.setAttribute(ca);
+			}
 			if (te != null)
 				pe.addContent(te);
-			if (tList.size() > 2) {
-				for (int i = 1; i < tList.size() - 1; i++) {
-					e = (Element) tList.get(i);
-					buffer.append(e.getText());
-				}
-				
-				te = new Element("text");
-				String content = buffer.toString().replaceAll("\\s\\(s", "\\(s");
-				if(content.contains("(")){
-					content = content.replaceAll("\\ssect.\\s", "sect.").replaceAll("\\ssubsect.\\s", "subsect.");
-				}
-				te.setText(content);
-				if (te.getText() != null)
-					pe.addContent(te);
-				e = (Element) tList.get(tList.size() - 1);
-				te = new Element("text");
-				te.setText(e.getText().toString());
-				if (te.getText() != null)
-				pe.addContent(te);
-				
-				
-			}
-			*/
-			
-			
-		//} else {
-			for (Iterator ti = rList.iterator(); ti.hasNext();) {
-				Element re = (Element) ti.next();
-				// find smallCaps
-				Element rpr = (Element) XPath.selectSingleNode(re, "./w:rPr"); // Genus,
-																				// Tribe
-																				// names
-																				// are
-																				// in
-																				// smallCaps
-				if (rpr != null
-						&& XPath.selectSingleNode(rpr, "./w:"
-								+ tribegennamestyle) != null) {
-					acase = tribegennamestyle;
-				} else {
-					acase = "";
-				}
-				// collect text
-				StringBuffer buffer = new StringBuffer();
-				List textList = XPath.selectNodes(re, "./w:t");
-				for (Iterator it = textList.iterator(); it.hasNext();) {
-					Element wt = (Element) it.next();
-					String tmp = wt.getText();
-					buffer.append(tmp).append(" ");
-				}
-				// }
-				String text = buffer.toString().replaceAll("\\s+", " ").trim();
-				;
-				// build the elements
-				Element te = null;
-				if (text.matches(".*?\\S.*")) { // not an empty string or a
-												// number of spaces
-					te = new Element("text");
-					te.setText(text);
-				}
-				System.out.println("Name: " + acase + " : " + text);
-				Attribute ca = null;
-				if (!acase.equals("") && te != null) {
-					ca = new Attribute("case", tribegennamestyle);
-					te.setAttribute(ca);
-				}
-
-				if (te != null)
-					pe.addContent(te);
-			}
-		//}
+		}
+		
 	}
 
 	private void extractTextParagraph(Element wp, Element pe)

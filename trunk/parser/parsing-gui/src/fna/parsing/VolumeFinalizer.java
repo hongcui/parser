@@ -40,8 +40,8 @@ public class VolumeFinalizer extends Thread {
     private Connection conn = null;
     private String glossaryPrefix;
     private static String version="$Id$";
-    private static boolean standalone = true;
-    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst";
+    private static boolean standalone = false;
+    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
     
     public VolumeFinalizer(ProcessListener listener, String dataPrefix, Connection conn, String glossaryPrefix) {
         /*glossary = Registry.ConfigurationDirectory + "FNAGloss.txt"; // TODO

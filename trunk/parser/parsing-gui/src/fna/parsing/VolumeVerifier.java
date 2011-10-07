@@ -2,6 +2,10 @@ package fna.parsing;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -361,6 +365,7 @@ public class VolumeVerifier extends Thread {
 
 	/**
 	 * extract a name from the name paragraph element
+	 * a name includes its authority
 	 * @param pe
 	 * @return
 	 */
@@ -377,8 +382,10 @@ public class VolumeVerifier extends Thread {
 				buffer.append(wt.getText()).append(" ");
 			}
 			String text = buffer.toString().replaceAll("\\s+", " ").trim();
-			//fix broken names: T HYRSOSTACHYS
-			text = fixBrokenNames(text);			
+			text = text.replaceFirst("^.*?(?=[A-Z])", "").trim();
+			//fix broken names: T HYRSOSTACHYS;  va r. subhispida
+			text = fixBrokenNames(text);
+			text = chunkPlaceOfPub(text, filename); //after this, text should only hold name information
 			if(text.length() == 0){return "";} //TODO: shouldn't happen, except for 295.xml
 	
 			// hong 6/26/08: make 1.Pterostegia drymarioides
@@ -387,7 +394,7 @@ public class VolumeVerifier extends Thread {
 			
 			//tribe: didn't need smallCaps info.
 			Pattern p = Pattern
-					.compile("\\b(?:subfam|var|subgen|subg|subsp|ser|tribe)[\\.\\s]+([-a-z]+)", Pattern.CASE_INSENSITIVE);
+					.compile("\\b(?:subfam|var|subgen|subg|subsp|ser|tribe|subsect)[\\.\\s]+([-a-z]+)", Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(text);
 			
 			Pattern p1 = Pattern
@@ -395,21 +402,23 @@ public class VolumeVerifier extends Thread {
 			Matcher m1 = p1.matcher(text);
 			boolean check = false;
 			if (m.find() || m1.find()) {// sub- names
-				/*String last = m.group(1).trim(); // subfam's last is ""
-				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subg|subsp|sect|tribe)\\s?\\.?\\s*"
-										+ last + ")",
-								Pattern.CASE_INSENSITIVE);*/
-				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subsp|ser|tribe)[\\.\\s]+[-a-z]+)",
-				Pattern.CASE_INSENSITIVE); //Hong 08/04/09
-				m = p.matcher(text);
-				/*modify
-				**
-				**
-				**
-				**
-				*/
-				
-				Pattern p2 = Pattern.compile("\\.\\s*(\\D*?\\bsubg[\\.\\s]+[-a-z]+[\\s\\w\\.]*\\)[\\s\\w]*\\.\\s?[A-Z]+\\s*\\w+)",
+				//Pattern p4 = Pattern.compile("(.*?\\s+|^)(\\D.*)");
+				//Matcher m4 = p4.matcher(text);
+				//if(m4.matches()){
+					//String aname = m4.group(2);
+					String aname = text;
+					String laname = aname.toLowerCase();
+					if(namelist.indexOf("|"+laname+"|")>=0){
+						listener.info("", filename, "Repeated taxon name:"+aname+" [sub rank]");
+						return aname;
+						//System.out.println("::::::::::duplicate "+aname+" [sub rank]");//should not occur
+					}else{
+						namelist += laname+"|";
+						return aname;
+					}
+			//	}
+			
+				/*Pattern p2 = Pattern.compile("\\.\\s*(\\D*?\\bsubg[\\.\\s]+[-a-z]+[\\s\\w\\.]*\\)[\\s\\w]*\\.\\s?[A-Z]+\\s*\\w+)",
 						Pattern.CASE_INSENSITIVE); 
 				Matcher m2 = p2.matcher(text);
 				
@@ -444,15 +453,10 @@ public class VolumeVerifier extends Thread {
 						return aname;
 					}
 				}
-				
-				/*modify
-				**
-				**
-				**
-				**
-				**
-				*/
-				
+			
+				p = Pattern.compile("\\.\\s*(\\D*?\\b(?:subfam|var|subgen|subsp|ser|tribe)[\\.\\s]+[-a-z]+)",
+						Pattern.CASE_INSENSITIVE); //Hong 08/04/09
+				m = p.matcher(text);				
 				if (m.find()) {
 					String aname = m.group(1);
 					String laname = aname.toLowerCase();
@@ -464,7 +468,7 @@ public class VolumeVerifier extends Thread {
 						namelist += laname+"|";
 						return aname;
 					}
-				}
+				}*/
 			} else {// family, genus, species names
 				/*
 				 * FNA v. 5 and 19
@@ -484,7 +488,8 @@ public class VolumeVerifier extends Thread {
 				Pattern genname = Pattern.compile("^([A-Z][A-Z].*?)\\b.*"); //NOTHOCALAIS with two dots on top of last I
 				m = famname.matcher(namestring);
 				if(m.find()){
-					String aname = m.group(1);
+					//String aname = m.group(1);
+					String aname = text;
 					String laname = aname.toLowerCase();
 					if(namelist.indexOf("|"+laname+"|")>=0){
 						listener.info("", filename, "Repeated taxon name:"+aname+" [family rank]");
@@ -496,7 +501,8 @@ public class VolumeVerifier extends Thread {
 				}else{
 					m = genname.matcher(namestring);
 					if(m.find()){
-						String aname = m.group(1);
+						//String aname = m.group(1);
+						String aname = text;
 						String laname = aname.toLowerCase();
 						if(namelist.indexOf("|"+laname+"|")>=0){
 							listener.info("", filename, "Repeated taxon name:"+aname+" [genus rank]");
@@ -509,10 +515,11 @@ public class VolumeVerifier extends Thread {
 				    else{
 				    	//String aname = namestring;//species name
 				    	//Hong: 08/04/09 take the first two words as species name
-				    	String[] tokens = namestring.trim().split("\\s+");
-				    	if(tokens.length >= 2){
-					    	String aname = tokens[0]+" "+tokens[1];
-							String laname = aname.toLowerCase();
+				    	//String[] tokens = namestring.trim().split("\\s+");
+				    	//if(tokens.length >= 2){
+					    	//String aname = tokens[0]+" "+tokens[1];
+							String aname = text;
+				    		String laname = aname.toLowerCase();
 							if(namelist.indexOf("|"+laname+"|")>=0){
 								listener.info("", filename, "Repeated taxon name:"+aname+" [species rank]");
 								//System.out.println("::::::::::duplicate "+aname+" [species rank]"); //could occur
@@ -530,9 +537,9 @@ public class VolumeVerifier extends Thread {
 								namelist += laname+"|";
 								return aname;
 							}
-				    	}else{
-				    		System.out.println(namestring+" is not at [species rank]");
-				    	}
+				    	//}else{
+				    	//	System.out.println(namestring+" is not at [species rank]");
+				    	//}
 				    	
 				    }
 				}
@@ -553,6 +560,92 @@ public class VolumeVerifier extends Thread {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param text: 14c. Mirabilis linearis (Pursh) Heimerl var. subhispida (Heimerl) Spellenberg, Novon 12: 270. 2002
+	 * @return: 14c. Mirabilis linearis (Pursh) Heimerl var. subhispida (Heimerl) Spellenberg
+	 */
+	private String chunkPlaceOfPub(String text, String filename) {
+		//search for the comma before a number
+		//Pattern p = Pattern.compile("(.*?[A-Z].*?),([^,]+?)\\d.*");
+		String textcp = text;
+		String journal = null;
+		Pattern p = Pattern.compile("(.*?[A-Z].*),\\s+([^\\d]+)\\s+\\d.*"); //(Rydberg) Munz, Man. S. Calif. Bot., 598. 1935
+		Matcher m = null;
+		//problems 489.xml 6a. Dysphania R. Brown sect. Adenois (Moquin-Tandon) Mosyakin & Clemants, Ukrayins’k. Bot. Zhurn., n. s. 59: 382. 2002
+		while(text.matches(".*?[A-Z].*?\\d+.*")){//4a. Echinocereus pectinatus (Scheidweiler) Engelmann var. wenigeri L. D. Benson, Cact. Succ. J. (Los Angeles) 40: 124, <=================>fig. 3. 1968 · Weniger’shedgehog,ashy white ra inbow cactus, langtry rainbow cactus
+			m = p.matcher(text);
+			if(m.matches()){
+				text = m.group(1).trim();
+				journal = m.group(2).replaceFirst(",\\s*$", "").trim();				
+			}else{
+				break;
+			}
+		}
+		//post process to deal with some special cases: 
+		//Boerhavia line arifolia A. Gray, Amer. J. Sci. Arts
+		int in = text.indexOf(","); //suspecious
+		if(in > 0){
+			p = Pattern.compile(",[^\\d]+&"); //may be authority list: a, b & c
+			m = p.matcher(text);
+			if(!m.find()){
+				p = Pattern.compile("\\([^()]*?,");//may be in ()
+				m = p.matcher(text);
+				if(!m.find()){// deal with this case
+					text = text.substring(0, in).trim();
+				}
+			}
+		}
+		
+		//in Smith ed. 
+		in = text.indexOf(" in ");
+		if(in > 0){
+			text = text.substring(0, in).trim();
+			//String rest = textcp.substring(in).trim();
+		}
+		
+		//PHYTOLACCACEAE R. Brown • Pokeweed Family
+		in = text.indexOf("·");
+		if(in < 0){
+			in = text.indexOf("•");
+		}
+		if(in > 0){
+			text = text.substring(0, in).trim();
+			//String rest = textcp.substring(in).trim();
+		}
+		
+		if(!isJournal(journal)){
+			listener.info("", filename, "Check taxon name:"+text);
+		}
+
+		return text;//text now holds only the name, which should not contain a number
+	}
+	/**
+	 * check journal list
+	 * @param journal
+	 * @return
+	 */
+	private boolean isJournal(String journal) {
+		/*Connection conn = null;
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+			    String URL = "jdbc:mysql://localhost/journals?user=root&password=root";
+				//String URL = ApplicationUtilities.getProperty("database.url");
+				conn = DriverManager.getConnection(URL);
+				Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select * from journals where abbreviation like'"+journal+" %'");
+				if(rs.next()){
+					return true;
+				}
+				stmt.close();
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}*/
+		return false;
+	}
+
 	public static String fixBrokenNames(String text){
 		Pattern p = Pattern.compile("(.*?(?:^| ))([A-Z] )(\\w.*)");
 		Matcher m = p.matcher(text);
@@ -560,6 +653,7 @@ public class VolumeVerifier extends Thread {
 			text = m.group(1)+m.group(2).trim()+m.group(3);
 		}
 		
+		//T HYRSOSTACHYS
 		p = Pattern.compile("(.*?(?:^| ))([A-Z]+ )([A-Z][A-Z].*)");
 		m = p.matcher(text);
 		if(m.matches()){
@@ -572,6 +666,13 @@ public class VolumeVerifier extends Thread {
 			text = m.group(1)+m.group(2).trim()+m.group(3);
 		}
 
+		//va r. 
+		//make sure any of these are not broken: subfam|var|subgen|subg|subsp|ser|tribe
+		p = Pattern.compile("(.*?)\\b(s ?u ?b ?f ?a ?m|v ?a ?r|s ?u ?b ?g ?e ?n|s ?u ?b ?g|s ?u ?b ?s ?p|s ?e ?r|t ?r ?i ?b ?e)\\b(.*)");
+		m = p.matcher(text);
+		if(m.matches()){
+			text = m.group(1)+m.group(2).replaceAll("\\s+", "")+m.group(3);
+		}
 		return text;
 	}
 	private int nameLine(List<Element> textList2) {
