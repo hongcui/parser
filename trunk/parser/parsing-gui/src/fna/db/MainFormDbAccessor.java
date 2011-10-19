@@ -943,6 +943,8 @@ public class MainFormDbAccessor {
 			while (rs.next()) { //collect sentences
 				String src = rs.getString("source");
 				String sentence = rs.getString("sentence");
+				//cut the sentence shorter to fit the length of the window (to avoid scrolling horizentally)
+				sentence = shorten(sentence, word);
 				text += src+"::"+sentence+"\r\n";
 				//System.out.println(src+"::"+sentence+" \r\n");
 				//context.append(src+"::"+sentence+" \r\n");
@@ -984,7 +986,7 @@ public class MainFormDbAccessor {
 				}*/
 			//}
 		} catch (SQLException exe) {
-			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
+			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:getContextData", exe);
 			exe.printStackTrace();
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
@@ -1006,6 +1008,31 @@ public class MainFormDbAccessor {
 		}
 	}
 	
+	/**
+	 * cut the sentence shorter to fit the length of the window[i.e., 55-character] (to avoid scrolling horizentally)
+	 * but still showing the context for word
+	 * @param sentence
+	 * @param word
+	 * @return
+	 */
+	private String shorten(String sentence, String word) {
+		int length = 55;
+		String shorten="...";
+		int index = sentence.indexOf(word);
+		if(index>55){
+			String firstw = sentence.substring(0, sentence.indexOf(" "));
+			shorten =firstw+shorten;
+			while(index>55){
+				sentence = sentence.substring(sentence.indexOf(" ")).trim();
+				index = sentence.indexOf(word);
+			}
+			shorten +=sentence;
+		}else{
+			shorten = sentence;
+		}
+		return shorten;
+	}
+
 	/**
 	 * merge grouped_terms and group_decision table and add data into 
 	 * term_category table, which may already have data
