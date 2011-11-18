@@ -55,7 +55,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = true;
@@ -98,8 +98,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			//ResultSet rs = stmt.executeQuery("select * from newsegments");
 			//stmt.execute("alter table markedsentence add rmarkedsent text");
 
-			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
 			//ResultSet rs = stmt.executeQuery("select source, sentence from "+this.tableprefix+"_sentence order by sentid");// order by (source+0) ");////sort as numbers
+			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
 			int count = 1;
 			while(rs.next()){
 				String src = rs.getString(1);
@@ -112,6 +112,25 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	       		count++;
 	       		
 			}
+			//mohan code change to just get one entry
+			/*ResultSet rs = stmt.executeQuery("select sentid,source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
+			int count = 1;
+			while(rs.next()){
+				int sentid=rs.getInt(1);
+				String src = rs.getString(2);
+				String str = rs.getString(3);
+				//TODO: may need to fix "_"
+				//if(src.compareTo("56.txt-7")!=0) continue;
+				if(sentid==664)
+				{
+				str = tagger.POSTag(str, src);
+	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
+	       		out.println(str);
+	       		count++;
+				}
+	       		
+			}*/
+			//End mohan change.
 			stmt2.close();
 			rs.close();
 			out.close();
@@ -372,6 +391,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		/*if(sent.indexOf(" -{")>=0){//1–2-{pinnately} or -{palmately} {lobed} => {1–2-pinnately-or-palmately} {lobed}
 			sent = sent.replaceAll("\\s+or\\s+-\\{", "-or-").replaceAll("\\s+to\\s+-\\{", "-to-").replaceAll("\\s+-\\{", "-{");
 		}*/
+		//mohan code 11/9/2011 to replace (?) by nothing
+		sent = sent.replaceAll("\\(\\s*\\?\\s*\\)","");
+		//end mohan code
 		return sent;
 	}
 	
@@ -536,19 +558,26 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_posedsentences.txt";
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v4\\target\\fnav4_parsedsentences.txt";
-		//String posedfile = "C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_posedsentences.txt";
-		//String parsedfile="C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_parsedsentences.txt";
-		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_posedsentences.txt";
-		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_parsedsentences.txt";
-		String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
-		String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
-		
-		String database = "markedupdatasets";
-		
+
+
+
+
+		//String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\DEMO\\demo-folders\\TaxonX-ants\\target\\taxonx_ants_posedsentences.txt";
+		//String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\DEMO\\demo-folders\\TaxonX-ants\\target\\taxonx_ants_parsedsentences.txt";
+		String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_posedsentences.txt";
+		String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_parsedsentences.txt";
+		//String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\Treatiseh\\taxonx_ants_posedsentences.txt";
+		//String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\Treatiseh\\taxonx_ants_parsedsentences.txt";
+		//String database = "markedupdatasets";
+		String database = "annotationevaluation";
 
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav4", "fnaglossaryfixed", false);
+
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "pheno_fish", "antglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
+
+
 
 		//sp.POSTagging();
 		//sp.parsing();
@@ -557,3 +586,4 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
 	}
 }
+

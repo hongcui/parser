@@ -27,28 +27,44 @@ public class CharaParserUnitTest {
 	
 	public void testOnFna(){
 		//use the annotation file path below to save the parser output
-		String annotation = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\annotation.txt";
+		//String annotation = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\annotation.txt";
+		String annotation = "C:\\Users\\mohankrishnag\\Desktop\\Work\\annotationoutput.txt";
 		//database setup
 		Connection conn = null;
-		String username="root";
-		String password="root";
+		//String username="root";
+		//String password="root";
+		String username="termsuser";
+		String password="termspassword";
 		String database="annotationevaluation";
 		String gloss = "fnaglossaryfixed";
 		//fna-benchmark
-		String outdir ="C:\\DATA\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_sentence";
-		String selectdir = "C:\\DATA\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_selected_sentence";
-		String answerdir = "C:\\DATA\\evaluation\\fnav19\\AnsKey_Benchmark_selected_sentence";
+		//String outdir ="C:\\DATA\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_sentence";
+		//String selectdir = "C:\\DATA\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_selected_sentence";
+		//String answerdir = "C:\\DATA\\evaluation\\fnav19\\AnsKey_Benchmark_selected_sentence";
+		String outdir ="C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_sentence";
+		String selectdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_selected_sentence";
+		String answerdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19\\AnsKey_Benchmark_selected_sentence";
+		
 		//fna intermediate results
 		String prefix="fnav19";
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\parsedsentences.txt";
+		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\posedsentences.txt";
+		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\parsedsentences.txt";
+		String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_posedsentences.txt";
+		String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_parsedsentences.txt";
+		
 		//evaluation
-		String evaluationfolder="C:\\DATA\\evaluation\\fnav19";	
+		//String evaluationfolder="C:\\DATA\\evaluation\\fnav19";
+		String evaluationfolder="C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19";
 		String precisionrecalltable="fnav19_precisionrecall_final";
 
-		runCharaParser(annotation, conn, username, password, database,
+		/*runCharaParser(annotation, conn, username, password, database,
 				gloss, outdir, selectdir, answerdir,
-				prefix, posedfile, parsedfile, evaluationfolder);
+				prefix, posedfile, parsedfile, evaluationfolder);*/
+		
+		//split annontation result into individual xml files		
+		//makeResultFolder(annotation, outdir, selectdir, answerdir);
+		
+		doCompare(database, evaluationfolder);
 		
 		System.out.println("%%%%%%%%%%%%%%%%%%%RESULTS OF THE UNIT TEST ON FNA");
 		compare(precisionrecalltable, "precisionrecall");
@@ -57,28 +73,44 @@ public class CharaParserUnitTest {
 
 	public void testOnTreatise(){
 		//use the annotation file path below to save the parser output
-		String annotation = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\annotation.txt";
+		//String annotation = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\annotation.txt";
+		String annotation = "C:\\Users\\mohankrishnag\\Desktop\\Work\\annotationtreatise.txt";
 		//database setup
 		Connection conn = null;
-		String username="root";
-		String password="root";
+		//String username="root";
+		//String password="root";
+		String username="termsuser";
+		String password="termspassword";
 		String database="annotationevaluation";
 		String gloss = "treatisehglossaryfixed";
 		//benchmark
-		String outdir ="C:\\DATA\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_sentence";
-		String selectdir = "C:\\DATA\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_selected_sentence";
-		String answerdir = "C:\\DATA\\evaluation\\treatise\\AnsKey_Benchmark_selected_sentence";
+		//String outdir ="C:\\DATA\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_sentence";
+		//String selectdir = "C:\\DATA\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_selected_sentence";
+		//String answerdir = "C:\\DATA\\evaluation\\treatise\\AnsKey_Benchmark_selected_sentence";
+		String outdir ="C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_sentence";
+		String selectdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\treatise\\UnsupervisedStanford_Benchmark_selected_sentence";
+		String answerdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\treatise\\AnsKey_Benchmark_selected_sentence";
+		
 		//intermediate results
 		String prefix="treatiseh";
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\treatiseh\\posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\treatiseh\\parsedsentences.txt";
+		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\treatiseh\\posedsentences.txt";
+		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\treatiseh\\parsedsentences.txt";
+		String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\Treatiseh\\taxonx_ants_posedsentences.txt";
+		String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\Treatiseh\\taxonx_ants_parsedsentences.txt";
+		
 		//evaluation
-		String evaluationfolder="C:\\DATA\\evaluation\\treatise";	
+		//String evaluationfolder="C:\\DATA\\evaluation\\treatise";	
+		String evaluationfolder="C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\treatise";
 		String precisionrecalltable="treatise_precisionrecall_final";
 
-		runCharaParser(annotation, conn, username, password, database,
+		/*runCharaParser(annotation, conn, username, password, database,
 			    gloss, outdir, selectdir, answerdir,
-				prefix, posedfile, parsedfile, evaluationfolder);
+				prefix, posedfile, parsedfile, evaluationfolder);*/
+		
+		//split annontation result into individual xml files		
+		makeResultFolder(annotation, outdir, selectdir, answerdir);
+		
+		doCompare(database, evaluationfolder);
 		
 		System.out.println("%%%%%%%%%%%%%%%%%%%RESULTS OF THE UNIT TEST ON TREATISE");
 		compare(precisionrecalltable, "precisionrecall");
@@ -100,25 +132,38 @@ public class CharaParserUnitTest {
 			e.printStackTrace();
 		}
 		//parsing
+		parsing(conn, database, gloss, prefix, posedfile, parsedfile);
+
+
+	}
+
+	private void doCompare(String database, String evaluationfolder) {
+		CompareXML cXML = new CompareXML(database, evaluationfolder);
+	}
+
+	private void makeResultFolder(String annotation, String outdir,
+			String selectdir, String answerdir) {
+		SplitAnnotationOutput sao = new SplitAnnotationOutput(annotation, outdir, selectdir, answerdir);
+		sao.split();
+		sao.select();
+	}
+
+	private void parsing(Connection conn, String database, String gloss,
+			String prefix, String posedfile, String parsedfile) {
 		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, prefix, gloss, true);
 		sosm.markSentences();
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, gloss, true);
 		sp.POSTagging();
 		sp.parsing();
 		sp.extracting();
-
-		//split annontation result into individual xml files		
-		SplitAnnotationOutput sao = new SplitAnnotationOutput(annotation, outdir, selectdir, answerdir);
-		sao.split();
-		sao.select();
-		
-		CompareXML cXML = new CompareXML(database, evaluationfolder);
 	}
 	
 	private void compare(String benchmark, String result) {
 		Connection conn = null;
-		String username="root";
-		String password="root";
+		//String username="root";
+		//String password="root";
+		String username="termsuser";
+		String password="termspassword";
 		String database="annotationevaluation";
 		ArrayList<Float> benchmarkf= new ArrayList<Float>();
 		ArrayList<Float> resultf= new ArrayList<Float>();
@@ -189,7 +234,7 @@ public class CharaParserUnitTest {
 				
 
 				for(int i = 0; i<labels.size(); i++){
-					System.out.println(labels.get(i)+":"+benchmarkf.get(i).floatValue()+" vs "+resultf.get(i).floatValue()+" (t-a)=: "+(resultf.get(i).floatValue()-benchmarkf.get(i).floatValue()));
+					System.out.println(labels.get(i)+":"+resultf.get(i).floatValue()+" vs "+benchmarkf.get(i).floatValue()+" (t-a)=: "+(resultf.get(i).floatValue()-benchmarkf.get(i).floatValue()));
 				}
 			}
 		}catch(Exception e){
@@ -204,8 +249,8 @@ public class CharaParserUnitTest {
 	 */
 	public static void main(String[] args) {
 		CharaParserUnitTest test = new CharaParserUnitTest();
-		//test.testOnFna();
-		test.testOnTreatise();
+		test.testOnFna();
+		//test.testOnTreatise();
 	}
 
 }

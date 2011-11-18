@@ -69,8 +69,23 @@ public class SentenceOrganStateMarker {
 			Statement stmt = conn.createStatement();
 			//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
 			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
-			String dittos = "";
-			//merge ditto sentences with previous sentences
+			//leave ditto as it is
+			while(rs.next()){//read sent in in reversed order
+				String tag = rs.getString("tag");
+				String sent = rs.getString("sentence").trim();
+				if(sent.length()!=0){
+				String source = rs.getString("source");
+				String osent = rs.getString("originalsent");
+				String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
+				text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
+				text = text.replaceAll("&#176;", "°");
+				text = text.replaceAll("\\bca\\s*\\.", "ca");
+				text = rs.getString("modifier")+"##"+tag+"##"+text;
+				sentences.put(source, text);
+				}
+			}
+			//merge ditto sentences with previous sentences: this had the drawback of attaching nearest organ as the subject of the ditto sentence
+			/*String dittos = "";
 			while(rs.next()){//read sent in in reversed order
 				String tag = rs.getString("tag");
 				String sent = rs.getString("sentence");
@@ -93,7 +108,7 @@ public class SentenceOrganStateMarker {
 					Statement st = conn.createStatement();
 					st.execute("update "+this.tableprefix+"_sentence set originalsent='"+osent+"' where source='"+source+"'");
 				}
-			}
+			}*/
 			//collect adjnouns
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence s where modifier != \"\" and tag like \"[%\"");
@@ -516,8 +531,8 @@ public class SentenceOrganStateMarker {
 		//String database="annotationevaluation";
 		//String database ="phenoscape";
 		String database="markedupdatasets";
-		String username="root";
-		String password="root";
+		String username="termsuser";
+		String password="termspassword";
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -530,7 +545,8 @@ public class SentenceOrganStateMarker {
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true);
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ant_first", "antglossaryfixed", true);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
