@@ -47,18 +47,18 @@ $test->execute() or die $test->errstr."\n";
 
 $test = $dbh->prepare('CREATE TABLE  '.$f2ttb.' (
   `filename` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `hasdescription` tinyint(1) DEFAULT NULL,
-  `family` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `subfamily` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `tribe` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `subtribe` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `genus` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `subgenus` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `section` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `subsection` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `species` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `subspecies` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `variety` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL
+  `hasdescription` tinyint(1) DEFAULT 0,
+  `family` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `subfamily` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `tribe` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `subtribe` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `genus` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `subgenus` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `section` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `subsection` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `species` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `subspecies` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT "",
+  `variety` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT ""
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;') or die $dbh->errstr."\n";
 $test->execute() or die $test->errstr."\n";
 

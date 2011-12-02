@@ -162,6 +162,7 @@ my $defaultgeneraltag = "general";
 
 my $debug = 0;
 my $debugp = 0; #debug pattern
+my $debugnouns = 0;
 
 #my $kb = "fnaknowledgebase";
 my $kb = "phenoscape";
@@ -196,7 +197,7 @@ my $SUFFIX ="er|est|fid|form|ish|less|like|ly|merous|most|shaped"; # 3_nerved, )
 my $FORBIDDEN ="to|and|or|nor"; #words in this list can not be treated as boundaries "to|a|b" etc.
 my $PRONOUN ="all|each|every|some|few|individual|both|other";
 my $CHARACTER ="lengths|length|lengthed|width|widths|widthed|heights|height|character|characters|distribution|distributions|outline|outlines|profile|profiles|feature|features|form|forms|mechanism|mechanisms|nature|natures|shape|shapes|shaped|size|sizes|sized";#remove growth, for growth line. check 207, 3971
-my $PROPOSITION ="above|across|after|along|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|toward|towards|up|upward|with|without";
+my $PREPOSITION ="above|across|after|along|around|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|out|outside|over|than|throughout|toward|towards|up|upward|with|without";
 my $TAGS = "";
 my $PLENDINGS = "[^aeiou]ies|i|ia|(x|ch|sh)es|ves|ices|ae|s";
 my $CLUSTERSTRINGS = "group|groups|clusters|cluster|arrays|array|series|fascicles|fascicle|pairs|pair|rows|number|numbers|\\d+";
@@ -225,6 +226,7 @@ if($haskb){
 #read sentences in from disk
 print stdout "Reading sentences:\n";
 populatesents();
+
 
 addheuristicsnouns();
 addstopwords();
@@ -432,7 +434,7 @@ print stdout "Done:\n";
 ##################################################################################################
 
 sub prepareWordPos4Parser{
-	my $toremove = $PRONOUN."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PROPOSITION."|".$stop;
+	my $toremove = $PRONOUN."|".$CHARACTER."|".$NUMBERS."|".$CLUSTERSTRINGS."|".$PREPOSITION."|".$stop;
 	$toremove =~ s#\|#","#g;
 	$toremove = "\"".$toremove."\"";
 	
@@ -576,6 +578,21 @@ $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", primary key (word, pos)) engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
+$del = $dbh->prepare('drop table if exists '.$prefix.'_acronyms');
+$del->execute() or print STDOUT "$del->errstr\n";
+$create = $dbh->prepare('create table if not exists '.$prefix.'_acronyms (word varchar(200) not null, primary key (word)) engine=innodb');
+$create->execute() or print STDOUT "$create->errstr\n";
+
+$del = $dbh->prepare('drop table if exists '.$prefix.'_propernouns');
+$del->execute() or print STDOUT "$del->errstr\n";
+$create = $dbh->prepare('create table if not exists '.$prefix.'_propernouns (word varchar(200) not null, primary key (word)) engine=innodb');
+$create->execute() or print STDOUT "$create->errstr\n";
+
+$del = $dbh->prepare('drop table if exists '.$prefix.'_taxonnames');
+$del->execute() or print STDOUT "$del->errstr\n";
+$create = $dbh->prepare('create table if not exists '.$prefix.'_taxonnames (word varchar(200) not null, primary key (word)) engine=innodb');
+$create->execute() or print STDOUT "$create->errstr\n";
+
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentInFile');
 $del->execute() or print STDOUT "$del->errstr\n";
 $create = $dbh->prepare('create table if not exists '.$prefix.'_sentInFile (filename varchar(200) not null unique primary key, endindex int not null) engine=innodb');
@@ -692,12 +709,39 @@ sub addclusterstrings{
 	}
 }
 
+sub addDescriptors{
+	my @descriptors = @_;
+
+	print "descriptors :\n@descriptors\n" if $debug;
+
+	for (@descriptors){
+		my $w = $_;
+		if($w =~/\b(?:$FORBIDDEN)\b/){next;}
+		update($w, "b", "*", "wordpos", 0);
+	}
+}
+
 ###lateral/laterals terminal/terminals: blades of mid cauline spatulate or oblong to obovate or lanceolate , 6  35 × 1  15 cm , bases auriculate , auricles deltate to lanceolate , ± straight , acute , margins usually pinnately lobed , lobes ± deltate to lanceolate , not constricted at bases , terminals usually larger than laterals , entire or dentate .
 sub addheuristicsnouns{
 	my @nouns = NounHeuristics::heurnouns($dir, "");
 	#EOL:@nouns = ("angle[s]", "angles[p]", "base[s]", "bases[p]", "cell[s]", "cells[p]", "depression[s]", "depressions[p]", "ellipsoid[s]", "ellipsoids[p]", "eyespot[s]", "eyespots[p]", "face[s]", "faces[p]", "flagellum[s]", "flagella[p]", "flange[s]", "flanges[p]", "globule[s]", "globules[p]", "groove[s]", "grooves[p]", "line[s]", "lines[p]", "lobe[s]", "lobes[p]", "margin[s]", "margins[p]", "membrane[s]", "membranes[p]", "notch[s]", "notches[p]", "plastid[s]", "plastids[p]", "pore[s]", "pores[p]", "pyrenoid[s]", "pyrenoids[p]", "quarter[s]", "quarters[p]", "ridge[s]", "ridges[p]", "rod[s]", "rods[p]", "row[s]", "rows[p]", "sample[s]", "samples[p]", "sediment[s]", "sediments[p]", "side[s]", "sides[p]", "vacuole[s]", "vacuoles[p]", "valve[s]", "valves[p]");
 	print  "nouns learnt from heuristics:\n@nouns\n" if $debug;
 
+	my @result = characterHeuristics();
+	my $rnouns = $result[0];
+	my $rdescriptors = $result[1];
+	my @rnouns = @$rnouns;
+	my @descriptors = @$rdescriptors;
+	addDescriptors(@descriptors);
+#	print "nouns\n";
+#	foreach my $n (@nouns){
+#		print "$n\t";
+#	}
+#	print "Descriptors\n";
+#	foreach my $d (@descriptors){
+#		print "$d\t";
+#	}
+	@nouns = (@nouns, @rnouns);
 	#"adhere[s] adheres[p] angle[s] angles[p] attach[s] attaches[p] base[s] bases[p] cell[s] cells[p] depression[s] depressions[p] direction[s] directions[p] ellipsoid[s] ellipsoids[p] eyespot[s] eyespots[p] face[s] faces[p] flagellum[s] flagella[p] flange[s] flanges[p] forward[s] forwards[p] globule[s] globules[p] groove[s] grooves[p] insert[s] inserts[p] jerk[s] jerks[p] length[s] lengths[p] lie[s] lies[p] line[s] lines[p] lobe[s] lobes[p] margin[s] margins[p] measure[s] meet[s] meets[p] membrane[s] membranes[p] narrow[s] narrows[p] notch[s] notches[p] observation[s] observations[p] plastid[s] plastids[p] pore[s] pores[p] pyrenoid[s] pyrenoids[p] quarter[s] quarters[p] ridge[s] ridges[p] rod[s] rods[p] row[s] rows[p] sample[s] samples[p] sediment[s] sediments[p] side[s] sides[p] size[s] sizes[p] third[s] thirds[p] vacuole[s] vacuoles[p] valve[s] valves[p] width[s] widths[p]"
 	my $pn = ""; #previous n
 	foreach my $n (@nouns){#convert to hash
@@ -732,8 +776,181 @@ sub addheuristicsnouns{
 		}
 	}
 }
+##############################################################################
+## return an array of  (nouns array) + (descriptor array)                   ##  
+## noun heuristics                                                          ##
+## 0. <i></i> enclosed taxon names                                          ##
+## 0.5 Meckle#s cartilage
+## 1. single term characters are nouns                                      ##
+## 2. end of sentence nouns (a|an|the|some|any|this|that|those|these) noun$ ##
+## 3. proper nouns and acronyms                                             ##
+## descriptor heuristics                                                    ##
+## 1. single term descriptions are descriptors                              ##   
+## 2. (is|are) red: isDescriptor 
+
+sub characterHeuristics{
+	my($sth, $source, $sentence, $originalsent, %nouns, %pnouns, %anouns, %taxonnames, @tokens, %descriptors);
+	$sth = $dbh->prepare("select source, sentence, originalsent from ".$prefix."_sentence");
+	$sth->execute() or print STDOUT "$sth->errstr\n";
+	
+	while(($source, $sentence, $originalsent) = $sth->fetchrow_array()){
+		$originalsent = trim($originalsent);
+		print "$source\n";
+		#noun rule 0: taxon names
+		if($originalsent =~ /<i>\s*(.*)\s*<\/i>/){
+			my $t = $1;
+			$taxonnames{$t} = 1;
+			my @ts = split(/\s+/, $t);
+			foreach $t (@ts){
+				$taxonnames{$t} = 1;
+				if($debugnouns) {print "[noun:$t] $originalsent\n";}
+			}
+			$sentence =~ s#</?i>##g;
+			updateSentence($source, $sentence);
+		}
+		
+		#noun rule 0.5
+		if($originalsent =~ /\b(\W+#s)\b/){ #Meckel's save Meckel, Meckels, and Meckel's
+			my $t = $1;
+			$nouns{$t} = 1;
+			if($debugnouns) {print "[noun:$t] $originalsent\n";}
+			$t =~ s/#//;
+			$nouns{$t} = 1;
+			if($debugnouns) {print "[noun:$t] $originalsent\n";}
+	   		$t =~ s/s$//;
+			$nouns{$t} = 1;
+			if($debugnouns) {print "[noun:$t] $originalsent\n";}
+			$sentence =~ s/#//g;
+			updateSentence($source, $sentence);			
+		}
+
+		#noun rule 2
+		if($originalsent =~ /\b(a|an|the|some|any|this) +(\w+)$/){
+			my $t = $2;
+			$t =~ tr/A-Z/a-z/;
+			$nouns{$t} = 1;
+			if($debugnouns){ print "[noun:$t] $originalsent\n";}
+		}	
+		#noun rule 3
+		$originalsent =~ s#-#aaa#g;
+		$originalsent =~ s#[[:punct:]]##g; #keep "-"
+		$originalsent =~ s#aaa#-#g;
+		@tokens = split(/\s+/, $originalsent);
+		if($source !~ /_s\d/){#sources without _s1 are character statements
+			$tokens[0]=""; #ignore the first word in character statements--this is normally capitalized
+		}	
+		foreach my $t (@tokens){
+			if($t =~ /[A-Z].+/ and $t!~/-\w+ed$/){#proper nouns and acronyms, S-shaped
+				if($t=~/^[A-Z0-9]+$/){
+					$anouns{$t} =1;
+				}else{
+					$pnouns{$t} =1;
+				}			
+				$t =~ tr/A-Z/a-z/;
+				$nouns{$t}=1;
+				if($debugnouns) {print "[noun:$t] $originalsent\n";}
+			}
+		}			
+		#noun rule 1: #sources without _s1 are character statements. Only apply for phylogenetic data
+		#if($source !~ /_s\d/ and $originalsent !~ /\s/){#single word
+		#	if(!isDescriptor($originalsent)){
+		#		$originalsent =~ tr/A-Z/a-z/;
+		#		$nouns{$originalsent}=1;
+		#		if($debugnouns) {print "[noun:$originalsent] $originalsent\n";}
+		#	}
+		#}	
+		#descriptor rule 1:
+		#if($source =~ /_s\d/ and $originalsent !~ /\s/){#single word
+		#	if(grep(/^$originalsent$/, keys(%nouns)) < 1){
+		#		$originalsent =~ tr/A-Z/a-z/;
+		#		$descriptors{$originalsent}=1;
+		#		if($debugnouns){ print "[desp:$originalsent] $originalsent\n";}
+		#	}
+		#}			
+		#descriptor rule 2:
+		@tokens = split(/\s+/, $originalsent);
+		foreach my $t (@tokens){
+			if(isDescriptor($t)){
+				$t =~ tr/A-Z/a-z/;
+				$descriptors{$t}=1;
+				if($debugnouns) {print "[desp:$t] $originalsent\n";}
+			}
+		}	
+		
+	}
+	my @nouns = keys(%nouns);
+	my @descriptors = keys(%descriptors);
+	@nouns = filterDescriptors(\@nouns, \@descriptors);
+	my @anouns = keys(%anouns);
+	my @pnouns = keys(%pnouns); 
+	@anouns = filterDescriptors(\@anouns, \@descriptors);
+	@pnouns = filterDescriptors(\@pnouns, \@descriptors);
+	foreach my $anoun (@anouns){
+		add2Table($anoun, "acronyms");
+	}
+	foreach my $pnoun (@pnouns){
+		add2Table($pnoun, "propernouns");
+	}
+	
+	foreach my $taxon (keys(%taxonnames)){
+		add2Table($taxon, "taxonnames");
+	}
+	
+	return (\@nouns, \@descriptors);
+} 
+
+sub updateSentence{
+	my ($source, $sentence) = @_;
+	my $sth = $dbh->prepare('update '.$prefix.'_sentence set sentence = "'.$sentence.'" where source ="'.$source.'"');
+	$sth->execute() or print STDOUT "$sth->errstr\n";
+}	
+
+sub filterDescriptors{
+	my($rnouns, $rdescriptors) = @_;
+	my @nouns = @$rnouns; #de-ref
+	my @descriptors = @$rdescriptors;
+	my @filtered = ();
+	foreach my $n (@nouns){
+		if($n!~/\b($PREPOSITION|$stop)\b/i and grep(/^$n$/i, @descriptors) < 1){
+			push(@filtered, $n); #keep $n that is not in @descriptors
+		}
+	} 
+	return @filtered;
+}
 
 
+
+sub add2Table{
+	my($term, $table) = @_;
+	my ($sth);
+	$sth = $dbh->prepare('insert into '.$prefix.'_'.$table.' (word) values ("'.$term.'")');
+	$sth->execute() or print STDOUT "$sth->errstr\n";
+}
+
+my %descriptors =();
+### are electrogenic => electronic is a descriptor
+sub isDescriptor{
+	my $term = shift;
+	if($descriptors{$term}==1){
+		return 1;
+	}
+	if($descriptors{$term}==-1){
+		return 0;
+	}
+	my ($sth, $count);
+	$sth = $dbh->prepare("select count(*) from ".$prefix."_sentence where originalsent rlike ' (is|are|was|were|be|being) ".$term." '");
+	$sth->execute() or print STDOUT "$sth->errstr\n";
+	while(($count) = $sth->fetchrow_array()){
+		if($count>=1){
+			$descriptors{$term}=1;
+			return 1;
+		}else{
+			$descriptors{$term}=-1;
+			return 0;
+		}
+	}
+}
+#################################################################################################################
 #suffix: -fid(adj), -form (adj), -ish(adj),  -less(adj), -like (adj)),  -merous(adj), -most(adj), -shaped(adj), -ous(adj)
 #        -ly (adv), -er (advj), -est (advj),
 #foreach unknownword in unknownwords table
@@ -1061,7 +1278,7 @@ sub isandorsentence{
 	if($sentptn=~/($ptn1)/ || $sentptn =~/($ptn2)/){
 		my $end = $+[1];
 		my $matchedwords = join(" ", splice(@words, 0, $end));
-		if($matchedwords =~/\b($PROPOSITION)\b/){
+		if($matchedwords =~/\b($PREPOSITION)\b/){
 			return 0;
 		}
 		print "in isandorsentence: yes [$sentptn] $sentid:$sentence\n" if $debug;
@@ -1175,8 +1392,8 @@ sub adjectivesubjects{
 			if($newm =~/<N>/i ||$start =~/<N>/i){$count++; next;}
 			#M[MB][,in] =>MB[,in]
 			#[MB][MB][,]
-			#if($count==0 && ((($word =~ /[;,:]/ || $word=~/\b(?:$PROPOSITION)\b/ )&& $sentence =~ /^\s*<N>/) || ($word =~ /[\.:;,]/ && $sentence !~ /\w/))){
-			if($count==0 && ((($word =~ /[;,]/ || $word=~/\b(?:$PROPOSITION)\b/)) || ($word =~ /[\.;,]/ && $sentence !~ /\w/))){
+			#if($count==0 && ((($word =~ /[;,:]/ || $word=~/\b(?:$PREPOSITION)\b/ )&& $sentence =~ /^\s*<N>/) || ($word =~ /[\.:;,]/ && $sentence !~ /\w/))){
+			if($count==0 && ((($word =~ /[;,]/ || $word=~/\b(?:$PREPOSITION)\b/)) || ($word =~ /[\.;,]/ && $sentence !~ /\w/))){
 				#if($sentence !~ /^(\S+)?\s*<N>/ && $word!~/with/ && ($modifier =~/^(<M>)?<B>(<M>)?\w+(<\/M)?<\/B>(<\/M>)? (?:and|or|and \/ or|or \/ and)?\s*(<[BM]>)+\w+(<\/[BM]>)+\s*$/ || $modifier =~/^(<[BM]>)+\w+(<\/[BM]>)+$/)){ #start with a <[BM]>, followed by a <[BM]>
 				if($word!~/\b(with|without|of)\b/ && ($modifier =~/^(<M>)?<B>(<M>)?\w+(<\/M)?<\/B>(<\/M>)? (?:and|or|nor|and \/ or|or \/ and)?\s*(<[BM]>)+\w+(<\/[BM]>)+\s*$/ || $modifier =~/^(<[BM]>)+\w+(<\/[BM]>)+$/)){ #start with a <[BM]>, followed by a <[BM]>
 					#<M><B>basal</B></M> and <M><B>cauline</B></M> <B>;</B>
@@ -1784,7 +2001,7 @@ sub commaand{
 			}
 		}elsif($sentcopy =~/$ptn2/){#4/26/09 put in \s
 			$tag = $2;
-			if($1!~/\b($PROPOSITION)\b/ and $1 !~/<N>/){ #add 2nd condition 5/01/09 check 8979
+			if($1!~/\b($PREPOSITION)\b/ and $1 !~/<N>/){ #add 2nd condition 5/01/09 check 8979
 				$tag =~ s#,#and#g;
 				$tag =~ s#</?\S+?>##g;
 				$tag =~ s#(^\s+|\s+$)##g;
@@ -1796,7 +2013,7 @@ sub commaand{
 		}elsif($sentcopy =~/$ptn3/){#4/26/09 m,mn+
 		#$mphraseptn\s*$commaptn\s*(?:$mphraseptn| |$commaptn)+
 			$tag = $1;
-			if($1!~/\b($PROPOSITION)\b/){
+			if($1!~/\b($PREPOSITION)\b/){
 				$tag =~ s#,#and#g;
 				$tag =~ s#</?\S+?>##g;
 				$tag =~ s#(^\s+|\s+$)##g;
@@ -2157,7 +2374,7 @@ sub ditto{
 		 }elsif($sentcopy =~ /(.*?)$nphraseptn/){ #contains nouns
 		 #print $sentcopy."\n";
 		 	my $head = $1;
-		 	if($head =~ /\b($PROPOSITION)\b/){ #nouns occurring after a proposition
+		 	if($head =~ /\b($PREPOSITION)\b/){ #nouns occurring after a proposition
 		 		$tag = "ditto";
 		 		tagsentwmt($sentid, $sentence, $modifier, $tag, "ditto-proposition");
 		 	#}elsif($head =~ /$mphraseptn$/ && $head =~/,/ && $head =~/<B>\w+/){ #5/1/09 conflict with commaand#nouns occuring after some discussions of an ditto organ
@@ -2224,7 +2441,7 @@ sub phraseclause{
 		 	$head = $1;
 		 	$modifier = $2;
 		 	$tag = $3;
-		 	if($head !~ /\b($PROPOSITION)\b/ && $head !~ /<\/N>/ && $modifier !~/\b($PROPOSITION)\b/){
+		 	if($head !~ /\b($PREPOSITION)\b/ && $head !~ /<\/N>/ && $modifier !~/\b($PREPOSITION)\b/){
 		 		if($tag =~/(.*?)<N>([^<]+)<\/N>\s*$/){#take the last N as the tag
 		 			$modifier .=" ".$1; #4/22/09 removed if $1=~/\w/ check sentid 6384 for effects
 		 			$tag = $2;
@@ -2241,7 +2458,7 @@ sub phraseclause{
 		 #	$head = $1;
 		 #	$modifier = $2;
 		 #	$tag = $3;
-		 #	if($head !~ /\w+ / && $head !~ /<\/N>/ && $modifier !~/\b($PROPOSITION)\b/){
+		 #	if($head !~ /\w+ / && $head !~ /<\/N>/ && $modifier !~/\b($PREPOSITION)\b/){
 		 #		if($modifier =~ /<M>(\S+?)<\/M>\S*\s*$/){#take the last M as part of modifier
 		 #			$modifier = $1;
 		 #		}else{
@@ -2351,7 +2568,7 @@ sub caseonentwo{
 	$originalsent =~ s#<B>\(</B> <B>of</B>#<B>of</B>#g; #blades (of basal leaves) absent; => remove the ( before "of"
 	$originalsent =~ s#<B>of</B>#of#g;
 	#5/01/09 check words up to the first non-of proposition check sentid == 1469
-	my $pcopy = $PROPOSITION;
+	my $pcopy = $PREPOSITION;
 	my $ocopy = $originalsent;
 	$pcopy =~ s#of\|##;
 	$ocopy =~ s#\s*(<[A-Z]>|\b)($pcopy)\b.*##;
@@ -2537,7 +2754,7 @@ sub choosesubstructure{
 		if($sentence =~ /(?:<[A-Z]>)*\b$struct1r\b(?:<\/[A-Z]>)* <B>with<\/B> (.*) ?(?:<[A-Z]>)*\b$struct2r\b(?:<\/[A-Z]>)*/i){
 			my $temp = $2;
 			$temp = removepairedbrackets($temp);
-			if ($temp !~ /<N>/ && $temp !~ /[\(\[\{]/ && $temp !~ /\b($PROPOSITION)\b/){
+			if ($temp !~ /<N>/ && $temp !~ /[\(\[\{]/ && $temp !~ /\b($PREPOSITION)\b/){
 				return $s2;
 			}
 		}
@@ -2550,7 +2767,7 @@ sub choosesubstructure{
 		if($sentence =~ /(?:<[A-Z]>)*\b$struct2r\b(?:<\/[A-Z]>)* <B>with<\/B> (.*) ?(?:<[A-Z]>)*\b$struct1r\b(?:<\/A-Z]>)*/i){
 			my $temp = $2;
 			$temp = removepairedbrackets($temp);
-			if ($temp !~ /<N>/ && $temp !~ /[\(\)\[\]\{\}]/ && $temp !~ /\b($PROPOSITION)\b/){
+			if ($temp !~ /<N>/ && $temp !~ /[\(\)\[\]\{\}]/ && $temp !~ /\b($PREPOSITION)\b/){
 				return $s1;
 			}
 		}
@@ -2725,7 +2942,7 @@ sub collectcommonstructures{
 
 #my $PRONOUN ="all|each|every|some|few|individual";
 #my $CHARACTER ="lengths|length|width|widths|heights|height";
-#my $PROPOSITION ="above|across|after|along|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|over|than|throughout|toward|towards|up|upward|with|without";
+#my $PREPOSITION ="above|across|after|along|as|at|before|beneath|between|beyond|by|for|from|in|into|near|of|off|on|onto|over|than|throughout|toward|towards|up|upward|with|without";
 
 sub pronouncharactersubject{
 	my($sth, $pronptn, $charptn, $propptn, $sentid, $lead, $modifier, $tag, $sentence, $sth1, $sentcopy);
@@ -2742,7 +2959,7 @@ sub pronouncharactersubject{
 		if($sentence =~/^.*?$t\b($CHARACTER)\b$t $t(?:of)$t (.*?)(<[NO]>([^<]*?)<\/[NO]> ?)+ /){#length of o
 			$tag = $4;
 			$modifier = substr($sentence, $-[2], ($-[4]-$-[2]));
-			if($3 !~/\b($stop|\d)\b/ and $2 !~/\b($PROPOSITION)\b/){#5/01/09 added $2 condition
+			if($3 !~/\b($stop|\d)\b/ and $2 !~/\b($PREPOSITION)\b/){#5/01/09 added $2 condition
 				$modifier =~ s#<\S+?>##g;
 				$modifier =~ s#(^\s*|\s*$)##g;
 				$tag =~ s#<\S+?>##g;
@@ -2757,15 +2974,18 @@ sub pronouncharactersubject{
 			if($text !~/\b($stop|\d+)\b/ && $text=~/\w/ && $text !~/[,:;\.]/){
 				$text =~ s#<\S+?>##g;
 				$text =~ s#(^\s*|\s*$)##g;
+				$text =~ s#[[:punct:]]##g;
 				my @text = split(/\s+/, $text);
-				$tag = $text[@text-1];
-				#if(getnumber($tag) =~/[ps]/){
-				if($sentence =~ /<[NO]>$tag<\/[NO]>/){ #5/01/09 check  9464, 9441, 2549, 2200, 2912
-					$text =~ s#$tag$##g;
-					$modifier = $text;
-				}else{
-					$tag = "ditto";
-					$modifier = "";
+				if(@text>=1){
+					$tag = $text[@text-1];
+					#if(getnumber($tag) =~/[ps]/){
+					if($sentence =~ /<[NO]>$tag<\/[NO]>/){ #5/01/09 check  9464, 9441, 2549, 2200, 2912
+						$text =~ s#$tag$##g;
+						$modifier = $text;
+					}else{
+						$tag = "ditto";
+						$modifier = "";
+					}
 				}
 			}else{
 				$tag = "ditto";
@@ -2802,7 +3022,7 @@ sub pronouncharactersubject{
 		#}
 	}
 	#propsition cases
-	$propptn = '^('.$PROPOSITION.')';
+	$propptn = '^('.$PREPOSITION.')';
 	$sth = $dbh->prepare("select sentid, lead, modifier, tag, sentence from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and lead rlike '$propptn ' ");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($sentid, $lead, $modifier, $tag, $sentence) = $sth->fetchrow_array()){
@@ -2899,7 +3119,7 @@ sub remainnulltag{
 			my $head = $1;
 			my $tagphrase = $2;
 			$tagphrase =~ s#(^\s+|\s+$)##g; #4/26/09 check 4633
-			if ($head =~/\b($PROPOSITION)\b/){
+			if ($head =~/\b($PREPOSITION)\b/){
 				tagsentwmt($sentid, $sentence, "", "ditto", "remainnulltag-[R3:ditto]");
 			}else{
 				#tag = the last word in $tagphrase
@@ -2959,7 +3179,7 @@ sub markupbypos{
 				$boundary = $words[$-[3]]; #p/q at the end
 				my @wordscopy = @words;
 				$modifier = join(" ", splice(@wordscopy, 0, $+[1]));
-				if($modifier !~/\b($PROPOSITION)\b/){ #condition added 3/21/09
+				if($modifier !~/\b($PREPOSITION)\b/){ #condition added 3/21/09
 					@wordscopy =@words;
 					my @tag = splice(@wordscopy, $-[2], ($+[2] - $-[2]));
 					$modifier .= " ".join(" ", splice(@tag, 0, @tag-1));
@@ -3763,7 +3983,7 @@ sub getmcount{
 	#$sth->execute() or print STDOUT "$sth->errstr\n";
 	#while(($sentence) = $sth->fetchrow_array()){
 	#	if($sentence =~ /(?:>| )$word(?:<\/B><\/M>)? ([^,]*?)<N/){
-	#		if($1 !~/\b($PROPOSITION)\b/){
+	#		if($1 !~/\b($PREPOSITION)\b/){
 	#			$mcount++;
 	#		}
 	#	}
@@ -4792,7 +5012,7 @@ sub followedbyn{
 	$knownnouns =~ s#\|\s*$##;
 	if ($sentence =~/(.*?)\b($knownnouns)\b/){
 		my $inbetween = $1;
-		return 1 if $inbetween !~ /\b($PROPOSITION)\b/;
+		return 1 if $inbetween !~ /\b($PREPOSITION)\b/;
 	}
 	return 0;
 }
@@ -5045,7 +5265,8 @@ sub updatePOS{
 	$sth1 = $dbh->prepare("select pos, role, certaintyu, certaintyl from ".$prefix."_wordpos where word='$word' ");
 	$sth1->execute(); #return 1 record
 	($oldpos, $oldrole, $certaintyu) = $sth1->fetchrow_array();
-	if($oldpos !~ /\w/){#new word
+	#if($oldpos !~ /\w/){#new word
+	if(!defined $oldpos){#new word
 		$certaintyu += $increment; #6/11/09 changed from = 1 to += $increment;
 		$sth = $dbh->prepare("insert into ".$prefix."_wordpos (word, pos, role, certaintyu, certaintyl) values('$word','$pos', '$role',$certaintyu, 0)" );
 	    $sth->execute();
@@ -5659,7 +5880,7 @@ while(defined ($file=readdir(IN))){
 	$text =~ s#["']##g;
 	#print $text."\n";
 	$text =~ s#\s*-\s*to\s+# to #g; #4/7/09 plano - to
-	$text =~ s#[-\s]+shaped#-shaped#g; #5/30/09
+	$text =~ s#[-_]+shaped#-shaped#g; #5/30/09
 	$text =~ s#<.*?>##g; #remove html tags
 	$text =~ s#<#g; less than #g; #remove <
 	$text =~ s#>#g; greater than #g; #remove >
@@ -5668,7 +5889,7 @@ while(defined ($file=readdir(IN))){
 
 	$original = $text;
   	$text =~ s/&[;#\w\d]+;/ /g; #remove HTML entities
-
+  	$text =~ s# & # and #g;
   	$text = hideBrackets($text);#implemented in DeHyphenAFolder.java
   	$text =~ s#_#-#g;   #_ to -
   	$text =~ s#\s+([:;\.])#\1#g;     #absent ; => absent;
@@ -5903,7 +6124,7 @@ sub tokenize{
 			$temp1 = $-[0];
 			#$index = $temp1;#
 		}
-		if($sentence =~ /\b(?:$PROPOSITION)(\s)/){#3/1109
+		if($sentence =~ /\b(?:$PREPOSITION)(\s)/){#3/1109
 			$temp2 = $-[1];
 		}
 		$index = $temp1 < $temp2? $temp1 : $temp2;#
@@ -5920,4 +6141,10 @@ sub tokenize{
 	$sentence =~ s#^\s+##;
 	@words = split(/\s+/, $sentence);
   	return @words;
+}
+
+sub trim{
+	my $term = shift;
+	$term =~ s#(^\s+|\s+$)##g;
+	return $term;
 }
