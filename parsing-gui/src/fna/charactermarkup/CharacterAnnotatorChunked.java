@@ -1582,8 +1582,7 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private void addAttribute(Element e, String attribute, String value) {
-		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+;\\s+", ";").replaceAll("-", " ").trim();
-		//value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+;\\s+", ";").trim();
+		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+")\\b", "").trim();
 		if(this.evaluation && attribute.startsWith("constraint_")) attribute="constraint"; 
@@ -1928,7 +1927,9 @@ public class CharacterAnnotatorChunked {
 					}
 					w = w.replaceAll("(\\{|\\})", "");
 					chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
-					
+					if(chara==null && w.matches("no")){
+						chara = "presence";
+					}
 					if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
 						modifiers +=w+" ";
 					}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?

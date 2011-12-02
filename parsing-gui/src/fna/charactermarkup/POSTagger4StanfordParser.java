@@ -54,7 +54,7 @@ public class POSTagger4StanfordParser {
 			  * str is markedsent
 
 	 */
-		protected String POSTag(String str, String src){
+		protected String POSTag(String str, String src) throws Exception{
 			boolean containsArea = false;
 			String strcp = str;
 			str = StanfordParser.normalizeSpacesRoundNumbers(str);
@@ -250,8 +250,9 @@ public class POSTagger4StanfordParser {
 			
 		}catch(Exception e){
 			e.printStackTrace();
+			throw e;
 		}
-		return "";
+		//return "";
 	}
 		
 		
@@ -621,7 +622,11 @@ public class POSTagger4StanfordParser {
 		//String str = "<stems> {usually} 1 , {branched} {distally} or {openly} so throughout , {leafy} , {glabrous} or {thinly} {arachnoid-tomentose} .";
 		String src = "157.txt-1";
 		String str = "laminae 6 17 cm . long , 2 - 7 cm . broad , lanceolate to narrowly oblong or elliptic_oblong , abruptly and narrowly acuminate , obtuse to acute at the base , margin entire , the lamina drying stiffly chartaceous to subcoriaceous , smooth on both surfaces , essentially glabrous and the midvein prominent above , glabrous to sparsely puberulent beneath , the 8 to 18 pairs of major secondary veins prominent beneath and usually loop_connected near the margin , microscopic globose_capitate or oblongoid_capitate hairs usually present on the lower surface , clear or orange distally .";
+		try{
 		System.out.println(tagger.POSTag(str, src));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 }

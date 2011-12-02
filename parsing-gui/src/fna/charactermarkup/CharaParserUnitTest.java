@@ -45,14 +45,14 @@ public class CharaParserUnitTest {
 		String selectdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19\\UnsupervisedStanford_Benchmark_selected_sentence";
 		String answerdir = "C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19\\AnsKey_Benchmark_selected_sentence";
 		
-		//fna intermediate results
+		//test:intermediate results
 		String prefix="fnav19";
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\posedsentences.txt";
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\parsedsentences.txt";
 		String posedfile = "C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_posedsentences.txt";
 		String parsedfile="C:\\Users\\mohankrishnag\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_parsedsentences.txt";
 		
-		//evaluation
+		//test:evaluation
 		//String evaluationfolder="C:\\DATA\\evaluation\\fnav19";
 		String evaluationfolder="C:\\Users\\mohankrishnag\\Desktop\\Work\\evaluation4Mohan\\evaluation\\fnav19";
 		String precisionrecalltable="fnav19_precisionrecall_final";
@@ -150,12 +150,17 @@ public class CharaParserUnitTest {
 
 	private void parsing(Connection conn, String database, String gloss,
 			String prefix, String posedfile, String parsedfile) {
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, prefix, gloss, true);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, prefix, gloss, true, null, null);
 		sosm.markSentences();
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, gloss, true);
-		sp.POSTagging();
-		sp.parsing();
-		sp.extracting();
+		try {
+			sp.POSTagging();
+			sp.parsing();
+			sp.extracting();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void compare(String benchmark, String result) {

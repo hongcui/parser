@@ -294,7 +294,7 @@ public class Utilities {
 	
 	public static boolean isAdv(String word, ArrayList<String> adverbs, ArrayList<String> notadverbs) {
 		word = word.replaceAll("[<>{}\\]\\[()\\d+-]", "").trim();
-		if(word.matches("(not|atleast|throughout|much)")){
+		if(word.matches("(not|at-?least|throughout|much)")){
 			return true;
 		}
 		if(word.matches("in.*?(profile|view)")){//covers in-dorsal-view, in-profile
