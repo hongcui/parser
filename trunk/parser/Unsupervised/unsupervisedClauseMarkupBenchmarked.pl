@@ -797,7 +797,7 @@ sub characterHeuristics{
 		$originalsent = trim($originalsent);
 		print "$source\n";
 		#noun rule 0: taxon names
-		if($originalsent =~ /<i>\s*(.*)\s*<\/i>/){
+		if($originalsent =~ /<i>\s*([^<]*)\s*<\/i>/){
 			my $t = $1;
 			$taxonnames{$t} = 1;
 			my @ts = split(/\s+/, $t);
