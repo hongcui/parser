@@ -185,7 +185,7 @@ public class HabitatParser4FNA implements Learn2Parse{
 		for(int i = 0; i<ns.length; i++){
 			if(ns[i].compareTo("") !=0){
 				//escape 
-				ns[i] = ns[i].replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]");
+				ns[i] = ns[i].replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)");
 				s = s.replaceAll("\\b"+Pattern.quote(ns[i])+"\\b", l+ns[i]+r);
 			}
 		}
@@ -202,7 +202,7 @@ public class HabitatParser4FNA implements Learn2Parse{
 			String[] hsegs = hs.split("@");
 			for(int i = 0; i<hsegs.length; i++){
 				if(hsegs[i].trim().length() > 0){
-					String temp = hsegs[i].trim().replaceFirst("\\W+$", "");
+					String temp = hsegs[i].trim().replaceFirst("\\W+$", "").replaceAll("&", "&amp;");
 					list.add("<habitat>"+temp+"</habitat>");
 				}
 			}			
