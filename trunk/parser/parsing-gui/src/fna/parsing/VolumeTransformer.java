@@ -345,7 +345,7 @@ public class VolumeTransformer extends Thread {
 			
 			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
-			VolumeFinalizer vf = new VolumeFinalizer(listener, null, this.conn,null);//display output files to listener here.
+			VolumeFinalizer vf = new VolumeFinalizer(listener,null, null, this.conn,null, null);//display output files to listener here.
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
@@ -703,6 +703,8 @@ public class VolumeTransformer extends Thread {
 		}
 		
 		String name = ti.getName(index);
+ 
+
 		if(name==null ||name.compareTo("") == 0){
 			File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
@@ -712,7 +714,7 @@ public class VolumeTransformer extends Thread {
 		}
 		// make a copy of the line and will work on the new copy
 		String text = new String(line);
-		
+		text = text.replaceAll("�", " ").replaceAll("\\s+", " ").trim(); //there are some whitespaces that are not really a space, don't know what they are. 
 		if(debug) System.out.println("\n"+(index+1)+": text="+text);
 		
 		String number = null;
@@ -748,6 +750,7 @@ public class VolumeTransformer extends Thread {
 		}
 		if(debug) System.out.println("namerank:"+namerank);
 		String[] nameinfo = getNameAuthority(name);
+		if(nameinfo[0]!=null && nameinfo[1]!=null){
 		addElement(namerank, nameinfo[0], treatment);
 		try {
 			vtDbA.add2TaxonTable(number, name, namerank, index+1);
@@ -777,7 +780,7 @@ public class VolumeTransformer extends Thread {
 			if(debug) System.out.println("authority:"+nameinfo[1]);
 		}
 		text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
-		
+		}
 		//authority
 		/*Pattern p = Pattern.compile("(.*?)((?: in|,|·|\\?).*)");
 		Matcher m = p.matcher(text);
@@ -823,7 +826,7 @@ public class VolumeTransformer extends Thread {
 		
 		//place of publication 
 		//Pattern p = Pattern.compile("(.* [12]\\d\\d\\d|.*(?=·)|.*(?=.))(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
-		p = Pattern.compile("(.* [12]\\d\\d\\d)($|,|\\.| )(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
+		p = Pattern.compile("(.* [12]\\d\\d\\d)($|,|\\.| +)(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
 		m = p.matcher(text);
 		if(m.matches()){
 			String pp = m.group(1).replaceFirst("^\\s*[,\\.]", "").trim();			
@@ -908,6 +911,7 @@ public class VolumeTransformer extends Thread {
 
 		if(text.trim().matches(".*?\\w+.*")){
 			if(debug) System.out.println((index+1)+"unparsed: "+text);
+			addElement("unparsed", text, treatment);
 			File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
 			listener.info("unparsed: "+text, xml.getPath());

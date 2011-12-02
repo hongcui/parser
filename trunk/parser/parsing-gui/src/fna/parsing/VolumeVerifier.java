@@ -383,6 +383,7 @@ public class VolumeVerifier extends Thread {
 			}
 			String text = buffer.toString().replaceAll("\\s+", " ").trim();
 			text = text.replaceFirst("^.*?(?=[A-Z])", "").trim();
+			text = text.replaceAll(" ", " ").replaceAll("\\s+", " ").trim(); //there are some whitespaces that are not really a space, don't know what they are. 
 			//fix broken names: T HYRSOSTACHYS;  va r. subhispida
 			text = fixBrokenNames(text);
 			text = chunkPlaceOfPub(text, filename); //after this, text should only hold name information
