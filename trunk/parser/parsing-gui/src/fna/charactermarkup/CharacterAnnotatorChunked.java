@@ -1418,7 +1418,7 @@ public class CharacterAnnotatorChunked {
 			if(relation != null){
 				createRelationElements(relation, entity1, structures, modifier, false);//relation elements not visible to outside 
 			}
-			if(relation.compareTo("part_of")==0) structures = entity1; //part_of holds: make the organbeforeof/entity1 the return value, all subsequent characters should be refering to organbeforeOf/entity1
+			if(relation!= null && relation.compareTo("part_of")==0) structures = entity1; //part_of holds: make the organbeforeof/entity1 the return value, all subsequent characters should be refering to organbeforeOf/entity1
 			
 		}
 		return structures;
