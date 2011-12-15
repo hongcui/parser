@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 //import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.swt.widgets.Display;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -64,14 +65,18 @@ public class VolumeTransformer extends Thread {
 	private String publicationtable = null;
 	private Connection conn = null;
 	private String dataPrefix;
+	private Display display;
+	private String glosstable;
 	
 	private boolean debug = false;
 	private boolean debugref = false;
 	private boolean debugkey = true;
 	
-	public VolumeTransformer(ProcessListener listener, String dataPrefix) throws ParsingException {
+	public VolumeTransformer(ProcessListener listener, String dataPrefix, String glosstable, Display display) throws ParsingException {
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
+		this.display = display;
+		this.glosstable = glosstable;
 		//this.errors = new Hashtable();
 		this.taxontable = dataPrefix.trim()+"_"	+ ApplicationUtilities.getProperty("taxontable");
 		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("authortable");
@@ -345,7 +350,7 @@ public class VolumeTransformer extends Thread {
 			
 			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
-			VolumeFinalizer vf = new VolumeFinalizer(listener,null, null, this.conn,null, null);//display output files to listener here.
+			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
