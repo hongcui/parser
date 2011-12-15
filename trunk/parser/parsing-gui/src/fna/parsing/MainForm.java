@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ColumnLayoutData;
@@ -92,7 +93,10 @@ public class MainForm {
 
 
 	@SuppressWarnings("unused")
-	private Hashtable<String, String> categorizedterms = new Hashtable<String, String>();
+
+	private Hashtable<String, String> categorizedtermsS = new Hashtable<String, String>();
+	private Hashtable<String, String> categorizedtermsC = new Hashtable<String, String>();
+	private Hashtable<String, String> categorizedtermsO = new Hashtable<String, String>();
 	private ArrayList<String> inistructureterms = new ArrayList<String>();
 	private ArrayList<String> inicharacterterms = new ArrayList<String>();	
 	private String type4xml;
@@ -282,6 +286,11 @@ public class MainForm {
 	private Group group4characters;
 	private Composite composite4others;
 	private Group group4others;
+	protected UUID lastSavedIdS = UUID.randomUUID();
+	protected UUID lastSavedIdC = UUID.randomUUID();
+	protected UUID lastSavedIdO = UUID.randomUUID();
+	
+	
 
 	
 	
@@ -626,7 +635,7 @@ public class MainForm {
 					int option_chosen =getType(type); 
 					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
-					mainDb.createNonEQTable();
+					//mainDb.createNonEQTable();
 				} catch (Exception exe) {
 					exe.printStackTrace();
 					LOGGER.error("Error saving dataprefix", exe);
@@ -1354,9 +1363,11 @@ public class MainForm {
 		startMarkupButton_1.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
-				termRoleMatrix4structures.setVisible(false);
-				termRoleMatrix4characters.setVisible(false);
-				termRoleMatrix4others.setVisible(false);
+				if(!termRoleMatrix4structures.isDisposed()){
+					termRoleMatrix4structures.setVisible(false);
+					termRoleMatrix4characters.setVisible(false);
+					termRoleMatrix4others.setVisible(false);
+				}
 				startMarkup();
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
@@ -2674,13 +2685,13 @@ public class MainForm {
 		String subtabTitle ="";
 		String subtabInstruction = "";
 		if(type.compareToIgnoreCase("others")==0){
-			subtabTitle = "Categorize Other Terms";
+			subtabTitle = "4.3 Categorize Other Terms";
 			subtabInstruction = "step4Descp3";
 		}else if(type.compareToIgnoreCase("structures")==0){
-			subtabTitle = "Review Structure Terms";
+			subtabTitle = "4.1 Review Structure Terms";
 			subtabInstruction = "step4Descp1";
 		}else if(type.compareToIgnoreCase("characters")==0){
-			subtabTitle = "Review Character Terms";
+			subtabTitle = "4.2 Review Character Terms";
 			subtabInstruction = "step4Descp2";
 		}		
 		
@@ -2768,109 +2779,131 @@ public class MainForm {
 			}			
 		});
 		
-		//save button is only shown on the others subtab
-		if(type.compareToIgnoreCase("others")==0){
-			/* "Save" button */ 
-			final Button saveButton = new Button(composite_1, SWT.NONE);
-			saveButton.setText("Save");
-			saveButton.setBounds(622, 433, 132, 25);//(650, 427, 98, 25);
-			saveButton.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(final SelectionEvent e) {
-					int choice = ApplicationUtilities.showPopUpWindow(
-						 "After the terms are saved, you will not be able to redo this step. Do you want to save now?", 
-							ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
-					if(choice == SWT.YES) {
-						recordTermReviewResults(termRoleMatrix);
-					}else{
-						return;
+		/* "Save" button */ 
+		final Button saveButton = new Button(composite_1, SWT.NONE);
+		saveButton.setText("Save");
+		saveButton.setBounds(622, 433, 132, 25);//(650, 427, 98, 25);
+		saveButton.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(final SelectionEvent e) {
+				//int choice = ApplicationUtilities.showPopUpWindow(
+				//	 "After the terms are saved, you will not be able to redo this step. Do you want to save now?", 
+				//		ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
+				//if(choice == SWT.YES) {
+					recordTermReviewResults(termRoleMatrix);
+					contextText.setText("terms saved!");
+				//}else{
+				//	return;
+				//}
+			}
+
+			private void recordTermReviewResults(Composite termRoleMatrix) {
+				try{
+					//save to db
+					ArrayList<String> noneqs = new ArrayList<String>();
+					ArrayList<String> structures = new ArrayList<String>();
+					ArrayList<String> characters = new ArrayList<String>();
+					Hashtable<String, String> categorizedterms = null;
+					UUID lastSavedId = null;
+					if(type.compareToIgnoreCase("structures") ==0){
+						categorizedterms = categorizedtermsS;
+						lastSavedId = lastSavedIdS;
 					}
-				}
-	
-				private void recordTermReviewResults(Composite termRoleMatrix) {
-					try{
-						//save to db
-						ArrayList<String> noneqs = new ArrayList<String>();
-						ArrayList<String> structures = new ArrayList<String>();
-						ArrayList<String> characters = new ArrayList<String>();
-						
-						Enumeration<String> en = categorizedterms.keys();
-						while(en.hasMoreElements()){
-							String t = en.nextElement();
-							String type = categorizedterms.get(t);
-							if(type.compareToIgnoreCase("others")==0) noneqs.add(t);
-							if(type.compareToIgnoreCase("structures")==0) structures.add(t);
-							if(type.compareToIgnoreCase("characters")==0) characters.add(t);
-						}
-						inistructureterms = null;
-						inicharacterterms = null;		
-						categorizedterms = null;
-						
-						mainDb.recordNonEQTerms(noneqs);//noneq
-						mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_B); //descriptor
-						mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_O); //descriptor
-						
-						//set sentences to unknown
-						ArrayList<String> nonStructureTerms = new ArrayList<String>();
-						nonStructureTerms.addAll(noneqs);
-						nonStructureTerms.addAll(characters);
-						mainDb.setUnknownTags(nonStructureTerms);
-					}catch(Exception e){
-						e.printStackTrace();
+					if(type.compareToIgnoreCase("characters") ==0){
+						categorizedterms = categorizedtermsC;
+						lastSavedId = lastSavedIdC;
 					}
-					//remove
-					//termRoleMatrix.setVisible(false);
-					termRoleMatrix4others.dispose();
-					termRoleMatrix4structures.dispose();
-					termRoleMatrix4characters.dispose();
-					contextText.setText("");
-					/*Control[] controls = termRoleMatrix.getChildren();
-					Hashtable<String, String> structures = new Hashtable<String, String>();
-					Hashtable<String, String> characters = new Hashtable<String, String>();
-					Hashtable<String, String> noneqs = new Hashtable<String, String>();
-					for(Control control: controls){
-						Composite termRoleGroup = (Composite) control;
-						Control[] row = termRoleGroup.getChildren();
-						String word = ((Label)row[1]).getText();
-						if(((Button)row[2]).getSelection()){//structure
-							structures.put(word, word);
-						}
-						if(((Button)row[3]).getSelection()){//structure
-							characters.put(word, word);
-						}
-						if(((Button)row[4]).getSelection()){//structure
-							noneqs.put(word, word);
-						}					
+					if(type.compareToIgnoreCase("others") ==0){
+						categorizedterms = categorizedtermsO;
+						lastSavedId = lastSavedIdO;
 					}
+					Enumeration<String> en = categorizedterms.keys();
+					while(en.hasMoreElements()){
+						String t = en.nextElement();
+						String type = categorizedterms.get(t);
+						if(type.compareToIgnoreCase("others")==0) noneqs.add(t);
+						if(type.compareToIgnoreCase("structures")==0) structures.add(t);
+						if(type.compareToIgnoreCase("characters")==0) characters.add(t);
+					}
+					inistructureterms = null;
+					inicharacterterms = null;		
+					//categorizedterms = null;
 					
-					try{
-						//save to db
-						ArrayList<String> terms = new ArrayList<String>();
-						terms.addAll(noneqs.values());
-						mainDb.recordNonEQTerms(terms);//noneq
-						terms = new ArrayList<String>();
-						terms.addAll(characters.values());					
-						mainDb.saveTermRole(terms, Registry.MARKUP_ROLE_B); //descriptor
-						terms = new ArrayList<String>();
-						terms.addAll(structures.values());					
-						mainDb.saveTermRole(terms, Registry.MARKUP_ROLE_O); //descriptor
-						
-						//set sentences to unknown
-						ArrayList<String> nonStructureTerms = new ArrayList<String>();
-						nonStructureTerms.addAll(noneqs.values());
-						nonStructureTerms.addAll(characters.values());
-						mainDb.setUnknownTags(nonStructureTerms);
-					}catch(Exception e){
-						e.printStackTrace();
+
+					UUID currentSavedId = UUID.randomUUID();
+					mainDb.recordNonEQTerms(noneqs, lastSavedId , currentSavedId);//noneq
+					mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures
+					mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors
+					if(type.compareToIgnoreCase("structures") ==0){
+						lastSavedIdS = currentSavedId;
 					}
-					//remove
-					//termRoleMatrix.setVisible(false);
-					termRoleMatrix.dispose();
-					contextText.setText("");*/
-					
+					if(type.compareToIgnoreCase("characters") ==0){
+						lastSavedIdC = currentSavedId;
+					}
+					if(type.compareToIgnoreCase("others") ==0){
+						lastSavedIdO = currentSavedId;
+					}
+					//set sentences to unknown
+					ArrayList<String> nonStructureTerms = new ArrayList<String>();
+					nonStructureTerms.addAll(noneqs);
+					nonStructureTerms.addAll(characters);
+					mainDb.setUnknownTags(nonStructureTerms);
+				}catch(Exception e){
+					e.printStackTrace();
 				}
-			});
-		}
+				//termRoleMatrix.setVisible(false);
+				//termRoleMatrix4others.dispose();
+				//termRoleMatrix4structures.dispose();
+				//termRoleMatrix4characters.dispose();
+				contextText.setText("");
+				/*Control[] controls = termRoleMatrix.getChildren();
+				Hashtable<String, String> structures = new Hashtable<String, String>();
+				Hashtable<String, String> characters = new Hashtable<String, String>();
+				Hashtable<String, String> noneqs = new Hashtable<String, String>();
+				for(Control control: controls){
+					Composite termRoleGroup = (Composite) control;
+					Control[] row = termRoleGroup.getChildren();
+					String word = ((Label)row[1]).getText();
+					if(((Button)row[2]).getSelection()){//structure
+						structures.put(word, word);
+					}
+					if(((Button)row[3]).getSelection()){//structure
+						characters.put(word, word);
+					}
+					if(((Button)row[4]).getSelection()){//structure
+						noneqs.put(word, word);
+					}					
+				}
+				
+				try{
+					//save to db
+					ArrayList<String> terms = new ArrayList<String>();
+					terms.addAll(noneqs.values());
+					mainDb.recordNonEQTerms(terms);//noneq
+					terms = new ArrayList<String>();
+					terms.addAll(characters.values());					
+					mainDb.saveTermRole(terms, Registry.MARKUP_ROLE_B); //descriptor
+					terms = new ArrayList<String>();
+					terms.addAll(structures.values());					
+					mainDb.saveTermRole(terms, Registry.MARKUP_ROLE_O); //descriptor
+					
+					//set sentences to unknown
+					ArrayList<String> nonStructureTerms = new ArrayList<String>();
+					nonStructureTerms.addAll(noneqs.values());
+					nonStructureTerms.addAll(characters.values());
+					mainDb.setUnknownTags(nonStructureTerms);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				//remove
+				//termRoleMatrix.setVisible(false);
+				termRoleMatrix.dispose();
+				contextText.setText("");*/
+				
+			}
+		});
 	}
+	
 	
 
 	/* This function saves the Other terms from the markup tab 
@@ -3113,7 +3146,7 @@ public class MainForm {
 	 * under markup tab - to the wordroles table
 	 * 
 	 */
-	private void saveDescriptorTerms(Table table, String role) {
+	/*private void saveDescriptorTerms(Table table, String role) {
 		//save content of the table in order to assign correct color codes after green ones are saved
 		Hashtable<String, Color> content = new Hashtable<String, Color>();
 		ArrayList <String> descriptorTerms = new ArrayList<String>();
@@ -3159,22 +3192,22 @@ public class MainForm {
 			}
 		}		
 	}
-	
+	*/
 	
 /**
  * In the Markup - Descriptor Tab, this function 
  * is used to remove any term selected by the user 
  */
-	private void removeDescriptorFromTable(Table table){
+	/*private void removeDescriptorFromTable(Table table){
 		@SuppressWarnings("unused")
 		boolean toRemove = false;
 		TableItem [] items = table.getItems();
 		for (TableItem item : items) {
 			if (item.getChecked()) {
 				removedTags.add(item.getText(1));
-			/*	item.setBackground(0,red);
-				item.setBackground(1,red);
-				item.setBackground(2,red);*/
+				//item.setBackground(0,red);
+				//item.setBackground(1,red);
+				//item.setBackground(2,red);
 				item.setBackground(red);				
 				toRemove = true;
 				item.setChecked(false);
@@ -3197,14 +3230,9 @@ public class MainForm {
 					"Nothing Selected!", SWT.ICON_ERROR);
 		}
 	//	markupTable_1.removeAll();//removed temporarily, should be removed from database
-		/*int count = 1;
-		for (String word : descriptorsToSaveList) {
-			TableItem item = new TableItem(markupTable_1, SWT.NONE);
-			item.setText(new String [] {count+"", word});
-			count++;
-		}*/ //commented as we want them to be displayed on the screen as red.
+		
 
-	}
+	}*/
 
 	private void browseConfigurationDirectory() {
         DirectoryDialog directoryDialog = new DirectoryDialog(shell);
@@ -3290,7 +3318,7 @@ public class MainForm {
 	
 	private void startTransformation() {
 		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
-		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
 		vt.start();
 	}
 	
@@ -3421,6 +3449,7 @@ public class MainForm {
 	private void startMarkup() {
 
 		mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
+		mainDb.createNonEQTable();
 		String workdir = Registry.TargetDirectory;
 		//if there is a characters folder,add the files in characters folder to descriptions folder
 		mergeCharDescFolders(new File(workdir));
@@ -4488,86 +4517,124 @@ public class MainForm {
 			return 0;
 	}
 	
-	/**loading structure/descriptor terms for curation**/
 
-	/*protected void loadTermCurationTabs(){
-		//loadFindStructureTable();
-		//loadFindDescriptorTable();
-		//loadFindMoreStructureTable();
-		//loadFindMoreDescriptorTable();
-		createSubtab(markupNReviewTabFolder, "structures");
-		createSubtab(markupNReviewTabFolder, "characters");
-		createSubtab(markupNReviewTabFolder, "others");
-	}*/
-	protected int loadFindStructureTable() {
-		//ArrayList <String> words = new ArrayList<String>();
-		findStructureTable.removeAll();
-		int count = 0;
-		try {
-			ArrayList<String> words = fetchStructureTerms();			
-
-			if (words != null) {
-				for (String word : words){
-					count++;
-					TableItem item = new TableItem(findStructureTable, SWT.NONE);
-					item.setText(new String [] {count+"", word});
-				}
-			}					
-		} catch (Exception exe){
-			LOGGER.error("unable to load findStructure subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
-		}
-		return count;
-	}
-
+	
+	/**
+	 * this procedure seems to be slow and only a handful of terms are filtered.
+	 * 1. search db for candidate structure terms
+	 * 2. apply heuristic rules to filter the terms
+	 * 		2.1 pos = v|adv
+	 * 		2.2 does not ...
+	 * 		2.3 by [means] of
+	 * 3. filtered terms are not displayed and they will not be saved to wordroles table as "os" or "op".
+	 * 4. terms filtered by 2.1.adv or 2.3 will be saved in NONEQTERMSTABLE
+	 * 5. cache results to reduce cost
+	 * @return filtered candidate structure words
+	 */
 	private ArrayList<String> fetchStructureTerms(){
 		ArrayList <String> words = new ArrayList<String>();
+		ArrayList <String> filteredwords = new ArrayList<String>();
+		ArrayList <String> noneqwords = new ArrayList<String>();
 		try{
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			words = vmdb.structureTags4Curation(words);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return words;
-	}
-
-	/*protected void loadOthersTable() {
-		showOtherTerms();
-	}*/
-
-	protected int loadFindDescriptorTable() {
-		// TODO Auto-generated method stub
-		//ArrayList <String> words = null;
-		findDescriptorTable.removeAll();
-		int count = 0;
-		try {
-			ArrayList<String> words = fetchCharacterTerms();
-			if (words != null) {
-				for (String word : words){
-					count++;
-					TableItem item = new TableItem(findDescriptorTable, SWT.NONE);
-					item.setText(new String [] {count+"", word});
-				}
+			if(conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
-			
-		} catch (Exception exe){
-			LOGGER.error("unable to load findDescriptor subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
-		}
-		return count;
-	
-	}
-
-	private ArrayList<String> fetchCharacterTerms(){
-		ArrayList <String> words = null;
-		try{
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			words = (ArrayList<String>)vmdb.descriptorTerms4Curation();
+			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix,glossaryPrefixCombo.getText().trim());
+			words = vmdb.structureTags4Curation(words);
+			for(String word: words){
+				//before structure terms are set, partOfPrepPhrases can not be reliability determined
+				if(Utilities.mustBeVerb(word, this.conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
+					//if(Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
+						noneqwords.add(word);
+					//}					
+					continue;
+				}
+				filteredwords.add(word);
+			}
+			mainDb.recordNonEQTerms(noneqwords, null, null);
+			words = null;
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return words;
+		conn = null;
+		return filteredwords;
 	}
+
+	/**
+	 * 1. search db for candidate character terms
+	 * 2. apply heuristic rules to filter the terms
+	 * 		2.1 pos = adv
+	 * 		2.2 by [means] of
+	 * 3. filtered terms are not displayed and they will not be saved to wordroles table as "os" or "op".
+	 * 4. terms filtered by 2.1.adv or 2.2 will be saved in NONEQTERMSTABLE
+	 * 5. cache results to reduce cost
+	 * @return filtered candidate character words
+	 */
+	private ArrayList<String> fetchCharacterTerms(){
+		ArrayList <String> words = new ArrayList<String>();;
+		ArrayList <String> filteredwords = new ArrayList<String>();
+		ArrayList <String> noneqwords = new ArrayList<String>();
+		try{
+			if(conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			}
+			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix, glossaryPrefixCombo.getText().trim());
+			words = (ArrayList<String>)vmdb.descriptorTerms4Curation();
+			for(String word: words){
+				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
+					noneqwords.add(word);
+					continue;
+				}
+				filteredwords.add(word);
+			}
+			mainDb.recordNonEQTerms(noneqwords, null, null);
+			words = null;
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		conn = null;
+		return filteredwords;	
+		}
+	
+	private ArrayList<String> fetchContentTerms() {
+		ArrayList<String> words = new ArrayList<String>();
+		ArrayList <String> filteredwords = new ArrayList<String>();
+		ArrayList <String> noneqwords = new ArrayList<String>();
+		try{
+			
+			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
+			if(inistructureterms==null || inistructureterms.size()==0){
+				inistructureterms = vmdb.structureTags4Curation(new ArrayList<String>());
+			}
+			if(inicharacterterms==null || inicharacterterms.size()==0){
+				inicharacterterms = vmdb.descriptorTerms4Curation();
+			}
+			words=(ArrayList<String>)vmdb.contentTerms4Curation(words, inistructureterms, inicharacterterms);
+			if(conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			}
+			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
+			for(String word: words){
+				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
+					noneqwords.add(word);
+					continue;
+				}
+				filteredwords.add(word);
+			}
+			mainDb.recordNonEQTerms(noneqwords, null, null);
+			words = null;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return filteredwords;
+	}
+	
 	protected void loadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, ArrayList <String> words, final StyledText contextText, String type) {
 		int count = 0;
 		try {
@@ -4582,10 +4649,21 @@ public class MainForm {
 			termRoleMatrix.setSize(744, words.size()*y);
 			scrolledComposite.setContent(termRoleMatrix);
 			termRoleMatrix.setVisible(true);
+			Hashtable<String, String> categorizedterms = null;
+			if(type.compareToIgnoreCase("structures") ==0){
+				categorizedterms = categorizedtermsS;
+			}
+			if(type.compareToIgnoreCase("characters") ==0){
+				categorizedterms = categorizedtermsC;
+			}
+			if(type.compareToIgnoreCase("others") ==0){
+				categorizedterms = categorizedtermsO;
+			}
+			final Hashtable<String, String> thiscategorizedterms = categorizedterms;
 			if (words != null) {
 				ArrayList<Control> tabList = new ArrayList<Control>();
 				for (String word : words){
-					categorizedterms.put(word, type);
+					thiscategorizedterms.put(word, type);
 					count++;					
 					final Composite termRoleGroup = new Composite(termRoleMatrix, SWT.NONE);
 					termRoleGroup.setLayoutData(new RowLayout(SWT.HORIZONTAL));	
@@ -4637,7 +4715,7 @@ public class MainForm {
 					    	  Control[] controls = button_1.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
-						    	 categorizedterms.put(term, "structure");
+						    	 thiscategorizedterms.put(term, "structures");
 					    	  }
 					      }						
 					});
@@ -4652,7 +4730,7 @@ public class MainForm {
 					    	  Control[] controls = button_2.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
-						    	 categorizedterms.put(term, "character");
+						    	 thiscategorizedterms.put(term, "characters");
 					    	  }
 					      }						
 					});
@@ -4667,7 +4745,7 @@ public class MainForm {
 					    	  Control[] controls = button_3.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
-						    	 categorizedterms.put(term, "other");
+						    	 thiscategorizedterms.put(term, "others");
 					    	  }
 					      }						
 					});
@@ -4694,22 +4772,67 @@ public class MainForm {
 		}
 	}
 
-	private ArrayList<String> fetchContentTerms() {
-		ArrayList<String> words = new ArrayList<String>();
-		try{
-			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-			if(inistructureterms==null || inistructureterms.size()==0){
-				inistructureterms = vmdb.structureTags4Curation(new ArrayList<String>());
-			}
-			if(inicharacterterms==null || inicharacterterms.size()==0){
-				inicharacterterms = vmdb.descriptorTerms4Curation();
-			}
-			words=(ArrayList<String>)vmdb.contentTerms4Curation(words, inistructureterms, inicharacterterms);
-		}catch(Exception e){
-			e.printStackTrace();
+
+	
+	/**loading structure/descriptor terms for curation**/
+
+	/*protected void loadTermCurationTabs(){
+		//loadFindStructureTable();
+		//loadFindDescriptorTable();
+		//loadFindMoreStructureTable();
+		//loadFindMoreDescriptorTable();
+		createSubtab(markupNReviewTabFolder, "structures");
+		createSubtab(markupNReviewTabFolder, "characters");
+		createSubtab(markupNReviewTabFolder, "others");
+	}*/
+	/*protected int loadFindStructureTable() {
+		//ArrayList <String> words = new ArrayList<String>();
+		findStructureTable.removeAll();
+		int count = 0;
+		try {
+			ArrayList<String> words = fetchStructureTerms();			
+
+			if (words != null) {
+				for (String word : words){
+					count++;
+					TableItem item = new TableItem(findStructureTable, SWT.NONE);
+					item.setText(new String [] {count+"", word});
+				}
+			}					
+		} catch (Exception exe){
+			LOGGER.error("unable to load findStructure subtab in Markup : MainForm", exe);
+			exe.printStackTrace();
 		}
-		return words;
-	}
+		return count;
+	}*/
+	/*protected void loadOthersTable() {
+		showOtherTerms();
+	}*/
+
+	/*protected int loadFindDescriptorTable() {
+		// TODO Auto-generated method stub
+		//ArrayList <String> words = null;
+		findDescriptorTable.removeAll();
+		int count = 0;
+		try {
+			ArrayList<String> words = fetchCharacterTerms();
+			if (words != null) {
+				for (String word : words){
+					count++;
+					TableItem item = new TableItem(findDescriptorTable, SWT.NONE);
+					item.setText(new String [] {count+"", word});
+				}
+			}
+			
+		} catch (Exception exe){
+			LOGGER.error("unable to load findDescriptor subtab in Markup : MainForm", exe);
+			exe.printStackTrace();
+		}
+		return count;
+	
+	}*/
+
+
 	
 	/*protected int loadFindMoreStructureTable() {
 		ArrayList <String> words = new ArrayList<String>();

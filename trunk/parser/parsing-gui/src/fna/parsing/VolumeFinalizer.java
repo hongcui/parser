@@ -42,7 +42,7 @@ public class VolumeFinalizer extends Thread {
     private Connection conn = null;
     private String glossaryPrefix;
     private static String version="$Id$";
-    private static boolean standalone = true;
+    private static boolean standalone = false;
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
     private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19";
 	private Text finalLog;
@@ -302,7 +302,7 @@ public class VolumeFinalizer extends Thread {
     protected void resetOutputMessage() {
 		display.syncExec(new Runnable() {
 			public void run() {
-				finalLog.setText("");
+				if(finalLog!=null) finalLog.setText("");
 			}
 		});
 	}
@@ -310,7 +310,7 @@ public class VolumeFinalizer extends Thread {
 	protected void showOutputMessage(final String message) {
 		display.syncExec(new Runnable() {
 			public void run() {
-				finalLog.append(message+"\n");
+				if(finalLog!=null) finalLog.append(message+"\n");
 			}
 		});
 	}
