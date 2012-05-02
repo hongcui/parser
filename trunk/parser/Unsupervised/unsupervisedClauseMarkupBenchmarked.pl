@@ -476,7 +476,17 @@ my $database;
 while(($database) = $test->fetchrow_array()){
 	#print $database."\n";
 	if($database eq $kb){
-		return 1;
+		#look for tables learnedboundarywords and learnedstructures
+		$test = $dbh->prepare('use '.$database) or die $dbh->errstr."\n";
+		$test->execute() or die $test->errstr."\n";
+		$test = $dbh->prepare('show tables') or die $dbh->errstr."\n";
+		$test->execute() or die $test->errstr."\n";
+		my $has_b = 0; my $has_s = 0;
+		while(my $table = $test->fetchrow_array()){
+			if($table =~ /'learnedboundarywords'/){$has_b=1;}
+			if($table =~ /'learnedstructures'/){$has_s=1;}
+		}
+		return $has_b and $has_s;
 	}
 }
 return 0;
@@ -6041,7 +6051,7 @@ while(defined ($file=readdir(IN))){
 	my $query = $dbh->prepare("insert into ".$prefix."_sentInFile values ('$file', $end)");
 	$query->execute() or print STDOUT $query->errstr."\n";
 }
-	chop($PROPERNOUNS);
+	#chop($PROPERNOUNS);
 print "Total sentences = $SENTID\n";
 populateunknownwordstable();
 }
@@ -6073,6 +6083,7 @@ sub recordpropernouns{
 		$pn =~ tr/A-Z/a-z/;
 		$PROPERNOUNS .= $pn."|" if length($pn) > 1;
 	}
+	$PROPERNOUNS =~ s#\|$##;
 }
 
 sub getallwords{
