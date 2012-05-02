@@ -170,7 +170,7 @@ public class MainFormDbAccessor {
 				String tag = rs.getString("tag");
 				tagListCombo.add(tag);
 			}
-//changed 02/28 added modifier != ''
+			//changed 02/28 added modifier != ''
 			sql = "select distinct modifier from "+tablePrefix+"_sentence where modifier is not null and modifier != '' order by modifier asc";
 			stmt_select = conn.prepareStatement(sql);			
 			rs = stmt_select.executeQuery();
@@ -225,7 +225,7 @@ public class MainFormDbAccessor {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' or isnull(tag) order by sentence";
+			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' or isnull(tag) or tag ='' order by sentence";
 			stmt = conn.prepareStatement(sql);
 			
 			int i = 0;
