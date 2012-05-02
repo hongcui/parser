@@ -17,7 +17,6 @@ import fna.parsing.ApplicationUtilities;
  */
 public class TermIDAssigner {
 	private Connection conn = null;
-	private static String url = ApplicationUtilities.getProperty("database.url");
 	private String schemaname;
 	private String tablename;
 	private String idcolumn;
@@ -28,6 +27,7 @@ public class TermIDAssigner {
 		this.schemaname = schemaname;
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
+			String url = "jdbc:mysql://localhost/"+schemaname+"?user=termsuser&password=termspassword";
 			this.conn = DriverManager.getConnection(url);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -62,7 +62,8 @@ public class TermIDAssigner {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TermIDAssigner tia = new TermIDAssigner("annotationevaluation", "fnaglossaryfixed", "FNA_ID");
+		//TermIDAssigner tia = new TermIDAssigner("annotationevaluation", "fnaglossaryfixed", "FNA_ID");
+		TermIDAssigner tia = new TermIDAssigner("annotationevaluation", "fnastructures", "FNA_ID");
 		tia.assignID();		
 	}
 
