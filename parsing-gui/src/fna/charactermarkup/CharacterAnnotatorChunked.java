@@ -252,6 +252,8 @@ public class CharacterAnnotatorChunked {
 					name = structure.getAttributeValue("constraint_type")+" "+name;
 				if(structure.getAttribute("constraint_parent_organ") !=null)
 					name = structure.getAttributeValue("constraint_parent_organ")+" "+name;
+				if(structure.getAttribute("constraint") !=null)
+					name = structure.getAttributeValue("constraint")+" "+name;
 				String id = structure.getAttributeValue("id");
 				if(names.containsKey(name)){	
 					names.get(name).add(id);//update the value for name 
@@ -551,8 +553,7 @@ public class CharacterAnnotatorChunked {
 					this.addAttribute(lastelement, "modifier", content);
 				}else{
 					cs.unassignedmodifier = content;
-				}
-				
+				}				
 			}else if(ck instanceof ChunkEOS || ck instanceof ChunkEOL){
 				if(cs.unassignedmodifier!=null && cs.unassignedmodifier.length()>0){
 					Element lastelement = this.latestelements.get(this.latestelements.size()-1);
@@ -712,8 +713,8 @@ public class CharacterAnnotatorChunked {
 			n = "constraint["+n.replaceFirst("type\\[", "(").replaceFirst("\\]", ")").replaceAll("a\\[", ""); //1-1.6 times u[o[bodies]] => constraint[times (bodies)]
 			content = "size["+v+"] "+n;
 			return this.processTHAN(content, parents);			
-		}else if(n.indexOf("o[")>=0 ||n.indexOf("z[")>=0  ){//ca .3.5 times length r[p[of] o[(throat)]]
-			n = "constraint["+n.replaceAll("[o|z]\\[", ""); //times o[(bodies)] => constraint[times (bodies)]
+		}else if(n.indexOf("o[")>=0 ||n.indexOf("z[")>=0  || n.indexOf("l[")>=0 ){//ca .3.5 times length r[p[of] o[(throat)]]
+			n = "constraint["+n.replaceAll("[o|l|z]\\[", ""); //times o[(bodies)] => constraint[times (bodies)]
 			content = "size["+v+"] "+n;
 			return this.processTHAN(content, parents);	
 		}else if(n.indexOf("a[")==0 || n.indexOf(" a[")>0){ //characters:1–3 times {pinnately} {lobed}
@@ -1000,7 +1001,8 @@ public class CharacterAnnotatorChunked {
 			cname = this.unassignedcharacter;
 			this.unassignedcharacter = null;
 		}
-		String cvalue = parts[1].replaceFirst("\\{"+cname+"~list~", "").replaceFirst("\\W+$", "").replaceAll("~", " ").trim();
+		//String cvalue = parts[1].replaceFirst("\\{"+cname+"~list~", "").replaceFirst("\\W+$", "").replaceAll("~", " ").trim();
+		String cvalue = parts[1].replaceFirst("\\{"+cname+"-list", "").replaceFirst("\\W+$", "").replaceAll("-", " ").trim();
 		//String cvalue = parts[1].replaceFirst("^"+cname+"~list~", "").replaceFirst("\\W+$", "").replaceAll("~", " ").trim();
 		if(cname.endsWith("ttt")){
 			this.createCharacterElement(parents, results, modifier, cvalue, cname.replaceFirst("ttt$", ""), "");
@@ -1836,8 +1838,6 @@ public class CharacterAnnotatorChunked {
 				organ = sharedcharacters;
 			}
 			processCharacterText(organ, list, null); //characters created here are final and all the structures will have, therefore they shall stay local and not visible from outside
-			
-			
 		}
 		return results;
 	}

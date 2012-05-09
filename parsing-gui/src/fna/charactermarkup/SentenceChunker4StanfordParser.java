@@ -138,20 +138,21 @@ public class SentenceChunker4StanfordParser {
 					collapseElement(QP, allText(QP), "q");									
 				}*/
 
-				collapseNPList();
-				collapsePPList();
+				collapseNPList();// apples, pears, and peaches => turn the list into 1 np
+				collapsePPList(); //on or above the surface => on or above becomes 1 in
 				
 				//get All PP/IN
-				List<Element> PPINs = PPINpath.selectNodes(root);
+				//List<Element> PPINs = PPINpath.selectNodes(root);
+				List<Element> PPINs = null;
 				do{
 					ArrayList<Element> lPPINs = new ArrayList<Element>();
 					//PPINs = XPath.selectNodes(root, "//PP/IN");
-					PPINs = sortById(PPINpath.selectNodes(root));
+					PPINs = sortById(PPINpath.selectNodes(root));//selects the terminal IN nodes and sort them in the original order as in the text 
 					Iterator<Element> it = PPINs.iterator();
 					while(it.hasNext()){
 						Element PPIN = it.next();
 						//List<Element> temp = XPath.selectNodes(PPIN, "//PP/IN");
-						List<Element> temp = PPINpath.selectNodes(PPIN.getParentElement());
+						List<Element> temp = PPINpath.selectNodes(PPIN.getParentElement()); //this and the next step are to select PP nodes containing no other PP/INs
 						if(temp.size() == 0){
 							lPPINs.add(PPIN);
 						}
@@ -208,6 +209,9 @@ public class SentenceChunker4StanfordParser {
 end procedure
 
 
+	 */
+	/*
+	 * @parameter 
 	 */
 	private List<Element> sortById(List<Element> selectNodes) {
 		// TODO Auto-generated method stub
@@ -489,7 +493,7 @@ end procedure
 	 */
 	private void extractFromlPPIN(Element lPPIN) {
 		
-		Element PP = lPPIN.getParentElement();
+		Element PP = lPPIN.getParentElement(); //Gets the parent PP chunk in which the IN is contained i.e. the entire contents of PP/IN chunk
 		if(PP == null){ //TODO:(IN except) (IN among)
 			return;
 		}

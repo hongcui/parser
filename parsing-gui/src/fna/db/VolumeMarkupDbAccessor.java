@@ -93,7 +93,7 @@ public class VolumeMarkupDbAccessor {
 	 		rs1.close();
 	 		stmt1.close();
 
-			String sql = "select distinct tag as structure from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag !='' and tag is not null and tag not like '% %' " +
+			String sql = "select distinct tag as structure from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' " +
 			filter1 +
 			"union select distinct plural as structure from "+this.tablePrefix+"_singularplural"+","+ this.tablePrefix+"_sentence where singular=tag "+
 			filter2 +

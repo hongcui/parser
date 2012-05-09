@@ -2589,7 +2589,7 @@ public class MainForm {
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
-					if(completed){
+					//if(completed){
 					/*File fileList= new File(Registry.TargetDirectory+"\\final\\");
 					if(fileList.list().length==0)
 					{
@@ -2597,7 +2597,7 @@ public class MainForm {
 						statusOfMarkUp[6] = false;
 						ApplicationUtilities.showPopUpWindow("Error executing step 7", "Error",SWT.ERROR);
 					}*/
-					}
+					//}
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);

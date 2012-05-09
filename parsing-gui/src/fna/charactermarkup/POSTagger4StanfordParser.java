@@ -39,8 +39,22 @@ public class POSTagger4StanfordParser {
 	private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]*\\s*[<{]*(?:view|profile)[}>]*)(\\s.*)"); //to match in dorsal view and in profile
 	private String countp = "more|fewer|less|\\d+";
 	private Pattern countptn = Pattern.compile("((?:^| |\\{)(?:"+countp+")\\}? (?:or|to) \\{?(?:"+countp+")(?:\\}| |$))");
-	private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?: and \\d+)?)");
-
+	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?: and \\d+)?)"); //changed to match 4-5, 4 and 5
+	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |-)\\d+)?)");
+	private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:/|times)))");//changed to match "4_5", "4 and 5" but not "<structure> 2 / 5" or "<structure> 2 times"
+//mohan declaration of roman numbers
+	public static final String roman="i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv|xvi|xvii|xviii|xix|xx|I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX";
+	//private Pattern romanptn = Pattern.compile("\\b"+roman+"\\b|\\{?"+roman+"\\}");
+	//private Pattern romanptn = Pattern.compile("\\b("+roman+")\\b");
+	//private Pattern romanptn = Pattern.compile("(<(\\S+?)> (\\b"+roman+"\\b|\\{?"+roman+"\\}?))");
+	private Pattern romantag = Pattern.compile("\\{?\\b"+roman+"\\b\\}?");
+	//private Pattern romanrange = Pattern.compile("(\\d+)-\\b("+roman+")\\b");
+	private Pattern romanrange = Pattern.compile("(\\d+)-<?\\b("+roman+")\\b>?");
+	//private Pattern romanptn = Pattern.compile("(<(\\S+?)> \\{?\\b("+roman+")\\b\\}?)");
+	private Pattern romanptn = Pattern.compile("(<(\\S+?)> <?\\{?\\b("+roman+")\\b\\}?>?)"); //to include <ii>
+	public String[] romanno= { "i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii","xiii","xiv","xv","xvi","xvii","xviii","xix","xx" };
+	//public String[] capromanno= {"I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"};
+//end mohan declaration
 	/**
 	 * 
 	 */
@@ -229,9 +243,15 @@ public class POSTagger4StanfordParser {
 	       		   }else if(p.contains("op")){ //<inner> larger.
 	       				//System.out.println(rs1.getString(2));
 	       			   sb.append(word+"/NNS ");
-	       		   }else if(p.contains("os") || pos.indexOf('<') >=0){
+	       		 //}else if(p.contains("os") || pos.indexOf('<') >=0){
+	       		   }else if(p.contains("os") ||(p.length()==0 && pos.indexOf('<') >=0)){
 	       			   sb.append(word+"/NN ");
-	       		   }else if(p.contains("c")|| pos.indexOf('{') >=0){
+	       		   }else if(word.matches("(\\{?\\b"+roman+"\\b\\}?)")){//mohan code to mark roman numbers {ii} or ii as ii/NNS
+	        		   word=word.replaceAll("\\{|\\}", "");
+	        		   sb.append(word+"/NNS ");
+	        	   }
+	        	   //end mohan code
+	       		   else if(p.contains("c")|| pos.indexOf('{') >=0){
 	       			   	//ResultSet rs3 = stmt1.executeQuery("select word from wordpos4parser where word='"+word+"' and certaintyl>5");
 	       				ResultSet rs2 = stmt1.executeQuery("select word from Brown.wordfreq where word='"+word+"' and freq>79");//1/largest freq in wordpos = 79/largest in brown
 	       				if(rs2.next()){
@@ -241,7 +261,8 @@ public class POSTagger4StanfordParser {
 	       				}else{
 	       					sb.append(word+"/JJ ");
 	       				}
-	       		   }else{
+	       		   }
+	        	   else{
 	       				sb.append(word+" ");
 	       		   }
 	       		   //m = pattern7.matcher(str);
@@ -263,9 +284,53 @@ public class POSTagger4StanfordParser {
 		
 	/** 	
 	 * @param str: {upper} {pharyngeal} <tooth> <plates> 4 and 5
+	 * <tergum> III-VIII
+	 * <tergum> III and VIII
 	 * @return: {upper} {pharyngeal} <tooth> <plates_4_and_5>
+	 * <tergum_3-8>
+	 * <tergum_3_and_8>
 	 */
 	private String normalizePositionList(String str) {
+		//mohan code to change roman numbers with <organ> before them to normal numbers
+		Matcher n=romanptn.matcher(str);
+		while(n.find())
+		{
+			String position = n.group(2);
+			//String romanid = n.group(3).replaceAll("\\{|\\}", "");
+			String romanid = n.group(3).replaceAll("\\{|\\}|<|>", "");
+			int k=0;
+			for (k=0;k<20;k++)
+			{
+				if(romanid.compareToIgnoreCase(romanno[k])==0)
+				{
+					String l=Integer.toString(k+1);
+					String replace='<'+position+'>'+' '+l;
+					//str=str.replaceAll("(<"+position+"> (\\b"+romanid+"\\b|\\{?"+romanid+"\\}?))", replace);
+					str=str.replaceAll("(<"+position+"> (\\b"+romanid+"\\b|<?\\{?"+romanid+"\\}?>?))", replace);
+					break;
+				}
+			}
+		}
+		//end code
+		Matcher j = romanrange.matcher(str);
+		while(j.find())
+		{
+			String digit = j.group(1);
+			String romanid = j.group(2);
+			int k=0;
+			for (k=0;k<20;k++)
+			{
+				if(romanid.compareToIgnoreCase(romanno[k])==0)
+				{
+					String l=Integer.toString(k+1);
+					String replace=digit+'_'+l;
+					str=str.replaceAll("("+digit+")-\\b("+romanid+")\\b", replace);
+					break;
+				}
+			}
+		}
+		
+		
 		Matcher m = positionptn.matcher(str);
 		while(m.find()){
 			int start = m.start(1);
@@ -306,7 +371,7 @@ public class POSTagger4StanfordParser {
 		boolean multiplepositions = false;
 		boolean pluralorgan = false;
 		position = position.replace("<"+organ+">", "").trim();
-		if(position.contains(" ")){
+		if(position.contains(" ") || position.contains("_")){
 			multiplepositions = true;
 		}		
 		if(Utilities.isPlural(organ)){
@@ -401,7 +466,8 @@ public class POSTagger4StanfordParser {
 			list+=this.charactertokensReversed.get(i)+" ";
 		}
 		list = list.trim()+" "; //need to have a trailing space
-		Pattern p = Pattern.compile("(.*?)((color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");
+		//Pattern p = Pattern.compile("(.*?)((color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");
+		Pattern p = Pattern.compile("(.*?)(\\b(color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");// to aviod mapping "arrangement_coloration"
 		Matcher m = p.matcher(list);
 		int base = 0;
 		while(m.matches()){
@@ -427,11 +493,13 @@ public class POSTagger4StanfordParser {
 			}
 			//prepare for the next step
 			base = end;
+			//base=end-1;
 			
 			
 		}
 		//dealing with the last segment of the list or the entire list if no match
 		for(int i = base; i<(list.trim()+" b").trim().split("\\s+").length+base-1; i++){
+		//for(int i = base+1; i<(list.trim()+" b").trim().split("\\s+").length+base; i++){
 			result += this.chunkedtokens.get(i)+" ";
 		}
 		return result;

@@ -179,6 +179,7 @@ public class SWTResourceManager {
         		if (path.length() > 0 && path.charAt(0) == '/') {
         			String newPath = path.substring(1, path.length());
         			image = getImage(new BufferedInputStream(clazz.getClassLoader().getResourceAsStream(newPath)));
+        			System.out.println(newPath);
         		} else {
         			image = getImage(clazz.getResourceAsStream(path));
         		}

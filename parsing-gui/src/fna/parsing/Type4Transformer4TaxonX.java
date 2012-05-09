@@ -48,7 +48,7 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 				}
 				//now doc is a template to create other treatment files
 				//root.detach();
-				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"),".//tax:div[@type='description']", ".//tax:p", fn, 0);
+				formatDescription((Element)XPath.selectSingleNode(root,"/tax:taxonx/tax:taxonxBody/tax:treatment"),".//tax:div[@type='description']", "./tax:p", fn, 0);
 				root.detach();
 				writeTreatment2Transformed(root, fn, 0);
 				listener.info((number++)+"", fn+"_0.xml"); // list the file on GUI here

@@ -97,25 +97,31 @@ public abstract class Type4Transformer extends Thread {
 	
 	protected Element formatDescription(Element treatment, String descriptionXPath, String paraXPath, int fn, int count) {
 		try{
-			Element description = (Element)XPath.selectSingleNode(treatment, descriptionXPath);
-			if(description==null){
+			//Element description = (Element)XPath.selectSingleNode(treatment, descriptionXPath);
+			List<Element> descriptions = XPath.selectNodes(treatment, descriptionXPath);
+			if(descriptions==null){
 				return treatment;
 			}else{
-				if(paraXPath != null){
-					List<Element> ps = XPath.selectNodes(description, paraXPath);
-					Iterator<Element> it = ps.iterator();
-					int i = 0;
-					while(it.hasNext()){
-						Element p = it.next();
-						p.setName("description");
-						p.setAttribute("pid", fn+"_"+count+".txtp"+i);
-						p.setNamespace(null);
+				int i = 0;
+				Iterator<Element> itp = descriptions.iterator();
+				while(itp.hasNext()){
+					Element description = itp.next();
+					if(paraXPath != null){
+						List<Element> ps = XPath.selectNodes(description, paraXPath);
+						Iterator<Element> it = ps.iterator();
+						while(it.hasNext()){
+							Element p = it.next();
+							p.setName("description");
+							p.setAttribute("pid", fn+"_"+count+".txtp"+i);
+							p.setNamespace(null);
+							i++;
+						}
+					}else{ //no paraXPath is given, make the description element the only one 
+						description.setName("description");
+						description.setAttribute("pid", fn+"_"+count+".txtp"+i);
+						description.setNamespace(null);
 						i++;
 					}
-				}else{ //no paraXPath is given, make the description element the only one 
-					description.setName("description");
-					description.setAttribute("pid", fn+"_"+count+".txtp0");
-					description.setNamespace(null);
 				}
 				return treatment;
 			}

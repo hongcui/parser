@@ -64,8 +64,7 @@ public class Type2Transformer extends Thread {
 		listener.setProgressBarVisible(false);
 	}
 	/**
-	 * copy xml files from source to transformed
-	 * then take the content of <description>s out and save them in the target folder 
+	 * just take the content of <description>s out and save them in the target folder 
 	 */
 	public void transform(){
 		try{
@@ -92,11 +91,11 @@ public class Type2Transformer extends Thread {
 				FileChannel inputChannel = new FileInputStream(f).getChannel();
 				FileChannel outputChannel = new FileOutputStream(newFile).getChannel();
 				
-				inputChannel.transferTo(0,inputChannel.size(),outputChannel);//copy xml files from source to transformed 
+				inputChannel.transferTo(0,inputChannel.size(),outputChannel);
 				
 				Document doc = builder.build(f);
 				Element root = doc.getRootElement();
-				//take the content of <description>s out and save them in the target folder
+				
 				Element descrp = (Element)XPath.selectSingleNode(root, "//treatment/description");
 				String text = descrp.getTextNormalize();
 				writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph.
