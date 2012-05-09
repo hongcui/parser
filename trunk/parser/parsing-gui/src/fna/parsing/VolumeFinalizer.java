@@ -43,8 +43,12 @@ public class VolumeFinalizer extends Thread {
     private String glossaryPrefix;
     private static String version="$Id$";
     private static boolean standalone = false;
+    //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
+    //standalone set to false when running from the interface.
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
-    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19";
+    //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19";
+    private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx";
+    
 	private Text finalLog;
     private Display display;
     
@@ -80,10 +84,15 @@ public class VolumeFinalizer extends Thread {
         	finalFileList = new File(this.standalonefolder+"\\final\\");
         	transformedFileList = new File(this.standalonefolder+"\\transformed\\");
         }
+        if(finalFileList.list().length == 0)
+        {
+            //this.popupMessage("No file is output");
+    		if(!standalone) this.showOutputMessage("System terminates with errors. No files are annotated.");
+        }
         if(finalFileList.list().length != transformedFileList.list().length)
         {
             //this.popupMessage("No file is output");
-    		if(!standalone) this.showOutputMessage("System terminates with errors. Annotated files are not completed.");
+    		if(!standalone) this.showOutputMessage("Number of files does not match between transformed and final folders. You should check all files with descriptions are annotated.");
         }
         //if(!standalone) listener.setProgressBarVisible(false);
     }
@@ -91,6 +100,7 @@ public class VolumeFinalizer extends Thread {
      * stanford parser
      * @throws ParsingException
      */
+
     public void outputFinal() throws Exception {
     	//if(!standalone)  listener.progress(10);
     	if(!standalone) this.showOutputMessage("System is starting finalization step [could take hours]...");
@@ -117,7 +127,6 @@ public class VolumeFinalizer extends Thread {
 		if(!standalone) this.showOutputMessage("System is annotating sentences...");
 		sp.extracting();
 		//if(!standalone) listener.progress(100);
-
 	}
 	
 	

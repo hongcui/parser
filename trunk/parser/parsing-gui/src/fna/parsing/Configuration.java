@@ -134,6 +134,7 @@ public class Configuration {
 		label_1.setBounds(106, 167, 611, 127);
 		label_1.setToolTipText("Word Document with Display Styles");
 		
+		System.out.println(ApplicationUtilities.getProperty("image.type1"));
 		Label label_2 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_2.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type1")));

@@ -450,6 +450,11 @@ public class Utilities {
 		if(word.matches("in.*?(profile|view)")){//covers in-dorsal-view, in-profile
 			return true;
 		}
+		/*mohan code to make as-long-as an adverb*/
+		if(word.matches("aslongas")){//covers as-long-as
+			return true;
+		}
+		/*End mohan code*/
 		if(word.compareTo("moreorless")==0){
 			return true;
 		}

@@ -7,6 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
+import java.lang.*;
+import java.lang.String;
+import java.io.InputStream;
+
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -15,6 +19,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
+
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 public class ApplicationUtilities {
 
 	/**
@@ -23,13 +29,19 @@ public class ApplicationUtilities {
 	private static Shell shell;
 	private static final Logger LOGGER = Logger.getLogger(ApplicationUtilities.class);
 	private static Properties properties = null;
-	private static FileInputStream fstream = null;
+	//private static FileInputStream fstream = null;
+	private static InputStream fstream = null; 
 	
 	static {
 		try {
-			fstream = new FileInputStream(System.getProperty("user.dir")
-					+"\\application.properties");
-		} catch (FileNotFoundException e) {
+						
+			/*fstream = new FileInputStream(System.getProperty("user.dir")
+					+"\\application.properties");*/
+					
+		fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
+			
+		} //catch (FileNotFoundException e) {
+		catch (Exception e) {
 			LOGGER.error("couldn't open file in ApplicationUtilities:getProperties", e);
 		}
 	}
@@ -38,13 +50,17 @@ public class ApplicationUtilities {
 	
 	public static void setLogFilePath() throws Exception {
 		
-		FileInputStream fstream = null;
+		//FileInputStream fstream = null;
+		InputStream fstream= null;
 		FileWriter fwriter = null;
 		BufferedWriter out = null;
 		
 		try {
-			String logProperties = System.getProperty("user.dir")+ getProperty("LOG.FILE.LOCATION");
-			fstream = new FileInputStream(logProperties);
+			//System.out.println("hello"+getProperty("LOG.FILE.LOCATION"));
+			//String logProperties = System.getProperty("user.dir")+ getProperty("LOG.FILE.LOCATION");
+			String logProperties = getProperty("LOG.FILE.LOCATION").replace("\\", "");
+			//fstream = new FileInputStream(logProperties);
+			fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream(logProperties);
 			Properties properties = new Properties();
 			properties.load(fstream);
 			String logFilePath = properties.getProperty("log4j.appender.ROOT.File");
@@ -88,6 +104,8 @@ public class ApplicationUtilities {
 		if(properties == null) {
 			properties = new Properties();
 			try {
+				
+				//properties.load(fstream);
 				properties.load(fstream);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

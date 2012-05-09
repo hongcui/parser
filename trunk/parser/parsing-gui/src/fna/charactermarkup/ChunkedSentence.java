@@ -145,7 +145,7 @@ public class ChunkedSentence {
 			if(treetoken[i].matches("^\\S+~list~\\S+")){//r[p[of] o[{architecture~list~smooth~or~barbellulate~to~plumose} (bristles)]]
 				//String[] parts = treetoken[i].split("~list~");
 				//treetoken[i] = parts[0]+"["+parts[1]+"]"; 
-				treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{2,40})(\\}| |$)","}]");
+				treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]");
 			}
 		}		
 		for(i= 0; i<treetoken.length; i++){
@@ -723,7 +723,7 @@ public class ChunkedSentence {
 						for(i=i+1; i<this.chunkedtokens.size(); i++){
 							String w = this.chunkedtokens.get(i).replaceAll("(\\<|\\>|\\{|\\}|\\w+\\[|\\])", "");
 							//if(w.matches("\\b("+preps+"|and|or|that|which|but)\\b") || w.matches("\\W")){
-							if(w.matches("\\b("+preps+"|and|that|which|but)\\b") || w.matches("\\p{Punct}")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
+							if(w.matches(".*?\\b("+preps+"|and|that|which|but)\\b.*") || w.matches(".*?\\p{Punct}.*")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
 								np = np.replaceAll("<", "(").replaceAll(">", ")").trim();
 								this.chunkedtokens.set(thani, "n["+np+"]");
 								count++;
@@ -1335,6 +1335,8 @@ public class ChunkedSentence {
 					scs = scs.trim().length()>0? scs.trim()+"] " : ""; //modifier 
 					String start = token.substring(0, token.indexOf("[")+1); //becomes n[m[usually] size[{shorter}] constraint[than or {equaling} (phyllaries)]]
 					String end = token.replace(start, "");
+					//String abc="";
+					//String end = token.replaceFirst(start, abc);
 					token = start+scs+end;
 					try{
 						if(type !=null){//r[p[as]] without o[]
@@ -1579,7 +1581,8 @@ public class ChunkedSentence {
 		String newo = "o[";
 		do{
 			String t = o.indexOf(' ')>=0? o.substring(0, o.indexOf(' ')) : o;
-			o = o.replaceFirst(t.replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),"").trim();
+			//o = o.replaceFirst(t.replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)"),"").trim();
+			o = o.replaceFirst(t.replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]").replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}"),"").trim(); //to replace {string}
 			if(t.startsWith("m[")){
 				t = t.replaceAll("(m\\[|\\])", "").trim();
 				if(t.compareTo("a") == 0 && !o.matches("(couple|few)")){

@@ -43,6 +43,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
+	//static protected String password = "root";
 	static protected String password = "root";
 	//protected int count = 0;
 	static private int allchunks = 0;
@@ -105,7 +106,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("56.txt-7")!=0) continue;
+				//if(src.compareTo("1_27.txtp1.txt-22")!=0) continue;
+				//if(src.compareTo("1_27.txtp2.txt-1")!=0) continue;
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -136,7 +138,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			out.close();
 		}catch(Exception e){
 			e.printStackTrace();
-			throw e;
+			//throw e;
 		}
 	}
 
@@ -199,7 +201,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             pw.close();			
 	  	}catch(Exception e){
 	  		e.printStackTrace();
-	  		throw e;
+	  		//throw e;
 	  	}
 	  	//out.close();
 	}
@@ -264,7 +266,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
 							}
 						}
-						//sent = this.normalizeSpacesRoundNumbers(sent);
+						sent = this.normalizeSpacesRoundNumbers(sent);
 							if(!sent.matches(".*? [;\\.]\\s*$")){//at 30x. => at 30x. .
 								sent = sent+" .";
 							}
@@ -279,7 +281,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								System.out.println(i+"["+src+"]: "+cs.toString());
 
 							}
-							statement = cac.annotate(src, src, cs); //src: 100.txt-18
+							
 							if(finalize){
 								if(thisdescID.compareTo(pdescID)!=0){
 									if(description.getChildren().size()!=0){ //not empty
@@ -307,6 +309,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 									}								
 								}
 							}
+							
+							statement = cac.annotate(src, src, cs); //src: 100.txt-18
+
 							description.addContent(statement);
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
@@ -325,9 +330,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			rs.close();
     	}catch (Exception e){
 			e.printStackTrace();
-			throw e;
+			//throw e;
         }
-    	if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
+    	//if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
     }
 
 
@@ -337,6 +342,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("(?<=\\d)\\s*/\\s*(?=\\d)", "/");
 		sent = sent.replaceAll("(?<=\\d)\\s+(?=\\d)", "-"); //bhl: two numbers connected by a space
 		sent = sent.replaceAll("at least", "at-least");
+		sent = sent.replaceAll("<?\\{?\\btwice\\b\\}?>?", "2 times");
+		sent = sent.replaceAll("<?\\{?\\bthrice\\b\\}?>?", "3 times");
 		sent = sent.replaceAll("2\\s*n\\s*=", "2n=");
 		sent = sent.replaceAll("2\\s*x\\s*=", "2x=");
 		sent = sent.replaceAll("n\\s*=", "n=");
@@ -540,9 +547,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String database = "annotationevaluation";
 
 		//*fna
-		String database = "annotationevaluation";
-		String posedfile = "FNAv19posedsentences.txt";
-		String parsedfile = "FNAv19parsedsentences.txt";
+		//String database = "annotationevaluation";
+		//String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_posedsentences.txt";
+		//String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_parsedsentences.txt";
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
 
 		
@@ -573,18 +580,17 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
 		
-		//String database = "markedupdatasets";
-
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav5", "fnaglossaryfixed", false);
-
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
+		String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx\\target\\Plazi_8405_tx_posedsentences.txt";
+		String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx\\target\\Plazi_8405_tx_parsedsentences.txt";
+	
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "Plazi_8405_tx", "antglossaryfixed", false);
 
 
-
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

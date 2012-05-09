@@ -334,6 +334,8 @@ public class DeHyphenAFolder {
 	        fixed.append(broken);
 	        return fixed.toString();
 	    }
+	    
+	    
 	    private void normalizeDocument(){
 	        try {
 	            File[] flist = folder.listFiles();
