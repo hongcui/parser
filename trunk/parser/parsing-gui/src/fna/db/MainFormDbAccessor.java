@@ -56,7 +56,7 @@ public class MainFormDbAccessor {
 
 		Connection conn = DriverManager.getConnection(url);
 		System.out.println(conn);
-		conn.close(); 
+		//conn.close(); 
 	}
 	
 	private static String url = ApplicationUtilities.getProperty("database.url");

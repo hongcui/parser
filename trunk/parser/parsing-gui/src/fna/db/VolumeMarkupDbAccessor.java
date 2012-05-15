@@ -110,7 +110,11 @@ public class VolumeMarkupDbAccessor {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				String tag = rs.getString("word");
-				populateCurationList(tagList, tag); //select tags for curation
+				PreparedStatement stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + tag + "%'");
+				ResultSet rs2 = stmtSentence.executeQuery();
+				if (rs2.next()) {
+					populateCurationList(tagList, tag); //select tags for curation
+				}
 			}
 			return deduplicateSort(tagList);
 		} catch (SQLException sqlexe) {
@@ -249,7 +253,12 @@ public class VolumeMarkupDbAccessor {
 			rset = stmt.executeQuery();
 			if (rset != null) {
 				while(rset.next()){
-					populateDescriptorList(words, rset.getString("word"));
+					String word = rset.getString("word");
+					PreparedStatement stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + word + "%'");
+					ResultSet rs2 = stmtSentence.executeQuery();
+					if (rs2.next()) {
+						populateDescriptorList(words, word);
+					}
 				}	
 			}
 			words = deduplicateSort(words);
