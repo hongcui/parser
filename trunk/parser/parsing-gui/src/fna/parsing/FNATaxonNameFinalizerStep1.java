@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
  *     check for special characters: "x" 
  *     check for very short names, 2-3 character long: "de"
  *     "series_name" may be confused with "ser." in publication title.
- * 4. check *_authority:
- *      citation and year (e.g., 1897) should not be part of authority
+ * 4. check .*_authority:
+ *      citation and year (e.g., 1897) should not be part of authority: year should be marked as place_in_publication
  *      "not ..." and "based on ..." should not be part of authority [note: "authority [not xyz]" is fine, but "authority YEAR [not xyz]" is not: YEAR => <place_in_publication>, [not xyz] => <other_info>
  * 5. check publication_title:
  *      check for the inclusion of authority in <publication_title>: output all pub_title to excel, sort it, then review. (Smith & John would be suspicious in pub_title)
@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  * 6. references: remove "item:" and "selected references:" in references
  * 7. review <habitat> elements
  * 8. make sure there is 0 <synonym> tag       
- *        
+ *  * 9. check <global_distribution> for "introduced;" (should be marked as <introduced>).     
  *          
  */
 public class FNATaxonNameFinalizerStep1{

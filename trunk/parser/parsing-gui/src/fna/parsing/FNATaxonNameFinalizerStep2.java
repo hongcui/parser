@@ -32,6 +32,26 @@ import java.util.regex.Pattern;
  * 
  * 
  * Manual Review procedure:
+ * Manual Review procedure:
+ * Use FNANameReviewer to produce the report for review for points 1 - 4.
+ * 1. check tribe_name elements in ACCEPTED TaxonIdentification (they sometimes are mistaken as section_name)
+ * 2. check section_name elements in ACCEPTED TaxonIdentification (they sometimes are mistaken as tribe_name)
+ * 3. check family_name, subfamily_name, tribe_name, subtribe_name, section_name, subsection_name, series_name, species_name, subspecies_name, variety_name
+ *     expect: all names is 1 word long; species and lower rank names are all in small case;
+ *     check for special characters: "x" 
+ *     check for very short names, 2-3 character long: "de"
+ *     "series_name" may be confused with "ser." in publication title.
+ * 4. check .*_authority:
+ *      citation and year (e.g., 1897) should not be part of authority
+ *      "not ..." and "based on ..." should not be part of authority [note: "authority [not xyz]" is fine, but "authority YEAR [not xyz]" is not: YEAR => <place_in_publication>, [not xyz] => <other_info>
+ * 5. check publication_title:
+ *      check for the inclusion of authority in <publication_title>: output all pub_title to excel, sort it, then review. (Smith & John would be suspicious in pub_title)
+ *      check taxon ranks such as var. subg. sect. ser. subsp. subf. in pub_title
+ * Use oXygen to check
+ * 6. references: remove "item:" and "selected references:" in references
+ * 7. review <habitat> elements
+ * 8. make sure there is 0 <synonym> tag 
+ * 9. check <global_distribution> for introduced (should be marked as <introduced>)     
  */
 public class FNATaxonNameFinalizerStep2{
 	static String filename = null;
@@ -72,8 +92,8 @@ public class FNATaxonNameFinalizerStep2{
 		ObjectOutputStream outputStream = null;
 		
 		
-		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
-		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
+		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
 
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V20-good\\namemapping.bin"));
@@ -87,8 +107,8 @@ public class FNATaxonNameFinalizerStep2{
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V8-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V27-good\\namemapping.bin"));
 		
-		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last");
-		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last");
+		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last");
 
 		
 		//File extracted = new File("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\transformed");
@@ -172,8 +192,8 @@ public class FNATaxonNameFinalizerStep2{
 	private void output(String filename) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
 		
-		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
-		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
+		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
+		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
 
 		
 		//String file = "C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\Last\\" + filename;
