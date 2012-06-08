@@ -94,7 +94,8 @@ public class FNATaxonNameFinalizerStep1{
 		
 		
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
-		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
+		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\namemapping.bin"));
 
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V20-good\\namemapping.bin"));
@@ -111,7 +112,8 @@ public class FNATaxonNameFinalizerStep1{
 		Hashtable mapping = new Hashtable();//the mapping here is trivial,mapping file index to file name only.
 		
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\transformed");
-		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\transformed");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\transformed");
+		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\transformed");
 
 		
 		//File extracted = new File("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\transformed");
@@ -285,23 +287,28 @@ public class FNATaxonNameFinalizerStep1{
 		String descrpt = "";
 		int index = -1;
 		int total = children.size();
-		for(int i = total-1; i >=0; i --){
+		for(int i = total-1; i >=0; i--){
 			Element e = children.get(i);
 			if(!finddis && e.equals(dis)){
 				finddis = true;
+			}else if(finddis && e.getName().equals("habitat") || 
+					finddis && e.getName().equals("elevation")||
+					finddis && e.getName().contains("distribution") ||
+					finddis && e.getName().equals("discussion") ||
+					finddis && e.getName().equals("description")){
+				if(e.getName().equals("discussion"))descrpt = e.getTextTrim()+descrpt;
+				else descrpt = e.getTextTrim() + ", "+descrpt;
+				e.detach();
+				index = i;
 			}
 			if(!finddis && !e.equals(dis)){
 				afterdis.add(e); //reserved order
 				e.detach();
 			}
-			if(finddis && e.getName().equals("habitat") || finddis && e.getName().equals("elevation")){
-				descrpt +=", "+e.getTextTrim();
-				e.detach();
-				index = i;
-			}
+
 		}
-		descrpt +=".";
-		descrpt = descrpt.replaceFirst("^\\s*,\\s+", "");
+		descrpt = descrpt.trim().replaceFirst("(^,\\s+|\\s+,$)", "").trim();
+		if(!descrpt.endsWith("."))descrpt +=".";
 		description.setText(description.getTextTrim()+descrpt);
 		treatment.addContent(index, description);
 		
@@ -2523,7 +2530,8 @@ public class FNATaxonNameFinalizerStep1{
 		XMLOutputter outputter = new XMLOutputter();
 		
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
-		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
+		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
+		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last\\" + filename;
 
 		
 		//String file = "C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\Last\\" + filename;
