@@ -69,8 +69,8 @@ public class FNANameReviewer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last";
-		String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\finalnew\\V21_last_good\\reviewed_by_hong_tocheck_synonym";
+		String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last";
+		//String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\finalnew\\V21_last_good\\reviewed_by_hong_tocheck_synonym";
 		try{
 			FNANameReviewer fnr = new FNANameReviewer(xmldir);
 		}catch(Exception e){

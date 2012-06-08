@@ -92,10 +92,11 @@ public class FNATaxonNameFinalizerStep1{
 	
 		ObjectOutputStream outputStream = null;
 		
-		
+		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
-		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\trash\\test\\namemapping.bin"));
 
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V20-good\\namemapping.bin"));
@@ -111,9 +112,11 @@ public class FNATaxonNameFinalizerStep1{
 		String taxonname = null;
 		Hashtable mapping = new Hashtable();//the mapping here is trivial,mapping file index to file name only.
 		
+		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\transformed");
-		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\transformed");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\transformed");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\trash\\test");
 
 		
 		//File extracted = new File("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\transformed");
@@ -307,7 +310,7 @@ public class FNATaxonNameFinalizerStep1{
 			}
 
 		}
-		descrpt = descrpt.trim().replaceFirst("(^,\\s+|\\s+,$)", "").trim();
+		descrpt = descrpt.trim().replaceAll("(^,\\s+|\\s+,$)", "").trim();
 		if(!descrpt.endsWith("."))descrpt +=".";
 		description.setText(description.getTextTrim()+descrpt);
 		treatment.addContent(index, description);
@@ -326,7 +329,9 @@ public class FNATaxonNameFinalizerStep1{
         //serpentine outcrops, grasslands and open oak and Pinus sabiniana woodlands; 10–800 m;
         //Calif., Oreg.</discussion>
 		Matcher m = time.matcher(text);
+		String flag = "";
 		if(text.startsWith("Flowering") || text.startsWith("Fruiting") || m.matches()){
+			if(text.startsWith("Fruiting")) flag = "fruiting";
 			phenology = text.substring(0, text.indexOf("."))+".";
 			text = text.replace(phenology, "").trim();
 			//markup flowering time
@@ -360,7 +365,8 @@ public class FNATaxonNameFinalizerStep1{
 		}
 		
 		if(phenology.trim().length()>0){
-			FloweringTimeParser4FNA ftpf = new FloweringTimeParser4FNA(treatment, phenology, "phenology");
+			String tag = flag.length()==0? "phenology" : "phenology_"+flag; 
+			FloweringTimeParser4FNA ftpf = new FloweringTimeParser4FNA(treatment, phenology, tag);
 			ftpf.parse();			
 		}
 
@@ -2529,10 +2535,11 @@ public class FNATaxonNameFinalizerStep1{
 	private void output(String filename) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
 		
+		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
-		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last\\" + filename;
-
+		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last\\" + filename;
+		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\trash\\test\\" + filename;
 		
 		//String file = "C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V19-good\\target\\Last\\" + filename;
 		//String file = "C:\\Users\\mohankrishna89\\Desktop\\Library Project\\FNA2\\V20-good\\target\\last\\" + filename;
