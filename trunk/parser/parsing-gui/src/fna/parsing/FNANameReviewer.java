@@ -39,7 +39,7 @@ public class FNANameReviewer {
 			else{
 				System.out.println();
 				System.out.println(xml.getName()+":");
-				System.out.println("number = "+numbers.get(0).getTextNormalize());
+				if(numbers.size()>0) System.out.println("number = "+numbers.get(0).getTextNormalize());
 				for(Element name: names){
 					String status = name.getAttributeValue("Status");
 					System.out.println(status +":\n"+printElement(name, ""));										
@@ -69,7 +69,7 @@ public class FNANameReviewer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last";
+		String xmldir = "E:\\work_data\\ToReview\\V3-good\\target\\problematic\\runNameReviewer";
 		//String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\finalnew\\V21_last_good\\reviewed_by_hong_tocheck_synonym";
 		try{
 			FNANameReviewer fnr = new FNANameReviewer(xmldir);
