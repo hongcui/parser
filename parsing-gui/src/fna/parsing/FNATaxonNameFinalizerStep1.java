@@ -92,7 +92,7 @@ public class FNATaxonNameFinalizerStep1{
 	
 		ObjectOutputStream outputStream = null;
 		
-		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\namemapping.bin"));
+		outputStream = new ObjectOutputStream(new FileOutputStream("E:\\work_data\\ToReview\\V3-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\namemapping.bin"));
@@ -112,7 +112,7 @@ public class FNATaxonNameFinalizerStep1{
 		String taxonname = null;
 		Hashtable mapping = new Hashtable();//the mapping here is trivial,mapping file index to file name only.
 		
-		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\transformed");
+		File extracted = new File("E:\\work_data\\ToReview\\V3-good\\target\\problematic\\runstep1");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\transformed");
@@ -311,9 +311,12 @@ public class FNATaxonNameFinalizerStep1{
 
 		}
 		descrpt = descrpt.trim().replaceAll("(^,\\s+|\\s+,$)", "").trim();
-		if(!descrpt.endsWith("."))descrpt +=".";
-		description.setText(description.getTextTrim()+descrpt);
-		treatment.addContent(index, description);
+		//Hong
+		if(descrpt.length()>0){
+			if(!descrpt.endsWith("."))descrpt +=".";
+			description.setText(description.getTextTrim()+descrpt);
+			treatment.addContent(index, description);
+		}
 		
 		//markup <discussion>
 		String phenology="";
@@ -465,7 +468,7 @@ public class FNATaxonNameFinalizerStep1{
 				Element te = (Element) contentlist.get(i);
 				if((te.getName()=="genus_name")||(te.getName()=="section_name")||(te.getName()=="series_name")||(te.getName()=="species_name")||(te.getName()=="subfamily_name")||(te.getName()=="subgenus_name")||(te.getName()=="subsection_name")||(te.getName()=="subspecies_name")||(te.getName()=="tribe_name")||(te.getName()=="variety_name")||(te.getName()=="family_name")){
 					text = te.getText();
-					//nextele = (Element)contentiter.next();
+					//nextele = (Element)contentiter.next();			
 					if(!((Element) contentlist.get(i+1)).getName().equals("synonym")){
 						i++;
 						nextele = (Element) contentlist.get(i);
@@ -662,6 +665,8 @@ public class FNATaxonNameFinalizerStep1{
 		//pubpart=(pubpart+indsyntext.substring(commaindex+1, indsyntext.length())).trim();
 		String[] titlechunks = new String[1];
 		titlechunks=pubpart.split("[\\d].*");
+		
+		
 		String publtitl=titlechunks[0];
 		/*int inlength=titlechunks[0].length();
 		
@@ -1936,10 +1941,13 @@ public class FNATaxonNameFinalizerStep1{
 		else if(text.contains("var."))
 		{
 			int k;
+			//hong
+			text = text.replaceFirst("(?<=^[A-Z])\\.", ". "); //to insert a space after C.leptosepala 
+			//
 			String newtext= text;
 			String spauth="";
 			String varauth="";
-			String[] var= text.split("\\s");
+			String[] var= text.split("\\s+");
 			Element newele= new Element("genus_name");
 			newele.setText(var[0]);
 			syn.addContent(newele);
@@ -2535,7 +2543,7 @@ public class FNATaxonNameFinalizerStep1{
 	private void output(String filename) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
 		
-		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last\\" + filename;
+		String file = "E:\\work_data\\ToReview\\V3-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last\\" + filename;
