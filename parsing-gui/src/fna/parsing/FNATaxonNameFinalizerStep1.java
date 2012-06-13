@@ -50,7 +50,8 @@ import java.util.regex.Pattern;
  * 6. references: remove "item:" and "selected references:" in references
  * 7. review <habitat> elements
  * 8. make sure there is 0 <synonym> tag       
- *  * 9. check <global_distribution> for "introduced;" (should be marked as <introduced>).     
+ * 9. check <global_distribution> for "introduced;" (should be marked as <introduced>).    
+ * 10. check <discussion> for number_of_infrataxa and distribution.  
  *          
  */
 public class FNATaxonNameFinalizerStep1{
@@ -64,6 +65,7 @@ public class FNATaxonNameFinalizerStep1{
 	//Pattern meter = Pattern.compile("\\d+(?:[–-]\\d+)? m\\b");
 	Pattern meter = Pattern.compile("[\\d–()-]+ m\\b");
 	Pattern name = Pattern.compile("\\b[A-Z]\\. "); //should not contain species names C. sdfl
+	Pattern year = Pattern.compile(".* [12]\\d{3,3}$");
 	private static String usstates ="Ala\\.|Alaska|Ariz\\.|Ark\\.|Calif\\.|Colo\\.|Conn\\.|Del\\.|D\\.C\\.|Fla\\.|Ga\\.|Idaho|Ill\\.|Ind\\.|Iowa|Kans\\.|Ky\\.|La\\.|Maine|Md\\.|Mass\\.|Mich\\.|Minn\\.|Miss\\.|Mo\\.|Mont\\.|Nebr\\.|Nev\\.|N\\.H\\.|N\\.J\\.|N\\.Mex\\.|N\\.Y\\.|N\\.C\\.|N\\.Dak\\.|Ohio|Okla\\.|Oreg\\.|Pa\\.|R\\.I\\.|S\\.C\\.|S\\.Dak\\.|Tenn\\.|Tex\\.|Utah|Vt\\.|Va\\.|Wash\\.|W\\.Va\\.|Wis\\.|Wyo\\.";	
 	private static String caprovinces="Alta\\.|B\\.C\\.|Man\\.|N\\.B\\.|Nfld\\. and Labr|N\\.W\\.T\\.|N\\.S\\.|Nunavut|Ont\\.|P\\.E\\.I\\.|Que\\.|Sask\\.|Yukon";
 	Pattern us = Pattern.compile("("+usstates+")");
@@ -92,7 +94,10 @@ public class FNATaxonNameFinalizerStep1{
 	
 		ObjectOutputStream outputStream = null;
 		
-		outputStream = new ObjectOutputStream(new FileOutputStream("E:\\work_data\\ToReview\\V3-good\\namemapping.bin"));
+
+		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\namemapping.bin"));
+
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\namemapping.bin"));
@@ -112,7 +117,10 @@ public class FNATaxonNameFinalizerStep1{
 		String taxonname = null;
 		Hashtable mapping = new Hashtable();//the mapping here is trivial,mapping file index to file name only.
 		
-		File extracted = new File("E:\\work_data\\ToReview\\V3-good\\target\\problematic\\runstep1");
+
+		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\target\\transformed");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\transformed");
+
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\transformed");
@@ -157,6 +165,8 @@ public class FNATaxonNameFinalizerStep1{
 			transformer.fixHabitatDiscussion();
 			//Then 3. expand abbreviated genus synonym name to full name
 			transformer.expandAbbrNames();
+			//Then 3.5 split authority from year (part of place_in_publication)
+			transformer.splitYear();
 			//Then 4. fix ranks for some synonyms, do this only after manual review of previous results, so the errors there don't get propagated to 4.
 			//transformer.fixSynonymRank();
 			transformer.output(filename);
@@ -164,6 +174,39 @@ public class FNATaxonNameFinalizerStep1{
 		outputStream.writeObject(mapping);
 	}
 	
+	private void splitYear() {
+		try{
+			List<Element> auths = authorPath.selectNodes(treatment);
+			for(Element auth : auths){
+				String text = auth.getTextTrim();
+				Matcher m = year.matcher(text);
+				if(m.matches()){
+					String year = text.substring(text.length()-4);
+					text = text.replace(year, "").trim();
+					auth.setText(text);
+					Element parent = auth.getParentElement();
+					int authindex = parent.indexOf(auth);
+					Element next = (Element) parent.getContent(authindex+1);
+					if(next.getName().equals("place_of_publication")){
+						//insert year in place_in_publication
+						Element e = new Element("place_in_publication");
+						e.setText(year);
+						next.addContent(0, e);
+					}else{ //create place_of_publication
+						Element e = new Element("place_of_publication");
+						Element e1 = new Element("place_in_publication");
+						e1.setText(year);
+						e.addContent(e1);
+						parent.addContent(authindex+1, e);
+					}
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+
 	/**
 	 * deal with two categories:
 	 * 1. synonyms with at least genus and species(and any lower rank) need not fix
@@ -2543,7 +2586,10 @@ public class FNATaxonNameFinalizerStep1{
 	private void output(String filename) throws Exception {
 		XMLOutputter outputter = new XMLOutputter();
 		
-		String file = "E:\\work_data\\ToReview\\V3-good\\target\\last\\" + filename;
+
+		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\target\\last\\" + filename;
+		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last\\" + filename;
+
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V20-good\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last\\" + filename;
