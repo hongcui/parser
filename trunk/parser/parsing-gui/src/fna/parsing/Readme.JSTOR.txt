@@ -20,4 +20,5 @@ FNAHabitat2Fruiting.java:  used to fix cases like:
     <habitat>streamsides</habitat>
     <habitat>ditches</habitat>
 
-
+IMPORTANT:
+Each class will print out a list of files it fixed. The output must be reviewed to make sure all fixes were correct.
