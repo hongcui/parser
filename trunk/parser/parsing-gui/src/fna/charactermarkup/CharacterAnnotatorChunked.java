@@ -113,7 +113,7 @@ public class CharacterAnnotatorChunked {
 		this.statement = new Element("statement");
 		this.statement.setAttribute("id", sentindex);
 		this.cs = cs;
-		this.text = cs.getText();
+		this.text = cs.getOriginalText();
 		this.sentsrc = sentsrc;
 		Element text = new Element("text");//make <text> the first element in statement
 		text.addContent(this.text);
@@ -136,7 +136,7 @@ public class CharacterAnnotatorChunked {
 			annotateByChunk(cs, false);
 		}//end mohan code
 		else if(subject.equals("measurements")){
-			this.annotatedMeasurements(this.text);
+			this.annotatedMeasurements(Utilities.handleBrackets(this.text));
 		}else if(!subject.equals("ignore")){
 			if(subject.equals("ditto")){
 				reestablishSubject();	//creates a subject
@@ -2171,6 +2171,8 @@ public class CharacterAnnotatorChunked {
 			String value = values[i].replaceFirst("[,;\\.]\\s*$", "");
 			//separate char from values
 			String chara = value.replaceFirst("\\s+\\d.*", "");
+			chara = chara.replaceAll("\\(", "\\(");
+			chara = chara.replaceAll("\\)", "\\)");
 			String vstring = value.replaceFirst("^"+chara, "").trim();
 			//seperate modifiers from vlu in case there is any
 			String vlu = vstring.replaceFirst("\\s+[a-zA-Z].*", "").trim();

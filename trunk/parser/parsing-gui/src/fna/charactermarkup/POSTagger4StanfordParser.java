@@ -172,12 +172,12 @@ public class POSTagger4StanfordParser {
 				}
 
 
-				str = handleBrackets(str);
+				str = Utilities.handleBrackets(str);
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
 				
 				if(containsArea){
 					str = strnum;
-					str = handleBrackets(str);
+					str = Utilities.handleBrackets(str);
 				}
 				str = Utilities.threeingSentence(str);
    	            if(strcp.compareTo(str)!=0){
@@ -411,45 +411,7 @@ public class POSTagger4StanfordParser {
 			return str.replaceAll("\\s+", " ").trim();
 		}
 
-/**remove all bracketed text such as "leaves large (or small as in abc)"
- * do not remove brackets that are part of numerical expression : 2-6 (-10)
- * @param str: "leaves large (or small as in abc)"
- * @return: "leaves large"
- */
-	private String handleBrackets(String str) {
-		//remove nested brackets left by pl such as (petioles (2-)4-8 cm)
-		//String p1 ="\\([^()]*?[a-zA-Z][^()]*?\\)";
-		//String p2 = "\\[[^\\]\\[]*?[a-zA-Z][^\\]\\[]*?\\]";
-		//String p3 = "\\{[^{}]*?[a-zA-Z][^{}]*?\\}";				
-		if(str.matches(".*?\\(.*?[a-zA-Z].*?\\).*") || str.matches(".*?\\[.*?[a-zA-Z].*?\\].*")){ 
-			String[] pretokens = str.split("\\s+");
-			str = Utilities.threeingSentence(str);
-			String[] tokens = str.split("\\s+");
-			StringBuffer bracketfree = new StringBuffer();
-			boolean inbracket = false;
-			for(int i=0; i<tokens.length; i++){
-				if(tokens[i].matches("[(\\[].*")){
-					inbracket = true;
-				}
-				if(!inbracket){
-					if(tokens[i].compareTo("3")==0){
-						bracketfree.append(pretokens[i]+" ");
-					}else{
-						bracketfree.append(tokens[i]+" ");
-					}
-				}												
-				if(tokens[i].matches(".*[)\\]]")){
-					inbracket = false;
-				}
-			}
-			str = bracketfree.toString().trim();
-			if(str.matches(".*?\\(\\s+?\\s+\\).*")){//2n=20( ? ), 30 => 2n=20?, 30
-				str = str.replaceAll("\\(\\s+?\\s+\\)", "?");
-			}
-			//str = str.replaceAll(p1, "").replaceAll(p2, "").replaceAll("\\s+", " ").trim();					
-		}
-		return str;
-	}
+
 
 	
 	
