@@ -184,6 +184,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             // any error???
             int exitVal = proc.waitFor();
             System.out.println("ExitValue: " + exitVal);
+            
+           while(errorGobbler.isAlive() || outputGobbler.isAlive()){}
 
 			//format
             if(headings.size() != trees.size()){

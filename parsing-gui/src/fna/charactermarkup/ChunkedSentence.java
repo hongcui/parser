@@ -41,6 +41,7 @@ public class ChunkedSentence {
 	private ArrayList<String> charactertokensReversed = new ArrayList<String>();
 	private int pointer = 0; //pointing at the next chunk to be annotated
 	private String subjecttext = null;
+	private String originaltext = null;
 	private String text = null;
 	private String sentsrc = null;
 	private String tableprefix = null;
@@ -1937,8 +1938,8 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 		}
 		
 	}
-	public String getText(){
-		return this.text;
+	public String getOriginalText(){
+		return this.originaltext;
 	}
 	
 	public String getSubjectText(){
@@ -1958,7 +1959,9 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				senttag = rs.getString(2).trim();
 				senttag = senttag.compareTo("general")==0? "whole_organism" : senttag;
 				sentmod = rs.getString(1).trim();
-				this.text = rs.getString(3); //has to use originalsent, because it is "ditto"-fixed (in SentenceOrganStateMarker.java) and perserve capitalization for measurements markup
+				this.originaltext = rs.getString(3); //has to use originalsent, because it is "ditto"-fixed (in SentenceOrganStateMarker.java) and perserve capitalization for measurements markup
+				this.text = Utilities.handleBrackets(this.originaltext);
+			
 			}
 			rs = stmt.executeQuery("select rmarkedsent from "+this.tableprefix+"_markedsentence where source ='"+sentsrc+"'");
 			if(rs.next()){
@@ -2108,7 +2111,7 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				}
 			}
 		}else{
-			if(this.text.matches(".*?[A-Z]{2,}.*")){ //this.text must be originalsent where captalization is perserved.
+			if(this.originaltext.matches(".*?[A-Z]{2,}.*")){ //this.text must be originalsent where captalization is perserved.
 				this.subjecttext = "measurements";
 			}else{
 				this.subjecttext = "ignore";
