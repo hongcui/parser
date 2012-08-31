@@ -41,8 +41,9 @@ public class POSTagger4StanfordParser {
 	private Pattern countptn = Pattern.compile("((?:^| |\\{)(?:"+countp+")\\}? (?:or|to) \\{?(?:"+countp+")(?:\\}| |$))");
 	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?: and \\d+)?)"); //changed to match 4-5, 4 and 5
 	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |-)\\d+)?)");
-	private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:/|times)))");//changed to match "4_5", "4 and 5" but not "<structure> 2 / 5" or "<structure> 2 times"
-//mohan declaration of roman numbers
+	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:/|times)))");//changed to match "4_5", "4 and 5" but not "<structure> 2 / 5" or "<structure> 2 times"
+	private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:\\.|/|times)))");
+	//mohan declaration of roman numbers
 	public static final String roman="i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv|xvi|xvii|xviii|xix|xx|I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX";
 	//private Pattern romanptn = Pattern.compile("\\b"+roman+"\\b|\\{?"+roman+"\\}");
 	//private Pattern romanptn = Pattern.compile("\\b("+roman+")\\b");
@@ -337,7 +338,8 @@ public class POSTagger4StanfordParser {
 			int end = m.end(1);
 			String position = m.group(1);
 			String organ = m.group(2);
-			if(!isPosition(organ, position)) continue;
+			//if(!isPosition(organ, position)) continue;
+			if(!isPosition(organ, position,str)) continue;
 			String rposition = position.replaceFirst(">", "").replaceAll("\\s+", "_")+">";
 			//synchronise this.chunkedtokens
 			//split by single space to get an accurate count to elements that would be in chunkedtokens
@@ -367,7 +369,38 @@ public class POSTagger4StanfordParser {
 	 * @param position: <teeth> 4 and 5
 	 * @return
 	 */
-	private boolean isPosition(String organ, String position) {
+	private boolean isPosition(String organ, String position, String sent) {
+		/*mohan code to forward check if the next token following <organ> position , is another organ */
+		boolean isnextorganchunk=false;
+		Pattern localptn = Pattern.compile(""+position+"\\s*,");
+		Matcher k = localptn.matcher(sent);
+		if(k.find())
+		{
+			isnextorganchunk=true;
+		}
+		/*int m;
+		ArrayList<String> localchunkedtokens = new ArrayList<String>(Arrays.asList(sent.split("\\s+")));
+		for(m=0;m<localchunkedtokens.size()-3;m++)
+		{
+			if(localchunkedtokens.get(m).replaceAll("<|>","").trim().contentEquals(organ)&&localchunkedtokens.get(m+1).contentEquals(position))
+				break;
+			else
+			m++;
+		}
+		m=m+2;
+		while(m<localchunkedtokens.size())
+		{
+			if(localchunkedtokens.get(m).trim().matches("\\W"))
+			{
+				m++;
+			}	
+			else if(localchunkedtokens.get(m).trim().matches("<(\\S+?)>"))
+			{
+				isnextorganchunk=true;
+				break;
+			}
+		}*/
+		/*end mohan*/
 		boolean multiplepositions = false;
 		boolean pluralorgan = false;
 		position = position.replace("<"+organ+">", "").trim();
@@ -377,7 +410,8 @@ public class POSTagger4StanfordParser {
 		if(Utilities.isPlural(organ)){
 			pluralorgan = true;
 		}
-		if(pluralorgan && !multiplepositions) return false;
+		//if(pluralorgan && !multiplepositions) return false;
+		if((pluralorgan && !multiplepositions)|isnextorganchunk) return false;
 		return true;
 	}
 
