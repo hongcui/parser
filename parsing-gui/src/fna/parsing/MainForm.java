@@ -543,8 +543,16 @@ public class MainForm {
 						charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossaryPrefixCombo.getText().trim());
 						// set the decisions combo
 						categories = setCharacterTabDecisions();
-						comboDecision.setItems(categories);
-						comboDecision.setText(categories[0]);
+						if(categories.length>0){
+							comboDecision.setItems(categories);
+							comboDecision.setText(categories[0]);
+						}else{//Use ant glossary to populate the table in step 6.
+							categories = setDefaultCharacterTabDecisions();
+							comboDecision.setItems(categories);
+							comboDecision.setText(categories[0]);
+							//the fixed string[]
+						}
+						 
 						processedGroups.clear();
 						// set the groups list
 						setCharactertabGroups();
@@ -3724,7 +3732,27 @@ public class MainForm {
 		//comboDecision.setItems(strDecisions);
 		//comboDecision.setText(strDecisions[0]);
 	}
-	
+	/**
+	 * This function will set the default decisions for the character tab, step 5 when we use an empty glossary.
+	 */
+	private String[] setDefaultCharacterTabDecisions() {
+		ArrayList<String> decisions = new ArrayList<String> ();
+		
+		try {
+			charDb.getDefaultDecisionCategory(decisions);
+		} catch (Exception exe) {
+			LOGGER.error("Couldnt retrieve decision names" , exe);
+			exe.printStackTrace();
+		}
+		int count = 0;
+		String [] strDecisions = new String[decisions.size()];
+		for (String decision : decisions) {
+			strDecisions[count++] = decision;
+		}
+		return strDecisions;
+		//comboDecision.setItems(strDecisions);
+		//comboDecision.setText(strDecisions[0]);
+	}
 	/**
 	 * This function will prepare the character tab for display of co-occured terms
 	 */

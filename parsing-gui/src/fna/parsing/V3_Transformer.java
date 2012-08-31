@@ -84,7 +84,7 @@ public class V3_Transformer {
 				synchunks=text.split(";");
 				for(int x=0;x<synchunks.length;x++)
 				{
-					Element synname = new Element("Synonym");
+					Element synname = new Element("synonym");
 					synname.setText(synchunks[x]);
 					treatment.addContent(synname);
 				}
@@ -102,15 +102,15 @@ public class V3_Transformer {
 			text = text.replaceAll("......true", "");
 			syndetecter=0;
 			//System.out.println(text);
-			if(text.contains("Family")&text.matches("[A-Z]+.+")){//Family Name
+			if(text.contains("Family")&text.matches("[A-Z]+.+")&&!text.matches("SELECTED REFERENCE.+")){//Family Name
 				familydetecter = 1;
-				Element familyname = new Element("Family_Name");
+				Element familyname = new Element("family_name");
 				familyname.setText(text);
 				treatment.addContent(familyname);
 				taxonname = text;
 			}
 			else if(familydetecter == 1 ){//Author
-				Element author = new Element("Author");
+				Element author = new Element("author");
 				author.setText(text);
 				treatment.addContent(author);		
 				familydetecter = 0;
@@ -127,14 +127,15 @@ public class V3_Transformer {
 					heading="SELECTED REFERENCE";
 					text=text.replaceFirst("SELECTED REFERENCE", "").trim();
 				}
-				Element reference = new Element("References");
-				reference.setAttribute("Heading",heading);
+				Element reference = new Element("references");
+				//reference.setAttribute("Heading",heading);
+				reference.setAttribute("heading",heading);
 				reference.setText(text);
 				furtherMarkupReference(reference);
 				treatment.addContent(reference);
 			}
 			else if(bolddetecter == 1&!text.matches("[0-9]+\\..+")){//Description
-				Element description = new Element("Description");
+				Element description = new Element("description");
 				
 				//code to write the descriptions to a separate file
 				File descriptionout = new File("C:/Users/mohankrishna89/Desktop/Library Project/V3/source/test1/description/" + filename + ".txt");//why am i doing this?
@@ -148,7 +149,8 @@ public class V3_Transformer {
 				description.setText(text);
 				treatment.addContent(description);
 			}
-		    else if(text.matches("(Genus|Species|Genera|Varieties) (ca)?.+")){//number of infrataxa
+		   // else if(text.matches("(Genus|Species|Genera|Varieties) (ca)?.+")){//number of infrataxa
+			 else if(text.matches("(Genus|Species|Genera|Varieties|Subspecies) (ca)?.+")&&text.contains("):")){//number of infrataxa
 				String[] newchunks=new String[0];
 				newchunks=text.split(":");
 				
@@ -160,14 +162,14 @@ public class V3_Transformer {
 				{
 					if(k==0)
 					{
-						Element infrataxa = new Element("Number_of_Infrataxa");
+						Element infrataxa = new Element("number_of_infrataxa");
 						infrataxa.setText(newchunks[k]+":");
 						treatment.addContent(infrataxa);
 
 					}
 					else
 					{
-						Element distribution = new Element("Distribution");
+						Element distribution = new Element("distribution");
 						distribution.setText(newchunks[k]);
 						treatment.addContent(distribution);
 					}
@@ -186,11 +188,11 @@ public class V3_Transformer {
 			}*/
 			//else if(text.matches("Flowering.+")&text.contains(";")){//Distribution
 		    else if(text.matches("Flowering.+|Fruiting.+")&text.contains(";")){//Distribution
-				Element floweringtime = new Element("Flowering_Time");
-				Element habitat = new Element("Habitat");
-				Element conservation = new Element("Conservation");
-				Element elevation = new Element("Elevation");
-				Element distribution = new Element("Distribution");
+				Element floweringtime = new Element("flowering_time");
+				Element habitat = new Element("habitat");
+				Element conservation = new Element("conservation");
+				Element elevation = new Element("elevation");
+				Element distribution = new Element("distribution");
 				String flowtime = null, habi = null, eleva=null, distri="", conserv=null, fh = null;
 				String[] semi = new String[4];
 				String[] dot = new String[3];
@@ -259,7 +261,7 @@ public class V3_Transformer {
 						//else if(semi[i].contains(".,")|semi[i].matches("\\s[A-Z][a-z]+\\.")){
 						else{
 							//distri = semi[i];
-							distri += semi[i]; //to add additional distributions
+							distri += ","+semi[i]; //to add additional distributions
 							distribution.setText(distri);
 							
 							//File distributionout = new File("d:/Library Project/work3/part2/distribution/" + filename + ".txt");
@@ -296,7 +298,7 @@ public class V3_Transformer {
 				Matcher m = p.matcher(text);
 				if(m.matches()){
 					String number = m.group(1).replaceAll("\\s", "").trim(); //in case an extra space is there
-					Element num = new Element("Number");
+					Element num = new Element("number");
 					num.setText(number);
 					treatment.addContent(num);
 					//text= m.group(2).trim();
@@ -319,43 +321,43 @@ public class V3_Transformer {
 					{
 						if(spchunks[s].contains("var."))
 						{
-							Element varietyname = new Element("Variety_Name");
+							Element varietyname = new Element("variety_name");
 							varietyname.setText(spchunks[s]);
 							treatment.addContent(varietyname);	
 						}
 						else if(spchunks[s].contains("subsp."))
 						{
-							Element subspeciesname = new Element("Sub_Species_Name");
+							Element subspeciesname = new Element("subspecies_name");
 							subspeciesname.setText(spchunks[s]);
 							treatment.addContent(subspeciesname);	
 						}
 						else if(spchunks[s].contains("subsect."))
 						{
-							Element subsectionname = new Element("Sub_Section_Name");
+							Element subsectionname = new Element("subsection_name");
 							subsectionname.setText(spchunks[s]);
 							treatment.addContent(subsectionname);	
 						}
 						else if(spchunks[s].contains("sect."))
 						{
-							Element sectionname = new Element("Section_Name");
+							Element sectionname = new Element("section_name");
 							sectionname.setText(spchunks[s]);
 							treatment.addContent(sectionname);	
 						}
 						else if(spchunks[s].contains("subg."))
 						{
-							Element subgenusname = new Element("Sub_Genus_Name");
+							Element subgenusname = new Element("subgenus_name");
 							subgenusname.setText(spchunks[s]);
 							treatment.addContent(subgenusname);	
 						}
 						else if(spchunks[s].matches("(^[A-Z]+\\s.*)"))
 						{
-							Element genusname = new Element("Genus_Name");
+							Element genusname = new Element("genus_name");
 							genusname.setText(spchunks[s]);
 							treatment.addContent(genusname);	
 						}
 						else
 						{
-							Element speciesname = new Element("Species_Name");
+							Element speciesname = new Element("species_name");
 							speciesname.setText(spchunks[s]);
 							treatment.addContent(speciesname);
 						}
@@ -380,12 +382,12 @@ public class V3_Transformer {
 						String publtitl=titlechunks[0];
 						int inlength=titlechunks[0].length();
 						String inpubl=pubchunks[p1].substring(inlength, pubchunks[p1].length()-1);
-						Element pubname = new Element("Publication");
-						Element publ_title = new Element("Publication_Title");
+						Element pubname = new Element("place_of_publication");
+						Element publ_title = new Element("publication_title");
 						publ_title.setText(publtitl);
 						pubname.addContent(publ_title);
 						
-						Element in_publication = new Element("Place_In_Publication");
+						Element in_publication = new Element("place_in_publication");
 						in_publication.setText(inpubl);
 						pubname.addContent(in_publication);
 						
@@ -456,7 +458,7 @@ public class V3_Transformer {
 					if(chunks[j].matches("(([A-Z]*\\d*)\\s*)*"))
 					{
 						String token=chunks[j];
-						Element tokenname = new Element("Token");
+						Element tokenname = new Element("token");
 						tokenname.setText(token);
 						treatment.addContent(tokenname);
 					}
@@ -472,7 +474,7 @@ public class V3_Transformer {
 							if(collname.contains("]"))
 							{
 								collname='['+collname;
-								Element etyname = new Element("Etymology");
+								Element etyname = new Element("etymology");
 								etyname.setText(collname);
 								treatment.addContent(etyname);
 							}
@@ -482,7 +484,7 @@ public class V3_Transformer {
 								common=collname.split(",");
 								for(int q=0;q<common.length;q++)
 								{
-									Element comname = new Element("Common_name");
+									Element comname = new Element("common_name");
 									comname.setText(common[q]);
 									treatment.addContent(comname);
 								}
@@ -528,7 +530,7 @@ public class V3_Transformer {
 				}
 				else{//Discussion
 					if(!text.matches("\\s*\\.*name")){
-						Element discussion = new Element("Discussion");
+						Element discussion = new Element("discussion");
 						discussion.setText(text);
 						treatment.addContent(discussion);
 					}
