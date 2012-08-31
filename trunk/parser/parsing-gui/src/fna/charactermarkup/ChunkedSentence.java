@@ -2040,6 +2040,8 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 					}else{
 						for(int i = 0; i<tokens.length; i++){
 							if(Utilities.toSingular(tokens[i]).compareTo(senttag.replaceAll("_", ""))==0){
+								
+								subject += tokens[i]+" ";
 								subject = subject.replaceAll("\\s+-\\s+", "-");
 								subject = "{"+subject.trim().replaceAll("[\\[\\]{}()]", "").replaceAll(" ", "} {")+"}";
 								subject = (subject + " ("+tokens[i].replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();
@@ -2111,7 +2113,9 @@ character modifier: a[m[largely] relief[smooth] m[abaxially]]
 				}
 			}
 		}else{
-			if(this.originaltext.matches(".*?[A-Z]{2,}.*")){ //this.text must be originalsent where captalization is perserved.
+
+			if(this.originaltext.matches(".*?([A-Z]{2,})\\s*\\d+.*")){ //this.text must be originalsent where captalization is perserved.
+
 				this.subjecttext = "measurements";
 			}else{
 				this.subjecttext = "ignore";

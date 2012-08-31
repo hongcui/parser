@@ -56,7 +56,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	private boolean finalize = true;
+	//private boolean finalize = true;
+	private boolean finalize = true;//set true when running config else set false.
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = true;
@@ -352,7 +353,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("x\\s*=", "x=");
 
 		//sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").replaceAll("\\s+", " ").trim();
-		sent = sent.replaceAll("[~–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim();
+		//sent = sent.replaceAll("[~–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim(); //Correct sentence
+		//replaceAll("(?<!\\d)\\.(?!\\d)", " . ");
+		sent = sent.replaceAll("[~–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("(?<!\\d)\\.(?!\\d)", " . ").replaceAll("\\s+", " ").trim();
 		sent = sent.replaceAll("(?<=\\d) (?=\\?)", ""); //deals especially x=[9 ? , 13] 12, 19 cases
 		sent = sent.replaceAll("(?<=\\?) (?=,)", "");
 		if(sent.matches(".*?[nx]=.*")){
@@ -583,16 +586,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
 		
 		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx\\target\\Plazi_8405_tx_posedsentences.txt";
-		String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx\\target\\Plazi_8405_tx_parsedsentences.txt";
+		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\treatise_o\\target\\Treatise_o_posedsentences.txt";
+		String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\treatise_o\\target\\Treatise_o_parsedsentences.txt";
 	
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "Plazi_8405_tx", "antglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "Treatise_o", "treatiseglossaryfixed", false);
 
 
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

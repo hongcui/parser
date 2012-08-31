@@ -2157,6 +2157,7 @@ public class CharacterAnnotatorChunked {
 	 * @param measurements: CI 72 - 75 (74 ), SI 99 - 108 (102 ), PeNI 73 - 83 (73 ), LPeI 46 - 53 (46 ), DPeI 135 - 155 (145 ). 
 	 */	
 	private void annotatedMeasurements(String measurements) {
+		measurements = measurements.replaceAll("([Ff]igure|[Ff]igs?\\.)[^A-Z]*", "");
 		measurements = measurements.replaceAll("–", "-");
 		Element whole  = new Element("whole_organism");
 		this.statement.addContent(whole);
