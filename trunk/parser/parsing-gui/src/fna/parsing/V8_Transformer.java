@@ -7,6 +7,7 @@ import org.jdom.xpath.XPath;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +23,7 @@ public class V8_Transformer {
 	static int partdetecter, count;
 	static Hashtable hashtable = new Hashtable();
 	public static void main(String[] args) throws Exception{
+		int testkey=1;//Modifies keys only when it is 1.
 		ObjectOutputStream outputStream = null;
 		//outputStream = new ObjectOutputStream(new FileOutputStream("d:/Library Project/V8/namemapping.bin"));
 		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\V8\\namemapping.bin"));
@@ -51,6 +53,18 @@ public class V8_Transformer {
 			}else{
 				transformer.processparagraph2(paralist);
 			}
+			//Have to write code for modifying keys here.
+			if(testkey==1)
+			{
+				Element newtreatment=transformer.treatment;
+				List<Element> elements = XPath.selectNodes(newtreatment, "./Key");
+				if(elements.size()>0){//contains key
+					furtherMarkupKeys(newtreatment);
+				}
+				transformer.treatment=newtreatment;
+			}
+			
+			//End mohan code
 			//transformer.output(i);
 			transformer.output(i);
 		}
@@ -108,7 +122,7 @@ public class V8_Transformer {
 				synchunks=text.split(";");
 				for(int x=0;x<synchunks.length;x++)
 				{
-					Element synname = new Element("Synonym");
+					Element synname = new Element("synonym");
 					synname.setText(synchunks[x]);
 					treatment.addContent(synname);
 				}
@@ -132,14 +146,14 @@ public class V8_Transformer {
 				{
 					if(f==0)
 					{
-						Element familyname = new Element("Family_Name");
+						Element familyname = new Element("family_name");
 						familyname.setText(famchunks[f]);
 						treatment.addContent(familyname);
 						taxonname = famchunks[f];
 					}
 					else
 					{
-						Element commonname = new Element("Common_name");
+						Element commonname = new Element("common_name");
 						commonname.setText(famchunks[f]);
 						treatment.addContent(commonname);
 					}
@@ -147,14 +161,14 @@ public class V8_Transformer {
 				
 			}
 			//else if(familydetecter == 1)
-			else if((familydetecter == 1 && !text.matches("SELECTED REFERENCE.+") && (bolddetecter != 1))||(authdetecter==1)){//Author// To prevent matching SELECTED REFERENCE in 9.xml
-				Element author = new Element("Author");
+			else if(((familydetecter == 1 && !text.matches("SELECTED REFERENCE.+") && (bolddetecter != 1))||(authdetecter==1))&&(keylast!=1)){//Author// To prevent matching SELECTED REFERENCE in 9.xml
+				Element author = new Element("author");
 				author.setText(text);
 				treatment.addContent(author);
 				authdetecter=0;
 				//familydetecter = 0;
 			}
-			else if(text.matches("SELECTED REFERENCE.+")){//References as it is the root tag
+			else if(text.matches("SELECTED REFERENCE.+")&&(keylast!=1)){//References as it is the root tag
 				String heading="";
 				if(text.contains("SELECTED REFERENCES"))
 				{
@@ -166,13 +180,14 @@ public class V8_Transformer {
 					heading="SELECTED REFERENCE";
 					text=text.replaceFirst("SELECTED REFERENCE", "").trim();
 				}
-				Element reference = new Element("References");
-				reference.setAttribute("Heading",heading);
+				Element reference = new Element("references");
+				//reference.setAttribute("Heading",heading);
+				reference.setAttribute("heading",heading);
 				reference.setText(text);
 				furtherMarkupReference(reference);
 				treatment.addContent(reference);
 			}
-			else if(text.matches("(Genus|Species|Varieties|Subspecies) (ca)?.+")&&(text.contains("):"))){//number of infrataxa// to prevent matching Species of ribes in 10.xml
+			else if((text.matches("(Genus|Species|Varieties|Subspecies) (ca)?.+")&&(text.contains("):")))&&keylast!=1){//number of infrataxa// to prevent matching Species of ribes in 10.xml
 				/*Element infrataxa = new Element("Number_of_Infrataxa");
 				infrataxa.setText(text);
 				treatment.addContent(infrataxa);*/
@@ -182,14 +197,14 @@ public class V8_Transformer {
 				{
 					if(k==0)
 					{
-						Element infrataxa = new Element("Number_of_Infrataxa");
+						Element infrataxa = new Element("number_of_infrataxa");
 						infrataxa.setText(newchunks[k]+":");
 						treatment.addContent(infrataxa);
 
 					}
 					else
 					{
-						Element distribution = new Element("Distribution");
+						Element distribution = new Element("distribution");
 						distribution.setText(newchunks[k]);
 						treatment.addContent(distribution);
 					}
@@ -205,11 +220,11 @@ public class V8_Transformer {
 
 			else if(text.matches("Flowering.+|Fruiting.+")&text.contains(";")){//Distribution
 
-				Element floweringtime = new Element("Flowering_Time");
-				Element habitat = new Element("Habitat");
-				Element conservation = new Element("Conservation");
-				Element elevation = new Element("Elevation");
-				Element distribution = new Element("Distribution");
+				Element floweringtime = new Element("flowering_time");
+				Element habitat = new Element("habitat");
+				Element conservation = new Element("conservation");
+				Element elevation = new Element("elevation");
+				Element distribution = new Element("distribution");
 				String flowtime = null, habi = null, eleva=null, distri="", conserv=null, fh = null;
 				String[] semi = new String[4];
 				String[] dot = new String[3];
@@ -218,7 +233,8 @@ public class V8_Transformer {
 				for(int i = 0; i<semi.length;i++)
 				{
 						if(semi[i].contains("Flowering")){
-							if(semi[i].contains(".")){
+							if(semi[i].contains("."))
+							{
 								dot = semi[i].split("\\.");
 								flowtime = dot[0];
 								habi = dot[1];
@@ -299,8 +315,8 @@ public class V8_Transformer {
 					}
 
 			}
-			else if(bolddetecter == 1&!text.matches("[0-9]+\\w*\\..+")){//Description
-				Element description = new Element("Description");
+			else if(bolddetecter == 1&!text.matches("[0-9]+\\w*\\..+")&&keylast!=1){//Description
+				Element description = new Element("description");
 				//code to write the descriptions to a separate file
 				//File descriptionout = new File("C:/Users/mohankrishna89/Desktop/Library Project/V3/source/test1/description/" + filename + ".txt");//why am i doing this?
 				File descriptionout = new File("C:\\Users\\mohankrishna89\\Desktop\\Library Project\\V8\\target\\description\\" + count + ".txt");//why am i doing this?
@@ -327,7 +343,7 @@ public class V8_Transformer {
 				Matcher m = p.matcher(text);
 				if(m.matches()){
 					String number = m.group(1).replaceAll("\\s", "").trim(); //in case an extra space is there
-					Element num = new Element("Number");
+					Element num = new Element("number");
 					num.setText(number);
 					treatment.addContent(num);
 					//text= m.group(2).trim();
@@ -348,43 +364,43 @@ public class V8_Transformer {
 					{
 						if(spchunks[s].contains("var."))
 						{
-							Element varietyname = new Element("Variety_Name");
+							Element varietyname = new Element("variety_name");
 							varietyname.setText(spchunks[s]);
 							treatment.addContent(varietyname);	
 						}
 						else if(spchunks[s].contains("subsp."))
 						{
-							Element subspeciesname = new Element("Sub_Species_Name");
+							Element subspeciesname = new Element("subspecies_name");
 							subspeciesname.setText(spchunks[s]);
 							treatment.addContent(subspeciesname);	
 						}
 						else if(spchunks[s].contains("subsect."))
 						{
-							Element subsectionname = new Element("Sub_Section_Name");
+							Element subsectionname = new Element("subsection_name");
 							subsectionname.setText(spchunks[s]);
 							treatment.addContent(subsectionname);	
 						}
 						else if(spchunks[s].contains("sect."))
 						{
-							Element sectionname = new Element("Section_Name");
+							Element sectionname = new Element("section_name");
 							sectionname.setText(spchunks[s]);
 							treatment.addContent(sectionname);	
 						}
 						else if(spchunks[s].contains("subg."))
 						{
-							Element subgenusname = new Element("Sub_Genus_Name");
+							Element subgenusname = new Element("subgenus_name");
 							subgenusname.setText(spchunks[s]);
 							treatment.addContent(subgenusname);	
 						}
 						else if(spchunks[s].matches("(^[A-Z]+\\s.*)"))
 						{
-							Element genusname = new Element("Genus_Name");
+							Element genusname = new Element("genus_name");
 							genusname.setText(spchunks[s]);
 							treatment.addContent(genusname);	
 						}
 						else
 						{
-							Element speciesname = new Element("Species_Name");
+							Element speciesname = new Element("species_name");
 							speciesname.setText(spchunks[s]);
 							treatment.addContent(speciesname);
 						}
@@ -416,12 +432,12 @@ public class V8_Transformer {
 							inpubl=pubchunks[p1].substring(inlength, pubchunks[p1].length());
 						else
 							System.out.println("Problem in publication:"+count);
-						Element pubname = new Element("Publication");
-						Element publ_title = new Element("Publication_Title");
+						Element pubname = new Element("place_of_publication");
+						Element publ_title = new Element("publication_title");
 						publ_title.setText(publtitl);
 						pubname.addContent(publ_title);
 						
-						Element in_publication = new Element("Place_In_Publication");
+						Element in_publication = new Element("place_in_publication");
 						in_publication.setText(inpubl);
 						pubname.addContent(in_publication);
 						
@@ -438,7 +454,7 @@ public class V8_Transformer {
 					if(chunks[j].matches("(([A-Z]*\\d*)\\s*)*"))
 					{
 						String token=chunks[j];
-						Element tokenname = new Element("Token");
+						Element tokenname = new Element("token");
 						tokenname.setText(token);
 						treatment.addContent(tokenname);
 					}
@@ -454,7 +470,7 @@ public class V8_Transformer {
 							if(collname.contains("]"))
 							{
 								collname='['+collname;
-								Element etyname = new Element("Etymology");
+								Element etyname = new Element("etymology");
 								etyname.setText(collname);
 								treatment.addContent(etyname);
 							}
@@ -464,7 +480,7 @@ public class V8_Transformer {
 								common=collname.split(",");
 								for(int q=0;q<common.length;q++)
 								{
-									Element comname = new Element("Common_name");
+									Element comname = new Element("common_name");
 									comname.setText(common[q]);
 									treatment.addContent(comname);
 								}
@@ -478,6 +494,7 @@ public class V8_Transformer {
 			}
 			else{
 				if(text.matches("[0-9]+\\..+\\.")){//Key without next step
+					text=hashText(text);//to add the  ### symbols
 					Element key = new Element("Key");
 					key.setText(text);
 					treatment.addContent(key);
@@ -485,6 +502,7 @@ public class V8_Transformer {
 				}
 				//else if(text.matches("[0-9]+\\.[A-Z]+.+")&&text.contains("   ")){//Key with next step
 				else if(text.matches("[0-9]+\\.\\s*[A-Z]+.+")&&text.contains("   ")){//Key with next step
+					text=hashText(text);//to add the  ### symbols
 					Element key = new Element("Key");
 					key.setText(text);
 					treatment.addContent(key);
@@ -492,17 +510,22 @@ public class V8_Transformer {
 				}
 				else if(text.matches("\\[\\d.+Shifted to.+\\]"))//to match [33. Shifted to left margin.—Ed.]
 				{
+					text=hashText(text);//to add the  ### symbols
 					Element key = new Element("Key");
 					key.setText(text);
 					treatment.addContent(key);
 					keylast=1;
 				}
 				else if(text.matches("[0-9]+\\..+")&&!text.contains("   ")&&!text.matches(".+\\.")){//Key need to combine
+					text=hashText(text);//to add the  ### symbols
 					keystorage = text;
 					keydetecter = 1;
 					keylast=1;
+					Element key = new Element("Key");
+					key.setText(text);
+					treatment.addContent(key);
 				}
-				else if(keydetecter == 1){//Combine key
+				/*else if(keydetecter == 1){//Combine key
 					text = keystorage + text;
 
 					Element key = new Element("Key");
@@ -511,15 +534,16 @@ public class V8_Transformer {
 					
 					keydetecter = 0;
 					keylast=1;
-				}
+				}*/
 				else if(keylast == 1)//default key case. Once a key is there nothing else follows so make it Key
 				{
+					text=hashText(text);//to add the  ### symbols
 					Element key = new Element("Key");
 					key.setText(text);
 					treatment.addContent(key);	
 				}
 				else{//Discussion
-					Element discussion = new Element("Discussion");
+					Element discussion = new Element("discussion");
 					discussion.setText(text);
 					if(discussion.getText().length()!=0)//if discussion is not empty
 					treatment.addContent(discussion);
@@ -545,7 +569,7 @@ public class V8_Transformer {
 			}
 			//System.out.println(text);
 			if(text.contains("=")){
-				Element discussion = new Element("Discussion");
+				Element discussion = new Element("discussion");
 				discussion.setText(text);
 				treatment.addContent(discussion);
 				String[] university = new String[3];
@@ -561,7 +585,7 @@ public class V8_Transformer {
 				}
 				hashtable.put(shortname, fullname);
 			}else{
-				Element reference = new Element("Reference");
+				Element reference = new Element("reference");
 				for(Iterator itr = hashtable.keySet().iterator(); itr.hasNext();){
 					String key = (String) itr.next();
 					String value = (String) hashtable.get(key);
@@ -620,6 +644,187 @@ public class V8_Transformer {
 		if(this.debugref) System.out.println("a ref:"+text);
 		//ref.getParentElement().addContent(marked);
 		//ref.detach();	
+	}
+	
+	
+	
+	
+	/**
+	 * First assemble the key element(s) <key></key>
+	 * Then turn individual statement :
+	 *  <key>2. Carpels and stamens more than 5; plants perennial; leaves alternate; inflorescences ax-</key>
+  	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
+     * to:
+     * <key_statement>
+     * <statement_id>2</statement_id>
+     * <statement>Carpels and stamens more than 5; 
+     * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
+     * or leaf-opposed racemes or spikes</statement>
+     * <determination>3. Phytolacca (in part), p. 6</determination>
+     * </key_statement>
+     * 
+     * <determination> is optional, and may be replaced by <next_statement_id>.
+	 * @param treatment
+	 */
+	private static void furtherMarkupKeys(Element treatment) {
+		assembleKeys(treatment);
+		try{
+			List<Element> keys = XPath.selectNodes(treatment, "./TaxonKey");
+			for(Element key: keys){
+				furtherMarkupKeyStatements(key);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/* Turn individual statement :
+	 *  <key>2. Carpels and stamens more than 5; plants perennial; leaves alternate; inflorescences ax-</key>
+  	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
+     * To:
+     * <key_statement>
+     * <statement_id>2</statement_id>
+     * <statement>Carpels and stamens more than 5; 
+     * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
+     * or leaf-opposed racemes or spikes</statement>
+     * <determination>3. Phytolacca (in part), p. 6</determination>
+     * </key_statement>
+     * 
+     * <determination> is optional, and may be replaced by <next_statement_id>.
+	 * @param treatment
+	 */
+	private static void furtherMarkupKeyStatements(Element taxonkey) {
+		ArrayList<Element> allstatements = new ArrayList<Element>();
+		Element marked = new Element("key");
+		List<Element> states = taxonkey.getChildren();
+		//Pattern p1 = Pattern.compile("(.*?)(( ### [\\d ]+[a-z]?\\.| ?#* ?Group +\\d).*)");//determ
+		Pattern p1 = Pattern.compile("(.*?)((### [\\d ]+[a-z]?\\.| ?#* ?Group +\\d).*)");//determ
+		Pattern p2 = Pattern.compile("^([\\d ]+[a-z]?\\..*?) (.? ?[A-Z].*)");//id   2. "Ray” corollas
+		String determ = null;
+		String id = "";
+		String broken = "";
+		String preid = null;
+		//process statements backwards
+		for(int i = states.size()-1; i>=0; i--){
+			Element state = states.get(i);
+			//if(state.getName().compareTo("key") == 0 || state.getName().compareTo("couplet") == 0){
+			if(state.getName().compareTo("Key") == 0){
+				String text = state.getTextTrim()+broken;
+				Matcher m = p1.matcher(text);
+				if(m.matches()){
+					text = m.group(1).trim();
+					determ = m.group(2).trim();
+				}
+				m = p2.matcher(text);
+				if(m.matches()){//good, statement starts with an id
+					id = m.group(1).trim();
+					text = m.group(2).trim();
+					broken = "";
+					//form a statement
+					Element statement = new Element("key_statement");
+					Element stateid = new Element("statement_id");
+					stateid.setText(id.replaceAll("\\s*###\\s*", ""));
+					Element stmt = new Element("statement");
+					stmt.setText(text.replaceAll("\\s*###\\s*", ""));
+					Element dtm = null;
+					Element nextid = null;
+					if(determ!=null) {
+						dtm = new Element("determination");
+						dtm.setText(determ.replaceAll("\\s*###\\s*", ""));
+						determ = null;
+					}else if(preid!=null){
+						nextid = new Element("next_statement_id");
+						nextid.setText(preid.replaceAll("\\s*###\\s*", ""));
+						//preid = null;
+					}
+					preid = id;
+					statement.addContent(stateid);
+					statement.addContent(stmt);
+					if(dtm!=null) statement.addContent(dtm);
+					if(nextid!=null) statement.addContent(nextid);
+					allstatements.add(statement);
+				}else if(text.matches("^[a-z]+.*")){//a broken statement, save it
+					broken =" "+ text;
+				}
+			}else{
+				Element stateclone = (Element)state.clone();
+				if(stateclone.getName().compareTo("run_in_sidehead")==0){
+					stateclone.setName("key_head");
+				}
+				allstatements.add(stateclone);//"discussion" remains
+			}
+		}
+		
+		for(int i = allstatements.size()-1; i >=0; i--){
+			marked.addContent(allstatements.get(i));
+		}		
+		taxonkey.getParentElement().addContent(marked);
+		taxonkey.detach();
+	}
+
+
+	/**
+	 * <treatment>
+	 * <...>
+	 * <references>...</references>
+	 * <key>...</key>
+	 * </treatment>
+	 * deals with two cases:
+	 * 1. the treatment contains one key with a set of "key/couplet" statements (no run_in_sidehead tags)
+	 * 2. the treatment contains multiple keys that are started with <run_in_sidehead>Key to xxx (which may be also used to tag other content)
+	 * @param treatment
+	 */
+	private static void assembleKeys(Element treatment) {
+		Element key = null;
+		//removing individual statements from treatment and putting them in key
+		List<Element> children = treatment.getChildren();////changes to treatment children affect elements too.
+		Element[] elements = children.toArray(new Element[0]); //take a snapshot
+		ArrayList<Element> detacheds = new ArrayList<Element>();
+		boolean foundkey = false;
+		for(int i = 0; i < elements.length; i++){
+			Element e = elements[i];
+			/*if(e.getName().compareTo("run_in_sidehead")==0 && (e.getTextTrim().startsWith("Key to ") || e.getTextTrim().matches("Group \\d+.*"))){
+				foundkey = true;
+				if(key!=null){
+					treatment.addContent((Element)key.clone());	
+				}
+				key = new Element("TaxonKey");
+			}*/
+			//if(!foundkey && (e.getName().compareTo("key")==0 || e.getName().compareTo("couplet")==0)){
+			if(!foundkey && (e.getName().compareTo("Key")==0)){
+				foundkey = true;	
+				if(key==null){
+					key = new Element("TaxonKey");
+				}
+			}
+			if(foundkey){
+				detacheds.add(e);
+				key.addContent((Element)e.clone());
+			}			
+		}
+		if(key!=null){
+			treatment.addContent(key);					
+		}
+		for(Element e: detacheds){
+			e.detach();
+		}
+	}
+	
+	private String hashText(String text)
+	{
+		//Pattern p1=Pattern.compile("(\\d+\\..*?)(\\d+\\w*\\.\\s+.*)");
+		Pattern p1=Pattern.compile("(.*?)(\\d+\\w*\\.\\s\\s\\s.*)");
+		Matcher m = p1.matcher(text);
+		if(m.matches())
+		{
+			//String textbeg=m.group(1).trim();
+			String textbeg=m.group(1);
+			String textend=m.group(2).trim();
+			textend=" ### "+textend;
+			text=textbeg+textend;
+		}
+		return text;
 	}
 
 }

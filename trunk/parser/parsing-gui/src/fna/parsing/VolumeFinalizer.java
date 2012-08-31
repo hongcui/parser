@@ -3,8 +3,7 @@
  */
 package fna.parsing;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -25,6 +24,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import fna.charactermarkup.SentenceChunker4StanfordParser;
 import fna.charactermarkup.StanfordParser;
 import fna.parsing.state.SentenceOrganStateMarker;
 
@@ -95,6 +95,11 @@ public class VolumeFinalizer extends Thread {
     		if(!standalone) this.showOutputMessage("Number of files does not match between transformed and final folders. You should check all files with descriptions are annotated.");
         }
         //if(!standalone) listener.setProgressBarVisible(false);
+        
+        else//Should add the code to generate the files and uploading and executing it here in the else loop.
+        {
+        	UploadData ud = new UploadData(dataPrefix);
+        }
     }
     /**
      * stanford parser
@@ -348,9 +353,18 @@ public class VolumeFinalizer extends Thread {
         }
         VolumeFinalizer vf = new VolumeFinalizer(null, "fnav19", conn, "fnaglossaryfixed");
         vf.start();*/
+    	//Don't forget to delete the comment of the following line
     	VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
+    	
+    	//mohan checking code to create a text file provided a dataset prefix and a dataprefix are given
+    	//createTextFile("oldtext", "datasetprefix");
+    	//Mohan code to create a datadump of term_category and sentence tables based on dataprefix 
+    	//dumpFiles("treatise_o");
     }
+    
 
+    	
+    	
 
 
 

@@ -47,6 +47,7 @@ public class V27_Extractor {
 	private void processParagraph(Element wp) throws Exception {
 		Element pe = new Element("paragraph");
 		Boolean isbold = false;
+		Boolean issmallcaps = false;
 		StringBuffer buffer = new StringBuffer();
 		Attribute att = (Attribute) XPath.selectSingleNode(wp,"./w:pPr/w:pStyle/@w:val");
 		String style = "";
@@ -92,7 +93,7 @@ public class V27_Extractor {
 				//function to get to the row element if the element is not a row element.
 				else if(r.getName()!="r")
 				{
-					r= getelement(r);
+					r= getrowelement(r);
 				}
 				// start to process tab
 				Element tabe = (Element) XPath.selectSingleNode(r,"./w:tab");
@@ -152,6 +153,7 @@ public class V27_Extractor {
 					
 					Element smallcaps = (Element) XPath.selectSingleNode(rPre,"./w:smallCaps");
 					if (smallcaps != null) {
+						issmallcaps = true;
 						smallcaps = new Element("smallcaps");
 						pe.addContent(smallcaps);
 					}
@@ -166,10 +168,16 @@ public class V27_Extractor {
 		//}
 		//System.out.println(buffer.toString().replaceAll("\\s+", " "));
 		String text = buffer.toString().replaceAll("\\s+", " ");
+		text=text.trim();
 		//if(text.matches("^\\d*\\.*\\s*[A-Z]{2}.*")||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&isbold == true)||(text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe).*\\d+\\s*\\.\\s*\\d+.*"))){
 		//if((text.matches("^\\d*\\.*\\s*[A-Z]{2}.*"))||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&&isbold)||(text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe)\\..*\\d+\\s*\\.\\s*\\d+.*"))){
-		if((text.matches("^\\d*\\.*\\s*[A-Z]{2}.*"))||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&&isbold)||((text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe)\\..*\\d+\\s*\\.\\s*\\d+.*")&&isbold))){
-			//if((!text.contains("SELECTED REFERENCE"))||(!text.contains("SELECTED REFRENCE"))){
+		//if((text.matches("^\\d*\\.*\\s*[A-Z]{2}.*"))||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&&isbold)||((text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe)\\..*\\d+\\s*\\.\\s*\\d+.*")&&isbold))){
+		if((text.matches("^\\d*\\.*\\s*[A-Z]{2}.*"))||(text.matches("^\\d+\\w*\\.\\s*\\w+.*")&&isbold)||
+				((text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe)\\..*\\d+\\s*\\.\\s*\\d+.*")&&isbold))||
+				(text.matches("^\\d+\\w*\\..*(sect|subfam|var|subgen|subg|subsp|ser|tribe)\\..*")&&issmallcaps)){
+			
+			//Note: This creates a new file whenever we have a bold in the sentence and the sentence starts with a digit.One instance in FNAV_27 is "leaf apex variously both papillose and toothed; median leaf cells with horned papillae on both surfaces varying to nearly smooth</text><text>; </text><bold /><text>cells on adaxial surface of the costa elongate (3–6:1),"
+			//Such cases need to be manually corrected by removing the </w:b> tag in the source XML file. Another instance in FNAV_27 is "Vegetative leaves usually lanceolate to ovate-lanceolate, acute to short-acuminate; distal laminal cells usually 8</text><text>–</text><bold /><text>12 mm; le"
 			if(!text.contains("SELECTED REFERENCE")){
 				i++;
 				System.out.println("Volume:"+i);
@@ -189,11 +197,13 @@ public class V27_Extractor {
 				new FileOutputStream(file));
 		outputter.output(doc, out);
 	}
+	
 	private void createtreatment() throws Exception{
 		treatment = new Element("treatment");
 	}
 	
-	private Element getelement(Element r) throws Exception{
+	
+	private Element getrowelement(Element r) throws Exception{
 		if(r.getName()=="r")
 		{
 			return r;
@@ -202,9 +212,11 @@ public class V27_Extractor {
 			List l1=r.getChildren();
 			Iterator loriter = l1.iterator();
 			Element r1=(Element) loriter.next();
-			Element r2=getelement(r1);
+			Element r2=getrowelement(r1);
 			return r2;
 		}
 	}
+	
+	
 }
 
