@@ -90,6 +90,47 @@ public class CharacterStateDBAccess {
 			
 		}
 	}
+//gets the default decision category which is the antglossary when an empty glossary is used
+public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLException {
+		
+		//Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		try {
+			
+				//conn = DriverManager.getConnection(url);
+				String tablePrefix = MainForm.dataPrefixCombo.getText();
+				
+				//String sql = "SELECT distinct category FROM " + tablePrefix+"_character order by category";
+				//String sql = "SELECT distinct category FROM "+this.glossarytable+" order by category";  //This line is changed to the following
+				String sql = "SELECT distinct category FROM antglossaryfixed order by category"; // The default glossary
+				stmt = conn.prepareStatement(sql);
+				rset = stmt.executeQuery();
+				while(rset.next()) {
+					decisions.add(rset.getString(1));
+				}
+				
+				
+		} catch (Exception exe) {
+			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getDecisionCategory", exe);
+			exe.printStackTrace();
+			
+		} finally {
+			if (rset != null) {
+				rset.close();
+			}
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			//if (conn != null) {
+			//	conn.close();
+			//}
+			
+		}
+	}
+
 	
 	public ArrayList<TermsDataBean> getTerms(String group) throws SQLException {
 		//Connection conn = null;
