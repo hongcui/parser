@@ -45,8 +45,8 @@ public class VolumeTransformer extends Thread {
 	
 	private static String organnames ="2n|achene|anther|apex|awn|ax|bark|beak|blade|bract|bracteole|branch|branchlet|broad|calyx|capsule|cap_sule|caropohore|carpophore|caudex|cluster|corolla|corona|crown|cup_|cusp|cyme|cymule|embryo|endosperm|fascicle|filament|flower|fruit|head|herb|homophyllous|hypanthium|hypanth_ium|indument|inflore|inflorescence|inflores_cence|inflo_rescence|internode|involucre|invo_lucre|in_florescence|in_ternode|leaf|limb|lobe|margin|midvein|nectary|node|ocrea|ocreola|ovary|ovule|pair|papilla|pedicel|pedicle|peduncle|perennial|perianth|petal|petiole|plant|prickle|rhizome|rhi_zome|root|rootstock|rosette|scape|seed|sepal|shoot|spikelet|spur|stamen|stem|stigma|stipule|sti_pule|structure|style|subshrub|taproot|taprooted|tap_root|tendril|tepal|testa|tooth|tree|tube|tubercle|tubercule|tuft|twig|utricle|vein|vine|wing|x";
 	private static String organnamep ="achenes|anthers|awns|axes|blades|bracteoles|bracts|branches|buds|bumps|calyces|capsules|clusters|crescents|crowns|cusps|cymes|cymules|ends|escences|fascicles|filaments|flowers|fruits|heads|herbs|hoods|inflores|inflorescences|internodes|involucres|leaves|lengths|limbs|lobes|margins|midribs|midveins|nectaries|nodes|ocreae|ocreolae|ovules|pairs|papillae|pedicels|pedicles|peduncles|perennials|perianths|petals|petioles|pistils|plants|prickles|pules|rescences|rhizomes|rhi_zomes|roots|rows|scapes|seeds|sepals|shoots|spikelets|stamens|staminodes|stems|stigmas|stipules|sti_pules|structures|styles|subshrubs|taproots|tap_roots|teeth|tendrils|tepals|trees|tubercles|tubercules|tubes|tufts|twigs|utricles|veins|vines|wings";
-	private static String usstates ="Ala\\.|Alaska|Ariz\\.|Ark\\.|Calif\\.|Colo\\.|Conn\\.|Del\\.|D\\.C\\.|Fla\\.|Ga\\.|Idaho|Ill\\.|Ind\\.|Iowa|Kans\\.|Ky\\.|La\\.|Maine|Md\\.|Mass\\.|Mich\\.|Minn\\.|Miss\\.|Mo\\.|Mont\\.|Nebr\\.|Nev\\.|N\\.H\\.|N\\.J\\.|N\\.Mex\\.|N\\.Y\\.|N\\.C\\.|N\\.Dak\\.|Ohio|Okla\\.|Oreg\\.|Pa\\.|R\\.I\\.|S\\.C\\.|S\\.Dak\\.|Tenn\\.|Tex\\.|Utah|Vt\\.|Va\\.|Wash\\.|W\\.Va\\.|Wis\\.|Wyo\\.";	
-	private static String caprovinces="Alta\\.|B\\.C\\.|Man\\.|N\\.B\\.|Nfld\\. and Labr|N\\.W\\.T\\.|N\\.S\\.|Nunavut|Ont\\.|P\\.E\\.I\\.|Que\\.|Sask\\.|Yukon";
+	private static String usstates ="Ala\\.|Alabama|Alaska|Ariz\\.|Arizona|Ark\\.|Arkansas|Calif\\.|California|Colo\\.|Colorado|Conn\\.|Connecticut|Del\\.|Delaware|D\\.C\\.|District of Columbia|Fla\\.|Florida|Ga\\.|Georgia|Idaho|Ill\\.|Illinois|Ind\\.|Indiana|Iowa|Kans\\.|Kansas|Ky\\.|Kentucky|La\\.|Louisiana|Maine|Maryland|Md\\.|Massachusetts|Mass\\.|Michigan|Mich\\.|Minnesota|Minn\\.|Mississippi|Miss\\.|Missouri|Mo\\.|Montana|Mont\\.|Nebraska|Nebr\\.|Nevada|Nev\\.|New Hampshire|N\\.H\\.|New Jersey|N\\.J\\.|New Mexico|N\\.Mex\\.|New York|N\\.Y\\.|North Carolina|N\\.C\\.|North Dakota|N\\.Dak\\.|Ohio|Oklahoma|Okla\\.|Oregon|Oreg\\.|Pennsylvania|Pa\\.|Rhode Island|R\\.I\\.|South Carolina|S\\.C\\.|South Dakota|S\\.Dak\\.|Tennessee|Tenn\\.|Texas|Tex\\.|Utah|Vermont|Vt\\.|Virginia|Va\\.|Washington|Wash\\.|West Virginia|W\\.Va\\.|Wisconsin|Wis\\.|Wyoming|Wyo\\.";	
+	private static String caprovinces="Alta\\.|Alberta|B\\.C\\.|British Columbia|Manitoba|Man\\.|New Brunswick|N\\.B\\.|Newfoundland and Labrador|Nfld\\. and Labr|Northwest Territories|N\\.W\\.T\\.|Nova Scotia|N\\.S\\.|Nunavut|Ontario|Ont\\.|Prince Edward Island|P\\.E\\.I\\.|Quebec|Que\\.|Saskatchewan|Sask\\.|Yukon";
 	private Properties styleMappings;
 	private TaxonIndexer ti;
 	private ProcessListener listener;
@@ -343,8 +343,9 @@ public class VolumeTransformer extends Thread {
 				text = buffer.toString().replaceAll("\\s+", " ").trim();
 				outputElementText(count, text, "HABITATS");
 				
-				
-				//listener.info(String.valueOf(count), xml.getPath(), error);
+				//when output list is displayed in CharaParser, habitat sections have not 
+				//been marked up yet.
+				listener.info(String.valueOf(count), xml.getPath(), "");
 				listener.progress((count*50) / total);
 			}
 			
@@ -352,6 +353,7 @@ public class VolumeTransformer extends Thread {
 			hpf.parse();
 			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
 			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
+			
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
 			e.printStackTrace();
@@ -743,7 +745,7 @@ public class VolumeTransformer extends Thread {
 				namerank = "variety_name";
 			}else if(text.indexOf("subsp.") >=0){
 				namerank = "subspecies_name";
-			}else if(text.indexOf("ser.") >=0){
+			}else if(text.indexOf("ser.") >=0 && text.indexOf(",") > text.indexOf("ser.")){ //after "," is publication where ser. may appear.
 				namerank = "series_name";
 			}else if(text.indexOf("sect.") >=0){
 				namerank = "section_name";

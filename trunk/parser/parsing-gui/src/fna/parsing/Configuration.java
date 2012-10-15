@@ -139,7 +139,7 @@ public class Configuration {
 		label_2.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 
 				ApplicationUtilities.getProperty("image.type1")));
 		label_2.setBounds(106, 30, 611, 121);
-		label_2.setToolTipText("Word Document with Semantic_Based Styles");
+		label_2.setToolTipText("Word Document with Semantic-Based Styles");
 		
 		Label label_3 = new Label(group_1, SWT.BORDER | SWT.WRAP);
 		label_3.setBackgroundImage(SWTResourceManager.getImage(Configuration.class, 

@@ -209,7 +209,7 @@ public class Type1Document {
 		String pathName = getStyleMappingFile();
 		String style = "";
 		String tag = "";
-		
+		boolean populated = false;
 		File styleMapping = new File(pathName);
 		if(styleMapping.isFile() && styleMapping.exists()) {
 			BufferedReader in = new BufferedReader(new FileReader(styleMapping));
@@ -228,10 +228,19 @@ public class Type1Document {
 				
 				combo.setText(tag);
 				text.setText(style);
-				
+				populated = true;
 				/* Add another row here */
 				addRow();
 				
+			}
+		}
+		
+		if(!populated){
+			//pop up an info box and show the pathName searched for style-mapping
+			String message = ApplicationUtilities.getProperty("popup.info.stylenotfound") + System.getProperty("line.separator")+pathName ;
+			int decision = ApplicationUtilities.showPopUpWindow(message, "File Not Found", SWT.YES|SWT.NO);
+			if(decision == SWT.NO){
+				System.exit(0);
 			}
 		}
 	}
