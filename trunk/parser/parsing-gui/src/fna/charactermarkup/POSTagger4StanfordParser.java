@@ -442,49 +442,50 @@ public class POSTagger4StanfordParser {
 	 * @return
 	 */
 	private boolean isPosition(String organ, String position, String sent) {
-		/*mohan code to forward check if the next token following <organ> position , is another organ */
-		boolean isnextorganchunk=false;
-		Pattern localptn = Pattern.compile(""+position+"\\s*,");
-		Matcher k = localptn.matcher(sent);
-		if(k.find())
-		{
-			isnextorganchunk=true;
-		}
-		/*int m;
-		ArrayList<String> localchunkedtokens = new ArrayList<String>(Arrays.asList(sent.split("\\s+")));
-		for(m=0;m<localchunkedtokens.size()-3;m++)
-		{
-			if(localchunkedtokens.get(m).replaceAll("<|>","").trim().contentEquals(organ)&&localchunkedtokens.get(m+1).contentEquals(position))
-				break;
-			else
-			m++;
-		}
-		m=m+2;
-		while(m<localchunkedtokens.size())
-		{
-			if(localchunkedtokens.get(m).trim().matches("\\W"))
-			{
-				m++;
-			}	
-			else if(localchunkedtokens.get(m).trim().matches("<(\\S+?)>"))
-			{
-				isnextorganchunk=true;
-				break;
-			}
-		}*/
-		/*end mohan*/
-		boolean multiplepositions = false;
-		boolean pluralorgan = false;
-		position = position.replace("<"+organ+">", "").trim();
-		if(position.contains(" ") || position.contains("_")){
-			multiplepositions = true;
-		}		
-		if(Utilities.isPlural(organ)){
-			pluralorgan = true;
-		}
-		//if(pluralorgan && !multiplepositions) return false;
-		if((pluralorgan && !multiplepositions)|isnextorganchunk) return false;
-		return true;
+		return false;
+//		/*mohan code to forward check if the next token following <organ> position , is another organ */
+//		boolean isnextorganchunk=false;
+//		Pattern localptn = Pattern.compile(""+position+"\\s*,");
+//		Matcher k = localptn.matcher(sent);
+//		if(k.find())
+//		{
+//			isnextorganchunk=true;
+//		}
+//		/*int m;
+//		ArrayList<String> localchunkedtokens = new ArrayList<String>(Arrays.asList(sent.split("\\s+")));
+//		for(m=0;m<localchunkedtokens.size()-3;m++)
+//		{
+//			if(localchunkedtokens.get(m).replaceAll("<|>","").trim().contentEquals(organ)&&localchunkedtokens.get(m+1).contentEquals(position))
+//				break;
+//			else
+//			m++;
+//		}
+//		m=m+2;
+//		while(m<localchunkedtokens.size())
+//		{
+//			if(localchunkedtokens.get(m).trim().matches("\\W"))
+//			{
+//				m++;
+//			}	
+//			else if(localchunkedtokens.get(m).trim().matches("<(\\S+?)>"))
+//			{
+//				isnextorganchunk=true;
+//				break;
+//			}
+//		}*/
+//		/*end mohan*/
+//		boolean multiplepositions = false;
+//		boolean pluralorgan = false;
+//		position = position.replace("<"+organ+">", "").trim();
+//		if(position.contains(" ") || position.contains("_")){
+//			multiplepositions = true;
+//		}		
+//		if(Utilities.isPlural(organ)){
+//			pluralorgan = true;
+//		}
+//		//if(pluralorgan && !multiplepositions) return false;
+//		if((pluralorgan && !multiplepositions)|isnextorganchunk) return false;
+//		return true;
 	}
 
 	/**
