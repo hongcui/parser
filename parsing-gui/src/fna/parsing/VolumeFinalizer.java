@@ -42,7 +42,7 @@ public class VolumeFinalizer extends Thread {
     private Connection conn = null;
     private String glossaryPrefix;
     private static String version="$Id$";
-    private static boolean standalone = false;
+    private static boolean standalone = true;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";

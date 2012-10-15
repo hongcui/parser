@@ -290,8 +290,15 @@ public class MainForm {
 	protected UUID lastSavedIdC = UUID.randomUUID();
 	protected UUID lastSavedIdO = UUID.randomUUID();
 	
-	
-
+	/*the set of threads that would run off the mainform*/
+	static VolumeExtractor ve = null;
+	static VolumeVerifier vv = null;
+	static VolumeTransformer vt = null;
+	static Type3Transformer preMarkUp = null;
+	static Type2Transformer transformer2 = null;
+	static Type4Transformer transformer4 = null;
+	static VolumeDehyphenizer vd = null;
+	static VolumeFinalizer vf = null;
 	
 	
 	//////////////////methods///////////////////////
@@ -581,6 +588,10 @@ public class MainForm {
 		final Composite composite = new Composite(tabFolder, SWT.NONE);
 		generalTabItem.setControl(composite);
 
+		targetText = new Text(composite, SWT.BORDER);
+		configurationText = new Text(composite, SWT.BORDER);
+		sourceText = new Text(composite, SWT.BORDER);
+		
 		final Group configurationDirectoryGroup_1_1_1 = new Group(composite, SWT.NONE);
 		//configurationDirectoryGroup_1_1_1.setEnabled(false);
 		//configurationDirectoryGroup_1_1_1.setBounds(20, 117, 748, 70);
@@ -691,7 +702,8 @@ public class MainForm {
 			}
 		});
 
-		Group grpContinueWithThe = new Group(composite, SWT.NONE);
+		/*controls for reloading and resuming the last project */
+/*		Group grpContinueWithThe = new Group(composite, SWT.NONE);
 		grpContinueWithThe.setToolTipText("Continue with the last project");
 		grpContinueWithThe.setText("Continue with the last project");
 		grpContinueWithThe.setBounds(20, 264, 763, 144);
@@ -781,10 +793,10 @@ public class MainForm {
 						StepsToBeCompletedLbl.setText(remainingStepsLb);
 						
 					}
-					/*else
-					{
-						StepsToBeCompletedLbl.setText("All steps are complete from this project.");
-					}*/
+					//else
+					//{
+					//	StepsToBeCompletedLbl.setText("All steps are complete from this project.");
+					//}
 					
 					
 					if(glossprefixes!=null && glossprefixes.length>0)
@@ -801,10 +813,10 @@ public class MainForm {
 					createSubtab(markupNReviewTabFolder, "structures",composite4structures,group4structures, scrolledComposite4structures, termRoleMatrix4structures, contextText4structures);
 					createSubtab(markupNReviewTabFolder, "characters", composite4characters,group4characters, scrolledComposite4characters, termRoleMatrix4characters, contextText4characters);
 					createSubtab(markupNReviewTabFolder, "others", composite4others,group4others, scrolledComposite4others, termRoleMatrix4others, contextText4others);
-					/*loadFindStructureTable();
-					loadFindDescriptorTable();
-					loadFindMoreStructureTable();
-					loadFindMoreDescriptorTable();*/
+					//loadFindStructureTable();
+					//loadFindDescriptorTable();
+					//loadFindMoreStructureTable();
+					//loadFindMoreDescriptorTable();
 					//loadOthersTable();
 					
 				}
@@ -832,61 +844,61 @@ public class MainForm {
 				}
 				
 			}
-/*
-			protected void loadFindStructureTable() {
+
+			//protected void loadFindStructureTable() {
 				
-				ArrayList <String> structures = new ArrayList<String>();
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
+			//	ArrayList <String> structures = new ArrayList<String>();
+			//	try {
+				//	VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
 					//words = vmdb.getDescriptorWords();
-					vmdb.structureTags4Curation(structures);
-					int count = 1;
-					if (structures != null) {
-						for (String word : structures){
-							TableItem item = new TableItem(findStructureTable, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			
-			}
-*/
-			/*protected void loadOthersTable() {
-				// TODO Auto-generated method stub
-				//showOtherTerms();
-				showOtherTermsTable();
-			}*/
-/*
-			protected void loadFindDescriptorTable() {
-				// TODO Auto-generated method stub
-				ArrayList <String> words = null;
-				try {
-					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
-					words = vmdb.getSavedDescriptorWords();
-					//words = vmdb.getDescriptorWords();
-					
-					int count = 1;
-					if (words != null) {
-						for (String word : words){
-							TableItem item = new TableItem(findDescriptorTable, SWT.NONE);
-							item.setText(new String [] {count+"", word});
-							count++;
-						}
-					}
-					
-				} catch (Exception exe){
-					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
-				}
-			
-			}
-*/
+					//vmdb.structureTags4Curation(structures);
+					//int count = 1;
+					//if (structures != null) {
+					//	for (String word : structures){
+					//		TableItem item = new TableItem(findStructureTable, SWT.NONE);
+//							item.setText(new String [] {count+"", word});
+//							count++;
+//						}
+//					}
+//					
+//				} catch (Exception exe){
+//					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
+//					exe.printStackTrace();
+//				}
+//			
+//			
+//			}
+
+//			protected void loadOthersTable() {
+//				// TODO Auto-generated method stub
+//				//showOtherTerms();
+//				showOtherTermsTable();
+//			}
+
+//			protected void loadFindDescriptorTable() {
+//				// TODO Auto-generated method stub
+//				ArrayList <String> words = null;
+//				try {
+//					VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim());
+//					words = vmdb.getSavedDescriptorWords();
+//					//words = vmdb.getDescriptorWords();
+//					
+//					int count = 1;
+//					if (words != null) {
+//						for (String word : words){
+//							TableItem item = new TableItem(findDescriptorTable, SWT.NONE);
+//							item.setText(new String [] {count+"", word});
+//							count++;
+//						}
+//					}
+//					
+//				} catch (Exception exe){
+//					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
+//					exe.printStackTrace();
+//				}
+//			
+//			}
+
 			}
 		);
 		
@@ -959,7 +971,7 @@ public class MainForm {
 		//configurationDirectoryGroup_1_1.setText(
 		//		ApplicationUtilities.getProperty("target"));
 				
-		
+*/		
 		//////////////////////////////////////////////////////////////////////
 		if (type.equals("")){//type 1
 			/* Segmentation Tab step 1*/
@@ -3306,18 +3318,21 @@ public class MainForm {
 	}
 
 	private void startExtraction() throws Exception {
-		
-		ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar, shell.getDisplay());
-		VolumeExtractor ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		//VolumeExtractor ve = new WordDocSegmenter(Registry.SourceDirectory, Registry.TargetDirectory, listener);
-		ve.start();
+		if(ve==null || !ve.isAlive()){
+			ProcessListener listener = new ProcessListener(extractionTable, extractionProgressBar, shell.getDisplay());
+			ve = new VolumeExtractor(Registry.SourceDirectory, Registry.TargetDirectory, listener);
+			//VolumeExtractor ve = new WordDocSegmenter(Registry.SourceDirectory, Registry.TargetDirectory, listener);
+			ve.start();
+		}
 	}
 	
 	
 	private void startVerification() {
-		ProcessListener listener = new ProcessListener(verificationTable, verificationProgressBar, shell.getDisplay());
-		VolumeVerifier vv = new VolumeVerifier(listener);
-		vv.start();
+		if(vv==null || !vv.isAlive()){
+			ProcessListener listener = new ProcessListener(verificationTable, verificationProgressBar, shell.getDisplay());
+			vv = new VolumeVerifier(listener);
+			vv.start();
+		}
 	}
 	
 	private void clearVerification() {		
@@ -3325,42 +3340,49 @@ public class MainForm {
 	}
 	
 	private void startTransformation() {
-		ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
-		VolumeTransformer vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
-		vt.start();
+		if(vt==null || !vt.isAlive()){
+			ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
+			vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			vt.start();
+		}
 	}
 	
 	private void startType3Transformation() {
-		ProcessListener listener = 
-			new ProcessListener(transformationTable, transformationProgressBar, 
-					shell.getDisplay());
-		/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
-		Type3Transformer preMarkUp = 
-			new Type3Transformer(listener, shell.getDisplay(), 
-					null, dataPrefixCombo.getText().replaceAll("-", "_").trim(),MainForm.glossaryPrefixCombo.getText().trim(), new ArrayList());
-		preMarkUp.start();
+		if(preMarkUp==null || !preMarkUp.isAlive()){
+			ProcessListener listener = 
+				new ProcessListener(transformationTable, transformationProgressBar, 
+						shell.getDisplay());
+			/* Need to clarify perlLog, and seeds new arraylist from Dr Hong*/ 
+			preMarkUp = 
+				new Type3Transformer(listener, shell.getDisplay(), 
+						null, dataPrefixCombo.getText().replaceAll("-", "_").trim(),MainForm.glossaryPrefixCombo.getText().trim(), new ArrayList());
+			preMarkUp.start();
+		}
 	}
 	
 	private void startType2Transformation () {
-		ProcessListener listener = 
-			new ProcessListener(transformationTable, transformationProgressBar, 
-					shell.getDisplay());
-		Type2Transformer transformer = new Type2Transformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
-		transformer.start();
+		if(transformer2 == null || !transformer2.isAlive()){
+			ProcessListener listener = 
+				new ProcessListener(transformationTable, transformationProgressBar, 
+						shell.getDisplay());
+			transformer2 = new Type2Transformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+			transformer2.start();
+		}
 	}
 	
 	
 	private void startType4Transformation () {
-		ProcessListener listener = 
-			new ProcessListener(transformationTable, transformationProgressBar, 
-					shell.getDisplay());
-		Type4Transformer transformer = null;
-		if(this.type4xml.compareToIgnoreCase("taxonx") ==0){
-			transformer = new Type4Transformer4TaxonX(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
-		}else if(this.type4xml.compareToIgnoreCase("phenoscape") ==0){
-			transformer = new Type4Transformer4Phenoscape(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+		if(transformer4 == null || !transformer4.isAlive()){
+			ProcessListener listener = 
+				new ProcessListener(transformationTable, transformationProgressBar, 
+						shell.getDisplay());
+			if(this.type4xml.compareToIgnoreCase("taxonx") ==0){
+				transformer4 = new Type4Transformer4TaxonX(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+			}else if(this.type4xml.compareToIgnoreCase("phenoscape") ==0){
+				transformer4 = new Type4Transformer4Phenoscape(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim());
+			}
+			transformer4.start();
 		}
-		transformer.start();
 	}
 	private void clearTransformation() {
 		transformationTable.removeAll();
@@ -3455,20 +3477,21 @@ public class MainForm {
 	}
 	
 	private void startMarkup() {
-
-		mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
-		mainDb.createNonEQTable();
-		String workdir = Registry.TargetDirectory;
-		//if there is a characters folder,add the files in characters folder to descriptions folder
-		mergeCharDescFolders(new File(workdir));
-		String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
-		String databasename = ApplicationUtilities.getProperty("database.name");
-		ProcessListener listener = new ProcessListener(findStructureTable, markupProgressBar, shell.getDisplay());
-		
-		VolumeDehyphenizer vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
-				databasename, shell.getDisplay(), markUpPerlLog, 
-				dataPrefixCombo.getText().replaceAll("-", "_").trim(), /*findDescriptorTable,*/ this);
-		vd.start();		
+		if(vd == null || !vd.isAlive()){
+			mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
+			mainDb.createNonEQTable();
+			String workdir = Registry.TargetDirectory;
+			//if there is a characters folder,add the files in characters folder to descriptions folder
+			mergeCharDescFolders(new File(workdir));
+			String todofoldername = ApplicationUtilities.getProperty("DESCRIPTIONS");
+			String databasename = ApplicationUtilities.getProperty("database.name");
+			ProcessListener listener = new ProcessListener(findStructureTable, markupProgressBar, shell.getDisplay());
+			
+			vd = new VolumeDehyphenizer(listener, workdir, todofoldername,
+					databasename, shell.getDisplay(), markUpPerlLog, 
+					dataPrefixCombo.getText().replaceAll("-", "_").trim(), /*findDescriptorTable,*/ this);
+			vd.start();
+		}
 	}
 	
 	private void mergeCharDescFolders(File parentfolder) {
@@ -3499,28 +3522,29 @@ public class MainForm {
 	}
 
 	private boolean startFinalize(Text finalLog) {
-		
-		//ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
-		ProcessListener listener = new ProcessListener(finalizerTable, null, shell.getDisplay());
-
-		//Connection conn = null;
-		try{
-			if(conn == null){
-				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-				conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+		if(vf==null || !vf.isAlive()){
+			//ProcessListener listener = new ProcessListener(finalizerTable, finalizerProgressBar, shell.getDisplay());
+			ProcessListener listener = new ProcessListener(finalizerTable, null, shell.getDisplay());
+	
+			//Connection conn = null;
+			try{
+				if(conn == null){
+					Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+					conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+				}
+				this.mainDb.finalizeTermCategoryTable();
+				//VolumeFinalizer vf = new VolumeFinalizer(listener, 
+				//		dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim());
+				finalLog.setText("");
+				vf = new VolumeFinalizer(listener, finalLog, 
+						dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim(), shell.getDisplay());
+				vf.start();
+				//vf.join();
+				System.out.println();
+				return true;
+			}catch(Exception e){
+				e.printStackTrace();
 			}
-			this.mainDb.finalizeTermCategoryTable();
-			//VolumeFinalizer vf = new VolumeFinalizer(listener, 
-			//		dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim());
-			finalLog.setText("");
-			VolumeFinalizer vf = new VolumeFinalizer(listener, finalLog, 
-					dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim(), shell.getDisplay());
-			vf.start();
-			//vf.join();
-			System.out.println();
-			return true;
-		}catch(Exception e){
-			e.printStackTrace();
 		}
 		return false;
 	}
