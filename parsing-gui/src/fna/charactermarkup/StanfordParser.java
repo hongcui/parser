@@ -685,9 +685,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
 		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
-		String prefix = "fnav4n";
+		String prefix = "fnav4"; //should be volume name
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
-		String volume = "fnav4";
+		//String volume = "fnav4";
 		
 		try{
 			Connection conn = null;
@@ -696,7 +696,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
 				conn = DriverManager.getConnection(URL);
 			}
-			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", volume);
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", prefix);
 			tnc.collect();
 		}catch(Exception e){
 			e.printStackTrace();
