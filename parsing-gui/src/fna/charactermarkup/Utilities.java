@@ -639,21 +639,19 @@ public class Utilities {
 		//threeing
 		str = str.replaceAll("(?<=\\d)-(?=\\{)", " - "); //this is need to keep "-" in 5-{merous} after 3ed (3-{merous} and not 3 {merous}) 
 		//Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
-		Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
+		//Pattern pattern3 = Pattern.compile(NumericalHandler.numberpattern);
 		//Pattern pattern4 = Pattern.compile("(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]+[\\s]?[\\–\\-]+[\\s]?[\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d][\\s]?[\\–\\-][\\s]?[\\d]/[\\d])|(?<!(ca[\\s]?|diam[\\s]?))([\\d]?[\\s]?\\.[\\s]?[\\d]+)|([\\d]/[\\d])");
 		//Pattern pattern5 = Pattern.compile("[\\d±\\+\\–\\-\\—°²:½/¼\"“”\\_´\\×µ%\\*\\{\\}\\[\\]=]+");
 		//Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?!~[a-z])");
-		Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?![a-z])"); //not including individual "-", would turn 3-branched to 3 branched 
+		Pattern pattern5 = Pattern.compile("[\\d\\+°²½/¼\"“”´\\×µ%\\*]+(?![a-z])"); //single numbers, not including individual "-", would turn 3-branched to 3 branched 
 		//Pattern pattern6 = Pattern.compile("([\\s]*0[\\s]*)+(?!~[a-z])"); //condense multiple 0s.
 		Pattern pattern6 = Pattern.compile("(?<=\\s)[0\\s]+(?=\\s)");
 		//Pattern pattern5 = Pattern.compile("((?<!(/|(\\.[\\s]?)))[\\d]+[\\-\\–]+[\\d]+(?!([\\–\\-]+/|([\\s]?\\.))))|((?<!(\\{|/))[\\d]+(?!(\\}|/)))");
          //[\\d±\\+\\–\\-\\—°.²:½/¼\"“”\\_;x´\\×\\s,µ%\\*\\{\\}\\[\\]=(<\\{)(\\}>)]+
 		Pattern pattern7 = Pattern.compile("[(\\[]\\s*\\d+\\s*[)\\]]"); // deal with ( 2 ), (23) is dealt with by NumericalHandler.numberpattern
 		
-
-		Matcher	 matcher1 = pattern3.matcher(str);
-         //str = matcher1.replaceAll(" 0 ");
-		str = matcher1.replaceAll("0");
+		Matcher	 matcher1 = NumericalHandler.numberpattern.matcher(str);
+        str = matcher1.replaceAll("0");
 		matcher1.reset();
          
          /*matcher1 = pattern4.matcher(str);
@@ -690,7 +688,85 @@ public class Utilities {
          str = unCountLists(str, lists);
          return str;
 	}
+	
+    /*public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
+    	int count = 0;
+    	String[] tokens = text.split("\\s+");
+    	for(String t: tokens){
+    		if(t.equals(lbracket)) count++;
+    		if(t.equals(rbracket)) count--;
+    	}
+		return count;
+    }*/
 
+    public static int hasUnmatchedBracket(String text, String lbracket, String rbracket) {
+    	if(lbracket.equals("[")) lbracket = "\\[";
+    	if(lbracket.equals("]")) lbracket = "\\]";
+    	
+    	int left = text.replaceAll("[^"+lbracket+"]", "").length();
+    	int right = text.replaceAll("[^"+rbracket+"]", "").length();
+    	if(left > right) return 1;
+    	if(left < right) return -1;
+		return 0;
+	}
+    
+    public static boolean hasUnmatchedBrackets(String text) {
+    	//String[] lbrackets = new String[]{"\\[", "(", "{"};
+    	//String[] rbrackets = new String[]{"\\]", ")", "}"};
+    	String[] lbrackets = new String[]{"\\[", "("};
+    	String[] rbrackets = new String[]{"\\]", ")"};
+    	for(int i = 0; i<lbrackets.length; i++){
+    		int left1 = text.replaceAll("[^"+lbrackets[i]+"]", "").length();
+    		int right1 = text.replaceAll("[^"+rbrackets[i]+"]", "").length();
+    		if(left1!=right1) return true;
+    	}
+		return false;
+	}
+    
+    /**
+     * if bracket is left, then refresh the index of a new positive count
+     * if bracket is right, return the first index with a negative count
+     * @param bracket
+     * @param str
+     * @return index of unmatched bracket in str
+     */
+	public static int indexOfunmatched(char bracket, String str) {
+		int cnt = 0;
+		char l = '('; char r=')';
+		switch(bracket){
+			case '(':  l = '('; r =')'; break;
+			case '[': l = '['; r =']'; break;
+			case ')':  l = '('; r =')'; break;
+			case ']': l = '['; r =']'; break;
+		}		
+		
+		if(bracket == r){
+			for(int i = 0; i < str.length(); i++) {
+			    if(str.charAt(i)== l){
+			    	cnt++;
+			    }else if(str.charAt(i) == r){
+			    	cnt--; 
+			    }			
+			    if(cnt<0) return i; //first index with negative count
+			}
+		}
+
+		if(bracket == l){
+			int index = -1;
+			for(int i = 0; i < str.length(); i++) {
+			    if(str.charAt(i)== l){
+			    	cnt++;
+			    	index = i;
+			    }else if(str.charAt(i) == r){
+			    	cnt--; 
+			    }			
+			    if(cnt==0) index = -1; //first index with negative count
+			}
+			return index;
+		}
+		return -1;
+	}
+	
 	/**
 	 * hide lists such as
 	 * {upper} {pharyngeal} <tooth> <plates_4_and_5>
@@ -739,6 +815,7 @@ public class Utilities {
 			return str;
 		}
 	}
+
 	
 	/**remove all bracketed text such as "leaves large (or small as in abc)"
 	 * do not remove brackets that are part of numerical expression : 2-6 (-10)
@@ -780,10 +857,12 @@ public class Utilities {
 			return str;
 		}
 
+
 	public static void main(String[] argv){
 		//Utilities.lookupCharacter(w, conn, characterhash)
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
-		System.out.println(Utilities.plural("disc"));
+		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
+		System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
 	}
 }

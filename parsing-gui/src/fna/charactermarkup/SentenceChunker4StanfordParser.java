@@ -66,8 +66,10 @@ public class SentenceChunker4StanfordParser {
 	private String markedsent = null;
 	private String [] tokensinsent = null;
 	private String [] posoftokens = null;
+	//private static final String allsimplepreps = "aboard|about|above|across|after|against|along|alongside|amid|amidst|among|amongst|anti|around|as|astride|at|atop|bar|barring|before|behind|below|beneath|beside|besides|between|beyond|but|by|circa|concerning|considering|counting|cum|despite|down|during|except|excepting|excluding|following|for|from|given|gone|in|including|inside|into|less|like|minus|near|notwithstanding|of|off|on|onto|opposite|outside|over|past|pending|per|plus|pro|re|regarding|respecting|round|save|saving|since|than|through|throughout|till|to|touching|towards|under|underneath|unlike|until|up|upon|versus|via|with|within|without|worth";
 	private static final String QPpathstr = ".//QP";
-	private static final String PPINpathstr = ".//PP/IN";
+	private static final String PPINpathstr = ".//PP/IN|.//PP/TO";
+	//private static final String PPINpathstr = ".//PP/IN";
 	//private static final String PPTOpathstr = ".//PP/TO";
 	private static final String Vpathstr = ".//VP/VBD|.//VP/VBG|.//VP/VBN|.//VP/VBP|.//VP/VBZ|.//VP/VB";
 	private static final String NNpathstr = ".//NP/NN|.//NP/NNS";
@@ -78,6 +80,8 @@ public class SentenceChunker4StanfordParser {
 	private static XPath NNpath = null;
 	private int sentindex = -1;
 	private Pattern p = Pattern.compile("(.*?)((?:\\w+ )+)\\2(.*)");
+	private Pattern taxonnamepattern1 = null;
+	private Pattern taxonnamepattern2 = null;
 	private String conjunctions = "and|or|plus";
 	private boolean printVB = false;
 	private boolean printPP = false;
@@ -85,17 +89,22 @@ public class SentenceChunker4StanfordParser {
 	private boolean debug = false;
 	//private boolean printPPTO = true;
 	/**
+	 * @param taxonnamepattern2 
+	 * @param taxonamepattern 
 	 * 
 	 */
-	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, String sentsrc, String tableprefix,Connection conn, String glosstable) {
+	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, String sentsrc, String tableprefix,Connection conn, String glosstable, Pattern taxonnamepattern, Pattern taxonnamepattern2) {
 		this.sentsrc = sentsrc;
 		this.tableprefix = tableprefix;
 		this.conn = conn;
 		this.glosstable = glosstable;
+		this.taxonnamepattern1 = taxonnamepattern;
+		this.taxonnamepattern2 = taxonnamepattern2;
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
-		this.markedsent = NumericalHandler.normalizeNumberExp(markedsent);
+		this.markedsent = markedsent.trim().replaceFirst("(?<=[0-9])\\.$", " .");
+		//this.markedsent = NumericalHandler.normalizeNumberExp(markedsent);
 		//this.markedsent = markedsent.replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\s+", " ");
 		//in markedsent, each non-<>{}-punctuation mark is surrounded with spaces
 		this.posoftokens = this.markedsent.split("\\s+");
@@ -154,7 +163,11 @@ public class SentenceChunker4StanfordParser {
 						//List<Element> temp = XPath.selectNodes(PPIN, "//PP/IN");
 						List<Element> temp = PPINpath.selectNodes(PPIN.getParentElement()); //this and the next step are to select PP nodes containing no other PP/INs
 						if(temp.size() == 0){
-							lPPINs.add(PPIN);
+							//i[with or without]
+							if(PPIN.getAttributeValue("text").matches(".*\\b("+ChunkedSentence.allsimplepreps+")\\b.*"))//Stanford parser makes "level" a prep!
+								lPPINs.add(PPIN);
+							else
+								PPIN.setName("BAD"+PPIN.getName());
 						}
 					}
 					extractFromlPPINs(lPPINs);
@@ -181,7 +194,7 @@ public class SentenceChunker4StanfordParser {
 		collapseWhereClause();//where
 		collapseWhenClause(); //when
 		
-		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable);
+		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable, this.taxonnamepattern1, this.taxonnamepattern2);
 		return cs;
 			}catch(Exception e){
 				e.printStackTrace();
@@ -371,16 +384,31 @@ end procedure
 		Iterator<Element> all = root.getDescendants(new ElementFilter());
 		boolean findwhen = false;
 		ArrayList<Element> toberemoved = new ArrayList<Element>();
+		boolean inbracket = false;
 		while(all.hasNext()){
 			Element e = all.next();
 			if(findwhen){
 				if(e.getAttribute("text")!=null){
 					String t =e.getAttributeValue("text");
+					//deal with cases like " when A ( B C) D, ...", collect everything in brackets
+					if(t.matches("-LRB-")) inbracket = true;
+					if(inbracket && !t.matches("-RRB-")){
+						text.append(t).append(" ");
+						toberemoved.add(e);
+						continue;
+					}
+					if(inbracket && t.matches("-RRB-")){
+						inbracket = false;
+						text.append(t).append(" ");
+						toberemoved.add(e);
+						continue;
+					}
+					//end cases like " when A ( B C) D, ..."
 					if(t.matches("[\\.:;,]")){
 						text.append(t).append(" ");
 						toberemoved.add(e);
 						break;
-					}else if(text.length()>0 && t.matches("\\w+\\[.*")){ 
+					}else if(text.length()>0 && (t.matches("\\w+\\[.*")|| t.matches("-RRB-"))){ //-LRB-..., when pressed -RRB- , do not include -RRB- in When chunk to prevent mismatched brackets.
 						//match: when {terminal} ........ r[p[with]] {moreorless} l[{well-defined} {central} (axis) and {shorter} (side) (branches)] ,
 						//not match: when r[p[in] flower] , .... 
 						break;
@@ -448,11 +476,11 @@ end procedure
 			System.out.println("parent is [VP]");
 			//System.out.println("IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text"));
 			System.out.println("VP text: "+lVB.getAttributeValue("text"));
-			System.out.println("child text:"+firstNP(VP));
+			System.out.println("child text:"+firstNP(VP, lVB));
 		}
 		//do extraction here
 		//print(VP, child, "", chaso);
-		String np = firstNP(VP).trim();
+		String np = firstNP(VP, lVB).trim();
 		if(np.length()>0){
 			String chunk = "v["+lVB.getAttributeValue("text")+ "] o["+np+"]";
 			collapseElement(VP, chunk, "b");
@@ -504,7 +532,8 @@ end procedure
 		//if parent has no organ name, collapse the NP. "distance of ..."
 		Element parent = PP.getParentElement();//could be PP, NP, VP, ADJP, or UCP, etc .
 		if(lPPIN.getAttribute("text").getValue().length()<2 ||
-				lPPIN.getAttribute("text").getValue().matches("\\b(\\w+ly|ca|to|than)\\b")){ //text of IN is not a word, e.g. "x"
+				lPPIN.getAttribute("text").getValue().matches("\\b(\\w+ly|ca|than)\\b")){ //text of IN is not a word, e.g. "x"
+				//lPPIN.getAttribute("text").getValue().matches("\\b(\\w+ly|ca|to|than)\\b")){ //text of IN is not a word, e.g. "x"
 			collapseElement(PP, "", "");
 			return;
 		}
@@ -531,9 +560,9 @@ end procedure
 				System.out.println("parent is [NP/S/FRAG/UCP/PRN/WHNP/PP/ROOT]");
 				//System.out.println("IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text"));
 				System.out.println("IN text: "+lPPIN.getAttributeValue("text"));
-				System.out.println("child text:"+firstNP(PP));
+				System.out.println("child text:"+firstNP(PP, lPPIN));
 			}
-			String chunk = "p["+lPPIN.getAttributeValue("text") + "] o["+firstNP(PP)+"]";
+			String chunk = "p["+lPPIN.getAttributeValue("text") + "] o["+firstNP(PP, lPPIN)+"]";
 			collapseElement(PP, chunk, "r");
 		}else if(ptag.compareTo("VP") == 0){
 			boolean trueVP = false;
@@ -551,11 +580,11 @@ end procedure
 					System.out.println("parent is [VP]");
 					System.out.println("VP-IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
 					System.out.println("child text NPJJ:"+firstNPJJ(PP)); //some VP has no VB in it, but has ADJs
-					System.out.println("child text:"+firstNP(PP));
+					System.out.println("child text:"+firstNP(PP, lPPIN));
 				}
 				//String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]]";
 				//collapseElement(parent, chunk, "t");
-				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]";
+				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP, lPPIN)+"]";
 				collapseElement(PP, chunk, "r");
 			}else{
 				if(this.printPP){
@@ -563,9 +592,9 @@ end procedure
 					System.out.println(this.sentindex+": "+this.markedsent);
 					System.out.println("parent is [not true VP]");
 					System.out.println("IN text: "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
-					System.out.println("child text:"+firstNP(PP)); //some VP has no VB in it, but has ADJs
+					System.out.println("child text:"+firstNP(PP, lPPIN)); //some VP has no VB in it, but has ADJs
 				}
-				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP)+"]";
+				String chunk = "p["+lPPIN.getAttributeValue("text")+ "] o["+firstNP(PP, lPPIN)+"]";
 				collapseElement(PP, chunk, "r");
 			}
 		}else if(ptag.compareTo("ADJP") == 0 || ptag.compareTo("ADVP") == 0 ||ptag.compareTo("NAC") == 0 ||ptag.compareTo("RRC") == 0){
@@ -581,11 +610,11 @@ end procedure
 				System.out.println("parent is [ADJP/ADVP/RRC]");
 				System.out.println("ADJ-IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text")); // decurrent /as/ wings
 				System.out.println("child textNPJJ:"+firstNPJJ(PP));
-				System.out.println("child text:"+firstNP(PP));
+				System.out.println("child text:"+firstNP(PP, lPPIN));
 			}
 			//String chunk = "c["+up2Text(parent, PP)+"] r[p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]]";
 			//collapseElement(parent, chunk, "t");
-			String chunk = "p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP)+"]";
+			String chunk = "p["+lPPIN.getAttributeValue("text")+"] o["+firstNP(PP, lPPIN)+"]";
 			collapseElement(PP, chunk, "r");
 		}else{
 			if(this.printPP){
@@ -654,27 +683,84 @@ end procedure
 	}*/
 	
 	
-	private String firstNP(Element e) {
+	private String firstNP(Element e, Element in) {
 		try{	
+			String inname = in.getAttributeValue("text");
 			if(e.getName().startsWith("NP") && e.getAttributeValue("text") != null){
-				return e.getAttributeValue("text");
+				String fnp = e.getAttributeValue("text");
+				if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+				else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+				return fnp.trim();
 			}
+			//boolean inPRN = false;
+			//if(inPRN(e)) inPRN = true; //if PP is in PRN, then its firstNP must be in PRN too, vice versa
 			Iterator<Content> it = e.getDescendants();
-			boolean takeit = false;
+			//boolean takeit = false;
 			while(it.hasNext()){
 				Content c = it.next();
 				if(c instanceof Element){
 					String name = ((Element)c).getName();
 					if(name.startsWith("NN")){//TODO: consider also CD(3) and PRP (them): no, let ChunkedSentence fix those cases
 						Element p = ((Element)c).getParentElement();
-						//return allText(p);
-						return checkAgainstMarkedSent(allText(p), lastIdIn(p));
+						List<Element> children = p.getChildren();
+						if(!children.get(children.size()-1).getName().startsWith("NN")){return "";}//last child must be NN 
+						if(Integer.parseInt(in.getAttributeValue("id")) <  Integer.parseInt(((Element)c).getAttributeValue("id")) &&
+								inSamePRN(e, (Element)c)/*inPRN == inPRN((Element)c)*/) {
+							//collect text from e to p
+							String all = allText(e);
+							//String in = ((Element)e.getChildren().get(0)).getTextTrim();
+							//all = all.replaceFirst(in, "").trim();
+						    all = all.substring(all.indexOf(inname)) //the "in" at the earliest index is the one to be processed
+						    		.replaceFirst(inname.replaceAll("\\[", "\\\\[").replaceAll("\\]","\\\\]"), "").trim();
+							String n = allText(p);
+							if(n.matches(".*?, [a-z]+$")) return ""; //last word (the NN) should not directly follow a comma
+							int index = all.indexOf(n);
+							if(index!= -1){
+								String fnp = all.substring(0, index)+n;
+								if(containsUnmatchedBrackets(fnp)) return "";
+								if(inname.equals("to") && fnp.indexOf(",")>=0 && (fnp.indexOf(",") < fnp.indexOf("-LRB-") && fnp.indexOf(",") > fnp.indexOf("-RRB-"))) return ""; //in cases like "imbricate to subequal , bases entire", "to" is not a prep, so fnp "subequal , bases" is ignored ; "," must be outside of ()
+								if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+								else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+								return fnp.trim();
+							}
+							
+							//expected case:
+							 //(PP
+							 //	      (IN with)
+						    //	      (NP (JJ narrow) (, ,) (JJ inconspicuous) (JJ glutinous) (NNS ridge)))
+							//exceptional case: all: 
+							    //(PP
+							    //	      (ADVP
+							    //	        (NP (JJ abaxial) (NNS faces))
+							    //	        (RB often))
+							    //	      (IN with)
+							    //	      (NP (JJ narrow) (, ,) (JJ inconspicuous) (JJ glutinous) (NNS ridge)))
+								// n:
+								// (NP (JJ abaxial) (NNS faces))
+							//}
+						}
+						//return allText(p); //no check against marked sentence
+						//return checkAgainstMarkedSent(allText(p), lastIdIn(p));
 					}
 					if(name.startsWith("NP") && ((Element)c).getAttributeValue("text") != null){//already collapsed NPs
-						return ((Element)c).getAttributeValue("text");
+						//if(inPRN == inPRN((Element)c)){
+						if(inSamePRN(e, (Element)c)){
+							String fnp = ((Element)c).getAttributeValue("text");;
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+							else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(containsUnmatchedBrackets(fnp)) return "";
+							return fnp.trim();
+						}
 					}
 					if(((Element)c).getAttribute("text") != null && ((Element)c).getAttributeValue("text").indexOf(" o[")>=0){
-						return ((Element)c).getAttributeValue("text");
+						//if(inPRN == inPRN((Element)c)){
+						if(inSamePRN(e, (Element)c)){
+							String fnp = ((Element)c).getAttributeValue("text");
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 							
+							else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(containsUnmatchedBrackets(fnp)) return "";
+							return fnp.trim();
+						}
 					}
 				}
 			}
@@ -683,6 +769,71 @@ end procedure
 		}
 		return "";
 	}
+	
+	/**
+	 * 
+	 * @param fnp
+	 * @return
+	 */
+	private boolean containsUnmatchedBrackets(String fnp) {
+		String[] tokens = fnp.split("\\s+");
+		int left = 0;
+		int right = 0;
+		for(String t: tokens){
+			if(right > left) return true;
+			if(t.equals("-LRB-")) left++;
+			if(t.equals("-RRB-")) right++;
+		}
+		if(left!=right) return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param e1
+	 * @param e2: e2 is a descendant of e1
+	 * @return true if between e1 and e2, left ==0
+	 */
+	private boolean inSamePRN(Element e1, Element e2){
+		Iterator<Content> it = e1.getDescendants();
+		if(e1==e2) {
+			System.err.println("not possible");
+			System.exit(1);
+		}
+		int left = 0;
+		while(it.hasNext()){
+			Content c = it.next();
+			if(c.equals(e2)) break;
+			if(((Element)c).getChildren().size()!=0) continue;
+			if(((Element)c).getName().equals("LRB")) left++;
+			if(((Element)c).getName().equals("RRB")) left--;
+		}
+		if(left == 0) return true;
+		return false;
+	}
+	/**
+	 * 
+	 * @param e
+	 * @return if e is inclosed in PRN tag (assume stanford parser correctly parsed PRN expressions.
+	 */
+	private boolean inPRN(Element e) {
+		int left = 0;
+		do{
+			e = e.getParentElement();
+			if(e!=null && (e.getChild("LRB")!= null)) left++;
+			if(e!=null && (e.getChild("RRB")!= null)) left--;
+		}while (e!=null);
+		if(left > 0) return true;
+		else return false;
+		/*
+		do{
+			e = e.getParentElement();
+			if(e!=null && (e.getName().equals("PRN"))) return true;
+		}while (e!=null); 
+		return false;
+		*/
+	}
+
 	/**
 	 * 
 	 * @param e
@@ -965,7 +1116,8 @@ end procedure
 			return;
 		}
 		chunk = chunk.trim().replaceAll("\\s*\\w\\[\\]\\s*", "").replaceAll("\\s+", " ").trim(); //remove o[]
-		String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*\\\\b").replaceAll("\\]", "\\\\b(\\\\])*");
+		//String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*\\\\b").replaceAll("\\]", "\\\\b(\\\\])*");
+		String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*").replaceAll("\\]", "(\\\\])*");
 		
 		// collapsed text is saved to e
 		// keeping other children of e as e's children
@@ -996,6 +1148,7 @@ end procedure
 						tobedeleted.add((Element)c);//mark to-be-deleted elements						
 						if(chunktext.length()==0 || t.length()==0){
 							//thechild = (Element)c;
+							//System.out.println();
 							break;
 						}
 						
@@ -1115,12 +1268,12 @@ end procedure
 				Iterator<Element> itc = children.iterator();
 				while(itc.hasNext()){
 					Element e = itc.next();
-					if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT)\\b")){
+					if(!e.getName().matches("\\b(NP|NN|NNS|CC|PUNCT|PRN)\\b")){//add PRN for parenthesis
 						isList=false;
 					}
 					List<Element> echildren = e.getChildren();
 					if(echildren.size()>0){
-						if(!echildren.get(echildren.size()-1).getName().matches("\\b(NN|NNS)\\b")){
+						if(!echildren.get(echildren.size()-1).getName().matches("\\b(NN|NNS|PUNCT)\\b")){ //add PUNCT for parenthesis
 							isList=false;
 						}
 					}
@@ -1186,6 +1339,13 @@ end procedure
 	 * 	IN on
 	 *  CC or    => PP
 	 * 	IN above      IN on or above
+	 * 
+	 * (PP (IN at))
+      (CC or)
+      (ADVP (RB soon))
+      (PP (IN after)
+        (NP
+          (NP (NNS anthesis))
 	 * 	
 	 * @param doc
 	 * @return
@@ -1194,6 +1354,7 @@ end procedure
 		Element root = tree.getRootElement();
 		try{
 			List<Element> candidates = XPath.selectNodes(root, ".//PP/CC");
+			//candidates.addAll(XPath.selectNodes(root, ".//UCP/CC"));
 			Iterator<Element> it = candidates.iterator();
 			while(it.hasNext()){
 				Element CC = (Element)it.next();
@@ -1213,13 +1374,14 @@ end procedure
 				int lastin = -1;
 				int lastcc = -1;
 				int count = 0;
+				Element lastPP = null;
 				while(itc.hasNext()){
 					Element e = itc.next();
 					String ename = e.getName();
-					if(!ename.matches("(PP|IN|CC|NP|PUNCT)")){
+					if(!ename.matches("(PP|IN|CC|NP|PUNCT|TO|ADVP)")){//added TO
 						isList=false;
 					}
-					if(ename.matches("(PP|IN)")){
+					if(ename.matches("(PP|IN|TO)")){//added TO
 						lastin = count;
 					}
 					if(ename.matches("CC")){
@@ -1228,12 +1390,15 @@ end procedure
 					if(ename.compareTo("PP") == 0 && e.getChild("IN")==null){
 						isList = false;
 					}
-					if(ename.compareTo("PP") ==0 && e.getChildren().size()>1){
+					if(ename.compareTo("PP") ==0 && e.getChildren().size()>2){//PP is expected to have an IN and an NP as children
+					//if(ename.compareTo("PP") ==0 && e.getChildren().size()>1){
 						isList = false;
 					}
+					if(ename.compareTo("PP") == 0) lastPP = e;
 					count++;
 				}
-				if(lastin-lastcc != 1){
+				//if(lastin-lastcc != 1){
+				if(lastin-lastcc > 2){ //the distance between last CC and last IN, it's 2 to allow an ADVP
 					isList = false;
 				}
 				if(isList){//collapse the PP list, but keep the NP of the PP
@@ -1250,7 +1415,12 @@ end procedure
 						}
 					}
 					Element NP = PP.getChild("NP");
-					PP.removeContent(NP);
+					if(NP == null){
+						NP = lastPP.getChild("NP");
+						lastPP.removeContent(NP);
+					}else{
+						PP.removeContent(NP);
+					}
 					String alltext = allText(PP);
 					PP.removeContent();
 					Element IN = new Element("IN");

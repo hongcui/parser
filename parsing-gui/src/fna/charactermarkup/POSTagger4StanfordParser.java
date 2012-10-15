@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,30 +33,49 @@ public class POSTagger4StanfordParser {
 	private ArrayList<String> chunkedtokens = null;
 	private ArrayList<String> charactertokensReversed = null;
 	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
-	private boolean printList = false;
+	private boolean printCharacterList = true;
+	private boolean printColorList = false;
 	private String tableprefix = null;
 	private String glosstable = null;
+	private String src;
+	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
+	private static Pattern compreppattern = Pattern.compile("\\{?(according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to)\\}?");
+	private static Pattern colorpattern = Pattern.compile("(.*?)((coloration|color)\\s+%\\s+(?:(?:coloration|color|@|%) )*(?:coloration|color))\\s((?![^,;()\\[\\]]*[#]).*)");
 	//private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]+\\s+[<{]*view[}>]*)(\\s.*)"); to match in dorsal view
-	private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]*\\s*[<{]*(?:view|profile)[}>]*)(\\s.*)"); //to match in dorsal view and in profile
-	private String countp = "more|fewer|less|\\d+";
-	private Pattern countptn = Pattern.compile("((?:^| |\\{)(?:"+countp+")\\}? (?:or|to) \\{?(?:"+countp+")(?:\\}| |$))");
-	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?: and \\d+)?)"); //changed to match 4-5, 4 and 5
-	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |-)\\d+)?)");
-	//private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:/|times)))");//changed to match "4_5", "4 and 5" but not "<structure> 2 / 5" or "<structure> 2 times"
-	private Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:\\.|/|times)))");
+	private static Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]*\\s*[<{]*(?:view|profile)[}>]*)(\\s.*)"); //to match in dorsal view and in profile
+	private static String countp = "more|fewer|less|\\d+";
+	private static Pattern countptn = Pattern.compile("((?:^| |\\{)(?:"+countp+")\\}? (?:or|to) \\{?(?:"+countp+")(?:\\}| |$))");
+
+	//positionptn does not apply to FNA, it may apply to animal descriptions e.g. rib_I, rib_II,
+	//private static Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?: and \\d+)?)"); // <{wing}> 1 – 3 cm ;
+	private static Pattern positionptn = Pattern.compile("(<(\\S+?)> \\d+(?:(?: and |_)\\d+)?(?!\\s*(?:\\.|/|times)))");//changed to match "4_5", "4 and 5" but not "<structure> 2 / 5" or "<structure> 2 times"
+
+	private static Pattern hyphenedtoorpattern = Pattern.compile("(.*?)((\\d-,\\s*)+ (to|or) \\d-\\{)(.*)");
+	private static Pattern bulletpattern  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
+	private static Pattern distributePrepPattern = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
+	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ \\{?[cmd]?m\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
+	//private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
+	private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+[& ]*([@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
+	//private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
+	private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*[& ]*([@,;\\.] )+\\s*)(([a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)&#a-z].*)");//merely shape, @ shape
 	//mohan declaration of roman numbers
 	public static final String roman="i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv|xvi|xvii|xviii|xix|xx|I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX";
 	//private Pattern romanptn = Pattern.compile("\\b"+roman+"\\b|\\{?"+roman+"\\}");
 	//private Pattern romanptn = Pattern.compile("\\b("+roman+")\\b");
 	//private Pattern romanptn = Pattern.compile("(<(\\S+?)> (\\b"+roman+"\\b|\\{?"+roman+"\\}?))");
-	private Pattern romantag = Pattern.compile("\\{?\\b"+roman+"\\b\\}?");
+	private static Pattern romantag = Pattern.compile("\\{?\\b"+roman+"\\b\\}?");
 	//private Pattern romanrange = Pattern.compile("(\\d+)-\\b("+roman+")\\b");
-	private Pattern romanrange = Pattern.compile("(\\d+)-<?\\b("+roman+")\\b>?");
+	private static Pattern romanrange = Pattern.compile("(\\d+)-<?\\b("+roman+")\\b>?");
 	//private Pattern romanptn = Pattern.compile("(<(\\S+?)> \\{?\\b("+roman+")\\b\\}?)");
-	private Pattern romanptn = Pattern.compile("(<(\\S+?)> <?\\{?\\b("+roman+")\\b\\}?>?)"); //to include <ii>
-	public String[] romanno= { "i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii","xiii","xiv","xv","xvi","xvii","xviii","xix","xx" };
+	private static Pattern romanptn = Pattern.compile("(<(\\S+?)> <?\\{?\\b("+roman+")\\b\\}?>?)"); //to include <ii>
+	public static String[] romanno= { "i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii","xiii","xiv","xv","xvi","xvii","xviii","xix","xx" };
 	//public String[] capromanno= {"I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"};
-//end mohan declaration
+	//end mohan declaration
+	private static Pattern asaspattern = Pattern.compile("(.*?\\b)(as\\s+[\\w{}<>]+\\s+as)(\\b.*)");
+	private static Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
+
+
+
 	/**
 	 * 
 	 */
@@ -76,6 +96,7 @@ public class POSTagger4StanfordParser {
 			boolean containsArea = false;
 			String strcp = str;
 			str = StanfordParser.normalizeSpacesRoundNumbers(str);
+			this.src = src;
 			
 			/*str = str.replaceAll("\\b(?<=\\d+) \\. (?=\\d+)\\b", "."); //2 . 5 =>2.5
 			str = str.replaceAll("(?<=\\d)\\s+/\\s+(?=\\d)", "/"); // 1 / 2 => 1/2
@@ -88,31 +109,35 @@ public class POSTagger4StanfordParser {
 				str = str.replaceAll("\\}?-or\\s+\\{?", "-or-").replaceAll("\\}?\\s+or-\\{?", "-or-").replaceAll("\\}?-to\\s+\\{?", "-to-").replaceAll("\\}?\\s+to-\\{?", "-to-").replaceAll("-or\\} \\{", "-or-").replaceAll("-to\\} \\{", "-to-");
 			}
 			//{often} 2-, 3-, or 5-{ribbed} ; =>{often} {2-,3-,or5-ribbed} ;  635.txt-16
-			Pattern pp = Pattern.compile("(.*?)((\\d-,\\s*)+ (to|or) \\d-\\{)(.*)");
-			Matcher m = pp.matcher(str);
+			Matcher m = hyphenedtoorpattern.matcher(str);
 			while(m.matches()){
 				str = m.group(1)+"{"+m.group(2).replaceAll("[, ]","").replaceAll("\\{$", "")+m.group(5);
-				m = pp.matcher(str);
+				m = hyphenedtoorpattern.matcher(str);
 			}
 			String scp = str;
 			str = str.replaceAll("(?<![\\d(\\[–—-]\\s?)[–—-]+\\s*(?="+NumericalHandler.numberpattern+"\\s+\\W?("+ChunkedSentence.units+")\\W?)", " to "); //fna: tips>-2.5 {mm}
-			if(!scp.equals(str)){
-				System.out.println();
-			}
+			//if(!scp.equals(str)){
+			//	System.out.println();
+			//}
 			this.chunkedtokens = new ArrayList<String>(Arrays.asList(str.split("\\s+")));
-			str = normalizePositionList(str);
-			str = normalizeCountList(str);
-			lookupCharacters(str);//populate charactertokens
+        	str = normalizemodifier(str);//shallowly to deeply pinnatifid: this should be done before other normalization that involved composing new tokens using ~
+			//position list does not apply to FNA.			
+			//str = normalizePositionList(str);
+			str = normalizeCountList(str+"");
+
+			//lookupCharacters(str);//populate charactertokens
+        	lookupCharacters(str, false);//treating -ly as %
 	        if(this.charactertokensReversed.contains("color") || this.charactertokensReversed.contains("coloration")){
 	        	str = normalizeColorPatterns();
-	        	lookupCharacters(str);
+	        	//lookupCharacters(str);
 	        }
-	        
+	        //lookupCharacters(str, true); //treating -ly as -ly
 	        if(str.indexOf(" to ")>=0 ||str.indexOf(" or ")>=0){
-	        	if(this.printList){
+	        	if(this.printCharacterList){
 					System.out.println(str);
 				}
-	        	str = normalizeCharacterLists(); //a set of states of the same character connected by ,/to/or => {color-blue-to-red}
+	        	//str = normalizeCharacterLists(str); //a set of states of the same character connected by ,/to/or => {color-blue-to-red}
+	        	str = normalize(str); 
 	        }
 
 	        if(str.matches(".*? as\\s+[\\w{}<>]+\\s+as .*")){
@@ -144,8 +169,7 @@ public class POSTagger4StanfordParser {
 				*/
 		           
 		        //deal with (3) as bullet
-				Pattern pattern1  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
-				m = pattern1.matcher(str.trim());
+				m = bulletpattern.matcher(str.trim());
 				if(m.matches()){
 					str = m.group(3);
 				}
@@ -172,20 +196,29 @@ public class POSTagger4StanfordParser {
 					strnum = area[1]; //like str but with numerical expression normalized
 				}
 
+				//str = handleBrackets(str);
 
-				str = Utilities.handleBrackets(str);
+				//str = Utilities.handleBrackets(str);
+
 				stmt.execute("update "+this.tableprefix+"_markedsentence set rmarkedsent ='"+str+"' where source='"+src+"'");	
 				
 				if(containsArea){
 					str = strnum;
-					str = Utilities.handleBrackets(str);
+
+					//str = handleBrackets(str);
+
+					//str = Utilities.handleBrackets(str);
+
 				}
 				str = Utilities.threeingSentence(str);
-   	            if(strcp.compareTo(str)!=0){
-	        	   System.out.println("orig sent==>"+ strcp);
-	        	   System.out.println("rmarked==>"+ strcp2);
-	        	   System.out.println("threed-sent==>"+ str);
-	           }
+				if(Utilities.hasUnmatchedBrackets(str)){
+					System.out.println("unmatched: "+str);
+				}
+   	            //if(strcp.compareTo(str)!=0){
+	        	//   System.out.println("orig sent==>"+ strcp);
+	        	//   System.out.println("rmarked==>"+ strcp2);
+	        	//   System.out.println("threed-sent==>"+ str);
+				//}
 	           //str = str.replaceAll("}>", "/NN").replaceAll(">}", "/NN").replaceAll(">", "/NN").replaceAll("}", "/JJ").replaceAll("[<{]", "");
 	           
 	           
@@ -217,14 +250,12 @@ public class POSTagger4StanfordParser {
 		       		   }
 	        	   }
 	       		   
-	        	   //if(word.matches("in-.*?-view")){
-	        	   if(word.matches("in-.*?(-view|profile)")){
+	        	   Matcher mc = compreppattern.matcher(word);
+	        	   if(mc.matches()){
+	        		   sb.append(word+"/IN ");
+	        	   }else if(word.matches("in-.*?(-view|profile)")){
 	        		   sb.append(word+"/RB ");
-	        	   }
-	        	   //if(word.matches("in-profile")){
-        		   //sb.append(word+"/RB ");
-        	   //}
-	        	   else if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
+	        	   }else if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("becoming")==0 || word.compareTo("about")==0){
 	        		   sb.append(word+"/RB ");
@@ -232,7 +263,7 @@ public class POSTagger4StanfordParser {
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.compareTo("at-least")==0){
 	        		   sb.append(word+"/RB ");
-	        	   }else if(word.compareTo("plus")==0){
+	        	   }else if(word.compareTo("plus")==0 || word.compareTo("and-or")==0){
 	        		   sb.append(word+"/CC ");
 	        	   }else if(word.matches("\\d+[cmd]?m\\d+[cmd]?m")){ //area turned into 32cm35mm
 	        		   //sb.append(word+"/CC ");
@@ -271,7 +302,8 @@ public class POSTagger4StanfordParser {
 	           	//sb.append(str);
 	       		str = sb.toString().trim();
 	       		str = str.replaceAll("(?<=[a-z])\\s+[_–-]\\s+(?=[a-z])", "-").replaceAll("/[A-Z]+\\s*[-–]\\s*", "-").replaceAll("\\d-\\s+(?=[a-z])", "3-"); //non -septate/JJ or linear/JJ _ovoid/JJ
-	       		str = str.replaceAll("[\\[\\(]", " -LRB-/-LRB- ").replaceAll("[\\)\\]]", " -RRB-/-RRB- ").replaceAll("\\s+", " ").trim(); 
+	       		str = str.replaceAll("(?<!~)[\\(\\[](?!~)", " -LRB-/-LRB- ").replaceAll("(?<!~)[\\)\\]](?!~)", " -RRB-/-RRB- ")
+	       				/*.replaceAll("[\\[]", " -LSB-/-LSB- ").replaceAll("[\\]]", " -RSB-/-RSB- ")*/.replaceAll("\\s+", " ").trim(); 
 	       		str = str.replaceAll("moreorless/JJ","moreorless/RB");
 	       		return str;
 			
@@ -283,13 +315,53 @@ public class POSTagger4StanfordParser {
 		//return "";
 	}
 		
+
+		
+	/**
+	 * shallowly to deeply pinnatifid
+	 * => //shallowly~to~deeply pinnatifid	
+	 * 
+	 * 
+	 * 
+	 * @param str
+	 * @return
+	 */
+	private String normalizemodifier(String str) {
+		String result = "";
+		int base = 0;
+		Matcher m = modifierlist.matcher(str.trim());
+		while(m.matches()){
+			result += m.group(1);
+			int start = (m.group(1).trim()+" a").trim().split("\\s+").length+base-1; 
+			String l = m.group(2);
+			int end = start+(l.trim()+" b").trim().split("\\s+").length-1;
+			str = m.group(3);
+			m = modifierlist.matcher(str);
+			String newtoken = l.replaceAll("\\s+", "~");
+			result += newtoken;
+			base = end;
+			//adjust chunkedtokens
+			for(int i= start; i < end; i++){
+				this.chunkedtokens.set(i, "");
+			}
+			this.chunkedtokens.set(start, newtoken);
+		}
+		result +=str;
+		return result;
+	}
+
 	/** 	
 	 * @param str: {upper} {pharyngeal} <tooth> <plates> 4 and 5
 	 * <tergum> III-VIII
 	 * <tergum> III and VIII
 	 * @return: {upper} {pharyngeal} <tooth> <plates_4_and_5>
+<<<<<<< .mine
+	 * 
+	 * warning: <{wing}> 1 – 3 cm 
+=======
 	 * <tergum_3-8>
 	 * <tergum_3_and_8>
+>>>>>>> .r1146
 	 */
 	private String normalizePositionList(String str) {
 		//mohan code to change roman numbers with <organ> before them to normal numbers
@@ -462,21 +534,23 @@ public class POSTagger4StanfordParser {
 			list+=this.charactertokensReversed.get(i)+" ";
 		}
 		list = list.trim()+" "; //need to have a trailing space
+		String listcp = list;
 		//Pattern p = Pattern.compile("(.*?)((color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");
-		Pattern p = Pattern.compile("(.*?)(\\b(color|coloration)\\s+%\\s+(?:(?:color|coloration|@|%) )+)(.*)");// to aviod mapping "arrangement_coloration"
-		Matcher m = p.matcher(list);
+		Matcher m = colorpattern.matcher(list);
 		int base = 0;
-		while(m.matches()){
+		boolean islist = false;
+		while(m.matches()){			
 			int start = (m.group(1).trim()+" a").trim().split("\\s+").length+base-1;
 			int end = start+(m.group(2).trim()+" b").trim().split("\\s+").length-1;
 			String ch = m.group(3)+header;
 			list = m.group(4);
-			m = p.matcher(list);
+			m = colorpattern.matcher(list);
 			//form result string, adjust chunkedtokens
 			for(int i = base; i<start; i++){
 				result += this.chunkedtokens.get(i)+" ";
 			}
 			if(end>start){ //if it is a list
+				islist = true;
 				String t= "{"+ch+"~list~";
 				for(int i = start; i<end; i++){
 					t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
@@ -488,15 +562,17 @@ public class POSTagger4StanfordParser {
 				result +=t;
 			}
 			//prepare for the next step
-			base = end;
-			//base=end-1;
-			
-			
+			base = end;						
 		}
 		//dealing with the last segment of the list or the entire list if no match
 		for(int i = base; i<(list.trim()+" b").trim().split("\\s+").length+base-1; i++){
 		//for(int i = base+1; i<(list.trim()+" b").trim().split("\\s+").length+base; i++){
 			result += this.chunkedtokens.get(i)+" ";
+		}
+		if(this.printColorList){
+			System.out.println(islist+":"+src+":"+listcp);
+			System.out.println(islist+":"+src+":"+result);
+			System.out.println();
 		}
 		return result;
 	}
@@ -507,8 +583,7 @@ public class POSTagger4StanfordParser {
 	 * @return {color~list~suffused~with~red~or~purple}
 	 */
 	private String distributePrep(String t) {
-			Pattern p = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
-			Matcher m = p.matcher(t);
+			Matcher m = distributePrepPattern.matcher(t);
 			if(m.matches()){
 				t = m.group(1)+m.group(2)+m.group(3)+m.group(2)+m.group(4);
 			}
@@ -523,21 +598,20 @@ public class POSTagger4StanfordParser {
 	private String[] normalizeArea(String text){
 			String[] result = new String[2];
 			String text2= text;
-			Pattern p = Pattern.compile("(.*?)([\\d\\.()+-]+ \\{[cmd]?m\\}×\\S*\\s*[\\d\\.()+-]+ \\{[cmd]?m\\}×?(\\S*\\s*[\\d\\.()+-]+ \\{[cmd]?m\\})?)(.*)");
-			Matcher m = p.matcher(text);
+			Matcher m = areapattern.matcher(text);
 			while(m.matches()){
 				text = m.group(1)+m.group(2).replaceAll("[ \\{\\}]", "")+ m.group(4);
-				m = p.matcher(text2);
+				m = areapattern.matcher(text2);
 				m.matches();
 				text2 = m.group(1)+m.group(2).replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "")+ m.group(4);
-				m = p.matcher(text);
+				m = areapattern.matcher(text);
 			}
 			result[0] = text;
 			result[1] = text2;
 			return result;
 	}
 	
-	private void lookupCharacters(String str) {
+	private void lookupCharacters(String str, boolean markadv) {
 		if(str.trim().length() ==0){
 			return;
 		}
@@ -547,7 +621,7 @@ public class POSTagger4StanfordParser {
 		ArrayList<String> saved = new ArrayList<String>();
 		
 		ArrayList<String> amb = new ArrayList<String>();
-		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
+		for(int i = this.chunkedtokens.size()-1; i>=0+0; i--){
 			String word = this.chunkedtokens.get(i);
 			if(word.indexOf("~list~")>0){
 				String ch = word.substring(0, word.indexOf("~list~")).replaceAll("\\W", "").replaceFirst("ttt$", "");
@@ -570,14 +644,18 @@ public class POSTagger4StanfordParser {
 			}else if (word.indexOf('<')>=0){
 				this.charactertokensReversed.add("#");
 				save = true;
-			}else if(word.matches("(to|or)")){
+			}else if(word.matches("(to|or|and-or|and/or|and_or)") || word.matches("\\S+ly~(to|or|and-or|and/or|and_or)~\\S+ly")){//loosely~to~densely 
 				this.charactertokensReversed.add("@"); //to|or
 				save = true;
+			}else if(word.compareTo("±")==0){//±
+				this.charactertokensReversed.add("moreorlessly"); //,;. add -ly so it will be treated as an adv.
+				save = true;
 			}else if(word.matches("\\W")){
+				if(word.matches("[()\\[\\]]")) save(saved, this.chunkedtokens.size()-1-i, word); 
 				this.charactertokensReversed.add(word); //,;.
 				save = true;
-			}else if(word.compareTo("±")==0){
-				this.charactertokensReversed.add("moreorless"); //,;.
+			}else if(markadv && word.endsWith("ly")){
+				this.charactertokensReversed.add(word);
 				save = true;
 			}else{
 				this.charactertokensReversed.add("%");
@@ -607,21 +685,36 @@ public class POSTagger4StanfordParser {
 			}
 		}
 	}
-	
+	/**
+	 * lookback
+	 * @param saved
+	 * @param index
+	 * @return
+	 */
 	private String lastSaved(ArrayList<String> saved, int index){
+		int inbrackets = 0;
 		for(int i = index-1; i >=0 && i<saved.size(); i--){
-			if(saved.get(i).trim().length()>0){
-				return saved.get(i);
-			}
+			String c = saved.get(i).trim();
+			if(c.equals("(") || c.equals("[")) inbrackets++; //ignore characters in brackets
+			else if(c.equals(")") || c.equals("]")) inbrackets--;
+			else if(inbrackets ==0 && c.length()>0) return c;
 		}
 		return "";
 	}
 	
+	/**
+	 * lookahead
+	 * @param saved
+	 * @param index
+	 * @return
+	 */
 	private String nextSaved(ArrayList<String> saved, int index){
+		int inbrackets = 0;
 		for(int i = index+1; i <saved.size(); i++){
-			if(saved.get(i).trim().length()>0){
-				return saved.get(i);
-			}
+			String c = saved.get(i).trim();
+			if(c.equals("(") || c.equals("[")) inbrackets++; //ignore characters in brackets
+			else if(c.equals(")") || c.equals("]")) inbrackets--;
+			else if(inbrackets ==0 && c.length()>0) return c;			
 		}
 		return "";
 	}
@@ -634,6 +727,108 @@ public class POSTagger4StanfordParser {
 		}
 		saved.set(index, ch);
 	}
+	
+	/**
+	 * deal with sentences with parentheses
+	 * @return
+	 */
+	private String normalize(String src){
+		lookupCharacters(src, true); //treating -ly as -ly
+		
+		//use & as place holders
+		//create list by replace (...) with &s
+		//create lists by replace things not in () with &s
+		//normalizeCharacterLists(list)
+		//merge result
+		
+		//e.g leaves lanceolate ( outer ) to linear ( inner ) 
+		String inlist = ""; //represent tokens not in brackets: # size & & & @ size & & &
+		String outlist = ""; //represent tokens in brackets   : & & & position & & & & position & 
+		int inbrackets = 0;
+		
+		boolean hasbrackets = false;
+		for(int i = this.charactertokensReversed.size() -1; i>=0; i--){
+			String t = this.charactertokensReversed.get(i);
+			if(t.equals("(") || t.equals("[")){
+				inbrackets++;
+				outlist += "& ";
+				inlist += "& ";
+				hasbrackets = true;
+			}else if(t.equals(")") || t.equals("]")){
+				inbrackets--;
+				outlist += "& ";
+				inlist += "& ";
+				hasbrackets = true;
+			}else if(inbrackets==0){
+				outlist+=t+" ";
+				inlist += "& ";
+			}else{
+				outlist+="& ";
+				inlist+=t+" ";
+			}
+		}
+		outlist = outlist.trim()+" "; //need to have a trailing space
+		normalizeCharacterLists(outlist); //chunkedtokens updated
+
+		if(hasbrackets){
+			inlist = inlist.trim()+" "; //need to have a trailing space
+			normalizeCharacterLists(inlist); //chunkedtokens updated
+			//deal with cases where a range is separated by parentheses: eg. (, {yellow-gray}, to, ), {coloration~list~brown~to~black}
+			int orphanedto = getIndexOfOrphanedTo(inlist, 0); //inlist as a list
+			while(orphanedto >=0){
+				String chara = getCharaOfTo(inlist, orphanedto);
+				if(orphanedto+2 < this.chunkedtokens.size() && this.chunkedtokens.get(orphanedto+1).equals(")")){
+					String nextchara = this.chunkedtokens.get(orphanedto+2);
+					if(nextchara.contains(chara)){//form a range cross parenthetical boundary, eg. (, {yellow-gray}, to, ), {coloration~list~brown~to~black}
+						if(nextchara.contains("~list~")){
+							nextchara = nextchara.substring(nextchara.indexOf("~list~")+6);
+							//form new range
+							String range ="{"+chara+"~list~"+this.chunkedtokens.get(orphanedto-1).replaceAll("[{}]", "")+"~to~"+nextchara;
+							this.chunkedtokens.set(orphanedto-1, range);
+							this.chunkedtokens.set(orphanedto, "");
+						}
+					}
+				}
+				orphanedto = getIndexOfOrphanedTo(inlist, orphanedto++); 
+			}
+		}
+		
+		String result = "";
+		for(int i = 0; i<this.chunkedtokens.size(); i++){
+			result += this.chunkedtokens.get(i)+" ";
+		}
+		return result.replaceAll("\\s+", " ").trim(); //{shape~list~lanceolate~(~outer~)~to~linear}, note the constraint( inner ) after liner is not in the shape list, it will be associated to "linear" later in the process (in annotator) when more information become available for more reliable associations.
+	}
+
+	/**
+	 * when "to"[@] is the last token in bracketed phrase:
+	 * e.g. (, {yellow-gray}, to, ), {coloration~list~brown~to~black}
+	 * @param inlist: & & & & & & & & & & & & & & & coloration @ & & & & & & & & 
+	 * @param index of "@"
+	 * @return the character before "@"
+	 */
+	private String getCharaOfTo(String inlist, int orphanedto) {
+		List<String> symbols = Arrays.asList(inlist.trim().split("\\s+"));
+        return  symbols.get(orphanedto-1);
+	}
+
+	/**
+	 * when "to"[@] is the last token in bracketed phrase:
+	 * e.g. (, {yellow-gray}, to, ), {coloration~list~brown~to~black}
+	 * @param inlist: & & & & & & & & & & & & & & & coloration @ & & & & & & & & 
+	 * @return first indexof such "@" as a word after startindex
+	 */
+	private int getIndexOfOrphanedTo(String inlist, int startindex) {
+		List<String> symbols =  Arrays.asList(inlist.trim().split("\\s+"));
+		boolean found = false;
+		for(int i = startindex; i < this.chunkedtokens.size()-1; i++){		
+			if(this.chunkedtokens.get(i).equals("to") && this.chunkedtokens.get(i+1).equals(")")){
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	/**
 	 * put a list of states of the same character connected by to/or in a chunk
 	 * color, color, or color
@@ -642,47 +837,64 @@ public class POSTagger4StanfordParser {
 	 * {color-blue-to-red}
 	 * @return updated string
 	 */
-	private String normalizeCharacterLists(){
+	//private String normalizeCharacterLists(String list){
+	private void normalizeCharacterLists(String list){
 		//charactertokens.toString
-		String list = "";
-		String result = "";
-		for(int i = this.charactertokensReversed.size() -1; i>=0; i--){
-			list+=this.charactertokensReversed.get(i)+" ";
-		}
-		list = list.trim()+" "; //need to have a trailing space
+		//String list = ""; //6/29/12
+		//String result = ""; //6/29/12
+		
+		//lookupCharacters(src, true); //treating -ly as -ly 6/29/12
+		
+		//6/29/12
+		//for(int i = this.charactertokensReversed.size() -1; i>=0; i--){
+		//	list+=this.charactertokensReversed.get(i)+" ";
+		//}
+		//list = list.trim()+" "; //need to have a trailing space
 		
 		//pattern match: collect state one by one
+		String listcopy = list;
 		int base = 0;
 		//Pattern pt = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([a-z-]+ )+([@,;\\.] )+\\s*)(([a-z-]+ )*(\\4)+[@,;\\.%\\[\\]\\(\\)#].*)");//
-		Pattern pt = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
-		Matcher mt = pt.matcher(list);
+		Matcher mt = charalistpattern.matcher(list);
 		while(mt.matches()){
 			int start = (mt.group(1).trim()+" a").trim().split("\\s+").length+base-1; //"".split(" ") == 1
 			String l = mt.group(2);
 			String ch = mt.group(4).trim();
 			list = mt.group(6);
 			//Pattern p = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
-			Pattern p = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
-			Matcher m = p.matcher(list);
+			Matcher m = charalistpattern2.matcher(list);
 			while(m.matches()){
 				l += m.group(1);
 				//list = m.group(5);
 				list = m.group(6);
-				m = p.matcher(list);
+				m = charalistpattern2.matcher(list);
 			}
-			l += list.replaceFirst("[@,;\\.%\\[\\]\\(\\)#].*$", "");//take the last seg from the list
+			//l += list.replaceFirst("[@,;\\.%\\[\\]\\(\\)#].*$", "");//take the last seg from the list
+			//l += list.replaceFirst("[@,;\\.%\\[\\]\\(\\)&#].*$", "");//take the last seg from the list 6/29/2012
+			l += list.replaceFirst("(?<="+ch+"(\\s[0-9a-z–\\[\\]\\+-]{1,10}ly)?).*$", "");//arrangement_or_shape @ arrangement_or_shape coating_or_texture # ;
 			int end = start+(l.trim()+" b").trim().split("\\s+").length-1;
-			if(! l.matches(".*?@[^,;\\.]*") && l.matches(".*?,.*")){ //the last state is not connected by or/to, then it is not a list
+			//if(! l.matches(".*?@[^,;\\.]*") && l.matches(".*?,.*")){ //the last state is not connected by or/to, then it is not a list
+			//	start = end;
+			//}
+			while(! l.matches(".*?@[^,;\\.]*") && l.matches(".*?,.*")){ //the last state is not connected by or/to, then it is not a list
+				l = l.replaceFirst("[,;\\.][^@]*$", "").trim();
+			}
+			if(l.indexOf('@')>0){
+				end = start+(l.trim()+" b").trim().split("\\s+").length-1;
+			}else{
 				start = end;
 			}
 				
 			
-			list = list.replaceFirst("^.*?(?=[@,;\\.%\\[\\]\\(\\)#])", "");
-			mt = pt.matcher(list);
+			//list = list.replaceFirst("^.*?(?=[@,;\\.%\\[\\]\\(\\)#])", ""); //6/29/2012
+			//list = list.replaceFirst("^.*?(?=[@,;\\.%\\[\\]\\(\\)&#])", "");
+			list = segByWord(listcopy, end);
+			mt = charalistpattern.matcher(list);
 			
-			for(int i = base; i<start; i++){
-				result += this.chunkedtokens.get(i)+" ";
-			}
+			//6/29/12
+			//for(int i = base; i<start; i++){
+			//	result += this.chunkedtokens.get(i)+" ";
+			//}
 			if(end>start){ //if it is a list
 				String t= "{"+ch+"~list~";
 				for(int i = start; i<end; i++){
@@ -699,22 +911,32 @@ public class POSTagger4StanfordParser {
 				t = t.replaceFirst("~$", "}")+" ";
 				if(t.indexOf("ttt~list")>=0) t = t.replaceAll("~color.*?ttt~list", "");
 				this.chunkedtokens.set(start, t);
-				result +=t;
-				if(this.printList){
-					System.out.println(">>>"+t);
+				//result +=t; //6/29/12
+				if(this.printCharacterList){
+					System.out.println(this.src+":"+">>>"+t);
 				}
 			}
 			base = end;
 		}
 		
-		for(int i = base; i<(list.trim()+" b").trim().split("\\s+").length+base-1; i++){
-			result += this.chunkedtokens.get(i)+" ";
-		}
-		
-		return result.trim();
+		//6/29/12
+		//for(int i = base; i<(list.trim()+" b").trim().split("\\s+").length+base-1; i++){
+		//	result += this.chunkedtokens.get(i)+" ";
+		//}
+		//return result.trim();
 	}
 	
 
+
+	private String segByWord(String listcopy, int startindex) {
+		String seg = "";
+		if(startindex < 0) return seg;
+		String[] tokens = listcopy.trim().split("\\s+");
+		for(int i = startindex; i < tokens.length; i++){
+			seg += tokens[i]+" ";
+		}
+		return seg.trim();
+	}
 
 	/**
 	 * as wide as => as-wide-as/IN
@@ -725,13 +947,12 @@ public class POSTagger4StanfordParser {
 	 */	
 	private String normalizeAsAs(String str) {
 		String result = "";
-		Pattern p = Pattern.compile("(.*?\\b)(as\\s+[\\w{}<>]+\\s+as)(\\b.*)");
-		Matcher m = p.matcher(str);
+		Matcher m = asaspattern.matcher(str);
 		while(m.matches()){
 			result+=m.group(1);
 			result+="{"+m.group(2).replaceAll("\\s+", "-").replaceAll("[{}<>]", "")+"}";
 			str = m.group(3);
-			m = p.matcher(str);
+			m = asaspattern.matcher(str);
 		}
 		result+=str;
 		return result.trim();
