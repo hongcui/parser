@@ -24,8 +24,11 @@ import org.jdom.output.XMLOutputter;
  */
 public class NumericalHandler  {
 
-	//static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
-	static public String numberpattern = "[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}])"; //added , and ? for chromosome counts
+	//oldest: static public String numberpattern = "[ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]*?[½/¼\\d][ ()\\[\\]\\-\\–\\d\\.×\\+°²½/¼\\*/%]{2,}(?!~[a-z])";
+	//static public Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts
+	//static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
+	static public Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts
+	static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
 	static private boolean debug = false;
 	
 	public NumericalHandler() {
@@ -37,7 +40,8 @@ public class NumericalHandler  {
 	 * @return <Florets> 4–25[–60] , {bisexual} , {fertile} ;
 	 */
 	public static String normalizeNumberExp(String sentence) {
-		sentence = sentence.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
+		//sentence = sentence.replaceAll("-\\s*LRB-/-LRB\\s*-", "[").replaceAll("-\\s*RRB-/-RRB\\s*-", "]");
+		sentence = sentence.replaceAll("-\\s*LSB-/-LSB\\s*-", "[").replaceAll("-\\s*RSB-/-RSB\\s*-", "]");
 		String norm = "";
 		/*Pattern p = Pattern.compile("(.*?)("+NumericalHandler.numberpattern+")(.*)");
 		Matcher m = p.matcher(sentence);
@@ -49,16 +53,28 @@ public class NumericalHandler  {
 		}
 		norm += sentence;*/
 		norm = sentence;
-		norm = norm.trim().replaceFirst("(?<=[0-9])\\.$", " .").replaceAll("\\[","-LRB-/-LRB-").replaceAll("\\]","-RRB-/-RRB-");
+		//norm = norm.trim().replaceFirst("(?<=[0-9])\\.$", " .").replaceAll("\\[","-LRB-/-LRB-").replaceAll("\\]","-RRB-/-RRB-");
+		norm = norm.trim().replaceFirst("(?<=[0-9])\\.$", " .").replaceAll("\\[","-LSB-/-LSB-").replaceAll("\\]","-RSB-/-RSB-");
 		return norm;
 	}
 	
+	/**
+	 * keep -LRB-/-RRB- for non-numerical expressions
+	 * @param token
+	 * @return
+	 */
 	public static String originalNumForm(String token){
-		if(token.matches(".*[a-z].*?")){
-			return token.replaceAll("-\\s*LRB-/-LRB\\s*-?", "(").replaceAll("-\\s*RRB-/-RRB\\s*-?", ")");
+		if(!token.matches(".*?\\d.*") && !token.matches(".*?-[LR][RS]B-.*")) return token;
+		if(token.matches("-[RL][RS]B-/-[RL][RS]B-")) return token;
+		return token.replaceAll("-LRB-/-LRB-(?!\\s)", "(").replaceAll("(?<!\\s)-RRB-/-RRB-", ")").
+				replaceAll("-LSB-/-LSB-(?!\\s)", "[").replaceAll("(?<!\\s)-RSB-/-RSB-", "]"); //-LRB-/-RRB- in numerical expressions are connected to numbers without spaces 
+
+		/*if(token.matches(".*[a-z].*?")){
+			return token.replaceAll("-LRB-/-LRB-(?!\\s)", "(").replaceAll("(?<!\\s)-RRB-/-RRB-", ")"); //-LRB-/-RRB- in numerical expressions are connected to numbers without spaces 
 		}else{
-			return token.replaceAll("-\\s*LRB-/-LRB\\s*-?", "[").replaceAll("-\\s*RRB-/-RRB\\s*-?", "]");
-		}
+			return token.replaceAll("-LSB-/-LSB-(?!\\s)", "[").replaceAll("(?<!\\s)-RSB-/-RSB-", "]"); //-LRB-/-RRB- in numerical expressions are connected to numbers without spaces 
+			//return token.replaceAll("-\\s*LSB-/-LSB\\s*-?", "[").replaceAll("-\\s*RSB-/-RSB\\s*-?", "]");
+		}*/
 	}
 	/**
 	 * 
@@ -69,7 +85,8 @@ public class NumericalHandler  {
 		if(token.matches(".*?\\d+\\+?%?\\??\\]?$")){
 			return true;
 		}
-		if(token.matches(".*?\\d+.*-RRB-/-RRB-$")){
+		//if(token.matches(".*?\\d+.*-RRB-/-RRB-$")){
+		if(token.matches(".*?\\d+.*-R[RS]B-/-R[RS]B-$")){
 			return true;
 		}
 		return false;

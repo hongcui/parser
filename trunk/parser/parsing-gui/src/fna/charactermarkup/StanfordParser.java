@@ -24,6 +24,7 @@ import org.jdom.xpath.XPath;
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.Learn2Parse;
 import fna.parsing.Registry;
+import fna.parsing.TaxonNameCollector;
 import fna.parsing.VolumeFinalizer;
 import fna.parsing.state.SentenceOrganStateMarker;
 
@@ -48,6 +49,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//protected int count = 0;
 	static private int allchunks = 0;
 	static private int discoveredchunks = 0;
+	//private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
+	private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d]?[()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
+	private static boolean printNormalizeBrackets = false;
+
 	private File posedfile = null;
 	private File parsedfile = null;
 	private String POSTaggedSentence = "POSedSentence";
@@ -57,11 +62,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 	//private boolean finalize = true;
-	private boolean finalize = true;//set true when running config else set false.
+	private boolean finalize = false;//set true when running config else set false.
+
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = true;
 	private boolean evaluation = false;
+	private String taxonnames = null;
+	private Pattern taxonnamepattern1 = null;
+	private Pattern taxonnamepattern2 = null;
 	/**
 	 * 
 	 */
@@ -83,6 +92,19 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
 			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
+			//collect all taxonnames to be used in processParentheses in ChunkedSentence
+			ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_taxonnames");
+			while(rs.next()){
+				if(taxonnames == null){taxonnames="";}
+				else{
+					taxonnames += rs.getString("name")+"|";
+				}
+			}
+			if(taxonnames!=null && taxonnames.length()!=0){
+				taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
+				this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+				this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+			}						
 			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -107,8 +129,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("1_27.txtp1.txt-22")!=0) continue;
-				//if(src.compareTo("1_27.txtp2.txt-1")!=0) continue;
+				//if(src.compareTo("287.txt-3")!=0) continue;
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -269,14 +290,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
 							}
 						}
-						sent = this.normalizeSpacesRoundNumbers(sent);
+						//sent = this.normalizeSpacesRoundNumbers(sent);
 							if(!sent.matches(".*? [;\\.]\\s*$")){//at 30x. => at 30x. .
 								sent = sent+" .";
 							}
 							sent = sent.replaceAll("<\\{?times\\}?>", "times");
 							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
 							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
-							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable);
+							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable, this.taxonnamepattern1, this.taxonnamepattern2);
 							cs = ex.chunkIt();
 							//System.out.print("["+src+"]:");
 							if(this.printSent){
@@ -312,15 +333,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 									}								
 								}
 							}
-							
+							//if(statement!=null) description.addContent(statement);
 							statement = cac.annotate(src, src, cs); //src: 100.txt-18
 
-							description.addContent(statement);
+							if(statement!=null) description.addContent(statement);
+
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
 						
 						rs.relative(i*-1); //reset the pointer
-					}
+						}
 					}
 					text = "";
 					i = 0;
@@ -353,9 +375,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = sent.replaceAll("x\\s*=", "x=");
 
 		//sent = sent.replaceAll("[–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\[", " [ ").replaceAll("\\]", " ] ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").replaceAll("\\s+", " ").trim();
-		//sent = sent.replaceAll("[~–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim(); //Correct sentence
-		//replaceAll("(?<!\\d)\\.(?!\\d)", " . ");
-		sent = sent.replaceAll("[~–—-]", "-").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("(?<!\\d)\\.(?!\\d)", " . ").replaceAll("\\s+", " ").trim();
+		sent = sent.replaceAll("[~–—-]", "-").replaceAll("°", " ° ").replaceAll(",", " , ").replaceAll(";", " ; ").replaceAll(":", " : ").replaceAll("\\.", " . ").replaceAll("\\s+", " ").trim();
 		sent = sent.replaceAll("(?<=\\d) (?=\\?)", ""); //deals especially x=[9 ? , 13] 12, 19 cases
 		sent = sent.replaceAll("(?<=\\?) (?=,)", "");
 		if(sent.matches(".*?[nx]=.*")){
@@ -371,14 +391,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 		//4-25 [ -60 ] => 4-25[-60]: this works only because "(text)" have already been removed from sentence in perl program
 		sent = sent.replaceAll("\\(\\s+(?=[\\d\\+\\-%])", "("). //"( 4" => "(4"
-		replaceAll("(?<=[\\d\\+\\-%])\\s+\\(", "("). //" 4 (" => "4("
-		replaceAll("\\)\\s+(?=[\\d\\+\\-%])", ")"). //") 4" => ")4"
-		replaceAll("(?<=[\\d\\+\\-%])\\s+\\)", ")"); //"4 )" => "4)"
+		replaceAll("(?<=[\\d\\+\\-%])\\s+\\((?!\\s?[{<a-zA-Z])", "("). //" 4 (" => "4("
+		replaceAll("(?<![a-zA-Z}>]\\s?)\\)\\s+(?=[\\d\\+\\-%])", ")"). //") 4" => ")4"
+		replaceAll("(?<=[\\d\\+\\-%])\\s+\\)", ")"). //"4 )" => "4)"
+		replaceAll("\\((?=\\d+-\\{)", "( "); //except for ( 4-{angled} )
 		
-		sent = sent.replaceAll("\\[\\s+(?=[\\d\\+\\-%])", "["). //"[ 4" => "[4"
-		replaceAll("(?<=[\\d\\+\\-%])\\s+\\[", "["). //" 4 [" => "4["
-		replaceAll("\\]\\s+(?=[\\d\\+\\-%])", "]"). //"] 4" => "]4"
-		replaceAll("(?<=[\\d\\+\\-%])\\s+\\]", "]"); //"4 ]" => "4]"
+		sent = sent.replaceAll("\\[\\s+(?=[\\d\\+\\-%])", "["). //"[ 4" => "[4", not [ -subpalmately ]
+		replaceAll("(?<=[\\d\\+\\-%])\\s+\\[(?!\\s?[{<a-zA-Z])", "["). //" 4 [" => "4["
+		replaceAll("(?<![a-zA-Z}>]\\s?)\\]\\s+(?=[\\d\\+\\-%])", "]"). //"] 4" => "]4"
+		replaceAll("(?<=[\\d\\+\\-%])\\s+\\]", "]"). //"4 ]" => "4]"
+		replaceAll("\\[(?=\\d+-\\{)", "[ "); //except for [ 4-{angled} ]
 		
 		/*Pattern p = Pattern.compile("(.*?)(\\d*)\\s+\\[\\s+([ –—+\\d\\.,?×/-]+)\\s+\\]\\s+(\\d*)(.*)");  //4-25 [ -60 ] => 4-25[-60]. ? is for chromosome count
 		Matcher m = p.matcher(sent);
@@ -411,9 +433,78 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//mohan code 11/9/2011 to replace (?) by nothing
 		sent = sent.replaceAll("\\(\\s*\\?\\s*\\)","");
 		//end mohan code
+	
+		//make sure brackets that are not part of a numerical expression are separated from the expression by a space
+		if(sent.contains("(") || sent.contains(")")) sent = normalizeBrackets(sent, '(');
+		if(sent.contains("[") || sent.contains("]")) sent = normalizeBrackets(sent, '[');
+		
+		sent = sent.replaceAll("\\[(?=-[a-z])", "[ ");//[-subpalmately ] => [ -subpalmately ]
+		sent = sent.replaceAll("\\((?=-[a-z])", "( ");//[-subpalmately ] => [ -subpalmately ]
 		return sent;
 	}
+
+	private static String normalizeBrackets(String sent, char bracket) {
+		char l ='('; char r=')';
+		switch (bracket){
+			case '(': l = '('; r=')'; break;
+			case '[': l = '['; r=']'; break;
+		}
+		//boolean changed = false;
+		String sentorig = sent;
+		String fixed = "";
+		Matcher matcher = numbergroup.matcher(sent);
+		while(matcher.matches()){
+			String num = matcher.group(2);
+			if(Utilities.hasUnmatchedBracket(num, ""+l, ""+r)>0){ //has an extra (
+				int index = Utilities.indexOfunmatched(l, num);
+				if(index==0) {//move ( to group(2)
+					fixed += matcher.group(1)+l+" "+num.replaceFirst("\\"+l, "");
+					sent = matcher.group(3);
+				}else if(index == num.length()-1){ //move ( to group(3)
+					fixed += matcher.group(1)+num.replaceFirst("\\"+l+"$", "");
+					sent = " "+l+matcher.group(3);
+				}else{//the extra ( is in the middle of the num expression, then either find the matching ) in group 3 or split the num at the (
+					if(matcher.group(3).startsWith(" "+r)){//find the matching ), attach it to group(2)
+						fixed += matcher.group(1)+matcher.group(2)+r;
+						sent = matcher.group(3).replaceFirst("\\s*\\"+r, "");
+					}else{//move text from the extra ( on to group(3)
+						fixed += matcher.group(1)+matcher.group(2).substring(0, index);
+						sent =" "+l+" "+matcher.group(2).substring(index+1)+matcher.group(3);
+					}					
+				}
+			}else if(Utilities.hasUnmatchedBracket(num, ""+l, ""+r)<0){ //has an extra )
+				int index = Utilities.indexOfunmatched(r, num);
+				if(index==0) {//move ) to group(1)
+					fixed += matcher.group(1)+r+" "+num.replaceFirst("\\"+r, "");
+					sent = matcher.group(3);
+				}else if(index == num.length()-1){ //move ) to group(3)
+					fixed += matcher.group(1)+num.replaceFirst("\\"+r+"$", "");
+					sent = " "+r+matcher.group(3);
+				}else{//the extra ) is in the middle of the num expression, then either find the matching ( in group(1) or split the num at the )
+					if(matcher.group(1).endsWith(l+" ")){//find the matching (, attach it to group(2)
+						fixed += matcher.group(1).replaceFirst("\\"+l+"\\s*$", "")+"("+matcher.group(2);
+						sent = matcher.group(3);
+					}else{//move text from the extra ) on to group(1)
+						fixed += matcher.group(1)+matcher.group(2).substring(0, index-1)+" "+r+" "+ matcher.group(2).substring(index+1);
+						sent = matcher.group(3);
+					}					
+				}
+			}else{
+				fixed += matcher.group(1)+matcher.group(2);
+				sent = matcher.group(3);
+			}
+			matcher = numbergroup.matcher(sent);
+		}
+		fixed +=sent;
+		if(printNormalizeBrackets  && !fixed.equals(sentorig)){
+			System.out.println("orig : "+sentorig);
+			System.out.println("fixed: "+fixed);
+		}
+		return fixed.replaceAll("\\s+", " ");
+	}
 	
+
+
 	public static String ratio2number(String sent){
 		String small = "\\b(?:one|two|three|four|five|six|seven|eight|nine)\\b";
 		String big = "\\b(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)s?\\b";
@@ -540,8 +631,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println(StanfordParser.ratio2number(text));
 		//String text="<pollen> 70-100% 3-{porate} , {mean} 25 um .";
 		//String text="x = [ 9 ? , 13 , 15 ] 17 , 18 , 19 .";
-		String text="<stamens> 2 ( – 3 ) [ – 6 ] , {exserted} ";
-		System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
+		//String text="<stamens> 2 ( – 3 ) [ – 6 ] , {exserted} ";
+		//String text="<pappi> {persistent} , of {many} <scales> in {several} <series> , {distinct} , {narrow} [ rarely 0 ] .";
+		//String text = "<blades> {obovate} to {oblanceolate} or {spatulate} , ( 1 – ) 2 ( – 3 ) -{pinnately} [ -subpalmately ] {lobed} ( {primary} <lobes> often pectinately {divided} ) , {ultimate} <margins> {serrate} or {entire} , <faces> ± {villous} to {sericeous} [ {glabrescent} , {glabrate} ] .";
+		//String text = " with ( 1 or ) 2 or more <teeth> , <apex> {acute} or {acutish} , or sometimes {rounded} , <faces> not {appendaged} , only <apex> {foliaceous} .";
+		//System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
 		
 		
 		//String database = "phenoscape";
@@ -553,8 +647,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		//*fna
 		//String database = "annotationevaluation";
-		//String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_posedsentences.txt";
-		//String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Work\\Output\\fnav_19\\taxonx_ants_parsedsentences.txt";
+		//String posedfile = "FNAv19posedsentences.txt";
+		//String parsedfile = "FNAv19parsedsentences.txt";
+
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
 
 		
@@ -585,14 +680,38 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
 		
-		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\treatise_o\\target\\Treatise_o_posedsentences.txt";
-		String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\treatise_o\\target\\Treatise_o_parsedsentences.txt";
-	
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "Treatise_o", "treatiseglossaryfixed", false);
 
+		String database = "markedupdatasets";
+		
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
+		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
+		String prefix = "fnav4n";
+		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
+		String volume = "fnav4";
+		
+		try{
+			Connection conn = null;
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
+				conn = DriverManager.getConnection(URL);
+			}
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", volume);
+			tnc.collect();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_posedsentences.txt";
+		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_parsedsentences.txt";
+
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav5", "fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
+
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
 
 		//sp.POSTagging();
 		//sp.parsing();
