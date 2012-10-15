@@ -44,13 +44,21 @@ public class SentenceOrganStateMarker {
 	private String statenames = null;
 	private String tableprefix = null;
 	private String glosstable = null;
-	private String colors = null;
+	private static String colors = null;
+	private static String pt;
+	private static Pattern colorpattern;
+	//private static Pattern thelargest = Pattern.compile("(.*)(,\\s*\\S+est})( [^<].*)"); //tested and failed. too general. many superlatives are not subjects.
+	private static Pattern thelargest = Pattern.compile("(.*)(,\\s*(?:the )?\\S+est})( [^<].*)"); //narrowed down to size cases by checking group(3)
+	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up to|up until|vis-a-vis|with reference to|with regard to";
+	public static Pattern compreppattern = Pattern.compile("(.*?)\\b("+compoundprep+")\\b(.*)");
 	private String ignoredstrings = "if at all|at all|as well (?!as)";
-	private static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up to|up until|vis-a-vis|with reference to|with regard to";
-	private static Pattern compreppattern = Pattern.compile("(.*?)\\b("+compoundprep+")\\b(.*)");
+	//private static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up to|up until|vis-a-vis|with reference to|with regard to";
+	//private static Pattern compreppattern = Pattern.compile("(.*?)\\b("+compoundprep+")\\b(.*)");
 	//private ArrayList<String> order = new ArrayList<String>();
 	private Display display;
 	private StyledText charLog;
+	private boolean debug = false;
+	private boolean superlative = true;
 	/**
 	 * 
 	 */
@@ -66,7 +74,12 @@ public class SentenceOrganStateMarker {
 				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
 				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
 				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
-				colors = this.colorsFromGloss();
+				if(colors==null){
+					colors = this.colorsFromGloss();
+					colors += "|shades_of";
+					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
+					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
+				}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -85,13 +98,15 @@ public class SentenceOrganStateMarker {
 				if(sent.length()!=0){
 				String source = rs.getString("source");
 				String osent = rs.getString("originalsent");
-				String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
+				sent = sent.replaceAll("</?[BNOM]>", "");
+				sent = sent.replaceAll("\\bshades of\\b", "shades_of");
+				String text = stringColors(sent);
 				text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 				text = text.replaceAll("more or less", "moreorless");
 				text = text.replaceAll("&#176;", "°");
 				text = text.replaceAll("\\bca\\s*\\.", "ca");
+				text = text.replaceAll("\\bdiam\\s*\\.(?=\\s?[,a-z])", "diam");
 				text = stringCompoundPP(text);
-				//put the compound part.
 				text = rs.getString("modifier")+"##"+tag+"##"+text;
 				sentences.put(source, text);
 				}
@@ -123,14 +138,14 @@ public class SentenceOrganStateMarker {
 			}*/
 			//collect adjnouns
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence s where modifier != \"\" and tag like \"[%\"");
+			rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
 			while(rs.next()){
 				String modifier = rs.getString(1).replaceAll("\\[.*?\\]", "").trim();
 				adjnouns.add(modifier);
 			}
 			//collect senteces that need adj-nn disambiguation
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT source, tag, modifier FROM "+this.tableprefix+"_sentence s where modifier != \"\" and tag like \"[%\"");
+			rs = stmt.executeQuery("SELECT source, tag, modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
 			while(rs.next()){
 				String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim(); 
 				String tag = rs.getString("tag");
@@ -167,20 +182,35 @@ public class SentenceOrganStateMarker {
 	        return result;
 	    }
 	
+//	private String stringCompoundPP(String text) {
+//		boolean did = false;
+//		String result = "";
+//		Matcher m = compreppattern.matcher(text);
+//		while(m.matches()){
+//			String linked = m.group(2).replaceAll("\\s+", "-");
+//			result += m.group(1)+ linked;
+//			text = m.group(3);
+//			m = compreppattern.matcher(text);
+//			did = true;
+//		}
+//		result += text;
+//		if(did) System.out.println("[result]:"+result);
+//		return result;
+//	}
+
 	/**
-	 * turn reddish purple to reddish-purple
+	 * turn reddish purple to reddish_c_purple
+	 * shades of yellow
 	 * @param replaceAll
 	 * @return
 	 */
 	private String stringColors(String text) {
 		if(this.colors==null || this.colors.length() == 0) return text;
 		boolean did = false;
-		String pt = "\\b(?<="+this.colors+")\\s+(?="+this.colors+")\\b";
-		Pattern p = Pattern.compile(pt);
-		Matcher m = p.matcher(text);
+		Matcher m = colorpattern.matcher(text);
 		while(m.find()){
 			text = text.replaceFirst(pt, "_c_");
-			m = p.matcher(text);
+			m = colorpattern.matcher(text);
 			did = true;
 		}
 		//if(did) System.out.println("[color]:"+text);
@@ -191,7 +221,7 @@ public class SentenceOrganStateMarker {
 		if(this.marked){
 			loadMarked();
 		}else{
-			this.showOutputMessage("System is preparing the sentences...");
+			//this.showOutputMessage("System is preparing the sentences...");
 			//Iterator<String> it = order.iterator();
 			//while(it.hasNext()){				
 			Enumeration<String> en = sentences.keys();
@@ -208,7 +238,7 @@ public class SentenceOrganStateMarker {
 					taggedsent = markASentence(source, modifier, tag.trim(), sent);
 				//}
 				
-				System.out.println(taggedsent);
+				if(debug) System.out.println(taggedsent);
 				sentences.put(source, taggedsent);
 				try{
 					Statement stmt1 = conn.createStatement();
@@ -245,6 +275,17 @@ public class SentenceOrganStateMarker {
 		taggedsent = markthis(source, taggedsent, statenames, "{", "}");
 		taggedsent = taggedsent.replaceAll("[<{]or[}>]", "or"); //make sure to/or are left untagged
 		taggedsent = taggedsent.replaceAll("[<{]to[}>]", "to");
+		//tested and failed
+		//, the {largest} to 3 cm => , the <largest> to 3cm
+		Matcher m = thelargest.matcher(taggedsent);
+		if(taggedsent.indexOf("est}")>=0 && m.matches()){
+			String aftersuperlative = m.group(3);
+			if(aftersuperlative.matches("\\s+(\\w+\\s+)?\\d.*")){//the superlative and the numbers may be separated by one word
+				//this check will miss cases such as ", {longest} {white} {margined} , 25 – 45 ( – 58 ) mm ;"
+				taggedsent = m.group(1)+m.group(2).replaceAll("\\}", ">").replaceAll("\\{", "<").replaceAll("<+", "<").replaceAll(">+", ">")+m.group(3);
+				if(superlative) System.out.println("["+m.group(2)+"]:"+taggedsent);
+			}
+		}
 		//remove "<>" for <{spine}>-{tipped}  =>spine-{tipped} or {spine}-{tipped}
 		if(taggedsent.indexOf(">-")>=0){
 			taggedsent = taggedsent.replaceAll(">-", "#-").replaceAll("<(?=\\S+#)", "").replaceAll("#", "");
@@ -269,7 +310,7 @@ public class SentenceOrganStateMarker {
 	 * @return
 	 */
 	private String fixInner(String source, String taggedsent, String tag) {
-		this.showOutputMessage("System is rewriting some sentences...");
+		//this.showOutputMessage("System is rewriting some sentences...");
 		String fixed = "";
 		String copysent = taggedsent;
 		boolean needfix = false;
@@ -594,11 +635,15 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav4n", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
-		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true);
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true, null, null);
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "Treatise_o", "treatiseglossaryfixed", true, null, null);
+
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true, null, null);
+		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "Treatise_o", "treatiseglossaryfixed", true, null, null);
+
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
