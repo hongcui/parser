@@ -21,7 +21,9 @@ public class UploadData{
 	/*
 	 * standalone set to true when running independently. The corresponding standalone folder must be set. The corresponding dataprefixinput should be given
 	 */
-	private static boolean standalone = false;
+	private static boolean standalone = true; 
+	//the following variables standalonefolder and dataprefixinput need to be set only when run this class in the standalone (not part of charaparser) mode.
+	//dumps generated and the text file containing sql statements will be saved in this standalonefolder
 	private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
 	private static String dataprefixinput = "parthv2";
 		
@@ -32,6 +34,8 @@ public class UploadData{
     
 	public UploadData(String inputdataprefix){
 		dataprefix = inputdataprefix;
+		standalone = false;
+		if(!standalone) standalonefolder = Registry.TargetDirectory+"\\to_OTO_"+dataprefix;
 		dumpFiles(dataprefix);
 		createTextFile(dataprefix);
 		
