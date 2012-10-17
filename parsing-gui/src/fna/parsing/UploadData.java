@@ -21,11 +21,13 @@ public class UploadData{
 	/*
 	 * standalone set to true when running independently. The corresponding standalone folder must be set. The corresponding dataprefixinput should be given
 	 */
-	private static boolean standalone = true;
+	private static boolean standalone = false;
 	private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
 	private static String dataprefixinput = "parthv2";
 		
-	public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     public static Calendar cal = Calendar.getInstance();
     
 	public UploadData(String inputdataprefix){
@@ -47,7 +49,7 @@ public class UploadData{
 	    String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
 		execute(backup);
 		
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile;
+		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
 		execute(excom);
 	}
 	
@@ -90,6 +92,7 @@ public class UploadData{
     	  //rt.exec("C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets treatise_o_term_category -r  C:\\Users\\mohankrishna89\\Documents\\dumps\\newdump.sql");
     	  if(standalone)
     	  {
+    		  System.out.println("Dumping files of dataprefix"+dataprefix);
     		  term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
     		  sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+standalonefolder+"\\"+dataprefix+"_sentence_dump.sql";
     	  }
@@ -125,6 +128,7 @@ public class UploadData{
     		try{
     			/*DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     		    Calendar cal = Calendar.getInstance();*/
+    			System.out.println("Dumping files of dataprefix"+dataprefix);
     			String datasetprefix = dataprefix+"_"+dateFormat.format(cal.getTime());
     			String filename="sqlscript";
     			String directory="";
@@ -140,12 +144,25 @@ public class UploadData{
     			//store all the commands into a text file
     			String[] commands=new String[28];
     			//import data: _sentence, _term_category
-    			commands[0] = "drop database if exists tempdatabase;";
+    			
+    			/*commands[0] = "drop database if exists tempdatabase;";
     			commands[1] = "create database if not exists tempdatabase;";
     			commands[2] = "use tempdatabase;";
     			commands[3] = "source ~/"+dataprefix+"_term_category_dump.sql;";
     			commands[4] = "source ~/"+dataprefix+"_sentence_dump.sql;";
-    			commands[5] = "use markedupdatasets;";
+    			commands[5] = "use markedupdatasets;";*/
+    			
+    			commands[0] = "use markedupdatasets;";
+    			commands[1] = "";
+    			commands[2] = "";
+    			commands[3] = "source ~/"+dataprefix+"_term_category_dump.sql;";
+    			commands[4] = "source ~/"+dataprefix+"_sentence_dump.sql;";
+    			commands[5] = "";
+    			
+    			
+    			
+    			
+    			
     			//insert dataset prefix
     			commands[6] = "insert into datasetprefix (prefix) value ('"+datasetprefix+"');";
     			//table _comments
@@ -176,19 +193,19 @@ public class UploadData{
     			commands[22] = "create table "+datasetprefix+"_web_orders_terms like fna_gloss_web_orders_terms;";
     			
     			//Insert terms into table _web_grouped_terms
-    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 1 as groupid from tempdatabase."+dataprefix+"_term_category;";
+    			commands[23] = "insert into "+datasetprefix+"_web_grouped_terms(term, groupid) select distinct term, 1 as groupid from "+dataprefix+"_term_category;";
     			
     			//Insert sentence
     			commands[24] = "insert into "+datasetprefix+"_sentence(sentid, source, sentence, originalsent, lead, status, tag, modifier, charsegment) " +
-    					"select sentid, source, sentence, originalsent, lead, status, tag, modifier, charsegment from tempdatabase."+dataprefix+"_sentence;";
+    					"select sentid, source, sentence, originalsent, lead, status, tag, modifier, charsegment from "+dataprefix+"_sentence;";
     			
     			//Generate original decisions: some terms already have category information in source table _term_category 
     			commands[25] = "insert into "+datasetprefix+"_user_terms_decisions(term, decision, userid, decisiondate, groupid) " +
-    					"select distinct term, category, 32 as userid, sysdate(), 1 as groupid from tempdatabase."+dataprefix+"_term_category where category in " +
+    					"select distinct term, category, 32 as userid, sysdate(), 1 as groupid from "+dataprefix+"_term_category where category in " +
     							"(select category from treatise_categories);";
     			//update a column with empty string. This is because the default value is null. we need empty string 
     			commands[26] = "update "+datasetprefix+"_user_terms_decisions set relatedTerms = \"\";";
-    			commands[27] = "drop database if exists tempdatabase; ";
+    			commands[27] = "";
     			
     			
     			//write the commands into the text file.
@@ -265,6 +282,7 @@ public class UploadData{
     	      channel.connect();
 
     	      if(checkAck(in)!=0){
+    	    	  System.out.println("Error is SCPto");
     		System.exit(0);
     	      }
 
@@ -277,6 +295,7 @@ public class UploadData{
     	        command+=(" "+(_lfile.lastModified()/1000)+" 0\n"); 
     	        out.write(command.getBytes()); out.flush();
     	        if(checkAck(in)!=0){
+    	        	System.out.println("Error is SCPto");
     	  	  System.exit(0);
     	        }
     	      }
@@ -293,6 +312,7 @@ public class UploadData{
     	      command+="\n";
     	      out.write(command.getBytes()); out.flush();
     	      if(checkAck(in)!=0){
+    	    	  System.out.println("Error is SCPto");
     		System.exit(0);
     	      }
 
@@ -309,6 +329,7 @@ public class UploadData{
     	      // send '\0'
     	      buf[0]=0; out.write(buf, 0, 1); out.flush();
     	      if(checkAck(in)!=0){
+    	    	  System.out.println("Error is SCPto");
     		System.exit(0);
     	      }
     	      out.close();
@@ -316,7 +337,7 @@ public class UploadData{
     	      channel.disconnect();
     	      session.disconnect();
 
-    	      System.exit(0);
+    	      //System.exit(0);
     	    }
     	    catch(Exception e){
     	      System.out.println(e);
