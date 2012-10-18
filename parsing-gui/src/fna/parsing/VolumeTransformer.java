@@ -345,7 +345,7 @@ public class VolumeTransformer extends Thread {
 				
 				//when output list is displayed in CharaParser, habitat sections have not 
 				//been marked up yet.
-				listener.info(String.valueOf(count), xml.getPath(), "");
+				//listener.info(String.valueOf(count), xml.getPath(), ""); //for FNA, this is excuted later in vf.replaceAnnotated.
 				listener.progress((count*50) / total);
 			}
 			

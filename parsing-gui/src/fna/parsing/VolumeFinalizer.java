@@ -87,7 +87,7 @@ public class VolumeFinalizer extends Thread {
         if(finalFileList.list().length == 0)
         {
             //this.popupMessage("No file is output");
-    		if(!standalone) this.showOutputMessage("System terminates with errors. No files are annotated.");
+    		if(!standalone) this.showOutputMessage("System terminates with errors. No files has been annotated.");
         }
         if(finalFileList.list().length != transformedFileList.list().length)
         {
@@ -98,6 +98,11 @@ public class VolumeFinalizer extends Thread {
         
         else//Should add the code to generate the files and uploading and executing it here in the else loop.
         {
+       		if(!standalone){
+       			this.showOutputMessage("System is done with annotating files.");
+       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"\\final\\");
+       		}
+       		
         	UploadData ud = new UploadData(dataPrefix);
         }
     }
@@ -214,7 +219,12 @@ public class VolumeFinalizer extends Thread {
 	}
 
 
-	
+	/**
+	 * called by StanfordParser.extracting()
+	 * @param root
+	 * @param fileindex
+	 * @param targetstring
+	 */
 	public static void outputFinalXML(Element root, String fileindex, String targetstring) {
 		File target = null;
 		if(!standalone) target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
@@ -223,7 +233,7 @@ public class VolumeFinalizer extends Thread {
 		Comment comment = new Comment("produced by "+VolumeFinalizer.version+System.getProperty("line.separator"));
 		//Comment comment = null;
 		ParsingUtil.outputXML(root, result, comment);
-		if(!standalone) listener.info("" + fileindex, result.getPath(), "");//TODO: test 3/19/10 
+		if(!standalone) listener.info("" + fileindex, result.getPath(), "");
 	}
 
 	public void replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
@@ -273,7 +283,7 @@ public class VolumeFinalizer extends Thread {
 				File result = new File(target, count + ".xml");
 				ParsingUtil.outputXML(root, result, null);
 
-				if(!standalone) listener.info("" + count, result.getPath(), "");//TODO: test 3/19/10 
+				if(!standalone) listener.info("" + count, result.getPath(), "");
 			}
         } catch (Exception e) {
             e.printStackTrace();
