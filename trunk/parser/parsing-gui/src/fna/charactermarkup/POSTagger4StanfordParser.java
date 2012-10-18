@@ -790,7 +790,7 @@ public class POSTagger4StanfordParser {
 						}
 					}
 				}
-				orphanedto = getIndexOfOrphanedTo(inlist, orphanedto++); 
+				orphanedto = getIndexOfOrphanedTo(inlist, ++orphanedto); 
 			}
 		}
 		
