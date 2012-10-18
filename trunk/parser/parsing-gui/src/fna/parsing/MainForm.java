@@ -88,6 +88,7 @@ import fna.parsing.character.ManipulateGraphML;
 import fna.parsing.state.GraphMLOutputter;
 import fna.parsing.state.StateCollectorTest;
 
+
 @SuppressWarnings("unchecked")
 public class MainForm {
 
@@ -3286,6 +3287,16 @@ public class MainForm {
         	srcFldr.mkdir();
         if(!targetFldr.exists())
         	targetFldr.mkdir();
+        
+        /*should not reset folders. when resume a previous run, reset folder will make all folders empty
+        fna.parsing.Utilities.resetFolder(targetFldr,"co-occurrence");
+        fna.parsing.Utilities.resetFolder(targetFldr,"descriptions");
+        fna.parsing.Utilities.resetFolder(targetFldr,"descriptions-dehyphened");
+        fna.parsing.Utilities.resetFolder(targetFldr,"extracted");
+        fna.parsing.Utilities.resetFolder(targetFldr,"extractedword");
+        fna.parsing.Utilities.resetFolder(targetFldr,"final");
+        fna.parsing.Utilities.resetFolder(targetFldr,"habitats");
+        fna.parsing.Utilities.resetFolder(targetFldr,"transformed");*/
         String targetPath= targetFldr.getAbsolutePath();
 	        
         File cooccur = new File(targetPath+"/co-occurrence");
@@ -3295,9 +3306,10 @@ public class MainForm {
         File extractedword = new File(targetPath+"/extractedword");
         File final_dir = new File(targetPath+"/final");
         File habitats = new File(targetPath+"/habitats");
-        File markedup = new File(targetPath+"/markedup");
+        //File markedup = new File(targetPath+"/markedup"); //not used
         File transformed = new File(targetPath+"/transformed");
 	        
+        
         cooccur.mkdir();
         descriptions.mkdir();
         desc_dehyphened.mkdir();
@@ -3305,7 +3317,7 @@ public class MainForm {
         extractedword.mkdir();
         final_dir.mkdir();
         habitats.mkdir();
-        markedup.mkdir();
+        //markedup.mkdir();
         transformed.mkdir();
 
         configurationText.setText(confFldr.getAbsolutePath());
