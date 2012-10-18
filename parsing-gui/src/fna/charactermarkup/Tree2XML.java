@@ -17,7 +17,7 @@ import org.jdom.input.SAXBuilder;
  */
 @SuppressWarnings({ "unused","static-access" })
 public class Tree2XML {
-    private String test=null;
+    private String parsetree=null;
     private String str = "";
     public static ArrayList<String> adverbs = new ArrayList<String>();
     //private static PrintWriter out; 
@@ -26,11 +26,11 @@ public class Tree2XML {
      */
     public Tree2XML(String test) {
         // TODO Auto-generated constructor stub
-        this.test = test.replaceAll("\\(\\s*\\)", "");
+        this.parsetree = test.replaceAll("\\(\\s*\\)", "");
     }
     
     public Document xml() throws Exception{
-        if(test==null || test.trim().length()==0){
+        if(parsetree==null || parsetree.trim().length()==0){
             return null;
         }
         /*
@@ -63,7 +63,7 @@ public class Tree2XML {
         */
         String xml = "";
 		try {
-	         xml = format(test);
+	         xml = format(parsetree);
 	        //System.out.println(xml);
 			Document doc =null;
 			SAXBuilder builder = new SAXBuilder();
@@ -85,8 +85,10 @@ public class Tree2XML {
     	try{
     	int count = 0;
     	StringBuffer xml = new StringBuffer();
-    	parsed = parsed.replaceAll("\\)", ") ").replaceAll("\\s+", " ").trim();//(NP (JJ subulate) (NNS enations) )
-        parsed = parsed.replaceAll("``", "JJ").replaceAll("\\(-LRB-", "(PUNCT").replaceAll("\\([^A-Z/ ]+", "(PUNCT");
+    	parsed = parsed.replaceAll("(?<!~)\\)", ") ").replaceAll("\\s+", " ").trim();//(NP (JJ subulate) (NNS enations) )
+        parsed = parsed.replaceAll("``", "JJ").replaceAll("\\(-LRB-", "(LRB").replaceAll("\\(-RRB-", "(RRB")
+        		./*replaceAll("\\(-RRB-", "(PUNCT").replaceAll("\\(-LRB-", "(PUNCT").*/
+        		replaceAll("(?<=(^| ))\\([^-A-Z/ ]+", "(PUNCT");//-[RL]RB- are needed in SentenceChunker.inPRN(e)
        	parsed = parsed.replaceAll("(?<=\\([A-Z]{1,8}) (?!\\()", "_");//(NP (JJ_subulate) (NNS_enations))
     	
     	ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(parsed.split("\\s+"))); 
@@ -99,8 +101,16 @@ public class Tree2XML {
     			i=i-2;
     		}else if(token.endsWith(")")){//(JJ_subulate)
     			token = token.replaceAll("[()]", "");
-    			String tag = token.substring(0, token.indexOf("_"));
-    			String text = token.substring(token.indexOf("_")+1);
+    			String tag = ""; String text="";
+    			//PUNCT_-LRB-
+    			if(!token.contains("_") && (token.contains("RRB") || token.contains("LRB"))){
+    				tag = token.replaceAll("\\W", "");
+    				if(tag.equals("RRB")) text = ")";
+    				if(tag.equals("LRB")) text = "(";
+    			}else{
+        			tag = token.substring(0, token.indexOf("_"));
+        			text = token.substring(token.indexOf("_")+1);    				
+    			}
     			xml.append("<"+tag+" id='"+count+"' text='"+text+"'/>");//<JJ text="subulate"/>
     			count++;
     			tokens.remove(i);
