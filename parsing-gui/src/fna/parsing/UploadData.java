@@ -24,8 +24,9 @@ public class UploadData{
 	private static boolean standalone = true; 
 	//the following variables standalonefolder and dataprefixinput need to be set only when run this class in the standalone (not part of charaparser) mode.
 	//dumps generated and the text file containing sql statements will be saved in this standalonefolder
-	private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
-	private static String dataprefixinput = "parthv2";
+	//private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
+	private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target";
+	private static String dataprefixinput = "fnav19_excerpt";
 		
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
@@ -35,7 +36,7 @@ public class UploadData{
 	public UploadData(String inputdataprefix){
 		dataprefix = inputdataprefix;
 		standalone = false;
-		if(!standalone) standalonefolder = Registry.TargetDirectory+"\\to_OTO_"+dataprefix;
+		if(!standalone) standalonefolder = Registry.TargetDirectory+"\to_OTO_"+dataprefix;
 		dumpFiles(dataprefix);
 		createTextFile(dataprefix);
 		
@@ -87,8 +88,8 @@ public class UploadData{
      * Used to create the dumps which need to be uploaded to the website
      */
     
-    	public static void dumpFiles(String dataprefix) {
-    	  try {
+    public static void dumpFiles(String dataprefix) {
+      try {
     	  Runtime rt = Runtime.getRuntime();
     	  String term_category_command = "";
     	  String sentence_command = "";
@@ -97,13 +98,18 @@ public class UploadData{
     	  if(standalone)
     	  {
     		  System.out.println("Dumping files of dataprefix"+dataprefix);
-    		  term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
-    		  sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+standalonefolder+"\\"+dataprefix+"_sentence_dump.sql";
+    		  //term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
+    		  //sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+standalonefolder+"\\"+dataprefix+"_sentence_dump.sql";
+    		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
+    		  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+standalonefolder+"\\"+dataprefix+"_sentence_dump.sql";
+
     	  }
     	  else
     	  {
-    		  term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_term_category_dump.sql";
-        	  sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_sentence_dump.sql";	  
+    		  //term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_term_category_dump.sql";
+        	  //sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_sentence_dump.sql";	  
+    		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_term_category_dump.sql";
+        	  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_sentence_dump.sql";	  
     	  }
     	  
     	  rt.exec(term_category_command);
@@ -116,7 +122,7 @@ public class UploadData{
     	  {
     	   ioe.printStackTrace();
     	  }
-    	  catch(Exception e) {
+    	 catch(Exception e) {
     	  e.printStackTrace();
     	 }
     	}
