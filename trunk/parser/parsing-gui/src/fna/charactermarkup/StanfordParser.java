@@ -62,7 +62,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 	//private boolean finalize = true;
-	private boolean finalize = true;//set true when running config else set false.
+	private boolean finalize = false;//set true when running config else set false.
 
 	//private boolean debug = true;
 	private boolean printSent = true;
@@ -685,7 +685,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
 		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
-		String prefix = "fnav4"; //should be volume name
+		String prefix = "fnav4n"; //should be volume name
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
 		//String volume = "fnav4";
 		

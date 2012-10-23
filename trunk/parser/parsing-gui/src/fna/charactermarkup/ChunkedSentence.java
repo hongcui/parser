@@ -195,7 +195,7 @@ public class ChunkedSentence {
 		if(realchunk.length()>0){
 			chunkedtokens.set(i-1, realchunk.trim());
 		}		
-		this.chunkedsent = "";
+		this.chunkedsent = ""+"";
 		
 		
 		int discoveredchunks = 0;
@@ -661,7 +661,8 @@ public class ChunkedSentence {
 		for(; j < chunkedtokens.size(); j++){
 			//scan for the end of the chunk TODO: may refactor with normalizeOtherINs on this search
 			String t = this.chunkedtokens.get(j);
-			if(t.equals("-LRB-/-LRB-")){ //collect everything untill -RRB-
+			if(!foundo && t.equals("-LRB-/-LRB-")){ //collect everything untill -RRB-
+				//test case: bearing 4-15 <bristles> -LRB-/-LRB- 0 r[p[in] o[{young} growth]] -RRB-/-RRB-
 				boolean findRRB = false;
 				do{
 					t = this.chunkedtokens.get(j);
@@ -677,7 +678,7 @@ public class ChunkedSentence {
 				return;
 			}
 			if(t.matches("(;|\\.|-RRB-/-RRB-)")) break;
-			if(foundo && (t.contains("{") || t.contains("~list~")||t.matches("(\\w+|,|;|\\.)")||t.contains("["))){
+			if(foundo && (t.contains("-LRB-/-LRB-") || t.contains("{") || t.contains("~list~")||t.matches("(\\w+|,|;|\\.)")||t.contains("["))){
 				break;
 			}
 			if(t.contains("<")){
@@ -2160,12 +2161,14 @@ public class ChunkedSentence {
 	 * TODO: deal with LRB-/-LRB
 	 * @return e.g. 3 cm, what about "3 cm to 10 dm"?
 	 * also 3 times (... longer than, as wide as ...)
+	 * 
+	 *problem : 4-15 <bristles> -LRB-/-LRB- 0 r[p[in] o[{young} growth]] -RRB-/-RRB-
 	 */
 	private Chunk getNextNumerics() {
 		String numerics = "";
 		String t = this.chunkedtokens.get(this.pointer);
 		t = NumericalHandler.originalNumForm(t).replaceAll("\\?", "");		
-		if(t.matches("^to~\\d.*")){
+		if(t.matches("^to~\\d.*")){ //deal with " to~5 cm", need synchronization with the code in SentenceOrganStateMarkup 10/26/2012
 			this.pointer++;
 			return new ChunkValue(t.replaceAll("~", " ").trim());
 		}
