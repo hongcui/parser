@@ -730,7 +730,7 @@ public class POSTagger4StanfordParser {
 	}
 	
 	/**
-	 * deal with sentences with parentheses
+	 * deal also with sentences with parentheses
 	 * @return
 	 */
 	private String normalize(String src){
