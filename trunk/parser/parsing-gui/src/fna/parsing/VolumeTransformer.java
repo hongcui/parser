@@ -13,6 +13,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +68,9 @@ public class VolumeTransformer extends Thread {
 	private String dataPrefix;
 	private Display display;
 	private String glosstable;
+	private Hashtable<String, String> unparsed = new Hashtable<String, String>(); //support display of unparsed segments
+	private ArrayList<String> nonames = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
+	private ArrayList<String> parsed = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
 	
 	private boolean debug = false;
 	private boolean debugref = false;
@@ -345,19 +349,39 @@ public class VolumeTransformer extends Thread {
 				
 				//when output list is displayed in CharaParser, habitat sections have not 
 				//been marked up yet.
-				//listener.info(String.valueOf(count), xml.getPath(), ""); //for FNA, this is excuted later in vf.replaceAnnotated.
+				//listener.info(String.valueOf(count), xml.getPath(), ""); //for FNA, this is executed later in vf.replaceAnnotated.
 				listener.progress((count*50) / total);
 			}
 			
 			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
 			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
-			vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
+			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 			
 		} catch (Exception e) {
 			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
 			e.printStackTrace();
 			throw new ParsingException(e);
+		}
+		//update listener.info
+		listener.clear();
+		//unpared
+		Enumeration<String> keys = unparsed.keys();
+		while(keys.hasMoreElements()){
+			String key = keys.nextElement();
+			String value = unparsed.get(key);
+			key = key.substring(key.indexOf(" ")).trim();			
+			listener.info(key, value);
+		}
+		//no names
+		for(String value: nonames){
+			listener.info("no taxon name found in:", value);
+		}
+		//parsed
+		int count = 1;
+		for(String value: parsed){
+			listener.info(""+count, value);
+			count++;
 		}
 	}
 
@@ -715,7 +739,8 @@ public class VolumeTransformer extends Thread {
 		if(name==null ||name.compareTo("") == 0){
 			File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
-			listener.info("no name found in: ", xml.getPath());
+			//listener.info("no name found in: ", xml.getPath());
+			nonames.add(xml.getPath());
 			//errors.put((index+1)+"","no name found in: "+line);
 			return "";
 		}
@@ -921,8 +946,8 @@ public class VolumeTransformer extends Thread {
 			addElement("unparsed", text, treatment);
 			File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
-			listener.info("unparsed: "+text, xml.getPath());
-			//errors.put((index+1)+"","still left: "+text);
+			//listener.info("unparsed: "+text, xml.getPath());
+			unparsed.put((index+1)+" unparsed: "+text, xml.getPath());
 		}
 		return namerank.replace("_name", "");
 	}

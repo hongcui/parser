@@ -55,8 +55,6 @@ public class ProcessListener {
 		
 
 	}
-
-
 	
 	public void progress(final int selection) {
 		display.syncExec(new Runnable() {
