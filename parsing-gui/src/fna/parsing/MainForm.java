@@ -1953,7 +1953,7 @@ public class MainForm {
 		tab6desc.setText(ApplicationUtilities.getProperty("step5Descp"));
 		tab6desc.setEditable(false);
 		tab6desc.setBounds(10, 10, 741, 41);
-		
+		/*
 		tagTable = new Table(composite_6, SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
 		//tagTable = new Table(composite_6,  SWT.BORDER | SWT.FULL_SELECTION);
 		tagTable.setLinesVisible(true);
@@ -1980,10 +1980,10 @@ public class MainForm {
 		sentenceColumnTableColumn.setWidth(515);
 		sentenceColumnTableColumn.setText("Sentence");
 		//added to check on focus,to display any message
-		/*if(tabFolder.getSelectionIndex()==6){
-			tabFolder.setSelection(1);
-			tabFolder.setFocus();
-		}*/
+		//if(tabFolder.getSelectionIndex()==6){
+		//	tabFolder.setSelection(1);
+		//	tabFolder.setFocus();
+		//}
 		
 	    tagTable.addListener(SWT.Selection, new Listener() {
 	        public void handleEvent(Event event) {
@@ -2037,16 +2037,16 @@ public class MainForm {
 	    final Label contextLabel = new Label(composite_6, SWT.NONE);
 		contextLabel.setText("Context:");
 		contextLabel.setBounds(10, 310, 88, 15);
+		*/
 		contextStyledText = new StyledText(composite_6, SWT.READ_ONLY| SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
 		//contextStyledText = new StyledText(composite_6, SWT.V_SCROLL | SWT.READ_ONLY | SWT.H_SCROLL | SWT.BORDER);
 		contextStyledText.setBounds(10, 330, 744, 114);		
-
+		/*
 		//load button
 		final Button loadTagButton = new Button(composite_6, SWT.NONE);
 		loadTagButton.setBounds(392, 450, 168, 23);
 		loadTagButton.setText(ApplicationUtilities.getProperty("sentCurationLoad"));
 		loadTagButton.setToolTipText(ApplicationUtilities.getProperty("sentCurationLoadTTT"));
-		//loadTagButton.setToolTipText("Load sentences to be tagged");
 		loadTagButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				ApplicationUtilities.showProgressPopup(popupBar);
@@ -2055,14 +2055,12 @@ public class MainForm {
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
 					statusOfMarkUp[5] = true;
-					/*if(tagTable.getItemCount()==0)
-					{
-						String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-						String message = ApplicationUtilities.getProperty("popup.load.nodata");				
-						ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-
-						//ApplicationUtilities.showPopUpWindowTab5("Nothing to Load. Please proceed to the next tab", "Information", SWT.OK|SWT.CANCEL,tabFolder);
-					}*/
+					//if(tagTable.getItemCount()==0)
+					//{
+					//	String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
+					//	String message = ApplicationUtilities.getProperty("popup.load.nodata");				
+					//	ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
+					//}
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
@@ -2084,8 +2082,17 @@ public class MainForm {
 			}
 		});
 
-
-
+		*/
+		final Button runTagButton = new Button(composite_6, SWT.NONE);
+		runTagButton.setBounds(580, 450, 174, 23);
+		runTagButton.setText("Run Step 5");
+		runTagButton.setToolTipText("Prepare for the next step");
+		runTagButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				//saveTag(tabFolder);
+				loadTagTable(tabFolder);
+			}
+		});
 
 		
 
@@ -3603,8 +3610,53 @@ public class MainForm {
 		    }
 
 	}
-
+	
+	/**
+	 * simplified step 5
+	 * @param tabFolder
+	 * @return
+	 */
 	private int loadTagTable(TabFolder tabFolder) {
+		//tagTable.removeAll();
+		int XMLFileCount =0;
+		try {
+			 //if(mainDb.loadTagsTableData(tagTable)==0){
+				//ApplicationUtilities.showPopUpWindow(
+				//			ApplicationUtilities.getProperty("popup.info.unknownremoval"), 
+				//			ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+				//this.tagListCombo.setText("");
+				//this.modifierListCombo.setText("");
+				contextStyledText.setText("Preparing for the next step. ");
+				contextStyledText.append("Please proceed to the next step when \"Done\" is displayed in this box.\n");
+				try{
+					if(conn == null){
+						Class.forName("com.mysql.jdbc.Driver");
+						String URL = ApplicationUtilities.getProperty("database.url");
+						conn = DriverManager.getConnection(URL);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
+				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
+				StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable, shell.getDisplay(), contextStyledText); /*using learned semanticroles only*/
+				sct.collect();
+				sct.saveStates();
+				XMLFileCount = sct.grouping4GraphML();
+				contextStyledText.append("Done! Ready to move to the next step.");
+				//tabFolder.setSelection(4); //[general, step3, 4, 5, 6, 7] index starts at 0
+				//tabFolder.setFocus();
+			 //}
+		} catch (Exception exe) {
+				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
+				exe.printStackTrace();
+		}
+		return XMLFileCount;
+	}
+	
+	
+	/*old step 5*/
+	/*private int loadTagTable(TabFolder tabFolder) {
 		tagTable.removeAll();
 		int XMLFileCount =0;
 		try {
@@ -3627,7 +3679,7 @@ public class MainForm {
 				}
 				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
 				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
-				StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable, shell.getDisplay(), contextStyledText); /*using learned semanticroles only*/
+				StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable, shell.getDisplay(), contextStyledText); //using learned semanticroles only
 				sct.collect();
 				sct.saveStates();
 				XMLFileCount = sct.grouping4GraphML();
@@ -3640,7 +3692,7 @@ public class MainForm {
 				exe.printStackTrace();
 		}
 		return XMLFileCount;
-	}
+	}*/
 	
 	private void updateContext(int sentid) throws ParsingException {
 		contextStyledText.setText("");

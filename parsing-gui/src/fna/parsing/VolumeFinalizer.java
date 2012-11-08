@@ -45,9 +45,9 @@ public class VolumeFinalizer extends Thread {
     private static boolean standalone = false;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-    //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
-    //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19";
-    private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx";
+    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
+    //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4";
+    //private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx";
     
 	private Text finalLog;
     private Display display;
@@ -236,9 +236,10 @@ public class VolumeFinalizer extends Thread {
 		if(!standalone) listener.info("" + fileindex, result.getPath(), "");
 	}
 
-	public void replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
+	public ArrayList<String> replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
 		File source = null;
 		File target = null;
+		ArrayList<String> parsed = new ArrayList<String>();
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
 		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
 		int total = source.listFiles().length;
@@ -283,13 +284,17 @@ public class VolumeFinalizer extends Thread {
 				File result = new File(target, count + ".xml");
 				ParsingUtil.outputXML(root, result, null);
 
-				if(!standalone) listener.info("" + count, result.getPath(), "");
+				if(!standalone){
+					listener.info("" + count, result.getPath(), "");
+				}
+				parsed.add(result.getPath());
 			}
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
             throw new ParsingException("Failed to output the final result.", e);
         }
+		return parsed;
     }
 	
 	/**
