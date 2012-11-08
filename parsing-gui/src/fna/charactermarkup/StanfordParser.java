@@ -673,6 +673,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_posedsentences.txt";
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_parsedsentences.txt";
 
+			
 		//String posedfile = "C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_posedsentences.txt";
 		//String parsedfile="C:\\temp\\DEMO\\demo-folders\\taxonX-ants_description\\target\\taxon_ants_parsedsentences.txt";
 		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_posedsentences.txt";
@@ -682,12 +683,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 		String database = "markedupdatasets";
-		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
-		String prefix = "fnav4n"; //should be volume name
-		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
-		//String volume = "fnav4";
+		String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
+		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
+		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
+		String prefix = "fnav19_excerpt";
+		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
+		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
+		//String prefix = "fnav4n"; //should be volume name
+		//String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
+
 		
 		try{
 			Connection conn = null;
