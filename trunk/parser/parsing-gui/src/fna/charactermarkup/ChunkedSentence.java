@@ -381,16 +381,18 @@ public class ChunkedSentence {
 						String[] chartaxa = charataxas.get(c);
 						//is there a taxon for each result? if not, look ahead and look behind to find one
 						String taxon = chartaxa[1];
-						if(chartaxa[1].length()==0){
+						if(chartaxa[1].length()==0 && chartaxa[0].length() != 0){//has character without taxon, fill in taxon by looking ahead/behind
 							if(c-1 >=0 && charataxas.get(c-1)[1].length()>0){
 								taxon = charataxas.get(c-1)[1];
 							}else if(c+1 < charataxas.size() && charataxas.get(c+1)[1].length()>0){
 								taxon = charataxas.get(c+1)[1];
 							}
 						}
-						String xchunk = "x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+taxon+")]";
-						index += ("x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+chartaxa[1]+")]").split("\\s+").length; //use original chartaxa[1] to calculate the index, as the "taxon" may be added
-						this.chunkedtokens.set(index, xchunk); //fill in xchunks at the correct index
+						if(taxon.length()>0){
+							String xchunk = "x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+taxon+")]";
+							index += ("x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+chartaxa[1]+")]").split("\\s+").length; //use original chartaxa[1] to calculate the index, as the "taxon" may be added
+							this.chunkedtokens.set(index, xchunk); //fill in xchunks at the correct index
+						}
 						//if(this.printParentheses) System.out.println("X: ["+this.sentsrc+"/"+this.sentid+"] "+xchunk+ " in: "+this.markedsent);
 						if(this.printParentheses) System.out.println("X: ["+this.sentsrc+"/"+this.sentid+"]: ("+chartaxa[1]+")");
 						if(chartaxa[2].length()>0){ //optional punctuation mark
@@ -1158,7 +1160,7 @@ public class ChunkedSentence {
 								}
 							}
 							//if(w.matches("\\b("+preps+"|and|or|that|which|but)\\b") || w.matches("\\W")){
-							if(w.matches("\\b("+preps+"|and|that|which|but)\\b") || w.matches("\\p{Punct}") || w.equals("-RRB-/-RRB-")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
+							if(w.matches("\\b("+preps+"|and|that|which|but)\\b.*") || w.matches("\\p{Punct}") || w.equals("-RRB-/-RRB-")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
 								np = np.replaceAll("<", "(").replaceAll(">", ")").trim();
 								//this.chunkedtokens.set(thani, "n["+np+"]");
 								this.chunkedtokens.set(i-1, "n["+np+"]");
