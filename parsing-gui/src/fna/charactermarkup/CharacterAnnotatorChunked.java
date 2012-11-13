@@ -409,7 +409,7 @@ public class CharacterAnnotatorChunked {
 					//if there are > 1 preps, 
 					//	if they share the same object
 					//      create alternative expression for relation name
-					//  else 
+					//  else //
 					//	    create multiple chunks
 					
 					//fetch content in brackets
@@ -2037,6 +2037,7 @@ public class CharacterAnnotatorChunked {
 
 	//separate o[......... {m} {m} (o1) and {m} (o2)] to two parts: the last part include all organ names
 	//e.g., o[(cypselae) -LSB-/-LSB- {minute} (crowns) -RSB-/-RSB-]
+	//o[{small} {carinal} -LRB-/-LRB- r[p[under] o[the (ridges)]] -RRB-/-RRB- and {larger} {vallecular} -LRB-/-LRB- r[p[under] o[the (valleys)]] -RRB-/-RRB- (canals)]
 	private String[] separate(String object) {
 		String[] twoparts  = new String[2];
 		object = object.replaceFirst("^o\\[", "").replaceFirst("\\]$", "").replaceAll("<", "(").replaceAll(">", ")");
@@ -2044,7 +2045,7 @@ public class CharacterAnnotatorChunked {
 		int objectstart = 0;
 		if(object.startsWith("(") || object.indexOf("(")<0){
 			part2 = object;
-		}else if(object.indexOf(" (")>=0){
+		}else if(object.indexOf(" (")>=0+0){
 			objectstart = object.indexOf(" (");
 			//do not separate a pair of brackets into two parts
 			part2 = object.substring(objectstart); //object='1–5(–15+) (series)'
@@ -2055,14 +2056,15 @@ public class CharacterAnnotatorChunked {
 				objectstart += part2.indexOf(" (");
 				part2 = part2.substring(part2.indexOf(" ("));
 				left = part2.replaceAll("-L[RS]B-/-L[RS]B-", "#").replaceAll("[^#]", "").length();
-				right = part2.replaceAll("-R[RS]B-/-R[RS]B-", "#").replaceAll("[^#]", "").length();;
+				right = part2.replaceAll("-R[RS]B-/-R[RS]B-", "#").replaceAll("[^#]", "").length();
+				part2 = part2.replaceFirst(" \\(", "~("); //to avoid match this bad object again in while loop
 			}
 		//}else if(object.lastIndexOf(" ")>=0){
 		//	part2 = object.substring(object.lastIndexOf(" ")).trim();
 		}//else{
 		//	part2 = object;
 		//}
-		part2 = part2.trim();
+		part2 = part2.replaceAll("~\\(", " (").trim();
 		String part1 = object.substring(0, objectstart);
 		//String part1 = object.replace(part2, "").trim();
 		if(part1.length()>0){
@@ -2368,6 +2370,8 @@ public class CharacterAnnotatorChunked {
 	 */
 	private ArrayList<Element> processCharacterText(String[] tokens, ArrayList<Element> parents, String character, ChunkedSentence cs)  throws Exception{// 7-12-02 add cs
 		ArrayList<Element> results = new ArrayList<Element>();
+		ArrayList<Element> localresults = new ArrayList<Element>();
+		ArrayList<Element> newelements = new ArrayList<Element>();
 		//determine characters and modifiers
 		String modifiers = "";
 		for(int j = 0; j <tokens.length; j++){
@@ -2388,8 +2392,20 @@ public class CharacterAnnotatorChunked {
 						bracketed += tokens[j]+" ";
 					}
 					//bracketed += tokens[j];
-					createCharacterElement(parents, results,
-							"", bracketed.trim(), "", "",cs);
+					bracketed = bracketed.trim();
+					if(bracketed.startsWith("-LRB-/-LRB- r[")){
+						//[{small}, {carinal}, -LRB-/-LRB-, r[p[under], o[the, (ridges)]], -RRB-/-RRB-, and, {larger}, {vallecular}, -LRB-/-LRB-, r[p[under], o[the, (valleys)]], -RRB-/-RRB]
+						//bracketed: -LRB-/-LRB- r[p[under] o[the (ridges)]] -RRB-/-RRB-
+						newelements = (ArrayList<Element>)results.clone();
+						newelements.removeAll(localresults);
+						localresults.addAll(results);
+						for(Element newelement : newelements)
+							this.addAttribute(newelement, "constraint", bracketed.replaceAll("-[RL][RS]B-/-[RL][RS]B-?", "").replaceAll("(\\w+\\[|\\]|\\(|\\))", "").trim());
+					}else{
+						createCharacterElement(parents, results,
+								"", bracketed.trim(), "", "",cs);
+						//localresults.addAll(results);
+					}
 				}else{
 					tokens[j] = NumericalHandler.originalNumForm(tokens[j]);
 					if(tokens[j].indexOf("~list~")>=0){
@@ -2436,9 +2452,10 @@ public class CharacterAnnotatorChunked {
 										}*/
 									}
 								}else{
-								createCharacterElement(parents, results,
-										modifiers, w, chara, "",cs);// 7-12-02 add cs //default type "" = individual vaues
-								modifiers = "";
+									createCharacterElement(parents, results,
+											modifiers, w, chara, "",cs);// 7-12-02 add cs //default type "" = individual vaues
+									modifiers = "";
+									//localresults.addAll(results);
 								}
 							}
 						}
