@@ -97,8 +97,10 @@ public class Type2Transformer extends Thread {
 				Element root = doc.getRootElement();
 				
 				Element descrp = (Element)XPath.selectSingleNode(root, "//treatment/description");
-				String text = descrp.getTextNormalize();
-				writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph.
+				if(descrp != null) {
+					String text = descrp.getTextNormalize();
+					writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph.
+				}
 				listener.progress((i+1)*100/total);
 				listener.info((i)+"", f.getName()); 
 			}	
