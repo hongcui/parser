@@ -61,6 +61,9 @@ public class WordNetWrapper {
 			}
 	}
 	
+	public boolean formchange(){
+		return this.formchange;
+	}
 	public boolean isN(){
 		return pos.containsKey("noun");
 	}
@@ -91,12 +94,14 @@ public class WordNetWrapper {
 	}
 	
 	public static void main(String[] args) {
-		WordNetWrapper wnw = new WordNetWrapper("1-(2+)-pinnately"); 
-		System.out.println(wnw.isAdj());
-		System.out.println(wnw.isAdv());
-		System.out.println(wnw.isN());
-		System.out.println(wnw.isV());
-		System.out.println(wnw.mostlikelyPOS());
+		//WordNetWrapper wnw = new WordNetWrapper("1-(2+)-pinnately"); 
+		WordNetWrapper wnw = new WordNetWrapper("edged"); 
+		System.out.println("adj? "+ wnw.isAdj());
+		System.out.println("adv? "+ wnw.isAdv());
+		System.out.println("n? "+ wnw.isN());
+		System.out.println("v? "+wnw.isV());
+		System.out.println("most likely =" + wnw.mostlikelyPOS());
+		System.out.println("form changed "+ wnw.formchange());
 	}
 
 }
