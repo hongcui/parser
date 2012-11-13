@@ -110,6 +110,7 @@ public class VolumeMarkup {
 		long time = System.currentTimeMillis();
 
 		Process p = Runtime.getRuntime().exec(com);
+		
 		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p
 				.getInputStream()));
 		
