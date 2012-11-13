@@ -683,14 +683,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 		String database = "markedupdatasets";
-		String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
+		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
-		String prefix = "fnav19_excerpt";
-		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
-		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
-		//String prefix = "fnav4n"; //should be volume name
-		//String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\afterstep2\\v4";
+		String prefix = "fnav19_excerpt";*/
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_posedsentences.txt";
+		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_parsedsentences.txt";
+		String prefix = "fnav2"; //should be volume name
+		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\transformed";
 
 		
 		try{

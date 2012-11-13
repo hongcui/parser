@@ -505,7 +505,7 @@ public class Utilities {
 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
-		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("–", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String ch = characterhash.get(w);
@@ -515,6 +515,10 @@ public class Utilities {
 			ch = "";
 			if(w.endsWith("shaped")){
 				return "shape";
+			}
+			//-tipped, thin-edged, white-edged, etc.
+			if(w.endsWith("ed")&& w.contains("-") && Utilities.isNounVerb(w.substring(w.lastIndexOf("-")))){
+				return "architecture";
 			}
 			if(w.indexOf('-')>0){
 				String[] ws = w.split("-+");
@@ -529,6 +533,12 @@ public class Utilities {
 	}
 
 	
+	private static boolean isNounVerb(String word) {
+		WordNetWrapper wnw = new WordNetWrapper(word);
+		if(wnw.formchange() && wnw.isAdj()){return true;}
+		return false;
+	}
+
 	private static String lookup(String w, Connection conn,
 			Hashtable<String, String> characterhash, String glosstable,
 			String wc, String prefix) {
