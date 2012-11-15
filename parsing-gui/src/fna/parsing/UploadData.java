@@ -19,14 +19,22 @@ public class UploadData{
 	private static String dataprefix = "";
 	
 	/*
-	 * standalone set to true when running independently. The corresponding standalone folder must be set. The corresponding dataprefixinput should be given
+	 * standalone set to true when running independently. The corresponding standalone folder must be set. The corresponding dataprefixinput and an folder where the
+	 * dump files are stored should be given.
+	 * Also have to update term_category_command and sentence_command
 	 */
+/*
+	private static boolean standalone = true;
+	private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
+	private static String dataprefixinput = "parthv2"; //can only be 10 letters long at the most. Or have to change the datasetprefix database.
+*/
 	private static boolean standalone = true; 
 	//the following variables standalonefolder and dataprefixinput need to be set only when run this class in the standalone (not part of charaparser) mode.
 	//dumps generated and the text file containing sql statements will be saved in this standalonefolder
 	//private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
 	private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target";
 	private static String dataprefixinput = "fnav19_excerpt";
+
 		
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
@@ -58,6 +66,7 @@ public class UploadData{
 		execute(excom);
 	}
 	
+	
 	public static void main(String[] args) {
 		if(standalone)
 		{
@@ -73,14 +82,11 @@ public class UploadData{
 		String tsentence = dataprefix+"_sentence_dump.sql";
 		scpTo(tsentence);
 		
-		/*DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-	    Calendar cal = Calendar.getInstance();
-	    System.out.println(dateFormat.format(cal.getTime()));*/
 		
-	    String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+		String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
 		execute(backup);
 		
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile;
+		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
 		execute(excom);
 	}
 	
@@ -97,7 +103,6 @@ public class UploadData{
     	  //rt.exec("C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets treatise_o_term_category -r  C:\\Users\\mohankrishna89\\Documents\\dumps\\newdump.sql");
     	  if(standalone)
     	  {
-    		  System.out.println("Dumping files of dataprefix"+dataprefix);
     		  //term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
     		  //sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+standalonefolder+"\\"+dataprefix+"_sentence_dump.sql";
     		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+standalonefolder+"\\"+dataprefix+"_term_category_dump.sql";
@@ -138,7 +143,7 @@ public class UploadData{
     		try{
     			/*DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     		    Calendar cal = Calendar.getInstance();*/
-    			System.out.println("Dumping files of dataprefix"+dataprefix);
+    			System.out.println("Dumping files of dataprefix: "+dataprefix);
     			String datasetprefix = dataprefix+"_"+dateFormat.format(cal.getTime());
     			String filename="sqlscript";
     			String directory="";
@@ -186,18 +191,21 @@ public class UploadData{
     			//get default records from table categories
     			commands[10] = "insert "+datasetprefix+"_categories select * from categories;";
     			commands[11] = "create table "+datasetprefix+"_web_grouped_terms like fna_gloss_web_grouped_terms;";
-    			commands[12] = "create table "+datasetprefix+"_finalized_terms like fna_gloss_finalized_terms;";
+    			//commands[12] = "create table "+datasetprefix+"_finalized_terms like fna_gloss_finalized_terms;";
+    			commands[12] = "create table "+datasetprefix+"_confirmed_category like fna_gloss_confirmed_category;";
     			commands[13] = "create table "+datasetprefix+"_user_terms_decisions like fna_gloss_user_terms_decisions;";
     			commands[14] = "create table "+datasetprefix+"_user_terms_relations like fna_gloss_user_terms_relations;";
     			commands[15] = "create table "+datasetprefix+"_sentence like fna_gloss_sentence;";
     			
     			//page Hierarchy Tree
     			commands[16] = "create table "+datasetprefix+"_web_tags like fna_gloss_web_tags;";
-    			commands[17] = "create table "+datasetprefix+"_finalized_tags like fna_gloss_finalized_tags;";
+    			//commands[17] = "create table "+datasetprefix+"_finalized_tags like fna_gloss_finalized_tags;";
+    			commands[17] = "create table "+datasetprefix+"_confirmed_paths like fna_gloss_confirmed_paths;";
     			commands[18] = "create table "+datasetprefix+"_user_tags_decisions like fna_gloss_user_tags_decisions;";
     			
     			//page Orders
-    			commands[19] = "create table "+datasetprefix+"_finalized_orders like fna_gloss_finalized_orders;";
+    			//commands[19] = "create table "+datasetprefix+"_finalized_orders like fna_gloss_finalized_orders;";
+    			commands[19] = "create table "+datasetprefix+"_confirmed_orders like fna_gloss_confirmed_orders;";
     			commands[20] = "create table "+datasetprefix+"_user_orders_decisions like fna_gloss_user_orders_decisions;";
     			commands[21] = "create table "+datasetprefix+"_web_orders like fna_gloss_web_orders;";
     			commands[22] = "create table "+datasetprefix+"_web_orders_terms like fna_gloss_web_orders_terms;";
@@ -404,17 +412,10 @@ static int checkAck(InputStream in) throws IOException{
 		      session.setConfig(config);
 		      
 		     
-		      // username and password will be given via UserInfo interface.
-		    //  UserInfo ui=new MyUserInfo();
-		    //  session.setUserInfo(ui);
+
 		      session.setPassword(pass);
 		      session.connect();
-		      /*DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-		      Calendar cal = Calendar.getInstance();
-		      System.out.println(dateFormat.format(cal.getTime()));
-		      //String command="set|grep SSH";
-		      //command = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
-		      //command ="mysql -u termsuser -ptermspassword";*/
+
 
 		      Channel channel=session.openChannel("exec");
 		      ((ChannelExec)channel).setCommand(command);
