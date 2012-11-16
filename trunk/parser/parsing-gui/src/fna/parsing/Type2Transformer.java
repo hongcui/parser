@@ -103,7 +103,11 @@ public class Type2Transformer extends Thread {
 				}
 				listener.progress((i+1)*100/total);
 				listener.info((i)+"", f.getName()); 
-			}	
+			}
+			
+			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
+			tnc.collect();
 		}catch(Exception e){
 			e.printStackTrace();
 		}

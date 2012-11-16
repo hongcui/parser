@@ -32,6 +32,7 @@ public class VolumeMarkup {
 	protected String markupMode = "plain"; //TODO: make this configurable
 
 	private String glossarytable;
+	public static Process p = null;
 	protected static final Logger LOGGER = Logger.getLogger(VolumeMarkup.class);
 	
 	public VolumeMarkup(ProcessListener listener, Display display, Text perlLog, String dataPrefix, String glossarytable) {
@@ -109,8 +110,8 @@ public class VolumeMarkup {
 			InterruptedException {
 		long time = System.currentTimeMillis();
 
-		Process p = Runtime.getRuntime().exec(com);
-		
+		p = Runtime.getRuntime().exec(com);
+				
 		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p
 				.getInputStream()));
 		
