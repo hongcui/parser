@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +16,9 @@ import java.util.Hashtable;
 import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Parent;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 import org.jdom.Content;
@@ -151,7 +154,18 @@ public abstract class Type4Transformer extends Thread {
 					for(int c = 0; c < size; c++){
 						Content cont = p.getContent(c);
 						if(cont instanceof Element){
-							sb.append(((Element)cont).getTextNormalize()+" ");
+							//Mohan code to get all the text from the xml file into the descriptions
+							String localtext="";
+							XMLOutputter outp = new XMLOutputter();
+						    outp.setFormat(Format.getCompactFormat());
+						    StringWriter sw = new StringWriter();
+						    outp.output(((Parent) p.getContent(c)).getContent(), sw);
+						    StringBuffer sb1 = sw.getBuffer();
+						    //System.out.println(sb1.toString());
+						    localtext=sb1.toString().replaceAll("<.*?>", " ").replaceAll("\\s+", " ").trim();
+						    sb.append(localtext+" ");
+							//End Mohan Code.
+							//sb.append(((Element)cont).getTextNormalize()+" ");
 						}else if(cont instanceof Text){
 							sb.append(((Text)cont).getTextNormalize()+" ");
 						}
