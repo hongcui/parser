@@ -164,7 +164,7 @@ public class MainForm {
 	private static boolean saveFlag = false;
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
 	/* document type: This will determine how many tabs to show */
-	private String type = "";
+	public static String type = "";
 	
 	private MainFormDbAccessor mainDb = new MainFormDbAccessor();
 	private CharacterStateDBAccess charDb = null;
