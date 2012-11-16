@@ -556,11 +556,14 @@ public class SentenceOrganStateMarker {
 		organNameFromPlNouns(tags, stmt);
 	
 		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
-		
+		//System.out.println(tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|"));
+		//System.out.println(tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll(":\\|", "\\|").replaceAll("\\.\\|", "\\|"));
+		//System.out.println(tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll("(\\[|\\])", ""));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|");
+		//return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|");
+		return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll("(\\[|\\])", "");
 	}
 	
 
@@ -684,10 +687,14 @@ public class SentenceOrganStateMarker {
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true, null, null);
+/*<<<<<<< .mine
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_6866_tx", "antglossaryfixed", true, null, null);
+=======*/
 
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav5", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "Treatise_o", "treatiseglossaryfixed", true, null, null);
 
+//>>>>>>> .r1182
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
