@@ -74,7 +74,7 @@ public class ChunkedSentence {
 
 	public String unassignedmodifier = null;
 	//caches
-	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
+	public static Hashtable<String, String[]> characterhash = new Hashtable<String, String[]>();
 	public static ArrayList<String> adverbs = new ArrayList<String>();
 	public static ArrayList<String> verbs = new ArrayList<String>();
 	public static ArrayList<String> nouns = new ArrayList<String>();
@@ -115,7 +115,7 @@ public class ChunkedSentence {
 	 * @param taxonnamepattern2 
 	 * 
 	 */
-	public ChunkedSentence(int id, Document collapsedtree, Document tree, String tobechunkedmarkedsent,  String sentsrc, String tableprefix,Connection conn, String glosstable, Pattern taxonnamepattern, Pattern taxonnamepattern2) {
+	public ChunkedSentence(int id, Document collapsedtree, Document tree, String tobechunkedmarkedsent,  String sentsrc, String tableprefix,Connection conn, String glosstable/*, Pattern taxonnamepattern, Pattern taxonnamepattern2*/) {
 		eqcharacters.put("wide", "width");
 		eqcharacters.put("long", "length");
 		eqcharacters.put("broad", "width");
@@ -124,8 +124,8 @@ public class ChunkedSentence {
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
 		this.conn = conn;
-		this.taxonnamepattern1 = taxonnamepattern;
-		this.taxonnamepattern2 = taxonnamepattern2;
+		//this.taxonnamepattern1 = taxonnamepattern;
+		//ChunkedSentence.taxonnamepattern2 = taxonnamepattern2;
 		
 		try{
 			Statement stmt = conn.createStatement();
@@ -369,9 +369,10 @@ public class ChunkedSentence {
 				}
 				text = text.trim(); //containing text from j+1 to i-1, now i is -RRB-/-RRB- or EOL
 				//test for case 2: taxon constraint
-				Matcher m = this.taxonnamepattern2.matcher(text);
+				//Matcher m = this.taxonnamepattern2.matcher(text);
 				//System.out.println(this.taxonnamepattern2.toString());
-				if(m.matches()){//case 2: taxon constraint 205.txt-15					
+				//if(m.matches()){//case 2: taxon constraint 205.txt-15	
+				if(text.contains("-taxonname-")){
 					this.chunkedtokens.set(x, ""); // open (
 					this.chunkedtokens.set(i, ""); // close )
 					int index = x;
@@ -391,6 +392,8 @@ public class ChunkedSentence {
 						if(taxon.length()>0){
 							String xchunk = "x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+taxon+")]";
 							index += ("x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+chartaxa[1]+")]").split("\\s+").length; //use original chartaxa[1] to calculate the index, as the "taxon" may be added
+							xchunk = xchunk.replaceAll("-taxonname-", ". ");
+							xchunk = xchunk.replaceAll("taxonname-", "");
 							this.chunkedtokens.set(index, xchunk); //fill in xchunks at the correct index
 						}
 						//if(this.printParentheses) System.out.println("X: ["+this.sentsrc+"/"+this.sentid+"] "+xchunk+ " in: "+this.markedsent);
@@ -458,11 +461,12 @@ public class ChunkedSentence {
 		ArrayList<String[]> results = new ArrayList<String[]>();
 				
 		String[] tokens = text.split("\\s+");
-		Matcher m = null;
+		//Matcher m = null;
 		String ptn = "";
 		for(String token : tokens){
-			m = taxonnamepattern2.matcher(token);
-			if(m.matches()){
+			//m = taxonnamepattern2.matcher(token);
+			//if(m.matches()){
+			if(token.contains("-taxonname-")){
 				ptn +="N"; //taxon name
 			}else if(token.length()==2 && token.endsWith(".")){
 				ptn +="N"; //taxon name
@@ -477,7 +481,7 @@ public class ChunkedSentence {
 			}
 		}
 		//evaluate the pattern
-		m = sandwich.matcher(ptn);
+		Matcher m = sandwich.matcher(ptn);
 		if(m.matches()){//multiple constraints: e.g., NNC,NNC ; NNC,CNN, what about CN,|C,CN or CN,N,|CN
 			//must have puncts(or X) to separate the constraints
 			//each constraint must NOT match sandwich pattern
@@ -1984,22 +1988,22 @@ public class ChunkedSentence {
 						return null;
 					}
 				}else{
-					String chara = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
-					if(!founds && chara!=null){
-						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+chara+"["+token+" ";
+					String[] charainfo = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
+					if(!founds && charainfo!=null){
+						scs = (scs.trim().length()>0? scs.trim()+"] ": "")+charainfo[0]+"["+token+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+" ";
 						founds = true;
 						if(i+1==this.chunkedtokens.size()){ //reach the end of chunkedtokens
 							scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 							this.pointer = i+1;
 							return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
 						}
-					}else if(founds && chara!=null && scs.matches(".*?"+chara+"\\[.*")){ //coloration coloration: dark blue
+					}else if(founds && charainfo!=null && scs.matches(".*?"+charainfo[0]+"\\[.*")){ //coloration coloration: dark blue
 						scs += token+" ";
 					}else if(founds){
 						this.pointer = i;
 						scs = scs.replaceFirst("^\\]\\s+", "").trim()+"]";
 						return new ChunkSimpleCharacterState("a["+scs.trim()+"]");
-					}else if(chara==null){
+					}else if(charainfo==null){
 						if(Utilities.isVerb(token, verbs, notverbs) && !founds){//construct ChunkVP or ChunkCHPP
 							scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"v["+token+" ";
 							//continue searching for either a <> or a r[]
@@ -2017,9 +2021,9 @@ public class ChunkedSentence {
 									if(t.length()>0){
 										String[] states = t.split("\\s+");
 										for(int k = 0; k < states.length; k++){
-											String ch = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable, tableprefix);
-											if(ch!=null){
-												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+states[k].replaceAll("[{}]", "")+" ";
+											String[] chinfo = Utilities.lookupCharacter(states[k], conn, characterhash, glosstable, tableprefix);
+											if(chinfo!=null){
+												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+chinfo[0]+"["+states[k].replaceAll("[{}]", "")+ (chinfo[1].length()>0? "_"+chinfo[1]+"_" : "")+" ";
 											}else{
 												scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"m["+states[k].replaceAll("[{}]", "")+" ";
 											}
@@ -2029,7 +2033,7 @@ public class ChunkedSentence {
 									this.pointer = j+1;
 									return new ChunkVP("b["+scs+"]"); 
 								}
-								String ch = Utilities.lookupCharacter(t, conn, characterhash, glosstable, tableprefix);
+								String[] chinfo = Utilities.lookupCharacter(t, conn, characterhash, glosstable, tableprefix);
 								if((!findc &&!findo) && t.matches("^[rwl]\\[.*")){
 									scs = scs.replaceFirst("^\\]\\s+", "").trim()+"] ";
 									scs += t;
@@ -2037,8 +2041,8 @@ public class ChunkedSentence {
 								}else if(!findo && t.indexOf("<")>=0){
 									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"o["+t.replace("<", "(").replace(">", ")").replaceAll("[{}]", "")+" ";
 									findo = true;
-								}else if(!findo && !findc && ch!=null){
-									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+ch+"["+t.replaceAll("[{}]", "")+" ";
+								}else if(!findo && !findc && chinfo!=null){
+									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+chinfo[0]+"["+t.replaceAll("[{}]", "")+ (chinfo[1].length()>0? "_"+chinfo[1]+"_" : "")+" ";
 								}else if(!findo && !findc && !findm && Utilities.isAdv(t, adverbs, notadverbs)){
 									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+"m["+t.replaceAll("[{}]", "")+" ";
 									findm = true;
@@ -2386,8 +2390,8 @@ parallelism scope: q[other chunks]
 					token = this.chunkedtokens.get(id+1);
 					if(id+1 < this.chunkedtokens.size() && token.startsWith("{")){
 						//r[p[to]] {reniform}
-						String chara = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
-						this.chunkedtokens.set(id, "a["+chara+"[to_"+token.replaceAll("[{}]", "")+"]]");
+						String[] charainfo = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
+						this.chunkedtokens.set(id, "a["+charainfo[0]+"[to_"+token.replaceAll("[{}]", "")+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"]]");
 						this.chunkedtokens.set(id+1, "");
 						return "ChunkSimpleCharacterState";
 					}
@@ -2419,36 +2423,39 @@ parallelism scope: q[other chunks]
 			String charword = beforethan.lastIndexOf(' ')>0 ? beforethan.substring(beforethan.lastIndexOf(' ')+1) : beforethan.replaceFirst("n\\[", "");
 			String beforechar = beforethan.replace(charword, "").trim().replaceFirst("n\\[", "");
 			
-			String chara = null;
+			String[] charainfo = null;
+			String chara = "";
 			if(!charword.matches("("+ChunkedSentence.more+")")){
-				chara = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+				charainfo = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 			}
 			String afterthan = token.substring(token.indexOf(" than ")+6);
 			//Case B
-			if(afterthan.matches(".*?\\d.*?\\b("+ChunkedSentence.units+"|long|length|wide|width)\\b.*") || afterthan.matches(".*?\\d\\.\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
-				if(chara==null){chara="size";}
+			if(afterthan.matches(".*?\\d.*?\\b("+ChunkedSentence.units+"|long|length|wide|width)\\b.*") || afterthan.matches(".*?\\d\\.\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]				
+				if(charainfo==null){chara="size";}
+				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHAN"; //character
 			}else if(afterthan.matches(".*?\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
-				if(chara==null){chara="count";}
+				if(charainfo==null){chara="count";}
+				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHAN";
 			}//Case C
 			else if(afterthan.indexOf("(")>=0){ //contains organ
-				if(chara==null){//is a constraint, lobed n[more than...]
+				if(charainfo==null){//is a constraint, lobed n[more than...]
 					token = "n["+token.replaceFirst("n\\[", "constraint[")+"]";
 					this.chunkedtokens.set(id, token);
 					return "ChunkTHAN";
 				}else{//n[more deeply lobed than...
-					token = "n["+(beforechar.length()>0? "m["+beforechar+"] ": "")+chara+"["+charword+"] constraint[than "+afterthan+"]";
+					token = "n["+(beforechar.length()>0? "m["+beforechar+"] ": "")+charainfo[0]+"["+charword+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"] constraint[than "+afterthan+"]";
 					this.chunkedtokens.set(id, token);
 					return "ChunkTHAN";
 				}
 			}//Case A n[wider than long]
 			else{
-				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
+				token = "n["+token.replaceFirst("n\\[", charainfo[0]+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHANC"; //character
 			}
@@ -2508,9 +2515,9 @@ parallelism scope: q[other chunks]
 			last = charstring.trim();
 		}
 			
-		String c = Utilities.lookupCharacter(last, conn, characterhash, glosstable, tableprefix);
-		if(c!=null){
-			result += c+"["+last+"]";
+		String[] charainfo = Utilities.lookupCharacter(last, conn, characterhash, glosstable, tableprefix);
+		if(charainfo!=null){
+			result += charainfo[0]+"["+last+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"]";
 		}else if(Utilities.isVerb(last, verbs, notverbs)){
 			result += "v["+last+"]";
 		}

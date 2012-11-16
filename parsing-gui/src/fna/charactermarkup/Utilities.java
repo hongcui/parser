@@ -499,13 +499,43 @@ public class Utilities {
 	
 	/**
 	 * 5-{merous}
+	 * changed from return a string to an array of two strings nov 14, 2012
 	 * @param w
-	 * @return null if not found
+	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm_chara1, perferredterm_chara2
 	 */
-	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
+	public static String[] lookupCharacter(String w, Connection conn, Hashtable<String, String[]> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
+		String wc = w;
+		String[] ch = characterhash.get(w);
+		if(ch != null){
+			return ch;
+		}else{
+			ch = null;
+			if(w.endsWith("shaped")){
+				//return "shape";
+				w = w.replaceFirst("shaped", "-shaped");
+			}
+
+			if(w.indexOf('-')>0){
+				String[] ws = w.split("-+");
+				w = ws[ws.length-1];
+			}
+			ch = lookup(w, conn, characterhash, glosstable, wc, prefix);
+			if(ch == null && wc.indexOf('-')>0){//pani_culiform
+				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc, prefix);
+			}
+		}
+		return ch;
+	}
+	
+	/*
+	 	public static String lookupCharacter(String w, Connection conn, Hashtable<String, String> characterhash, String glosstable, String prefix) {
+		if(w.trim().length()==0) return null;
+		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
+		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-").replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String ch = characterhash.get(w);
@@ -530,7 +560,7 @@ public class Utilities {
 			}
 		}
 		return ch;
-	}
+	}*/
 
 	
 	private static boolean isNounVerb(String word) {
@@ -539,7 +569,97 @@ public class Utilities {
 		return false;
 	}
 
-	private static String lookup(String w, Connection conn,
+	/**
+	 * changed from return a string to an array of two strings nov 14, 2012
+	 * @param w
+	 * @param conn
+	 * @param characterhash
+	 * @param glosstable
+	 * @param wc
+	 * @param prefix
+	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm_chara1, perferredterm_chara2
+	 */
+	private static String[] lookup(String w, Connection conn,
+			Hashtable<String, String[]> characterhash, String glosstable,
+			String wc, String prefix) {
+		String ch ="";
+		String syn = "";
+		String[] result = new String[2];
+		HashSet<String> chs = new HashSet<String>();
+		HashSet<String> syns = new HashSet<String>();
+		try{
+			Statement stmt = conn.createStatement();
+			//check glossarytable
+			ResultSet rs = stmt.executeQuery("select term, category, hasSyn from "+glosstable+" where term rlike '"+w+"(_[0-9])?' or term rlike '_"+w+"(_[0-9])?' order by category");
+			while(rs.next()){
+				String term = rs.getString("term");
+				String cat = rs.getString("category");
+				chs.add(cat);
+				int hassyn = rs.getInt("hasSyn");
+				if(hassyn == 1){
+					Statement stmt1 = conn.createStatement();
+					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+glosstable.replace("fixed", "syns") + 
+							" where synnony ='"+term+"'");
+					while(rs1.next()){
+						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
+					}					
+				}
+
+				//if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+				//	ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
+				//}
+			}
+			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
+			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '"+w+"(_[0-9])?' and category !='structure' order by category";
+			rs = stmt.executeQuery(q);
+			while(rs.next()){
+				String term = rs.getString("term");
+				String cat = rs.getString("category");
+				chs.add(cat);
+				int hassyn = rs.getInt("hasSyn");
+				if(hassyn == 1){
+					Statement stmt1 = conn.createStatement();
+					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+prefix+ "_syns" + 
+							" where synnony ='"+term+"'");
+					while(rs1.next()){
+						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
+					}					
+				}
+
+				//if(! ch.matches(".*?(^|_)"+cat+"(_|$).*")){
+				//	ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
+				//}
+			}			
+			rs.close();
+			stmt.close();
+			String[] charas = chs.toArray(new String[]{});
+			String[] synonyms = syns.toArray(new String[]{});
+ 			Arrays.sort(charas);
+ 	
+ 			
+ 			for(String character: charas){
+ 				ch += character.replaceAll("\\s+", "_")+"_or_";
+ 			}
+			if(ch.length()>0){
+				ch = ch.replaceFirst(Utilities.or+"$", "");				
+			}else{
+				return null;
+			}
+			
+ 			for(String synonym: synonyms){
+ 				syn += synonym+",";
+ 			}
+ 			result[0] = ch;
+ 			result[1] = syn;
+			
+			characterhash.put(wc, result);
+			return result;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/*private static String lookup(String w, Connection conn,
 			Hashtable<String, String> characterhash, String glosstable,
 			String wc, String prefix) {
 		String ch ="";
@@ -555,8 +675,8 @@ public class Utilities {
 				//	ch += rs.getString("category").trim().replaceAll("\\s+", "_")+"_or_";
 				//}
 			}
-			//check _term_category table
-			String q = "select distinct category from "+prefix+"_term_category where term='"+w+"' and category !='structure' order by category";
+			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
+			String q = "select distinct category from "+prefix+"_term_category where term rlike '"+w+"(_[0-9])?' and category !='structure' order by category";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String cat = rs.getString("category");
@@ -582,7 +702,7 @@ public class Utilities {
 			e.printStackTrace();
 		}
 		return null;
-	}
+	}*/
 	
 	/**
 	 * 
@@ -602,8 +722,10 @@ public class Utilities {
 			if(rs.next()){
 				String cat = rs.getString("category");
 				in = true;
-				Statement stmt1 = conn.createStatement();
-				stmt1.execute("insert into "+prefix+"_term_category (term, category) values ('"+termcopy+"', '"+cat+"')");
+				//nov 14, 2012, Hong: didn't understand why the term need to be inserted to term_category table here
+				//Hong: checked and found that it should not be inserted at all.
+				//Statement stmt1 = conn.createStatement();
+				//stmt1.execute("insert into "+prefix+"_term_category (term, category) values ('"+termcopy+"', '"+cat+"')");
 			}
 		}catch(Exception e){
 			e.printStackTrace();

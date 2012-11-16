@@ -830,8 +830,8 @@ public class CharacterAnnotatorChunked {
 		}
 		
 		if(! singlephrase && size<=3){
-			String chara = Utilities.lookupCharacter(token, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
-			if(chara != null && chara.contains("position")){
+			String[] charainfo = Utilities.lookupCharacter(token, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+			if(charainfo != null && charainfo[0].contains("position")){
 				singlephrase = true; //position
 			}
 		}
@@ -868,8 +868,14 @@ public class CharacterAnnotatorChunked {
 	}
 	private void processChunkScopeTaxa(Chunk ck, ChunkedSentence cs) throws Exception {
 		String content = ck.toString().replaceAll("(^x\\[|\\]$)", "");
+		//r[p[except] o[r[p[in] (m. parvifolia and m. bostockii) => (except in m. parvifolia and m. bostockii)
 		String taxon = content.substring(content.lastIndexOf("(")).trim();
 		content = content.substring(0, content.lastIndexOf("(")).trim();
+		//content: r[p[except] o[r[p[in] 
+		if(!content.contains("{") && !content.contains("(")){
+			taxon = "("+content.replaceAll("(\\w\\[|\\])", "").trim()+" "+taxon.replaceFirst("\\(", "");
+			content = "";
+		}	
 		if(content.length()>0){
 			ck.setText(content);
 			Attribute taxonscp = new Attribute("taxon_constraint", taxon);//create a constraint attribute
@@ -1263,10 +1269,12 @@ public class CharacterAnnotatorChunked {
 		String eqcharacter = ChunkedSentence.eqcharacters.get(state);
 		if(eqcharacter != null){
 			state = eqcharacter;
-			character = Utilities.lookupCharacter(eqcharacter, conn, ChunkedSentence.characterhash, this.glosstable, this.tableprefix);
-			if(character ==null){
+			String[] charainfo = Utilities.lookupCharacter(eqcharacter, conn, ChunkedSentence.characterhash, this.glosstable, this.tableprefix);
+			if(charainfo == null){
 				state = statecp;
 				character = charactercp;
+			}else{
+				character = charainfo[0];
 			}
 		}
 		if(character.compareToIgnoreCase("character")==0 && modifier.length() ==0){//high relief: character=relief, reset the character of "high" to "relief"
@@ -2160,7 +2168,7 @@ public class CharacterAnnotatorChunked {
 			this.structid++;
 			e.setAttribute("id", strid);
 			//e.setAttribute("name", o.trim()); //must have.
-			e.setAttribute("name", Utilities.toSingular(o.trim())); //must have. //corolla lobes
+			e.setAttribute("name", o.contains("taxonname-")? o.replaceAll("-taxonname-", ". ").replaceAll("taxonname-", "") : Utilities.toSingular(o.trim())); //must have. //corolla lobes
 			//if(this.inbrackets){e.setAttribute("in_bracket", "true");}
 			addScopeConstraints(cs, e);
 			this.statement.addContent(e);
@@ -2420,11 +2428,11 @@ public class CharacterAnnotatorChunked {
 							w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
 						}
 						w = w.replaceAll("(\\{|\\})", "");
-						chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
-						if(chara==null && w.matches("no")){
+						String[] charainfo = (Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix));
+						if(charainfo==null && w.matches("no")){
 							chara = "presence";
 						}
-						if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
+						if(charainfo==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
 							modifiers +=w+" ";
 						}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?
 							results = this.annotateNumericals(w, "count", modifiers, parents, false, cs); //added cs
@@ -2432,7 +2440,8 @@ public class CharacterAnnotatorChunked {
 							modifiers = "";
 						}else{
 							//String chara = MyPOSTagger.characterhash.get(w);
-							if(chara != null){
+							if(charainfo != null){
+								chara = charainfo[0];
 								if(character!=null){
 									chara = character;
 								}
@@ -2452,6 +2461,7 @@ public class CharacterAnnotatorChunked {
 										}*/
 									}
 								}else{
+									w = w + (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "");//attach syn info to the word w
 									createCharacterElement(parents, results,
 											modifiers, w, chara, "",cs);// 7-12-02 add cs //default type "" = individual vaues
 									modifiers = "";
@@ -2640,8 +2650,8 @@ public class CharacterAnnotatorChunked {
 		}
 		//mohan code ends.
 		w = w.replaceAll("\\W", "");
-		String ch = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
-		if(ch!=null && ch.matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
+		String[] chinfo = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
+		if(chinfo!=null && chinfo[0].matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
 		String sw = Utilities.toSingular(w);
 		try{
 			Statement stmt = conn.createStatement();
