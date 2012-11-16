@@ -48,7 +48,9 @@ public class StateMatrix {
 			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 			stmt.execute("drop table if exists "+tableprefix+"_term_category");
-			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200))");
+			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), hasSyn tinyint(1))");
+			stmt.execute("drop table if exists "+tableprefix+"_syns");
+			stmt.execute("create table if not exists "+tableprefix+"_syns (term varchar(200), synonym varchar(200))");	
 			//noneqterms must not be refreshed
 			//stmt.execute("create table if not exists "+tableprefix+"_noneqterms (term varchar(100) not null, source varchar(200))");
 			stmt.close();
@@ -81,7 +83,7 @@ public class StateMatrix {
 			stmt.execute("drop table if exists "+tableprefix+"_group_decisions");
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 			stmt.execute("drop table if exists "+tableprefix+"_term_category");
-			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200))");
+			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), tinyint(1))");
 			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -354,6 +356,7 @@ public class StateMatrix {
 		//add terms that are in WordRoles ("c") but not as cooccured.
 		//save these terms in DB
 		//save these terms in clusters for return
+
 		ArrayList<State> freeStates = new ArrayList<State> ();
 		try{
 			Statement stmt = conn.createStatement();
@@ -369,11 +372,11 @@ public class StateMatrix {
 			ResultSet rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String freeterm = rs.getString("word");
-				if(freeterm.indexOf("_")<0){//ignore terms such as lance_linear
+				//if(freeterm.indexOf("_")<0){//ignore terms such as lance_linear, but should show second_order
 					freeterms.add(freeterm);
 					State free = new State(freeterm);
 					freeStates.add(free);
-				}
+				//}
 			}
 		}catch(Exception e){
 			e.printStackTrace();

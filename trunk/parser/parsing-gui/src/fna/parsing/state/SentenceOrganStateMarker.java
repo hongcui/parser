@@ -60,6 +60,9 @@ public class SentenceOrganStateMarker {
 	private boolean debug = false;
 	private boolean superlative = false;
 	private boolean printto = true;
+	public static String taxonnames = null;
+	public static Pattern taxonnamepattern1 = null;
+	public static Pattern taxonnamepattern2 = null;
 	/**
 	 * 
 	 */
@@ -70,6 +73,10 @@ public class SentenceOrganStateMarker {
 		this.conn = conn;
 		this.glosstable = glosstable;
 		this.fixadjnn = fixadjnn;
+		//preparing...
+		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
+		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
+
 		try{
 				Statement stmt = conn.createStatement();
 				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
@@ -81,78 +88,86 @@ public class SentenceOrganStateMarker {
 					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
 					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
 				}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-
-		//preparing...
-		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
-		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
-		try{
-			Statement stmt = conn.createStatement();
-			//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
-			ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
-			//leave ditto as it is
-			while(rs.next()){//read sent in in reversed order
-				String tag = rs.getString("tag");
-				String sent = rs.getString("sentence").trim();
-				if(sent.length()!=0){
-				String source = rs.getString("source");
-				String osent = rs.getString("originalsent");
-				sent = sent.replaceAll("</?[BNOM]>", "");
-				sent = sent.replaceAll("\\bshades of\\b", "shades_of");
-				String text = stringColors(sent);
-				text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
-				text = text.replaceAll("more or less", "moreorless");
-				text = text.replaceAll("&#176;", "°");
-				text = text.replaceAll("\\bca\\s*\\.", "ca");
-				text = text.replaceAll("\\bdiam\\s*\\.(?=\\s?[,a-z])", "diam");
-				text = stringCompoundPP(text);
-				text = rs.getString("modifier")+"##"+tag+"##"+text;
-				sentences.put(source, text);
+				//collect all taxonnames to be used in processParentheses in ChunkedSentence
+				String taxonnames = "";
+				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_taxonnames");
+				while(rs.next()){
+					if(taxonnames == null){taxonnames="";}
+					else{
+						taxonnames += rs.getString("name")+"|";
+					}
 				}
-			}
-			//merge ditto sentences with previous sentences: this had the drawback of attaching nearest organ as the subject of the ditto sentence
-			/*String dittos = "";
-			while(rs.next()){//read sent in in reversed order
-				String tag = rs.getString("tag");
-				String sent = rs.getString("sentence");
-				String source = rs.getString("source");
-				String osent = rs.getString("originalsent");
-				if(tag.compareTo("ditto")==0){ //attach ditto to the previous sentence
-					dittos = sent.trim()+" "+dittos;
-					//sentences.put(source, ""); //make ditto sent id's disappear
-				}else{
-					sent =sent.trim() +" "+ dittos.trim();
-					if(osent.indexOf(dittos.trim())<0) osent =osent.trim() +" "+ dittos.trim(); //put a check here so dittos are not added multiple times when the user runs the Parser mutiple times on one document collection
-					dittos = "";
-					String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
+				if(taxonnames!=null && taxonnames.length()!=0){
+					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
+					this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+					this.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
+
+				}
+
+				//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
+				rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
+				//leave ditto as it is
+				while(rs.next()){//read sent in in reversed order
+					String tag = rs.getString("tag");
+					String sent = rs.getString("sentence").trim();
+					if(sent.length()!=0){
+					String source = rs.getString("source");
+					//if(!source.equals("984.txt-7")) continue;
+					String osent = rs.getString("originalsent");
+					sent = sent.replaceAll("</?[BNOM]>", "");
+					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
+					String text = stringColors(sent);
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
+					text = text.replaceAll("more or less", "moreorless");
 					text = text.replaceAll("&#176;", "°");
 					text = text.replaceAll("\\bca\\s*\\.", "ca");
+					text = text.replaceAll("\\bdiam\\s*\\.(?=\\s?[,a-z])", "diam");
+					text = stringCompoundPP(text);
+					text = markTaxonNames(text);
 					text = rs.getString("modifier")+"##"+tag+"##"+text;
 					sentences.put(source, text);
-					//update originalsent
-					Statement st = conn.createStatement();
-					st.execute("update "+this.tableprefix+"_sentence set originalsent='"+osent+"' where source='"+source+"'");
+					}
 				}
-			}*/
-			//collect adjnouns
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
-			while(rs.next()){
-				String modifier = rs.getString(1).replaceAll("\\[.*?\\]", "").trim();
-				adjnouns.add(modifier);
-			}
-			//collect senteces that need adj-nn disambiguation
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT source, tag, modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
-			while(rs.next()){
-				String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim(); 
-				String tag = rs.getString("tag");
-				adjnounsent.put(tag, modifier);//tag: [phyllary]
-				//adjnounsent.put(tag.replaceAll("\\W", ""), modifier);//TODO: need to investigate more on this
-			}
+				//merge ditto sentences with previous sentences: this had the drawback of attaching nearest organ as the subject of the ditto sentence
+				/*String dittos = "";
+				while(rs.next()){//read sent in in reversed order
+					String tag = rs.getString("tag");
+					String sent = rs.getString("sentence");
+					String source = rs.getString("source");
+					String osent = rs.getString("originalsent");
+					if(tag.compareTo("ditto")==0){ //attach ditto to the previous sentence
+						dittos = sent.trim()+" "+dittos;
+						//sentences.put(source, ""); //make ditto sent id's disappear
+					}else{
+						sent =sent.trim() +" "+ dittos.trim();
+						if(osent.indexOf(dittos.trim())<0) osent =osent.trim() +" "+ dittos.trim(); //put a check here so dittos are not added multiple times when the user runs the Parser mutiple times on one document collection
+						dittos = "";
+						String text = stringColors(sent.replaceAll("</?[BNOM]>", ""));
+						text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
+						text = text.replaceAll("&#176;", "°");
+						text = text.replaceAll("\\bca\\s*\\.", "ca");
+						text = rs.getString("modifier")+"##"+tag+"##"+text;
+						sentences.put(source, text);
+						//update originalsent
+						Statement st = conn.createStatement();
+						st.execute("update "+this.tableprefix+"_sentence set originalsent='"+osent+"' where source='"+source+"'");
+					}
+				}*/
+				//collect adjnouns
+				rs = stmt.executeQuery("SELECT distinct modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
+				while(rs.next()){
+					String modifier = rs.getString(1).replaceAll("\\[.*?\\]", "").trim();
+					adjnouns.add(modifier);
+				}
+				//collect senteces that need adj-nn disambiguation
+				rs = stmt.executeQuery("SELECT source, tag, modifier FROM "+this.tableprefix+"_sentence where modifier != \"\" and tag like \"[%\"");
+				while(rs.next()){
+					String modifier = rs.getString(2).replaceAll("\\[.*?\\]", "").trim(); 
+					String tag = rs.getString("tag");
+					adjnounsent.put(tag, modifier);//tag: [phyllary]
+					//adjnounsent.put(tag.replaceAll("\\W", ""), modifier);//TODO: need to investigate more on this
+				}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -164,6 +179,23 @@ public class SentenceOrganStateMarker {
 		this.organnames = collectOrganNames();
 		this.statenames = collectStateNames();
 	}
+	private String markTaxonNames(String text) {
+		//markup taxon names
+		//formatting taxon names m . chamissoi => m-name-chamissoi
+		Matcher m = SentenceOrganStateMarker.taxonnamepattern2.matcher(text);
+		String remain = text;
+		while(m.matches()){
+			String name = m.group(1)+m.group(2);
+			int end = m.end(2);
+			remain = remain.substring(end);
+			String formated = name.replaceAll("\\s+.\\s+", "-taxonname-");
+			if(!formated.contains("-taxonname-")) formated = "taxonname-"+formated; //the taxon name doesn't have . in it: chamissoi => name~chamissoi
+			text = text.replaceAll(name, formated);
+			m = SentenceOrganStateMarker.taxonnamepattern2.matcher(remain);
+		}
+		return text;
+	}
+	
 	/*
 	 * Handles the compound prepositions
 	 */
