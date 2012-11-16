@@ -68,9 +68,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private boolean printSent = true;
 	private boolean printProgress = true;
 	private boolean evaluation = false;
-	private String taxonnames = null;
-	private Pattern taxonnamepattern1 = null;
-	private Pattern taxonnamepattern2 = null;
+
 	/**
 	 * 
 	 */
@@ -91,20 +89,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);
-			//collect all taxonnames to be used in processParentheses in ChunkedSentence
-			ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_taxonnames");
-			while(rs.next()){
-				if(taxonnames == null){taxonnames="";}
-				else{
-					taxonnames += rs.getString("name")+"|";
-				}
-			}
-			if(taxonnames!=null && taxonnames.length()!=0){
-				taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
-				this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
-				this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
-			}						
+			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);			
 			stmt.close();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -129,7 +114,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("287.txt-3")!=0) continue;
+				//if(src.compareTo("984.txt-7")!=0) continue;
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -297,7 +282,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							sent = sent.replaceAll("<\\{?times\\}?>", "times");
 							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
 							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
-							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable, this.taxonnamepattern1, this.taxonnamepattern2);
+							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable/*, SentenceOrganStateMarker.taxonnamepattern1, SentenceOrganStateMarker.taxonnamepattern2*/);
 							cs = ex.chunkIt();
 							//System.out.print("["+src+"]:");
 							if(this.printSent){
@@ -687,13 +672,19 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
 		String prefix = "fnav19_excerpt";*/
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_posedsentences.txt";
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_posedsentences.txt";
 		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_parsedsentences.txt";
 		String prefix = "fnav2"; //should be volume name
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\transformed";
+		 */
+		
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
+		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
+		String prefix = "fnav4n"; //should be volume name
+		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\transformed";
 
 		
-		try{
+		/*try{
 			Connection conn = null;
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -704,7 +695,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			tnc.collect();
 		}catch(Exception e){
 			e.printStackTrace();
-		}
+		}*/
 
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_posedsentences.txt";
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_parsedsentences.txt";

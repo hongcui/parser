@@ -32,7 +32,7 @@ public class POSTagger4StanfordParser {
 	static protected String password = "root";
 	private ArrayList<String> chunkedtokens = null;
 	private ArrayList<String> charactertokensReversed = null;
-	public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
+	//public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	private boolean printCharacterList = true;
 	private boolean printColorList = false;
 	private String tableprefix = null;
@@ -75,15 +75,13 @@ public class POSTagger4StanfordParser {
 	private static Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
 
 
-
 	/**
 	 * 
 	 */
 	public POSTagger4StanfordParser(Connection conn, String tableprefix, String glosstable) {
 		this.conn = conn;
 		this.tableprefix = tableprefix;
-		this.glosstable = glosstable;
-		
+		this.glosstable = glosstable;		
 	}
 	
 	/**
@@ -253,6 +251,8 @@ public class POSTagger4StanfordParser {
 	        	   Matcher mc = compreppattern.matcher(word);
 	        	   if(mc.matches()){
 	        		   sb.append(word+"/IN ");
+	        	   }else if(word.contains("taxonname-")){
+	        		   sb.append(word+"/NNS ");
 	        	   }else if(word.matches("in-.*?(-view|profile)")){
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
@@ -628,14 +628,14 @@ public class POSTagger4StanfordParser {
 				String ch = word.substring(0, word.indexOf("~list~")).replaceAll("\\W", "").replaceFirst("ttt$", "");
 				this.charactertokensReversed.add(ch);
 			}else if(word.indexOf('{')>=0 && word.indexOf('<')<0){
-				String ch = Utilities.lookupCharacter(word, conn, this.characterhash, glosstable, tableprefix); //remember the char for this word (this word is a word before (to|or|\\W)
-				if(ch==null){
+				String[] charainfo = Utilities.lookupCharacter(word, conn, ChunkedSentence.characterhash, glosstable, tableprefix); //remember the char for this word (this word is a word before (to|or|\\W)
+				if(charainfo==null){
 					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
 				}else{
-					this.charactertokensReversed.add(ch); //color
+					this.charactertokensReversed.add(charainfo[0]); //color
 					if(save){
-						save(saved, this.chunkedtokens.size()-1-i, ch); 
-						if(ch.indexOf(Utilities.or)>0){
+						save(saved, this.chunkedtokens.size()-1-i, charainfo[0]); 
+						if(charainfo[0].indexOf(Utilities.or)>0){
 							ambiguous = true;
 							amb.add(this.chunkedtokens.size()-1-i+"");
 						}

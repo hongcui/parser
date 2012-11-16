@@ -80,8 +80,8 @@ public class SentenceChunker4StanfordParser {
 	private static XPath NNpath = null;
 	private int sentindex = -1;
 	private Pattern p = Pattern.compile("(.*?)((?:\\w+ )+)\\2(.*)");
-	private Pattern taxonnamepattern1 = null;
-	private Pattern taxonnamepattern2 = null;
+	//private Pattern taxonnamepattern1 = null;
+	//private Pattern taxonnamepattern2 = null;
 	private String conjunctions = "and|or|plus";
 	private boolean printVB = false;
 	private boolean printPP = false;
@@ -93,13 +93,13 @@ public class SentenceChunker4StanfordParser {
 	 * @param taxonamepattern 
 	 * 
 	 */
-	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, String sentsrc, String tableprefix,Connection conn, String glosstable, Pattern taxonnamepattern, Pattern taxonnamepattern2) {
+	public SentenceChunker4StanfordParser(int index, Document parsingTree, String markedsent, String sentsrc, String tableprefix,Connection conn, String glosstable/*, Pattern taxonnamepattern, Pattern taxonnamepattern2*/) {
 		this.sentsrc = sentsrc;
 		this.tableprefix = tableprefix;
 		this.conn = conn;
 		this.glosstable = glosstable;
-		this.taxonnamepattern1 = taxonnamepattern;
-		this.taxonnamepattern2 = taxonnamepattern2;
+		//this.taxonnamepattern1 = taxonnamepattern;
+		//this.taxonnamepattern2 = taxonnamepattern2;
 		this.sentindex = index;
 		this.tree = parsingTree;
 		this.treecp = (Document)tree.clone();
@@ -194,7 +194,7 @@ public class SentenceChunker4StanfordParser {
 		collapseWhereClause();//where
 		collapseWhenClause(); //when
 		
-		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable, this.taxonnamepattern1, this.taxonnamepattern2);
+		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable/*, this.taxonnamepattern1, this.taxonnamepattern2*/);
 		return cs;
 			}catch(Exception e){
 				e.printStackTrace();
