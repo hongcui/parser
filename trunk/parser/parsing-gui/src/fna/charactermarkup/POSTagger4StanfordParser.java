@@ -275,8 +275,7 @@ public class POSTagger4StanfordParser {
 	       		   }else if(p.contains("op")){ //<inner> larger.
 	       				//System.out.println(rs1.getString(2));
 	       			   sb.append(word+"/NNS ");
-	       		 //}else if(p.contains("os") || pos.indexOf('<') >=0){
-	       		   }else if(p.contains("os") ||(p.length()==0 && pos.indexOf('<') >=0)){
+	       		 }else if(p.contains("os") ||(p.length()==0 && pos.indexOf('<') >=0)){
 	       			   sb.append(word+"/NN ");
 	       		   }else if(word.matches("(\\{?\\b"+roman+"\\b\\}?)")){//mohan code to mark roman numbers {ii} or ii as ii/NNS
 	        		   word=word.replaceAll("\\{|\\}", "");

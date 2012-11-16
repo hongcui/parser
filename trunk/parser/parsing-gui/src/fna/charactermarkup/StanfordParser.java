@@ -61,8 +61,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private String glosstable = null;
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
-	//private boolean finalize = true;
-	private boolean finalize = false;//set true when running config else set false.
+
+	private boolean finalize = true;
+	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
 	private boolean printSent = true;
@@ -282,7 +283,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							sent = sent.replaceAll("<\\{?times\\}?>", "times");
 							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
 							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
+
 							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable/*, SentenceOrganStateMarker.taxonnamepattern1, SentenceOrganStateMarker.taxonnamepattern2*/);
+
 							cs = ex.chunkIt();
 							//System.out.print("["+src+"]:");
 							if(this.printSent){
@@ -623,12 +626,6 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
 		
 		
-		//String database = "phenoscape";
-		//String posedfile = "PSposedsentences.txt";
-		//String parsedfile = "PSparsedsentences.txt";
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "pltest", "wordpos4parser", "antglossaryfixed");
-
-		//String database = "annotationevaluation";
 
 		//*fna
 		//String database = "annotationevaluation";
@@ -644,17 +641,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");
 		
 		
-		//String posedfile = "Treatisehposedsentences.txt";
-		//String parsedfile = "Treatisehparsedsentences.txt";
-		//String database = "treatiseh_benchmark";
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "wordpos4parser", "treatisehglossaryfixed");*/
+		/*String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_21207_gg2_tx\\target\\plazi_21207_gg2_tx_parsedsentences.txt";
+		String parsedfile = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_21207_gg2_tx\\target\\plazi_21207_gg2_tx_posedsentences.txt";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_21207_gg2_tx", "antglossaryfixed", false);*/
+		
 		
 
-		//String posedfile = "BHLposedsentences.txt";
-		//String parsedfile = "BHLparsedsentences.txt";
-		//String database = "bhl_benchmark";
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "bhl_clean", "wordpos4parser", "fnabhlglossaryfixed");
-		
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_posedsentences.txt";
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v5\\target\\fnav5_parsedsentences.txt";
 
@@ -667,8 +660,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
 		
 
+
 		String database = "markedupdatasets";
+
 		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
+>>>>>>> .r1194
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
 		String prefix = "fnav19_excerpt";*/
@@ -707,6 +703,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
 
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
+
 
 		//sp.POSTagging();
 		//sp.parsing();

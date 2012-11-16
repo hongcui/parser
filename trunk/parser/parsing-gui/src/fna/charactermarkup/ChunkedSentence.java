@@ -175,6 +175,14 @@ public class ChunkedSentence {
 			if(brackets.size()>0){//in
 				//restore original number expressions
 				String w = treetoken[i].replaceAll("(\\w+\\[|\\])", "");
+				//String w = treetoken[i].replaceAll("(\\[|\\])", "");
+				//mohan code to fix {colorttt-list-black-and-orange}
+				/*if(treetoken[i].matches("colorttt.*")){
+					//realchunk += treetoken[i];
+					realchunk += chunkedtokens.get(i);
+				}
+				else*/
+				//End mohan code
 				realchunk += treetoken[i].replace(w, chunkedtokens.get(i))+" ";
 				chunkedtokens.set(i, "");
 			}
@@ -2649,7 +2657,7 @@ parallelism scope: q[other chunks]
 						for(int i = 0; i<tokens.length; i++){
 							if(Utilities.toSingular(tokens[i]).compareTo(senttag.replaceAll("_", ""))==0){
 								
-								subject += tokens[i]+" ";
+								//subject += tokens[i]+" ";
 								subject = subject.replaceAll("\\s+-\\s+", "-");
 								subject = "{"+subject.trim().replaceAll("[\\[\\]{}()]", "").replaceAll(" ", "} {")+"}";
 								subject = (subject + " ("+tokens[i].replaceAll("[\\[\\]]", "").replaceAll(" ", ") (")+")").replaceAll("[{(]and[)}]", "and").replaceAll("[{(]or[)}]", "or").replaceAll("\\{\\}", "").replaceAll("\\s+", " ").trim();

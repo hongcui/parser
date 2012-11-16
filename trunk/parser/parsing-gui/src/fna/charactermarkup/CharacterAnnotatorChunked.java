@@ -2383,6 +2383,17 @@ public class CharacterAnnotatorChunked {
 		//determine characters and modifiers
 		String modifiers = "";
 		for(int j = 0; j <tokens.length; j++){
+//<<<<<<< .mine
+			/*if(tokens[j].trim().length()>0){
+				tokens[j] = NumericalHandler.originalNumForm(tokens[j]);
+				//Mohan code to fix colorttt
+				//if(tokens[j].contains("colorttt")){
+				//	tokens[j]=tokens[j].replaceAll("-", "~");
+				//}
+					//End mohan code
+				if(tokens[j].indexOf("~list~")>=0){
+					results = this.processCharacterList(tokens[j], parents);*/
+//=======
 			if(tokens[j].trim().length()>0){ //nested: "{inner} -LRB-/-LRB- functionally {staminate} -LSB-/-LSB- {bisexual} -RSB-/-RSB- -RRB-/-RRB-" 
 				if(tokens[j].matches("-L[RS]B-/-L[SR]B-")){
 					//collect everything in brackets
@@ -2414,10 +2425,35 @@ public class CharacterAnnotatorChunked {
 								"", bracketed.trim(), "", "",cs);
 						//localresults.addAll(results);
 					}
+//>>>>>>> .r1182
 				}else{
+/*<<<<<<< .mine
+					String w = tokens[j];
+					String chara= null;
+					if(tokens[j].matches("\\w{2,}\\[.*")){
+						chara=tokens[j].substring(0, tokens[j].indexOf('['));
+						w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
+					}else if(tokens[j].matches("\\w\\[.*")){
+						w = tokens[j].replaceAll("(\\w+\\[|\\]|\\{|\\})", "");
+					}
+					w = w.replaceAll("(\\{|\\})", "");
+					//w = w.replaceAll("(\\{|\\})", "").replaceAll("colorttt-list-", ""); //to remove colorttt-list-
+					chara = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+					if(chara==null && w.matches("no")){
+						chara = "presence";
+					}
+					if(chara==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
+						modifiers +=w+" ";
+					}else if(w.matches(".*?\\d.*") && !w.matches(".*?[a-z].*")){//TODO: 2 times =>2-times?
+
+						results = this.annotateNumericals(w, "count", modifiers, parents, false);
+						//annotateCount(parents, w, modifiers);
+						modifiers = "";
+=======*/
 					tokens[j] = NumericalHandler.originalNumForm(tokens[j]);
 					if(tokens[j].indexOf("~list~")>=0){
 						results = this.processCharacterList(tokens[j], parents, cs);// 7-12-02 add cs
+//>>>>>>> .r1182
 					}else{
 						String w = tokens[j];
 						String chara= null;
@@ -2529,11 +2565,19 @@ public class CharacterAnnotatorChunked {
 				results.add(character); //add to results
 				e.addContent(character);//add to e
 			}
+/*<<<<<<< .mine
+			if(cvalue.startsWith("colorttt-list-")){
+				cvalue=cvalue.replaceAll("colorttt-list-", "");
+			}
+			character.setAttribute("name", cname);
+			character.setAttribute("value", cvalue);
+=======*/
 			if(usedm){
 				modifiers = "";
 			}
 			addClauseModifierConstraint(cs, character);
 			this.addScopeConstraints(cs, character);
+//>>>>>>> .r1182
 		}
 		//parenthetical expression
 		if(parenthetical !=null){
