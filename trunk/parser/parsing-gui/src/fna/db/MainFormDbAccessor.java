@@ -1077,8 +1077,9 @@ public class MainFormDbAccessor {
 	 * also add newly learned structure term to the table for category "structure"
 	 * This makes term_category contain all new terms learned from a volume of text
 	 */
-	public void finalizeTermCategoryTable() {
+	public int finalizeTermCategoryTable() {
 		String prefix = MainForm.dataPrefixCombo.getText();
+		int count = 0;
 		try{
 			Statement stmt = conn.createStatement();
 			String q = "select distinct groupId, category from "+ prefix+"_group_decisions where category !='done'"; //"done" was a fake decision for unpaired terms
@@ -1092,7 +1093,11 @@ public class MainFormDbAccessor {
 					String t1 = rs2.getString(1);
 					String t2 = rs2.getString(2);
 					insert2TermCategoryTable(t1, cat);
-					if(t2!=null && t2.trim().length()>0) insert2TermCategoryTable(t2, cat);
+					count++;
+					if(t2!=null && t2.trim().length()>0){
+						insert2TermCategoryTable(t2, cat);
+						count++;
+					}
 				}
 			}
 			
@@ -1103,15 +1108,16 @@ public class MainFormDbAccessor {
 			while(rs.next()){
 				String t = rs.getString(1);
 				insert2TermCategoryTable(t, "structure");
+				count++;
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+		return count;
 	}
 	
 	private void insert2TermCategoryTable(String term, String cat) throws SQLException {
-		String sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category values (?,?)";
+		String sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category(term, category) values (?,?)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, term);
 		pstmt.setString(2, cat);

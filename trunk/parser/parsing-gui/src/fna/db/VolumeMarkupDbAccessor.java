@@ -69,6 +69,7 @@ public class VolumeMarkupDbAccessor {
     
     /**
      * display learned new structures in structures subtab in step 4 (perl markup) for curation.
+     * 
      * @param tagList
      * @throws ParsingException
      * @throws SQLException
@@ -85,8 +86,8 @@ public class VolumeMarkupDbAccessor {
 			ResultSet rs1 = stmt1.executeQuery("show tables");
 			while(rs1.next()){
 				if(rs1.getString(1).compareToIgnoreCase(ApplicationUtilities.getProperty("NONEQTABLE"))==0){
-					filter1 = " and tag not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
-					filter2 = " and plural not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
+					filter1 = " and tag not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") "; 
+					filter2 = " and plural not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") " ;
 					filter3 = " and word not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
 				}
 			}
@@ -102,7 +103,7 @@ public class VolumeMarkupDbAccessor {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				String tag = rs.getString("structure");
-				populateCurationList(tagList, tag); //select tags for curation
+				populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
 			}
 			sql = "select distinct word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos in ('p', 's', 'n') and saved_flag !='red' "+
 			filter3+" order by word";
@@ -113,7 +114,7 @@ public class VolumeMarkupDbAccessor {
 				PreparedStatement stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + tag + "%'");
 				ResultSet rs2 = stmtSentence.executeQuery();
 				if (rs2.next()) {
-					populateCurationList(tagList, tag); //select tags for curation
+					populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
 				}
 			}
 			return deduplicateSort(tagList);

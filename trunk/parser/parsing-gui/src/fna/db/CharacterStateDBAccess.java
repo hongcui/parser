@@ -416,7 +416,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			pstmt.execute();
 			
 			/* Insert the new decision */
-			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category values (?,?)";
+			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category(term, category) values (?,?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, term);
 			pstmt.setString(2, decision);
