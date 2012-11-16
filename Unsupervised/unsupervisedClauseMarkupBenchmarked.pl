@@ -2197,6 +2197,7 @@ sub unknownwordbootstrapping{
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	my $nouns = "";
 	while(($word) = $sth->fetchrow_array()){
+		$word =~ s#[?~!@$%^&*:"';.,/]##g;
 		$nouns .=$word."|";
 	}
 	chop($nouns);
