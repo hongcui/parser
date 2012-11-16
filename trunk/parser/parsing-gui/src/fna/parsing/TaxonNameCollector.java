@@ -46,6 +46,7 @@ public class TaxonNameCollector {
 		this.insert = conn.prepareStatement("insert into "+this.outputtablename+"(name, source) values (?, ?)");
 	}
 
+	
 	public void collect(){
 		try{
 			File[] xmlfiles = this.transformeddir.listFiles();
@@ -127,6 +128,12 @@ public class TaxonNameCollector {
 			e.printStackTrace();
 		}
 
+	}
+
+
+	protected void collect4TaxonX() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
