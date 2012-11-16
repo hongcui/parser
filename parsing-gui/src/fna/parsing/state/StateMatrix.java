@@ -423,6 +423,7 @@ public class StateMatrix {
 						stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
 						gcount++;
 					}
+					
 				}
 			}
 			//lastly, add this.freeterms as a set
@@ -468,14 +469,18 @@ public class StateMatrix {
 		String[] info = new String[2];
 		try{
 			Statement stmt = conn.createStatement();
+			//System.out.println("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
 			ResultSet rs = stmt.executeQuery("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
+			
 			if(rs.next()){
 				info[0] = rs.getString(1);
 				info[1] = rs.getString(2);
 				stmt.execute("update "+this.tableprefix+"_terms set grouped='y' where (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
 				stmt.close();
+				rs.close();
 				return info;
 			}
+			rs.close();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
