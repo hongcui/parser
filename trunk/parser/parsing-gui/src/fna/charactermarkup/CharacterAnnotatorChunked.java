@@ -2603,13 +2603,11 @@ public class CharacterAnnotatorChunked {
 				followcomma = true;
 			}
 
-
-			Matcher m = ChunkedSentence.taxonnamepattern2.matcher(text);
 			if(parenthetical.startsWith("-LSB-/-LSB-")){//g
 				ChunkScopeGeo chunk = new ChunkScopeGeo("g["+text+"]");
 				Attribute geo = new Attribute("geographical_constraint", "outside of North America");//create a constraint attribute
 				annotateScopeChunk(chunk, geo, cs);
-			}else if(m.matches()){//t
+			}else if(text.contains("taxonname-")){//t
 				ArrayList<String[]> charataxas = ChunkedSentence.separateCharaTaxa(text); //TOFIX: 2396, 5937
 				for(int c = 0; c < charataxas.size(); c++){
 					String[] chartaxa = charataxas.get(c);
