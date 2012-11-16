@@ -41,7 +41,7 @@ public class TaxonNameCollector {
 		this.volume = volume;
 		Statement st = conn.createStatement();
 		st.execute("drop table if exists "+this.outputtablename);
-		PreparedStatement stmt = conn.prepareStatement("create table if not exists "+this.outputtablename+" (nameid MEDIUMINT not null auto_increment primary key, name varchar(100), source varchar(50))");
+		PreparedStatement stmt = conn.prepareStatement("create table if not exists "+this.outputtablename+" (nameid MEDIUMINT not null auto_increment primary key, name varchar(200), source varchar(50))");
 		stmt.execute();
 		this.insert = conn.prepareStatement("insert into "+this.outputtablename+"(name, source) values (?, ?)");
 	}
@@ -61,6 +61,7 @@ public class TaxonNameCollector {
 	private void saveNames() {
 		try{
 			for(String name: names){
+				if(name.length() > 200) name = name.substring(0, name.indexOf(" "));//each name should be 1-word long.
 				insert.setString(1, name);	
 				insert.setString(2, this.volume);
 				insert.execute();

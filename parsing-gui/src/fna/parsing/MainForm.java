@@ -116,7 +116,7 @@ public class MainForm {
 	}
 	private Combo combo;
 	
-	private Connection conn;
+	public static Connection conn;
 	private Combo modifierListCombo;
 	private Table finalizerTable;
 	private Table transformationTable;
@@ -138,22 +138,23 @@ public class MainForm {
 	private Combo tagListCombo;
 	public static Combo dataPrefixCombo;
 	public static Combo glossaryPrefixCombo;
-
+	public static Button uploadTerm;
+	public static boolean upload2OTO; 
 	/* This Group belongs to Markup Tab -> Others tab*/
 	//private Group termRoleGroup;
 	//private Composite termRoleGroup;
 	/* This ScrolledComposite to MarkUpTab -> Others tab*/
 	//private ScrolledComposite scrolledComposite;
 	/* This rectangle will hold the latest coordinates of the Markup -Others checkbox*/
-	private static Rectangle otherChkbx = new Rectangle(10, 20, 93, 16);
+	//private static Rectangle otherChkbx = new Rectangle(10, 20, 93, 16);
 	/* This rectangle will hold the latest coordinates of the Markup -Others tab term*/
-	private static Rectangle otherTerm = new Rectangle(109, 20, 144, 21);
+	//private static Rectangle otherTerm = new Rectangle(109, 20, 144, 21);
 	/* This rectangle will hold the latest coordinates of the Markup - Others tab combo*/
-	private static Rectangle otherCombo = new Rectangle (265, 23, 90, 16);
+	//private static Rectangle otherCombo = new Rectangle (265, 23, 90, 16);
 	/* This String array holds all the roles for the Markup/Others tab */
-	private static String [] otherRoles = {"Other","Structure", "Descriptor", "Verb"};
+	//private static String [] otherRoles = {"Other","Structure", "Descriptor", "Verb"};
 	/* This ArrayList will hold all the group info of removed terms*/
-	private static ArrayList <TermRoleBean> markUpTermRoles = new ArrayList<TermRoleBean>();
+	//private static ArrayList <TermRoleBean> markUpTermRoles = new ArrayList<TermRoleBean>();
 	
 	private StyledText glossaryStyledText;
 	public Shell shell;
@@ -349,6 +350,8 @@ public class MainForm {
 				display.sleep();
 		}
 		if(shell.isDisposed()) {
+			shell.dispose();
+			if(VolumeMarkup.p != null)	VolumeMarkup.p.destroy(); //kill perl too.
 			System.exit(0);
 		}
 	}
@@ -651,6 +654,7 @@ public class MainForm {
 				}
 				saveProject(); 
 				saveFlag = false;
+				if(uploadTerm.getSelection()) upload2OTO = true;
 				try {
 					int option_chosen =getType(type); 
 					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
@@ -668,17 +672,12 @@ public class MainForm {
 			}
 		});
 
-												
+		//dataPrefix combo										
 		combo = new Combo(grpCreateANew, SWT.NONE);
 		combo.setBounds(23, 134, 138, 23);
 		combo.setToolTipText(ApplicationUtilities.getProperty("application.dataset.instruction"));
 		dataPrefixCombo = combo;
 		combo.setItems(prefixes);
-
-		Combo glossaryCombo = new Combo(grpCreateANew, SWT.NONE);
-		glossaryCombo.setBounds(199, 134, 138, 23);
-		glossaryCombo.setItems(glossprefixes);
-		glossaryPrefixCombo = glossaryCombo;
 														
 		CLabel label = new CLabel(grpCreateANew, SWT.NONE);
 		label.setBounds(23, 82, 344, 21);
@@ -703,6 +702,18 @@ public class MainForm {
 			}
 		});
 
+		//glossary combo
+		Combo glossaryCombo = new Combo(grpCreateANew, SWT.NONE);
+		glossaryCombo.setBounds(199, 134, 138, 23);
+		glossaryCombo.setItems(glossprefixes);
+		glossaryPrefixCombo = glossaryCombo;
+
+		//upload terms to OTO checkbox
+		uploadTerm = new Button(grpCreateANew, SWT.CHECK);
+		uploadTerm.setBounds(355, 134, 300, 23);
+		uploadTerm.setText(ApplicationUtilities.getProperty("upload2OTO"));
+		uploadTerm.setSelection(false);
+		
 		/*controls for reloading and resuming the last project */
 /*		Group grpContinueWithThe = new Group(composite, SWT.NONE);
 		grpContinueWithThe.setToolTipText("Continue with the last project");
@@ -2111,6 +2122,7 @@ public class MainForm {
 		/********************************/
 		/*"Character State" tab: step 6 */
 		/*make changes in prefix_grouped_terms, save decisions to prefix_group_decisions */
+		/*result in term_category table that may be loaded to OTO: upload2OTO*/
 		/********************************/
 		TabItem tbtmCharacterStates = new TabItem(tabFolder, SWT.NONE);
 		tbtmCharacterStates.setText(ApplicationUtilities.getProperty("tab.character"));
@@ -2255,7 +2267,7 @@ public class MainForm {
 											ApplicationUtilities.getProperty("popup.header.warning"), 
 											SWT.YES | SWT.NO);
 								}
-								if(choice == SWT.NO) return;
+								if(choice == SWT.NO) return; //continue to categorize terms
 								else if(choice == SWT.YES)  ignore = true;
 								charDb.saveTermCategory(groupsCombo.getText().replace("Group_", ""),term, decision);
 							}
@@ -2339,12 +2351,31 @@ public class MainForm {
 				    	break;
 				    case SWT.CANCEL:
 				    case SWT.NO:
+						if(MainForm.upload2OTO){
+							int count = mainDb.finalizeTermCategoryTable();
+							//UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+							ApplicationUtilities.showPopUpWindow(
+									count+ " "+
+									ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
+									ApplicationUtilities.getProperty("popup.header.info"), 
+									SWT.OK);
+						}						
+						break;
 				    case SWT.RETRY:
 				    case SWT.ABORT:
 				    case SWT.IGNORE:
 				    default : //Do Nothing! :-)
 				    }
 
+				}else{ //no terms left
+					int count = mainDb.finalizeTermCategoryTable();
+					//UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+					ApplicationUtilities.showPopUpWindow(
+							count+" "+
+							ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
+							ApplicationUtilities.getProperty("popup.header.info"), 
+							SWT.OK);
+					
 				}
 			}
 
@@ -3551,9 +3582,7 @@ public class MainForm {
 					Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 					conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 				}
-				this.mainDb.finalizeTermCategoryTable();
-				//VolumeFinalizer vf = new VolumeFinalizer(listener, 
-				//		dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim());
+				//this.mainDb.finalizeTermCategoryTable(); //moved to the end of step 6
 				finalLog.setText("");
 				vf = new VolumeFinalizer(listener, finalLog, 
 						dataPrefixCombo.getText().replaceAll("-", "_").trim(), conn,MainForm.glossaryPrefixCombo.getText().trim(), shell.getDisplay());
@@ -3626,8 +3655,7 @@ public class MainForm {
 				//			ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 				//this.tagListCombo.setText("");
 				//this.modifierListCombo.setText("");
-				contextStyledText.setText("Preparing for the next step. ");
-				contextStyledText.append("Please proceed to the next step when \"Done\" is displayed in this box.\n");
+				contextStyledText.setText("Preparing for the next step. Please proceed to the next step when \"Done\" is displayed in this box.\n");
 				try{
 					if(conn == null){
 						Class.forName("com.mysql.jdbc.Driver");
@@ -3876,9 +3904,18 @@ public class MainForm {
 		{
 			groupsCombo.setText("");
 			//print alert
+			
 			ApplicationUtilities.showPopUpWindow(
 					ApplicationUtilities.getProperty("popup.load.nodata"), 
 					ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+			/* no new terms, no need to upload the terms
+			 * if(MainForm.upload2OTO){
+				//UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+				ApplicationUtilities.showPopUpWindow(
+						ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
+						ApplicationUtilities.getProperty("popup.header.info"), 
+						SWT.OK);
+			}*/		
 		}			
 		groupsCombo.select(0);
 		
@@ -4083,7 +4120,7 @@ public class MainForm {
 				cbean.setGroupNo(tbean.getGroupId());
 				cbean.setSourceFiles(tbean.getSourceFiles());
 				cbean.setKeep(tbean.getKeep());
-				
+				//step 6 context code:
 				final Button button = new Button(termsGroup, SWT.RADIO);
 				//button.setText("radio_"+radio_button_count);
 				button.setBounds(contextRadio.x, contextRadio.y, contextRadio.width, contextRadio.height);
@@ -4101,13 +4138,13 @@ public class MainForm {
 									String URL = ApplicationUtilities.getProperty("database.url");
 									conn = DriverManager.getConnection(URL);
 								}								
-								String ch1 = fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
-								String ch2 = fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								String[] chinfo1 = fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"));
+								String[] chinfo2 = fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"));
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
 								TableItem item = new TableItem(contextTable, SWT.NONE);
-								item.setText(new String[]{t1+":", ch1});
+								item.setText(new String[]{t1+":", chinfo1==null? "" : chinfo1[0]});
 								item = new TableItem(contextTable, SWT.NONE);
-								item.setText(new String[]{t2+":", ch2});
+								item.setText(new String[]{t2+":", chinfo2==null? "" : chinfo2[0]});
 								//then show source sentences for the two terms
 								
 								for (ContextBean cbean : contexts){
@@ -4355,8 +4392,8 @@ public class MainForm {
 									String URL = ApplicationUtilities.getProperty("database.url");
 									conn = DriverManager.getConnection(URL);
 								}								
-								String ch1 = fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
-								String ch2 = fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								String ch1 = (fna.charactermarkup.Utilities.lookupCharacter(t1, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
+								String ch2 = (fna.charactermarkup.Utilities.lookupCharacter(t2, conn, fna.charactermarkup.ChunkedSentence.characterhash, glossaryPrefixCombo.getText().trim(), dataPrefixCombo.getText().replaceAll("-", "_"))[0].trim());
 								ArrayList<ContextBean> contexts = charDb.getContext(tbean.getSourceFiles());
 								TableItem item = new TableItem(contextTable, SWT.NONE);
 								item.setText(new String[]{t1+":", ch1});
@@ -4645,6 +4682,7 @@ public class MainForm {
 	 * 3. filtered terms are not displayed and they will not be saved to wordroles table as "os" or "op".
 	 * 4. terms filtered by 2.1.adv or 2.3 will be saved in NONEQTERMSTABLE
 	 * 5. cache results to reduce cost
+	 * 
 	 * @return filtered candidate structure words
 	 */
 	private ArrayList<String> fetchStructureTerms(){

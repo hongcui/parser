@@ -103,7 +103,7 @@ public class VolumeFinalizer extends Thread {
        			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"\\final\\");
        		}
        		
-        	UploadData ud = new UploadData(dataPrefix);
+        	//UploadData ud = new UploadData(dataPrefix); //moved to step 5
         }
     }
     /**
@@ -128,10 +128,6 @@ public class VolumeFinalizer extends Thread {
 		*/
 		String glosstable = this.glossaryPrefix;
 		
-		String transformeddir = Registry.TargetDirectory+"\\transformed\\";
-		TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
-		tnc.collect();
-
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");
 		sp.POSTagging();
