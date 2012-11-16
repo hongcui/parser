@@ -98,12 +98,17 @@ public class VolumeFinalizer extends Thread {
         
         else//Should add the code to generate the files and uploading and executing it here in the else loop.
         {
+/*<<<<<<< .mine
+        	System.out.println("Uploading data to the ONTNEW WEBSITE");
+        	//UploadData ud = new UploadData(dataPrefix);
+=======*/
        		if(!standalone){
        			this.showOutputMessage("System is done with annotating files.");
        			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"\\final\\");
        		}
-       		
+       		System.out.println("Uploading data to the ONTNEW WEBSITE");
         	//UploadData ud = new UploadData(dataPrefix); //moved to step 5
+//>>>>>>> .r1182
         }
     }
     /**
@@ -120,6 +125,7 @@ public class VolumeFinalizer extends Thread {
 		String posedfile = Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("POSED");
 		String parsedfile =Registry.TargetDirectory+"/"+this.dataPrefix + "_"+ApplicationUtilities.getProperty("PARSED");
 		String database = ApplicationUtilities.getProperty("database.name");
+		
 		/*
 		String posedfile = "FNAv19posedsentences.txt";		
 		String parsedfile = "FNAv19parsedsentences.txt";
@@ -128,6 +134,19 @@ public class VolumeFinalizer extends Thread {
 		*/
 		String glosstable = this.glossaryPrefix;
 		
+
+		String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+		//Used to collect taxon names for Taxon X ant documents like Plazi_8538_pyr_mad_tx1- Use if type 4 else use Hong's
+		if(MainForm.type.contentEquals("type4")){
+			TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
+			tnc.collect4TaxonX();
+		}
+		else{
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
+			tnc.collect();
+		}
+
+
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");
 		sp.POSTagging();
