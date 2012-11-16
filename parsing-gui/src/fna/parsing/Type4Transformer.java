@@ -172,7 +172,7 @@ public abstract class Type4Transformer extends Thread {
 					}
 					
 					//writeDescription2Descriptions(sb.toString(), fn+"_"+count+"_"+i); //record the position for each paragraph.
-					writeDescription2Descriptions(sb.toString(), fn+"_"+count+".txtp"+i); //record the position for each paragraph.
+					writeDescription2Descriptions(sb.toString().trim(), fn+"_"+count+".txtp"+i); //record the position for each paragraph.
 					i++;
 				}
 			}
