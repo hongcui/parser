@@ -101,7 +101,8 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 							synchunks=text.split("\\s");
 							for(int x=0;x<synchunks.length;x++)
 							{
-								this.names.add(synchunks[x]);
+								String localname =synchunks[x].trim().toString().toLowerCase();
+								this.names.add(localname);
 							}		
 					}
 				}
@@ -112,7 +113,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 					synchunks=namestr.split("\\s");
 					for(int x=0;x<synchunks.length;x++)
 					{
-						this.names.add(synchunks[x]);
+						this.names.add(synchunks[x].trim().toString().toLowerCase());
 					}
 				}
 			}
@@ -127,7 +128,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-	/*	try{
+		try{
 			Connection conn = null;
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -142,7 +143,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-*/
+
 		
 
 	}
