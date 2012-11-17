@@ -42,10 +42,11 @@ public class VolumeFinalizer extends Thread {
     private Connection conn = null;
     private String glossaryPrefix;
     private static String version="$Id$";
-    private static boolean standalone = false;
+    private static boolean standalone = true;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-    private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
+    private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
+    //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4";
     //private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx";
     
@@ -137,14 +138,14 @@ public class VolumeFinalizer extends Thread {
 
 		String transformeddir = Registry.TargetDirectory+"\\transformed\\";
 		//Used to collect taxon names for Taxon X ant documents like Plazi_8538_pyr_mad_tx1- Use if type 4 else use Hong's
-		if(MainForm.type.contentEquals("type4")){
+		/*if(MainForm.type.contentEquals("type4")){
 			TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
 			tnc.collect4TaxonX();
 		}
 		else{
 			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
 			tnc.collect();
-		}
+		}*/
 
 
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
