@@ -62,7 +62,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
@@ -674,10 +674,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\transformed";
 		 */
 		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
-		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
-		String prefix = "fnav4n"; //should be volume name
-		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\transformed";
+		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\plazi_8538_posedsentences.txt";
+		String parsedfile ="C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\plazi_8538_parsedsentences.txt";
+		String prefix = "plazi_8538"; //should be volume name
+		String transformeddir = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\transformed";
 
 		
 		/*try{
@@ -697,7 +697,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_parsedsentences.txt";
 
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav5", "fnaglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
@@ -705,8 +705,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
 
 
-		//sp.POSTagging();
-		//sp.parsing();
+//		sp.POSTagging();
+//		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

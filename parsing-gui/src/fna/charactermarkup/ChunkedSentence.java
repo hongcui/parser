@@ -380,7 +380,7 @@ public class ChunkedSentence {
 				//Matcher m = this.taxonnamepattern2.matcher(text);
 				//System.out.println(this.taxonnamepattern2.toString());
 				//if(m.matches()){//case 2: taxon constraint 205.txt-15	
-				if(text.contains("-taxonname-")){
+				if(text.contains("taxonname-")){
 					this.chunkedtokens.set(x, ""); // open (
 					this.chunkedtokens.set(i, ""); // close )
 					int index = x;
@@ -398,7 +398,11 @@ public class ChunkedSentence {
 							}
 						}
 						if(taxon.length()>0){
+							int bracketlength = chartaxa[0].replaceAll("[^\\[]", "").trim().length() - chartaxa[0].replaceAll("[^\\]]","").trim().length();
 							String xchunk = "x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+taxon+")]";
+							for(int b=0;b<bracketlength;b++){
+								xchunk+="]";
+							}
 							index += ("x["+chartaxa[0]+(chartaxa[0].length()>0? " ": "")+"("+chartaxa[1]+")]").split("\\s+").length; //use original chartaxa[1] to calculate the index, as the "taxon" may be added
 							xchunk = xchunk.replaceAll("-taxonname-", ". ");
 							xchunk = xchunk.replaceAll("taxonname-", "");
@@ -474,7 +478,7 @@ public class ChunkedSentence {
 		for(String token : tokens){
 			//m = taxonnamepattern2.matcher(token);
 			//if(m.matches()){
-			if(token.contains("-taxonname-")){
+			if(token.contains("taxonname-")){
 				ptn +="N"; //taxon name
 			}else if(token.length()==2 && token.endsWith(".")){
 				ptn +="N"; //taxon name
