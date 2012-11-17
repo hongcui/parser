@@ -41,7 +41,7 @@ public abstract class Type4Transformer extends Thread {
 
 	private XMLOutputter outputter = null;
 	// this is the dataprfix from general tab
-	private String dataprefix = null;
+	protected String dataprefix = null;
 	protected ProcessListener listener;
 	protected static final Logger LOGGER = Logger.getLogger(Type3Transformer.class);
 	/**

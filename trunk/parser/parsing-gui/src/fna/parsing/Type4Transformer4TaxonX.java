@@ -73,6 +73,10 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 					getDescriptionFrom(root, fn, count);
 					count++;
 				}				
+				String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+				TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
+				tnc.collect4TaxonX();
+
 			}
 		}catch(Exception e){
 			e.printStackTrace();
