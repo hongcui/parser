@@ -68,7 +68,8 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(xmlfile);
 			Element root = doc.getRootElement();
-			List<Element> names = XPath.selectNodes(root, "tax:taxonxBody/tax:treatment/tax:div/description/tax:name");
+			//List<Element> names = XPath.selectNodes(root, "tax:taxonxBody/tax:treatment/tax:div/description/tax:name");
+			List<Element> names = XPath.selectNodes(root, "//tax:name");
 			//System.out.println(xmlfile.getAbsolutePath());
 			addNames(names);
 		}catch(Exception e){
@@ -126,7 +127,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		try{
+	/*	try{
 			Connection conn = null;
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -141,7 +142,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-
+*/
 		
 
 	}
