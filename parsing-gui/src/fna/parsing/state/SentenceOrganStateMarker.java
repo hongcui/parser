@@ -113,7 +113,7 @@ public class SentenceOrganStateMarker {
 					String sent = rs.getString("sentence").trim();
 					if(sent.length()!=0){
 					String source = rs.getString("source");
-					//if(!source.equals("984.txt-7")) continue;
+					//if(!source.equals("1_0.txtp11.txt-0")) continue;
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
@@ -185,7 +185,7 @@ public class SentenceOrganStateMarker {
 		Matcher m = SentenceOrganStateMarker.taxonnamepattern2.matcher(text);
 		String remain = text;
 		while(m.matches()){
-			String name = m.group(1)+m.group(2);
+			String name = (m.group(1)==null? "" : m.group(1))+m.group(2);
 			int end = m.end(2);
 			remain = remain.substring(end);
 			String formated = name.replaceAll("\\s+.\\s+", "-taxonname-");
@@ -682,7 +682,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav4n", "fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_8538", "antglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
