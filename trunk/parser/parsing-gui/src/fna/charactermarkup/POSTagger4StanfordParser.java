@@ -981,7 +981,7 @@ public class POSTagger4StanfordParser {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "fnaglossaryfixed");
+		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "antglossaryfixed");
 		
 		//String str="<Cypselae> {tan} , {subcylindric} , {subterete} to 5-{angled} , 8–10 {mm} , {indistinctly} 8–10-{ribbed}";
 		//String src="364.txt-15";

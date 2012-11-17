@@ -4,6 +4,7 @@
 package fna.parsing;
 
 import java.io.File;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -74,6 +75,15 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 					count++;
 				}				
 				String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+				try{
+					if(MainForm.conn == null){
+						Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+						MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+					}
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
 				TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
 				tnc.collect4TaxonX();
 
