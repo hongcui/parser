@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.MainForm;
 
 
 
@@ -120,7 +121,7 @@ public class POSTagger4StanfordParser {
 			this.chunkedtokens = new ArrayList<String>(Arrays.asList(str.split("\\s+")));
         	str = normalizemodifier(str);//shallowly to deeply pinnatifid: this should be done before other normalization that involved composing new tokens using ~
 			//position list does not apply to FNA.			
-			//str = normalizePositionList(str);
+			if(MainForm.containindexedparts) str = normalizePositionList(str);
 			str = normalizeCountList(str+"");
 
 			//lookupCharacters(str);//populate charactertokens
