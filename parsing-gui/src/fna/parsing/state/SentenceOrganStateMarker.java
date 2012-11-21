@@ -99,7 +99,7 @@ public class SentenceOrganStateMarker {
 				}
 				if(taxonnames!=null && taxonnames.length()!=0){
 					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
-					this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+					this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
 					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
 					this.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
 
