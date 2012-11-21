@@ -663,22 +663,22 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		String database = "markedupdatasets";
 
-		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
->>>>>>> .r1194
+		String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
-		String prefix = "fnav19_excerpt";*/
+		String prefix = "fnav19_excerpt";
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_posedsentences.txt";
 		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_parsedsentences.txt";
 		String prefix = "fnav2"; //should be volume name
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\transformed";
 		 */
 		
-		String posedfile = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\plazi_8538_posedsentences.txt";
-		String parsedfile ="C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\plazi_8538_parsedsentences.txt";
-		String prefix = "plazi_8538"; //should be volume name
-		String transformeddir = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\transformed";
 
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_posedsentences.txt";
+		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\fnav4n_parsedsentences.txt";
+		String prefix = "fnav4n"; //should be volume name
+		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\transformed";
+		*/
 		
 		/*try{
 			Connection conn = null;
