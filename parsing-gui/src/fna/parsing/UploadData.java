@@ -67,7 +67,7 @@ public class UploadData{
 	}
 	
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) {	
 		if(standalone)
 		{
 			dataprefix = dataprefixinput;
@@ -243,6 +243,114 @@ public class UploadData{
     		}
     	}
     	
+    	/**
+    	 * copy from a remote server to local machine
+    	 * 
+    	 */
+    		  public static void scpFrom (String rfile, String lfile){
+    		    FileOutputStream fos=null;
+    		    try{
+    		    	//hongcui@:
+    		      String user="hongcui";
+    		      String host="biosemantics.arizona.edu";
+    		      
+
+    		      String prefix=null;
+    		      if(new File(lfile).isDirectory()){
+    		        prefix=lfile+File.separator;
+    		      }
+
+    		      JSch jsch=new JSch();
+    		      Session session=jsch.getSession(user, host, 22);
+        	      java.util.Properties config = new java.util.Properties(); 
+        	      config.put("StrictHostKeyChecking", "no");
+        	      session.setConfig(config);
+    		      session.setPassword("2t2gPTfz");
+        	      session.connect();
+
+    		      // exec 'scp -f rfile' remotely
+    		      String command="scp -f "+rfile;
+    		      Channel channel=session.openChannel("exec");
+    		      ((ChannelExec)channel).setCommand(command);
+
+    		      // get I/O streams for remote scp
+    		      OutputStream out=channel.getOutputStream();
+    		      InputStream in=channel.getInputStream();
+
+    		      channel.connect();
+
+    		      byte[] buf=new byte[1024];
+
+    		      // send '\0'
+    		      buf[0]=0; out.write(buf, 0, 1); out.flush();
+
+    		      while(true){
+    			int c=checkAck(in);
+    		        if(c!='C'){
+    			  break;
+    			}
+
+    		        // read '0644 '
+    		        in.read(buf, 0, 5);
+
+    		        long filesize=0L;
+    		        while(true){
+    		          if(in.read(buf, 0, 1)<0){
+    		            // error
+    		            break; 
+    		          }
+    		          if(buf[0]==' ')break;
+    		          filesize=filesize*10L+(long)(buf[0]-'0');
+    		        }
+
+    		        String file=null;
+    		        for(int i=0;;i++){
+    		          in.read(buf, i, 1);
+    		          if(buf[i]==(byte)0x0a){
+    		            file=new String(buf, 0, i);
+    		            break;
+    		  	  }
+    		        }
+
+    			//System.out.println("filesize="+filesize+", file="+file);
+
+    		        // send '\0'
+    		        buf[0]=0; out.write(buf, 0, 1); out.flush();
+
+    		        // read a content of lfile
+    		        fos=new FileOutputStream(prefix==null ? lfile : prefix+file);
+    		        int foo;
+    		        while(true){
+    		          if(buf.length<filesize) foo=buf.length;
+    			  else foo=(int)filesize;
+    		          foo=in.read(buf, 0, foo);
+    		          if(foo<0){
+    		            // error 
+    		            break;
+    		          }
+    		          fos.write(buf, 0, foo);
+    		          filesize-=foo;
+    		          if(filesize==0L) break;
+    		        }
+    		        fos.close();
+    		        fos=null;
+
+    			if(checkAck(in)!=0){
+    			  System.err.println("failed in ScpFrom");
+    			}
+
+    		        // send '\0'
+    		        buf[0]=0; out.write(buf, 0, 1); out.flush();
+    		      }
+
+    		      session.disconnect();
+    		    }
+    		    catch(Exception e){
+    		      System.out.println(e);
+    		      try{if(fos!=null)fos.close();}catch(Exception ee){}
+    		    }
+    		  }
+    	
     	/*
     	 * Provide the function with a file name and it will upload the file based on the current directory
     	 */
@@ -348,7 +456,7 @@ public class UploadData{
     	      buf[0]=0; out.write(buf, 0, 1); out.flush();
     	      if(checkAck(in)!=0){
     	    	  System.out.println("Error is SCPto");
-    		System.exit(0);
+    	    	  System.exit(0);
     	      }
     	      out.close();
 
@@ -363,6 +471,7 @@ public class UploadData{
     	    }
     	  }
 
+    	
   /*
    * Used to check the acknowledgement. Used in Scpto  	
    */
@@ -384,10 +493,10 @@ static int checkAck(InputStream in) throws IOException{
       }
       while(c!='\n');
       if(b==1){ // error
-	System.out.print(sb.toString());
+    	  System.out.print(sb.toString());
       }
       if(b==2){ // fatal error
-	System.out.print(sb.toString());
+    	  System.out.print(sb.toString());
       }
     }
     return b;
@@ -396,8 +505,9 @@ static int checkAck(InputStream in) throws IOException{
 /*
  * Used to execute commands on the sql server
  */
-	public static void execute(String command)
+	public static String[] execute(String command)
 	{
+		String[] result = new String[2];
 		try{
 		      JSch jsch=new JSch();  
 		      String host ="biosemantics.arizona.edu";
@@ -411,52 +521,63 @@ static int checkAck(InputStream in) throws IOException{
 		      config.put("StrictHostKeyChecking", "no");
 		      session.setConfig(config);
 		      
-		     
-
 		      session.setPassword(pass);
 		      session.connect();
-
+		      
+		      System.out.println(session.toString());
 
 		      Channel channel=session.openChannel("exec");
 		      ((ChannelExec)channel).setCommand(command);
 
-
 		      channel.setInputStream(null);
 
 		      ((ChannelExec)channel).setErrStream(System.err);
-
-		      InputStream in=channel.getInputStream();
-
+		      InputStream err = ((ChannelExec)channel).getErrStream();
+		  
+		      InputStream in =channel.getInputStream();
 		      channel.connect();
+		      //wait for in become available
+		      do{
+		      }while(in.available()<=0 && err.available()<=0);
+		      
+		      System.out.println(channel.toString());
 
 		      byte[] tmp=new byte[1024];
+		      StringBuffer sb = new StringBuffer();
 		      while(true){
 		        while(in.available()>0){
 		          int i=in.read(tmp, 0, 1024);
-		          if(i<0)break;
-		          System.out.print(new String(tmp, 0, i));
+		          if(i<=0) break;		          
+		          sb.append(new String(tmp, 0, i));		          
 		        }
-		         
+		        System.out.print(sb.toString());
+		        result[0] = sb.toString();
 		        if(channel.isClosed()){
-		          System.out.println("exit-status: "+channel.getExitStatus());
-		          break;
+		        	result[1] = channel.getExitStatus()+"";
+		        	System.out.println("exit-status: "+result[1]);
+		        	break;
 		        }
 		      //Mohan's code to quit if the input stream is empty. Which means the system is just waiting.
 		        else if(in.available()<=0)
 		        {
-		        	System.out.println("exit-status: "+channel.getExitStatus());
-		            break;
+		        	result[1] = channel.getExitStatus()+"";
+			          System.out.println("exit-status: "+result[1]);
+			          break;
 		        }
-		        try{Thread.sleep(1000);}catch(Exception ee){}
+		        try{
+		        	Thread.sleep(1000);
+		        }catch(Exception ee){
+		        	ee.printStackTrace();
+		        }
 		      }
 		      channel.disconnect();
-		         
 		      session.disconnect();
 		    }
 		    catch(Exception e){
-		      System.out.println(e);
+		    	e.printStackTrace();
+		    	System.out.println(e);
 		    }
-
+		return result;
 	}
 
 

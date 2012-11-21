@@ -15,9 +15,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,9 +38,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import javax.swing.JLabel;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ColumnLayoutData;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
@@ -59,6 +69,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
@@ -68,7 +79,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.browser.IWebBrowser;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.swtdesigner.SWTResourceManager;
 
 import fna.beans.CharacterGroupBean;
@@ -139,7 +156,9 @@ public class MainForm {
 	public static Combo dataPrefixCombo;
 	public static Combo glossaryPrefixCombo;
 	public static Button uploadTerm;
+	public static Button containIndexedParts;
 	public static boolean upload2OTO; 
+	public static boolean containindexedparts;
 	/* This Group belongs to Markup Tab -> Others tab*/
 	//private Group termRoleGroup;
 	//private Composite termRoleGroup;
@@ -622,15 +641,15 @@ public class MainForm {
 		}
 		
 		CLabel lblSelectA = new CLabel(composite, SWT.NONE);
-		lblSelectA.setBounds(20, 37, 208, 21);
+		lblSelectA.setBounds(20, 37, 288, 21);
 		lblSelectA.setText(ApplicationUtilities.getProperty("labelSelectProject"));
 		
 		projectDirectory = new Text(composite, SWT.BORDER);
 		projectDirectory.setToolTipText(ApplicationUtilities.getProperty("chooseDirectoryTooltip"));
-		projectDirectory.setBounds(238, 37, 386, 21);
+		projectDirectory.setBounds(33, 70, 586, 21);
 		
 		final Button browseConfigurationButton = new Button(composite, SWT.NONE);
-		browseConfigurationButton.setBounds(654, 35, 100, 23);
+		browseConfigurationButton.setBounds(624, 70, 100, 23);
 		browseConfigurationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				browseConfigurationDirectory(); // browse the configuration directory
@@ -641,10 +660,10 @@ public class MainForm {
 				
 		Group grpCreateANew = new Group(composite, SWT.NONE);
 		grpCreateANew.setText("Create a new project :");
-		grpCreateANew.setBounds(10, 10, 773, 215);
+		grpCreateANew.setBounds(10, 10, 773, 250);
 				
 		final Button saveProjectButton = new Button(grpCreateANew, SWT.NONE);
-		saveProjectButton.setBounds(635, 182, 100, 23);
+		saveProjectButton.setBounds(655, 210, 100, 23);
 		saveProjectButton.setText(ApplicationUtilities.getProperty("saveProjectBtn"));
 		saveProjectButton.setToolTipText(ApplicationUtilities.getProperty("saveProjectTTT"));
 		saveProjectButton.addSelectionListener(new SelectionAdapter() {
@@ -655,11 +674,15 @@ public class MainForm {
 				saveProject(); 
 				saveFlag = false;
 				if(uploadTerm.getSelection()) upload2OTO = true;
+				if(containIndexedParts.getSelection()) containindexedparts = true;
 				try {
 					int option_chosen =getType(type); 
 					mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.createNonEQTable();
+					//see if there is reviewed term set for downloading
+					downloadConfirmedTermsFromOTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+					
 				} catch (Exception exe) {
 					exe.printStackTrace();
 					LOGGER.error("Error saving dataprefix", exe);
@@ -680,7 +703,7 @@ public class MainForm {
 		combo.setItems(prefixes);
 														
 		CLabel label = new CLabel(grpCreateANew, SWT.NONE);
-		label.setBounds(23, 82, 344, 21);
+		label.setBounds(23, 100, 344, 21);
 		label.setText(ApplicationUtilities.getProperty("datasetprefix"));
 		combo.addModifyListener(new ModifyListener() {
 			public void modifyText(final ModifyEvent me) {
@@ -713,6 +736,13 @@ public class MainForm {
 		uploadTerm.setBounds(355, 134, 300, 23);
 		uploadTerm.setText(ApplicationUtilities.getProperty("upload2OTO"));
 		uploadTerm.setSelection(false);
+		
+		
+		//contain indexed part: rib 5 => the fifth rib
+		containIndexedParts = new Button(grpCreateANew, SWT.CHECK);
+		containIndexedParts.setBounds(23, 180, 700, 23);
+		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts"));
+		containIndexedParts.setSelection(false);
 		
 		/*controls for reloading and resuming the last project */
 /*		Group grpContinueWithThe = new Group(composite, SWT.NONE);
@@ -1377,11 +1407,11 @@ public class MainForm {
 		tab5desc.setToolTipText(ApplicationUtilities.getProperty("step4Descp"));
 		tab5desc.setText(ApplicationUtilities.getProperty("step4Descp"));
 		tab5desc.setEditable(false);
-		tab5desc.setBounds(10, 10, 744, 39);
+		tab5desc.setBounds(10, 10, 744, 99);
 		
 		/*"run perl" subtab*/
 		markUpPerlLog = new Text(composite_9, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
-		markUpPerlLog.setBounds(10, 103, 744, 250);
+		markUpPerlLog.setBounds(10, 113, 744, 250);
 		markUpPerlLog.setEnabled(true);
 
 		markupProgressBar = new ProgressBar(composite_9, SWT.NONE);
@@ -2353,7 +2383,7 @@ public class MainForm {
 				    case SWT.NO:
 						if(MainForm.upload2OTO){
 							int count = mainDb.finalizeTermCategoryTable();
-							//UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+							UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 							ApplicationUtilities.showPopUpWindow(
 									count+ " "+
 									ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
@@ -2369,7 +2399,7 @@ public class MainForm {
 
 				}else{ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
-					//UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+					UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 					ApplicationUtilities.showPopUpWindow(
 							count+" "+
 							ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
@@ -2740,6 +2770,106 @@ public class MainForm {
 
 	}
 
+	/**
+	 * if there is a termset ready for download for the dataprefix on OTO, 
+	 * update local dataset with the reviewed termset.
+	 * @param trim
+	 */
+	private boolean downloadConfirmedTermsFromOTO(String dataprefix) {
+		// TODO Auto-generated method stub
+		boolean outcome = true;
+		boolean downloadable = false;
+		String[] result = UploadData.execute("ls "+ApplicationUtilities.getProperty("OTO.dowloadable.dir")+dataprefix+"_groupterms.sql");
+		if(result[0].endsWith(dataprefix+"_groupterms.sql\n")) downloadable = true;
+		
+		if(!downloadable) outcome = false;
+		else{
+			int choice = ApplicationUtilities.showPopUpWindow(
+				 dataprefix +" term set is ready for use from OTO. Do you want to update CharaParser term set with it?", 
+					ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
+			if(choice == SWT.YES){
+				//create a dump on the remote server
+				//String mysqldump = "mysqldump -utermsuser -ptermspassword markedupdatasets."+dataprefix+"_term_category " +
+				//		"markedupdatasets."+dataprefix+"_syns > /home/sirls/hongcui/groupterms.sql";					
+				//UploadData.execute(mysqldump);
+				//download the sqldump from the server to target directory
+				UploadData.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+dataprefix+"_groupterms.sql", Registry.TargetDirectory+"/"+dataprefix+"_groupterms.sql");
+				//restore sql dump 
+				Statement stmt = null;
+				try{
+					if(conn == null){
+						Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+						conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+					}
+					stmt = conn.createStatement();
+					//update dataprefix_term_category dataprefix_syns
+					//save local version of term_category table
+					stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
+					stmt.execute("drop table if exists "+dataprefix+"_syns");
+					stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local`");
+					
+					//create new version of term_category table
+					String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_sqllog.txt\"";//write output to log file
+					//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
+					System.out.println(mysqlrestore);
+					String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <
+					Process p = Runtime.getRuntime().exec(cmd);
+					BufferedReader stdInput = new BufferedReader(new InputStreamReader(p
+							.getInputStream()));
+					
+					BufferedReader errInput = new BufferedReader(new InputStreamReader(p
+							.getErrorStream()));
+					
+					// read the output from the command
+					boolean trouble = false;
+					String s = "";
+					while ((s = stdInput.readLine()) != null) {
+						// listener.info(String.valueOf(i), s);
+						System.out.println(s);
+						trouble = true;
+					}					
+					// read the errors from the command
+					String e = "";
+					while ((e = errInput.readLine()) != null) {
+						System.out.println(e);
+						trouble = true;
+					}
+					if(!trouble){
+						//add "structure" terms from term_category_local to term_category
+						stmt.execute("insert into "+dataprefix+"_term_category(term, category) " +
+							"(select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
+						outcome = true;
+						ApplicationUtilities.showPopUpWindow(
+								 "CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation", 
+									ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
+					}else{
+						outcome = false;
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+					outcome = false;
+				}finally{
+					try{
+						stmt.close();
+					}catch(Exception ee){
+						ee.printStackTrace();
+						outcome =false;
+					}
+				}
+			}
+		}
+		if(outcome==true)
+			ApplicationUtilities.showPopUpWindow(
+					 "CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation.", 
+						ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
+		else if(outcome==false && downloadable == true)
+			ApplicationUtilities.showPopUpWindow(
+					 "CharaParser term set failed to be updated for term set "+dataprefix +". Please report the problem.", 
+						ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
+
+		return outcome;
+	}
+
 	private void createSubtab(final TabFolder markupNReviewTabFolder, final String type, Composite composite_1, Group group, final ScrolledComposite scrolledComposite, final Composite termRoleMatrix, final StyledText contextText) {
 		String subtabTitle ="";
 		String subtabInstruction = "";
@@ -2765,7 +2895,26 @@ public class MainForm {
 		text_1.setToolTipText(ApplicationUtilities.getProperty(subtabInstruction));
 		text_1.setText(ApplicationUtilities.getProperty(subtabInstruction));
 		text_1.setEditable(false);
-		text_1.setBounds(10, 17, 744, 39);
+		text_1.setBounds(5, 0, 744, 39);
+		//add URL to full instruction
+		Link url = new Link(composite_1, SWT.NONE);
+		url.setText(ApplicationUtilities.getProperty("tab.term.instruction"));
+		url.setBounds(5, 40, 744, 15);
+		url.addSelectionListener(new SelectionAdapter(){
+	        @Override
+	        public void widgetSelected(SelectionEvent e) {
+	               System.out.println("You have selected: "+e.text);
+	               try {
+	                //  Open default external browser 
+	                //IWebBrowser b = PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser();
+	                //b.openURL(new URL(e.text));
+	            	org.eclipse.swt.program.Program.launch(e.text);  
+	              } 
+	             catch (Exception ex) {
+	                 ex.printStackTrace();
+	            } 
+	        }
+	    });
 		
 		//final Group group = new Group(composite_1, SWT.NONE);
 		group.setBounds(10, 62, 744, 250);
