@@ -310,6 +310,7 @@ public class MainForm {
 	protected UUID lastSavedIdS = UUID.randomUUID();
 	protected UUID lastSavedIdC = UUID.randomUUID();
 	protected UUID lastSavedIdO = UUID.randomUUID();
+	private static Group grpTermSets;
 	
 	/*the set of threads that would run off the mainform*/
 	static VolumeExtractor ve = null;
@@ -661,6 +662,10 @@ public class MainForm {
 		Group grpCreateANew = new Group(composite, SWT.NONE);
 		grpCreateANew.setText("Create a new project :");
 		grpCreateANew.setBounds(10, 10, 773, 250);
+		
+		grpTermSets = new Group(composite, SWT.NONE);
+		grpTermSets.setText("Term sets ready for use :");
+		grpTermSets.setBounds(10, 270, 773, 200);	
 				
 		final Button saveProjectButton = new Button(grpCreateANew, SWT.NONE);
 		saveProjectButton.setBounds(655, 210, 100, 23);
@@ -681,17 +686,14 @@ public class MainForm {
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.createNonEQTable();
 					//see if there is reviewed term set for downloading
-					downloadConfirmedTermsFromOTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
-					
+					downloadConfirmedTermsFromOTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());	
 				} catch (Exception exe) {
 					exe.printStackTrace();
 					LOGGER.error("Error saving dataprefix", exe);
 				}
-				String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-				String message = ApplicationUtilities.getProperty("popup.info.saved");				
-				ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-				
-								
+				//String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
+				//String message = ApplicationUtilities.getProperty("popup.info.saved");				
+				//ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);								
 			}
 		});
 
@@ -2383,7 +2385,7 @@ public class MainForm {
 				    case SWT.NO:
 						if(MainForm.upload2OTO){
 							int count = mainDb.finalizeTermCategoryTable();
-							UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+							UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 							ApplicationUtilities.showPopUpWindow(
 									count+ " "+
 									ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
@@ -2399,7 +2401,7 @@ public class MainForm {
 
 				}else{ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
-					UploadData ud = new UploadData(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+					UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 					ApplicationUtilities.showPopUpWindow(
 							count+" "+
 							ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
@@ -2775,99 +2777,134 @@ public class MainForm {
 	 * update local dataset with the reviewed termset.
 	 * @param trim
 	 */
-	private boolean downloadConfirmedTermsFromOTO(String dataprefix) {
+	private void downloadConfirmedTermsFromOTO(String dataprefixx) {
 		// TODO Auto-generated method stub
-		boolean outcome = true;
-		boolean downloadable = false;
-		String[] result = UploadData.execute("ls "+ApplicationUtilities.getProperty("OTO.dowloadable.dir")+dataprefix+"_groupterms.sql");
-		if(result[0].endsWith(dataprefix+"_groupterms.sql\n")) downloadable = true;
+		final String dataprefix = dataprefixx;
+		//final Boolean success = null;
+		//boolean outcome = true;
+		Label text = new Label(MainForm.grpTermSets, SWT.NONE);
+		text.setText("Checking OTO for availability of the "+dataprefix +" term set(s) ...");
+		text.setBounds(23, 30, 773, 23);
 		
-		if(!downloadable) outcome = false;
-		else{
-			int choice = ApplicationUtilities.showPopUpWindow(
-				 dataprefix +" term set is ready for use from OTO. Do you want to update CharaParser term set with it?", 
-					ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
-			if(choice == SWT.YES){
-				//create a dump on the remote server
-				//String mysqldump = "mysqldump -utermsuser -ptermspassword markedupdatasets."+dataprefix+"_term_category " +
-				//		"markedupdatasets."+dataprefix+"_syns > /home/sirls/hongcui/groupterms.sql";					
-				//UploadData.execute(mysqldump);
-				//download the sqldump from the server to target directory
-				UploadData.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+dataprefix+"_groupterms.sql", Registry.TargetDirectory+"/"+dataprefix+"_groupterms.sql");
-				//restore sql dump 
-				Statement stmt = null;
+		boolean downloadable = false;
+		ArrayList<String> result = UploadTerms2OTO.execute(
+				"ls "+ApplicationUtilities.getProperty("OTO.dowloadable.dir")+ 
+				" | grep "+dataprefix+"_groupterms.*sql$");
+		if(result.size()> 0) downloadable = true;
+		//final boolean ddble = downloadable;
+		if(!downloadable){
+			text = new Label(MainForm.grpTermSets, SWT.NONE);
+			text.setText("No "+dataprefix +" term set(s) is(are) available. Please proceed to the next step. ");
+			text.setBounds(23, 60, 773, 23);
+		}else{
+			int i = 0;
+			final int position = 60+(result.size()+1)*30;			
+			//MainForm.grpTermSets
+			text = new Label(MainForm.grpTermSets, SWT.NONE);
+			text.setText("The "+dataprefix +" term set(s) is(are) ready for use from OTO. Select the term set you would like to download:");
+			text.setBounds(23, 60, 773, 23);	
+			Button choice = null;
+			for(; i<result.size()-1; i++){ 
+				choice =  new Button(MainForm.grpTermSets, SWT.RADIO);
+				choice.setText(result.get(i));
+				choice.setBounds(30, 60+(i+1)*30, 200, 23);
+				choice.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						Button button = (Button) e.widget;
+						button.setSelection(true);
+						downloadTermSet(dataprefix, button.getText(), position);
+					}
+				});
+			}
+			
+						
+			choice = new Button(MainForm.grpTermSets, SWT.RADIO);
+			choice.setText("no selection");
+			choice.setBounds(30, 60+(i+1)*30, 200, 23);
+
+		}
+		
+		//return outcome;
+	}
+
+	private void downloadTermSet(String dataprefix, String file, /*Boolean success, boolean downloadable,*/ int position) {
+		
+		if(file.equals("no selection")){
+			Label text = new Label(MainForm.grpTermSets, SWT.NONE);
+			text.setText("You chose not to use any "+dataprefix +" term set(s) that is(are) available. Please proceed to the next step. ");
+			text.setBounds(23, position+30, 773, 23);
+		}else{				
+			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+file, Registry.TargetDirectory+"/"+file);
+			//restore sql dump 
+			Statement stmt = null;
+			try{
+				if(conn == null){
+					Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+					conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+				}
+				stmt = conn.createStatement();
+				//update dataprefix_term_category dataprefix_syns
+				//save local version of term_category table
+				stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
+				stmt.execute("drop table if exists "+dataprefix+"_syns");
+				stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local`");
+				
+				//create new version of term_category table
+				String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_sqllog.txt\"";//write output to log file
+				//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
+				System.out.println(mysqlrestore);
+				String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <
+				Process p = Runtime.getRuntime().exec(cmd);
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p
+						.getInputStream()));
+				
+				BufferedReader errInput = new BufferedReader(new InputStreamReader(p
+						.getErrorStream()));
+				
+				// read the output from the command
+				boolean trouble = false;
+				String s = "";
+				while ((s = stdInput.readLine()) != null) {
+					// listener.info(String.valueOf(i), s);
+					System.out.println(s);
+					trouble = true;
+				}					
+				// read the errors from the command
+				String e = "";
+				while ((e = errInput.readLine()) != null) {
+					System.out.println(e);
+					trouble = true;
+				}
+				if(!trouble){
+					//add "structure" terms from term_category_local to term_category
+					stmt.execute("insert into "+dataprefix+"_term_category (term, category) " +
+						"select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
+					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
+					text.setText("CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation");
+					text.setBounds(23, position+30, 773, 23);								
+				}else{
+					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
+					text.setText("Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.");
+					text.setBounds(23, position+30, 773, 23);								
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				ApplicationUtilities.showPopUpWindow(
+						 "Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.", 
+							ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
+
+			}finally{
 				try{
-					if(conn == null){
-						Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-						conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
-					}
-					stmt = conn.createStatement();
-					//update dataprefix_term_category dataprefix_syns
-					//save local version of term_category table
-					stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
-					stmt.execute("drop table if exists "+dataprefix+"_syns");
-					stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local`");
-					
-					//create new version of term_category table
-					String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_sqllog.txt\"";//write output to log file
-					//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
-					System.out.println(mysqlrestore);
-					String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <
-					Process p = Runtime.getRuntime().exec(cmd);
-					BufferedReader stdInput = new BufferedReader(new InputStreamReader(p
-							.getInputStream()));
-					
-					BufferedReader errInput = new BufferedReader(new InputStreamReader(p
-							.getErrorStream()));
-					
-					// read the output from the command
-					boolean trouble = false;
-					String s = "";
-					while ((s = stdInput.readLine()) != null) {
-						// listener.info(String.valueOf(i), s);
-						System.out.println(s);
-						trouble = true;
-					}					
-					// read the errors from the command
-					String e = "";
-					while ((e = errInput.readLine()) != null) {
-						System.out.println(e);
-						trouble = true;
-					}
-					if(!trouble){
-						//add "structure" terms from term_category_local to term_category
-						stmt.execute("insert into "+dataprefix+"_term_category(term, category) " +
-							"(select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
-						outcome = true;
-						ApplicationUtilities.showPopUpWindow(
-								 "CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation", 
-									ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
-					}else{
-						outcome = false;
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-					outcome = false;
-				}finally{
-					try{
-						stmt.close();
-					}catch(Exception ee){
-						ee.printStackTrace();
-						outcome =false;
-					}
+					stmt.close();
+				}catch(Exception ee){
+					ee.printStackTrace();
+					ApplicationUtilities.showPopUpWindow(
+							 "Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.", 
+								ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
+
 				}
 			}
 		}
-		if(outcome==true)
-			ApplicationUtilities.showPopUpWindow(
-					 "CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation.", 
-						ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
-		else if(outcome==false && downloadable == true)
-			ApplicationUtilities.showPopUpWindow(
-					 "CharaParser term set failed to be updated for term set "+dataprefix +". Please report the problem.", 
-						ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
-
-		return outcome;
 	}
 
 	private void createSubtab(final TabFolder markupNReviewTabFolder, final String type, Composite composite_1, Group group, final ScrolledComposite scrolledComposite, final Composite termRoleMatrix, final StyledText contextText) {
