@@ -1,5 +1,7 @@
 package fna.parsing.finalizer;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -48,8 +50,7 @@ public class UnknownResolver {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			LOGGER.error("Error in UnknownResolver: constructor", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -81,7 +82,7 @@ public class UnknownResolver {
 			}
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: markupUnknows", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		Enumeration en = unmarked.keys();
 		while(en.hasMoreElements()){
@@ -136,7 +137,7 @@ public class UnknownResolver {
 			sb = sb.replace(sb.lastIndexOf("|"), sb.lastIndexOf("|")+1, "");
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: getRequiredString", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return sb.toString();
 	}
@@ -164,7 +165,7 @@ public class UnknownResolver {
 		}
 		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return tags.toString();
 	}
@@ -183,7 +184,7 @@ public class UnknownResolver {
 			tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: collectLearnedStateNames", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return tags.toString();
 	}
