@@ -3,10 +3,13 @@
  */
 package fna.parsing.datacleaner;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.xpath.XPath;
 
@@ -16,7 +19,6 @@ import org.jdom.xpath.XPath;
  */
 @SuppressWarnings({ "unchecked" })
 public class CleanConservation extends DataCleaner {
-
 	/**
 	 * @param sourcedir
 	 * @param sourceElements
@@ -57,7 +59,7 @@ public class CleanConservation extends DataCleaner {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return root;
 	}
