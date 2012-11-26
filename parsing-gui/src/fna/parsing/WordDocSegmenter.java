@@ -3,7 +3,9 @@
  */
 package fna.parsing;
 
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -50,7 +52,7 @@ public class WordDocSegmenter extends VolumeExtractor {
 			treatment.detach();
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	public void populateTreatment(Element wp, String style){

@@ -10,11 +10,13 @@ import java.util.Iterator;
 
 import javax.swing.JFileChooser;
 
+import org.apache.log4j.Logger;
 import org.jdom.*;
 import org.jdom.output.XMLOutputter;
 import org.jsoup.select.Elements;
 
 public class V3_Extractor {
+	private static final Logger LOGGER = Logger.getLogger(V3_Extractor.class);
 	static Element treatment = new Element("treatment");
 
 	public static void main(String[] args) throws Exception {

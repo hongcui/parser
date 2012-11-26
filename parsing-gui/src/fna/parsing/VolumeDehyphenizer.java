@@ -83,7 +83,7 @@ public class VolumeDehyphenizer extends Thread {
             }
         }catch(Exception e){
         	LOGGER.error("Database is down! (VolumeDehyphenizer)", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }*/
      
         this.dhf = new DeHyphenAFolder(listener,workdir,todofoldername, database, this,  dataPrefix, this.glossaryTableName, glossary);
@@ -120,7 +120,7 @@ public class VolumeDehyphenizer extends Thread {
 					words = vmdb.descriptorTerms4Curation();
 				} catch (Exception exe){
 					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				int count = 1;
 				descriptorTable.removeAll(); //clean up before a load
@@ -175,7 +175,7 @@ public class VolumeDehyphenizer extends Thread {
             }
         }catch(Exception e){
         	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
         normalizeDocument();
         if(listener!= null) incrementProgressBar(100);
@@ -189,7 +189,7 @@ public class VolumeDehyphenizer extends Thread {
             stmt.execute("delete from "+tablename);
         }catch(Exception e){
         	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
     }
     
@@ -234,7 +234,7 @@ public class VolumeDehyphenizer extends Thread {
             }
         } catch (Exception e) {
         	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
     }
     
@@ -282,7 +282,7 @@ public class VolumeDehyphenizer extends Thread {
             }
         } catch (Exception e) {
         	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
     }
     

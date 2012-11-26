@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.JFileChooser;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -20,6 +21,7 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 public class V3_Transformer {
+	private static final Logger LOGGER = Logger.getLogger(V3_Transformer.class);
 	Element treatment = new Element("treatment");
 	private boolean debugref = false;
 	public static void main(String[] args)throws Exception{
