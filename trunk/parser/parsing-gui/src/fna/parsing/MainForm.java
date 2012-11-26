@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -127,7 +129,7 @@ public class MainForm {
 		try {
 			ApplicationUtilities.setLogFilePath();
 		} catch (Exception exe) {
-			exe.printStackTrace();
+	        exe.printStackTrace();	
 		}
 
 	}
@@ -341,8 +343,8 @@ public class MainForm {
 			}
 			window.open();
 		} catch (Exception e) {
-			LOGGER.error("Error Launching application", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -431,9 +433,8 @@ public class MainForm {
 						int option_chosen = getType(type);
 						mainDb.savePrefixData(dataPrefixCombo.getText().replaceAll("-", "_").trim(),glossaryPrefixCombo.getText().trim(),option_chosen);
 						
-					} catch (Exception exe) {
-						LOGGER.error("Error saving dataprefix", exe);
-						exe.printStackTrace();
+					} catch (Exception e) {
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				 }
 				/* Check if the Type of document selected is Type 3 or Type 4*/
@@ -694,8 +695,9 @@ public class MainForm {
 					//display new messages
 					downloadConfirmedTermsFromOTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());	
 				} catch (Exception exe) {
-					exe.printStackTrace();
-					LOGGER.error("Error saving dataprefix", exe);
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+					exe.printStackTrace(pw);LOGGER.error(sw.toString());
+					
 				}
 				//String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
 				//String message = ApplicationUtilities.getProperty("popup.info.saved");				
@@ -725,8 +727,8 @@ public class MainForm {
 				try {
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 				} catch (Exception exe) {
-					LOGGER.error("Error in loading Status of mark Up", exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+					exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				/* remove the deleted edges graph if a new prefix is selected*/
 				removedEdges.clear();
@@ -913,7 +915,7 @@ public class MainForm {
 //					
 //				} catch (Exception exe){
 //					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-//					exe.printStackTrace();
+//					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 //				}
 //			
 //			
@@ -944,7 +946,7 @@ public class MainForm {
 //					
 //				} catch (Exception exe){
 //					LOGGER.error("unable to load descriptor tab in Markup : MainForm", exe);
-//					exe.printStackTrace();
+//					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 //				}
 //			
 //			}
@@ -1062,8 +1064,7 @@ public class MainForm {
 						extractionTable.removeAll();
 						startExtraction(); // start the extraction process
 					} catch (Exception exe) {
-						LOGGER.error("unable to extract in mainform", exe);
-						exe.printStackTrace();
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 					 
 					// Saving the status of markup
@@ -1071,8 +1072,7 @@ public class MainForm {
 					try {
 						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), true);
 					} catch (Exception exe) {
-						LOGGER.error("Couldnt save status - segment" , exe);
-						exe.printStackTrace();
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				}
 			});
@@ -1131,8 +1131,9 @@ public class MainForm {
 					try {
 					//	mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
 					} catch (Exception exe) {
-						LOGGER.error("Couldnt save status - verify" , exe);
-						exe.printStackTrace();
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				}
 			});
@@ -1204,8 +1205,7 @@ public class MainForm {
 					try {
 						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), true);
 					} catch (Exception exe) {
-						LOGGER.error("Couldnt save status - verify" , exe);
-						exe.printStackTrace();
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				}
 			});
@@ -1224,8 +1224,7 @@ public class MainForm {
 						
 						//mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
 					} catch (Exception exe) {
-						LOGGER.error("Couldnt save status - verify" , exe);
-						exe.printStackTrace();
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				}
 			});
@@ -1315,8 +1314,8 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.four.name"), combo.getText(), true);
 					statusOfMarkUp[3] = true;
 				} catch (Exception exe) {
-					LOGGER.error("Couldnt save status - transform" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+					exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			}
 		});
@@ -1337,7 +1336,7 @@ public class MainForm {
 					statusOfMarkUp[3] = false;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - transform" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			*/
 				//commented above code to make it re-run
@@ -1359,7 +1358,7 @@ public class MainForm {
 					statusOfMarkUp[3] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - transform" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			}
 		});
@@ -1454,7 +1453,7 @@ public class MainForm {
 					}*/
 				} catch (Exception exe) {
 					LOGGER.error("Couldn't save status - markup" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 			}
@@ -2113,7 +2112,7 @@ public class MainForm {
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - unknown" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 			}
@@ -2197,7 +2196,7 @@ public class MainForm {
 					}
 				} catch (Exception exe) {
 					LOGGER.error("Error in displaying the file in context table", exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
  
 			}			
@@ -2350,7 +2349,7 @@ public class MainForm {
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save the character tab details in MainForm" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 				String savedGroupName = groupsCombo.getText();
@@ -2698,7 +2697,7 @@ public class MainForm {
 					
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			}
 		});
@@ -2735,7 +2734,7 @@ public class MainForm {
 					}*/
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - markup" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}							
 			}
 		});
@@ -2759,7 +2758,7 @@ public class MainForm {
 					statusOfMarkUp[7] = true;
 				} catch (Exception exe) {
 					LOGGER.error("Couldnt save status - glossary" , exe);
-					exe.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 			}
@@ -2894,7 +2893,8 @@ public class MainForm {
 					text.setBounds(23, position, 700, 23);								
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);LOGGER.error(sw.toString());
 				ApplicationUtilities.showPopUpWindow(
 						 "Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.", 
 							ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
@@ -2902,8 +2902,8 @@ public class MainForm {
 			}finally{
 				try{
 					stmt.close();
-				}catch(Exception ee){
-					ee.printStackTrace();
+				}catch(Exception exe){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 					ApplicationUtilities.showPopUpWindow(
 							 "Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.", 
 								ApplicationUtilities.getProperty("popup.header.info"), SWT.OK);
@@ -3100,7 +3100,7 @@ public class MainForm {
 					nonStructureTerms.addAll(characters);
 					mainDb.setUnknownTags(nonStructureTerms);
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				//termRoleMatrix.setVisible(false);
 				//termRoleMatrix4others.dispose();
@@ -3144,7 +3144,7 @@ public class MainForm {
 					nonStructureTerms.addAll(characters.values());
 					mainDb.setUnknownTags(nonStructureTerms);
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				//remove
 				//termRoleMatrix.setVisible(false);
@@ -3184,7 +3184,7 @@ public class MainForm {
 			mainDb.saveOtherTerms(otherTerms);
 		} catch (Exception exe){
 			LOGGER.error("Error in saving other terms from Markup-Others to database", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	*/
@@ -3196,7 +3196,7 @@ public class MainForm {
 			otherTerms = mainDb.getUnknownWords();
 		} catch (Exception exe) {
 			LOGGER.error("Exception in getting unknown words", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		if (otherTerms != null) {
@@ -3225,7 +3225,7 @@ public class MainForm {
 			otherTerms = mainDb.getUnknownWords();
 		} catch (Exception exe) {
 			LOGGER.error("Exception in getting unknown words", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		if (otherTerms != null) {
@@ -3333,7 +3333,7 @@ public class MainForm {
 			
 			
 		/*} catch (Exception exe) {
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}*/
@@ -3367,13 +3367,13 @@ public class MainForm {
 			mainDb.changePOStoB(nonStructureTerms);
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in removing structures from database in MainForm:removeBadStructuresFromTable", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//act on structureTerms: save them to wordrole table
 		try {
 			mainDb.saveTermRole(structureTerms, role);			
 		} catch (Exception exe) {
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//refresh table
 		table.removeAll();
@@ -3419,13 +3419,13 @@ public class MainForm {
 			mainDb.recordNonEQTerms(nonDescriptorTerms);
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in removing structures from database in MainForm:removeBadStructuresFromTable", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//act on descriptorTerms: save them to wordrole table
 		try {
 			mainDb.saveTermRole(descriptorTerms, role);			
 		} catch (Exception exe) {
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//refresh table
 		table.removeAll();
@@ -3473,7 +3473,7 @@ public class MainForm {
 				mainDb.recordNonEQTerms(removedTags);
 			} catch (Exception exe) {
 				LOGGER.error("Exception encountered in removing tags from database in MainForm:removeMarkup", exe);
-				exe.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		} else {
 			ApplicationUtilities.showPopUpWindow("You have not selected anything for removal. " +
@@ -3671,7 +3671,7 @@ public class MainForm {
 		
 		}catch(Exception e){
 			LOGGER.error("couldn't load the configuration file", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -3713,7 +3713,7 @@ public class MainForm {
 			out.close();
 		}catch(Exception e){
 			LOGGER.error("couldn't save project", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	
 	}
@@ -3783,7 +3783,7 @@ public class MainForm {
 				System.out.println();
 				return true;
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		}
 		return false;
@@ -3805,7 +3805,7 @@ public class MainForm {
 			mainDb.setUnknownTags(badStructures);
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in removing structures from database in MainForm:removeBadStructuresFromTable", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 	}*/	
@@ -3827,7 +3827,7 @@ public class MainForm {
 			 }
 			} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
-				exe.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		    }
 
 	}
@@ -3855,7 +3855,7 @@ public class MainForm {
 						conn = DriverManager.getConnection(URL);
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
 				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
@@ -3869,7 +3869,7 @@ public class MainForm {
 			 //}
 		} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
-				exe.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return XMLFileCount;
 	}
@@ -3895,7 +3895,7 @@ public class MainForm {
 						conn = DriverManager.getConnection(URL);
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
 				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
@@ -3909,7 +3909,7 @@ public class MainForm {
 			 }
 		} catch (Exception exe) {
 				LOGGER.error("Exception encountered in loading tags from database in MainForm:loadTags", exe);
-				exe.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return XMLFileCount;
 	}*/
@@ -3921,7 +3921,7 @@ public class MainForm {
 			mainDb.updateContextData(sentid, contextStyledText);
 		} catch (Exception e) {
 			LOGGER.error("Exception encountered in loading tags from database in MainForm:updateContext", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException("Failed to execute the statement.", e);			
 		}
 	}
@@ -3968,7 +3968,7 @@ public class MainForm {
 			
 		} catch (Exception exe) {
 			LOGGER.error("Exception encountered in loading tags from database in MainForm:saveTag", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		loadTagTable(tabFolder);
 		//reset context box
@@ -4029,7 +4029,7 @@ public class MainForm {
 			charDb.getDecisionCategory(decisions);
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve decision names" , exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		int count = 0;
 		String [] strDecisions = new String[decisions.size()];
@@ -4050,7 +4050,7 @@ public class MainForm {
 			charDb.getDefaultDecisionCategory(decisions);
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve decision names" , exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		int count = 0;
 		String [] strDecisions = new String[decisions.size()];
@@ -4223,7 +4223,7 @@ public class MainForm {
 			}
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve processedGroups terms" , exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -4258,7 +4258,7 @@ public class MainForm {
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldnt retrieve co-occurring terms" , exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 		if (terms!=null && terms.size() > 5) {
@@ -4348,7 +4348,7 @@ public class MainForm {
 								
 							} catch (Exception exe) {
 								LOGGER.error("Couldnt retrieve sentences terms" , exe);
-								exe.printStackTrace();
+								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 							}
 							
 						}
@@ -4599,7 +4599,7 @@ public class MainForm {
 								
 							} catch (Exception exe) {
 								LOGGER.error("Couldnt retrieve sentences terms" , exe);
-								exe.printStackTrace();
+								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 							}
 							
 						}
@@ -4635,7 +4635,7 @@ public class MainForm {
 		try {
 			charDb.saveTerms(terms);
 		} catch(Exception exe){
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -4902,7 +4902,7 @@ public class MainForm {
 			mainDb.recordNonEQTerms(noneqwords, null, null);
 			words = null;
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		conn = null;
 		return filteredwords;
@@ -4941,7 +4941,7 @@ public class MainForm {
 			words = null;
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		conn = null;
 		return filteredwords;	
@@ -4976,7 +4976,7 @@ public class MainForm {
 			mainDb.recordNonEQTerms(noneqwords, null, null);
 			words = null;
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return filteredwords;
 	}
@@ -5114,7 +5114,7 @@ public class MainForm {
 			}			
 		} catch (Exception exe){
 			LOGGER.error("unable to load findMoreStructure subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -5147,7 +5147,7 @@ public class MainForm {
 			}					
 		} catch (Exception exe){
 			LOGGER.error("unable to load findStructure subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return count;
 	}*/
@@ -5172,7 +5172,7 @@ public class MainForm {
 			
 		} catch (Exception exe){
 			LOGGER.error("unable to load findDescriptor subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return count;
 	
@@ -5195,7 +5195,7 @@ public class MainForm {
 			}					
 		} catch (Exception exe){
 			LOGGER.error("unable to load findMoreStructure subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return count;
 	}*/
@@ -5215,7 +5215,7 @@ public class MainForm {
 			}					
 		} catch (Exception exe){
 			LOGGER.error("unable to load findMoreDescriptor subtab in Markup : MainForm", exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return count;
 	}*/

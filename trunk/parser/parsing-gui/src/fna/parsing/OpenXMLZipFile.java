@@ -7,11 +7,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author Hong Updates
@@ -22,6 +26,7 @@ public class OpenXMLZipFile
 {
 	//  CreateZipFile method which will take the zipFileName and ToCompressFiles as arguments
 	//   and will go through the array of ToCompressFiles and pack it into zipFileName 
+	 private static final Logger LOGGER = Logger.getLogger(OpenXMLZipFile.class);  
 
  	public static void CreateZipFile(String zipFileName, File[] ToCompressFiles)
 	{
@@ -54,17 +59,8 @@ public class OpenXMLZipFile
 			zipOStream.flush();
 			zipOStream.close();
 		}
-		catch (IllegalArgumentException iae) {
-			 iae.printStackTrace();
-		   }
-		catch(FileNotFoundException fe)
-		{
-			System.out.println("File not found===="+fe);
-		}
-		catch (IOException ioe)
-		{
-			System.out.println("IOException===="+ioe);
-			ioe.printStackTrace();
+		catch (Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
     }
 	
@@ -122,10 +118,9 @@ public class OpenXMLZipFile
 				}
 			}
 		}
-		catch(IOException ioe)
+		catch(IOException e)
 		{
-			System.out.println("IOException occured====="+ioe);
-			ioe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
