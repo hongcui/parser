@@ -4,8 +4,11 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -23,6 +26,8 @@ public class FNAElementReviewer {
 	//private String elementname = "habitat";
 	private String elementname = "global_distribution";
 	private XPath xpath1= XPath.newInstance("//"+elementname);
+	private static final Logger LOGGER = Logger.getLogger(FNAElementReviewer.class);  
+
 
 	/**
 	 * 
@@ -69,7 +74,7 @@ public class FNAElementReviewer {
 		try{
 			FNAElementReviewer fnr = new FNAElementReviewer(xmldir);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 

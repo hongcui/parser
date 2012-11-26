@@ -3,8 +3,11 @@ package fna.parsing;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -24,6 +27,8 @@ import org.jdom.output.XMLOutputter;
  *
  */
 public class FNAHabitat2Fruiting {
+	private static final Logger LOGGER = Logger.getLogger(FNAHabitat2Fruiting.class);  
+
 	public static void main(String[] args) {
 		String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last";		
 		try{
@@ -72,7 +77,7 @@ public class FNAHabitat2Fruiting {
 				outputter.output(newdoc, out);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 }

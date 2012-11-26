@@ -2,8 +2,11 @@ package fna.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -15,6 +18,7 @@ import org.jdom.input.SAXBuilder;
  *
  */
 public class HabitatComparison {
+	 private static final Logger LOGGER = Logger.getLogger(HabitatComparison.class);  
 
 	public static void main(String[] args){
 		String folder1 = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V21-good\\target\\last";
@@ -51,7 +55,7 @@ public class HabitatComparison {
 			}
 			System.out.println("total:"+count);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 }

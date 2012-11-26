@@ -1,6 +1,7 @@
 package fna.parsing;
 
 
+import org.apache.log4j.Logger;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
@@ -55,6 +56,7 @@ import java.util.regex.Pattern;
  *          
  */
 public class FNATaxonNameFinalizerStep1{
+	private static final Logger LOGGER = Logger.getLogger(FNATaxonNameFinalizerStep1.class);  
 	static String filename = null;
 	Element treatment = new Element("treatment");
 	static int partdetecter, count;
@@ -86,7 +88,7 @@ public class FNATaxonNameFinalizerStep1{
 			namePath = XPath.newInstance(".//*[contains(name(),'_name')]");
 			authorPath = XPath.newInstance(".//*[contains(name(),'_authority')]");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 
@@ -202,7 +204,7 @@ public class FNATaxonNameFinalizerStep1{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -245,7 +247,7 @@ public class FNATaxonNameFinalizerStep1{
 				}				
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -271,7 +273,7 @@ public class FNATaxonNameFinalizerStep1{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -309,7 +311,7 @@ public class FNATaxonNameFinalizerStep1{
 				}
 			}
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 
@@ -663,7 +665,7 @@ public class FNATaxonNameFinalizerStep1{
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return null;
 	}

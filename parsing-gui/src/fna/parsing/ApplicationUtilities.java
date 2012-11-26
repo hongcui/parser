@@ -5,10 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Properties;
 
 import java.lang.*;
-import java.lang.String;
 import java.io.InputStream;
 
 import org.apache.log4j.Logger;
@@ -81,9 +82,8 @@ public class ApplicationUtilities {
 				out.flush();
 				System.exit(0);
 			}			
-		} catch(Exception exe) {
-			exe.printStackTrace();
-			LOGGER.error("Unable to set Log file path", exe);
+		} catch(Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		} finally {
 			if (out != null) {
 				out.close();
@@ -110,7 +110,7 @@ public class ApplicationUtilities {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				LOGGER.error("couldn't open file in ApplicationUtilities:getProperty", e);
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			} 
 		}
 		return properties.getProperty(key);
@@ -127,9 +127,8 @@ public class ApplicationUtilities {
 			messageBox.setMessage(message);
 			messageBox.setText(messageHeader);
 			returnVal = messageBox.open();	 
-		} catch (Exception exe) {
-			LOGGER.error("couldn't open file in ApplicationUtilities:showPopUpWindow", exe);
-			exe.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return returnVal;
 	}
@@ -212,9 +211,8 @@ public class ApplicationUtilities {
 				tabFolder.setSelection(tabFolder.getSelectionIndex()+1);
 				tabFolder.setFocus();
 			}
-		} catch (Exception exe) {
-			LOGGER.error("couldn't open file in ApplicationUtilities:showPopUpWindow", exe);
-			exe.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		

@@ -2,6 +2,8 @@ package fna.parsing;
 
 
 //
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -40,7 +42,7 @@ public class DeHyphenizer {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		this.tablename = table;
 		this.columnname = column;
@@ -67,7 +69,7 @@ public class DeHyphenizer {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Encountered a problem in DeHyphenizer:deHyphen", e);
 		}
 	}
@@ -231,7 +233,7 @@ public class DeHyphenizer {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Encountered a problem in DeHyphenizer:updateTable", e);
 		}
 	}
@@ -246,7 +248,7 @@ public class DeHyphenizer {
 				find = true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Encountered a problem in DeHyphenizer:stringMatchInGloss", e);
 		}
 		return find;
@@ -262,7 +264,7 @@ public class DeHyphenizer {
 				find = true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Encountered a problem in DeHyphenizer:stringMatch", e);
 			
 		}
