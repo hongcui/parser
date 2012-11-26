@@ -1,5 +1,7 @@
 package fna.db;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -47,7 +49,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in ConfigurationDbAccessor" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -75,7 +77,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception exe) {
 			
 			LOGGER.error("Couldn't retrieve Tag Details in ConfigurationDbAccessor" + exe);
-			exe.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();
@@ -122,7 +124,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception exe) {
 			if(!exe.getMessage().contains("Duplicate entry")) {
 			 LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
-			 exe.printStackTrace();
+			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		} finally {
 
@@ -173,7 +175,7 @@ public class ConfigurationDbAccessor {
 
 		} catch (Exception exe) {
 			 LOGGER.error("Couldn't insert paragraph Details in ConfigurationDbAccessor:saveParagraphTagDetails" + exe);
-			 exe.printStackTrace();
+			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
 		} finally {
 
 			if (stmt != null) {
@@ -317,9 +319,8 @@ public class ConfigurationDbAccessor {
 			}
 			success = true;
 			
-		} catch (SQLException exe) {
-			LOGGER.error("Couldn't insert type2 Details in ConfigurationDbAccessor:saveType2Details" + exe);
-			exe.printStackTrace();
+		} catch (SQLException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			
 		} finally {
 			if (pstmt != null) {
@@ -458,9 +459,8 @@ public class ConfigurationDbAccessor {
 				count++;
 			}
 			
-		} catch (SQLException exe) {
-			LOGGER.error("Couldn't retrieve type2 Details in ConfigurationDbAccessor:retrieveType2Details" + exe);
-			exe.printStackTrace();
+		} catch (SQLException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();
