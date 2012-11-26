@@ -4,6 +4,8 @@
 package fna.parsing.state;
 
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -17,6 +19,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 
@@ -32,6 +35,7 @@ import fna.parsing.ApplicationUtilities;
 
 @SuppressWarnings("unchecked")
 public class SentenceOrganStateMarker {
+	private static final Logger LOGGER = Logger.getLogger(SentenceOrganStateMarker.class);
 	private Hashtable<String, String> sentences = new Hashtable<String, String>();
 	private Connection conn = null;
 	private boolean marked = false;
@@ -169,7 +173,7 @@ public class SentenceOrganStateMarker {
 					//adjnounsent.put(tag.replaceAll("\\W", ""), modifier);//TODO: need to investigate more on this
 				}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		Collections.sort(adjnouns);
 		for(int i = adjnouns.size()-1; i>=0; i--){
@@ -281,7 +285,7 @@ public class SentenceOrganStateMarker {
 						stmt1.execute("insert into "+this.tableprefix+"_markedsentence (sentid, source, markedsent) values("+id+",'"+source+"', '"+taggedsent+"')");
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 			}
@@ -299,7 +303,7 @@ public class SentenceOrganStateMarker {
 				sentences.put(source, taggedsent); //do this in addClause
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -450,7 +454,7 @@ public class SentenceOrganStateMarker {
 			rs.close();
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return tag;
 	}
@@ -542,7 +546,7 @@ public class SentenceOrganStateMarker {
 					statestring+=("|"+ term);
 			}
 		}catch (Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceAll("\\\\d\\+", "").trim().replaceFirst("^\\|", "").replaceFirst("\\|$", "").replaceAll("\\|+", "|");
 	}
@@ -560,7 +564,7 @@ public class SentenceOrganStateMarker {
 		//System.out.println(tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll(":\\|", "\\|").replaceAll("\\.\\|", "\\|"));
 		//System.out.println(tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll("(\\[|\\])", ""));
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|");
 		return tags.toString().replaceAll("\\b\\d+\\b", "").replaceAll("\\|+", "|").replaceAll("\\|[a-z]\\|", "\\|").replaceAll("(\\[|\\])", "");
@@ -680,7 +684,7 @@ public class SentenceOrganStateMarker {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_8538", "antglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);

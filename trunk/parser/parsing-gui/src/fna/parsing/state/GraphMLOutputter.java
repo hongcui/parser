@@ -7,9 +7,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.Registry;
@@ -20,6 +24,7 @@ import fna.parsing.Registry;
  */
 
 public class GraphMLOutputter {
+	private static final Logger LOGGER = Logger.getLogger(GraphMLOutputter.class);
 	private static String nl = System.getProperty("line.separator");
 	public static String header = "<?xml version='1.0' encoding='UTF-8' standalone='no'?> " +nl+
 			"<graphml xmlns='http://graphml.graphdrawing.org/xmlns' " +nl+
@@ -116,7 +121,7 @@ public class GraphMLOutputter {
 			out.write(text);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			//LOGGER.error("", e);
 			//throw new ParsingException("", e);
 		}		

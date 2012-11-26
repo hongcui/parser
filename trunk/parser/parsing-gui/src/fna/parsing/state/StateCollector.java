@@ -1,5 +1,7 @@
 package fna.parsing.state;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 
@@ -69,6 +72,7 @@ import org.eclipse.swt.widgets.Display;
 
 @SuppressWarnings({ "unchecked", "static-access" })
 public class StateCollector  {
+	protected static final Logger LOGGER = Logger.getLogger(StateCollector.class);
 	static protected Connection conn = null;
 	//static protected String database = null;
 	//static protected String username = "termsuser";
@@ -131,7 +135,7 @@ public class StateCollector  {
 				stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable, true, display, charLog);//tag organ names
@@ -382,7 +386,7 @@ public class StateCollector  {
 				tags.append(tag+"|");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return tags.toString()+glossary.getAllCharacters();
 	}*/
@@ -454,7 +458,7 @@ public class StateCollector  {
 			sentences.put(source, taggedsent); //do this in addClause
 		}
 	}catch (Exception e){
-		e.printStackTrace();
+		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	}
 }
 */
@@ -501,7 +505,7 @@ public class StateCollector  {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		//StateCollector sc = new StateCollector(conn, "fnav19", "fnaglossaryfixed");
 		//sc.collect();
