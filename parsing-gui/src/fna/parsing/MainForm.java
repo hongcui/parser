@@ -686,6 +686,12 @@ public class MainForm {
 					mainDb.loadStatusOfMarkUp(statusOfMarkUp, combo.getText());
 					//mainDb.createNonEQTable();
 					//see if there is reviewed term set for downloading
+					//clean up existing messages
+					Control[] controls = grpTermSets.getChildren();
+					for(Control control : controls){
+						control.dispose();
+					}			
+					//display new messages
 					downloadConfirmedTermsFromOTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());	
 				} catch (Exception exe) {
 					exe.printStackTrace();
@@ -2784,7 +2790,7 @@ public class MainForm {
 		//boolean outcome = true;
 		Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 		text.setText("Checking OTO for availability of the "+dataprefix +" term set(s) ...");
-		text.setBounds(23, 30, 773, 23);
+		text.setBounds(23, 30, 700, 23);
 		
 		boolean downloadable = false;
 		ArrayList<String> result = UploadTerms2OTO.execute(
@@ -2795,14 +2801,14 @@ public class MainForm {
 		if(!downloadable){
 			text = new Label(MainForm.grpTermSets, SWT.NONE);
 			text.setText("No "+dataprefix +" term set(s) is(are) available. Please proceed to the next step. ");
-			text.setBounds(23, 60, 773, 23);
+			text.setBounds(23, 60, 700, 23);
 		}else{
 			int i = 0;
 			final int position = 60+(result.size()+1)*30;			
 			//MainForm.grpTermSets
 			text = new Label(MainForm.grpTermSets, SWT.NONE);
 			text.setText("The "+dataprefix +" term set(s) is(are) ready for use from OTO. Select the term set you would like to download:");
-			text.setBounds(23, 60, 773, 23);	
+			text.setBounds(23, 60, 700, 23);	
 			Button choice = null;
 			for(; i<result.size()-1; i++){ 
 				choice =  new Button(MainForm.grpTermSets, SWT.RADIO);
@@ -2832,7 +2838,7 @@ public class MainForm {
 		if(file.equals("no selection")){
 			Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 			text.setText("You chose not to use any "+dataprefix +" term set(s) that is(are) available. Please proceed to the next step. ");
-			text.setBounds(23, position+30, 773, 23);
+			text.setBounds(23, position, 700, 23);
 		}else{				
 			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+file, Registry.TargetDirectory+"/"+file);
 			//restore sql dump 
@@ -2847,7 +2853,7 @@ public class MainForm {
 				//save local version of term_category table
 				stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
 				stmt.execute("drop table if exists "+dataprefix+"_syns");
-				stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local`");
+				stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local");
 				
 				//create new version of term_category table
 				String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_sqllog.txt\"";//write output to log file
@@ -2880,12 +2886,12 @@ public class MainForm {
 					stmt.execute("insert into "+dataprefix+"_term_category (term, category) " +
 						"select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
 					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
-					text.setText("CharaParser term set has been updated for term set "+dataprefix +". You can now proceed to step 7 to produce final annotation");
-					text.setBounds(23, position+30, 773, 23);								
+					text.setText("CharaParser term set has been updated for term set "+dataprefix +". You can now proceed directly to step 7.");
+					text.setBounds(23, position, 700, 23);								
 				}else{
 					Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 					text.setText("Encountered technical problems while downloading the term set "+dataprefix +". Please try again later or report the problem.");
-					text.setBounds(23, position+30, 773, 23);								
+					text.setBounds(23, position, 700, 23);								
 				}
 			}catch(Exception e){
 				e.printStackTrace();
