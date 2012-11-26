@@ -1,5 +1,7 @@
 package fna.parsing.state;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -12,6 +14,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import edu.uci.ics.jung.algorithms.cluster.VoltageClusterer;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
@@ -21,7 +25,7 @@ import fna.parsing.ApplicationUtilities;
 
 @SuppressWarnings("unchecked")
 public class StateMatrix {
-	
+	private static final Logger LOGGER = Logger.getLogger(StateMatrix.class);
 	private ArrayList<State> states = null;
 	private ArrayList<Cell> matrix = null;
 	private int edgeCount = 0;
@@ -55,7 +59,7 @@ public class StateMatrix {
 			//stmt.execute("create table if not exists "+tableprefix+"_noneqterms (term varchar(100) not null, source varchar(200))");
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -86,7 +90,7 @@ public class StateMatrix {
 			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), tinyint(1))");
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -219,7 +223,7 @@ public class StateMatrix {
 				}				
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}	
@@ -235,7 +239,7 @@ public class StateMatrix {
 			}
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -379,7 +383,7 @@ public class StateMatrix {
 				//}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		Set<State> freeStateSet = new HashSet<State>(freeStates);
 		clusters.add(freeStateSet);		
@@ -452,7 +456,7 @@ public class StateMatrix {
 			}
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 					
 	}
@@ -482,7 +486,7 @@ public class StateMatrix {
 			}
 			rs.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return null;
 	}
@@ -525,7 +529,7 @@ public class StateMatrix {
 				}
 				
 			}catch (Exception e) {
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 			
 			//commented on 14th march to find the overlapping category.If such a category is present then decide whether to display the entire set or not
@@ -543,7 +547,7 @@ public class StateMatrix {
 					chars.add(chara);
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 			if(chars.size()==0){
 				keep = true;
@@ -632,7 +636,7 @@ public class StateMatrix {
 				groups.add(group);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}			
 		if(groups.size()>0){
 			gmo.output(groups, 1);

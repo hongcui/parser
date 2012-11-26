@@ -2,12 +2,17 @@ package fna.parsing.state;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 public class WordNetWrapper {
+	private static final Logger LOGGER = Logger.getLogger(WordNetWrapper.class);
 	Hashtable<String, Integer> pos = new Hashtable<String, Integer>();
 	public boolean formchange = false;
 	
@@ -57,7 +62,7 @@ public class WordNetWrapper {
 			}*/
 
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 	}
 	

@@ -1,5 +1,7 @@
 package fna.parsing.state;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -221,7 +223,7 @@ public class StateCollectorTest extends StateCollector {
 					return false;
 				}
 			}catch (Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 			
 		}else{
@@ -251,7 +253,7 @@ public class StateCollectorTest extends StateCollector {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}	
 		StateCollectorTest sct = new StateCollectorTest(conn, "fnav19", false, "fnaglossaryfixed", null, null); /*using learned semanticroles only*/
 		sct.collect();
