@@ -2,8 +2,12 @@ package fna.parsing.character;
 
 
 import java.awt.Color;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.swing.JFrame;
+
+import org.apache.log4j.Logger;
 
 import prefuse.Constants;
 import prefuse.Display;
@@ -30,6 +34,7 @@ import prefuse.util.ColorLib;
 import prefuse.visual.VisualItem;
 
 	public class CoOccurrenceGraph {
+		private static final Logger LOGGER = Logger.getLogger(CoOccurrenceGraph.class);
 		public static final String AGGR = "weights";
 		public static void main(String [] args){
 			viewGraph("C:\\DATA\\FNA-v19\\target\\co-occurrence\\Group_1.xml", "Group_1");
@@ -46,7 +51,7 @@ import prefuse.visual.VisualItem;
 	        	System.out.println("graphPath=="+graphPath);
 	        	graph = new GraphMLReader().readGraph(graphPath);
 	        } catch ( DataIOException e ) {
-	            e.printStackTrace();
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	            System.err.println("Error loading graph. Exiting...");
 	            System.exit(1);
 	        }

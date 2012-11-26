@@ -1,5 +1,7 @@
 package fna.parsing.character;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -102,8 +104,7 @@ public class LearnedTermsReport {
 					otablename, "structure", null, "_", MainForm.dataPrefixCombo.getText().replaceAll("-", "_"), null);//TODO: replace last null with glossary
 			dh.deHyphen();
 		}catch(Exception e){
-			LOGGER.error("Exception in LearnedTermsReport constructor", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -186,7 +187,7 @@ public class LearnedTermsReport {
 			stmt.execute("create table if not exists "+LearnedTermsReport.gstablename+" as select term from "+gtablename+" where category in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative') and status !='learned' and term not in (select distinct term2 from termforms where type ='pl')");
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport createGlossStructureTable", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/**
@@ -208,7 +209,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport createLearnedStructureTable", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -269,7 +270,7 @@ public class LearnedTermsReport {
 			unused.removeAll(toremove);
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport unusedStructures", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return unused;
 	}
@@ -306,7 +307,7 @@ public class LearnedTermsReport {
 			
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport unusedStates", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return unused;
 	}
@@ -321,7 +322,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport statesAssignedCharacters", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -369,7 +370,7 @@ public class LearnedTermsReport {
 			}*/
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getLearnedStructuresCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return learnedstructures.size();
 	}
@@ -384,7 +385,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getLearnedStatesCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return learnedstates.size();
 	}
@@ -399,7 +400,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllCharacterCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return -1;
 	}
@@ -416,7 +417,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return -1;
 	}
@@ -433,7 +434,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return -1;
 	}
@@ -449,7 +450,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport matchInGlossStates", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return match;
 	}
@@ -465,7 +466,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport findInGlossStates", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return find;
 	}
@@ -482,7 +483,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStructureCount", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return -1;
 	}
@@ -498,7 +499,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport matchInGlossStructure", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return match;
 	}
@@ -514,7 +515,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport findInGlossStructure", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return find;
 	}
@@ -531,7 +532,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport stringMatchInGloss", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return find;
 	}

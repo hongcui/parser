@@ -1,5 +1,7 @@
 package fna.parsing.character;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class Bootstrap implements Comparator<StateGroup>{
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		this.source = source;
 		this.glossary = glossary;
@@ -49,7 +51,7 @@ public class Bootstrap implements Comparator<StateGroup>{
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		this.source = source;
 		this.glossary = glossary;

@@ -1,5 +1,7 @@
 package fna.parsing.character;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -21,7 +23,7 @@ public class Glossary {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in CharacterLearner" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	private static String tablename = null;
@@ -57,7 +59,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner constructor" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}*/
 	}
 
@@ -181,7 +183,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner populateTable" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}*/
 	/**
@@ -242,7 +244,7 @@ public class Glossary {
 					stmt.execute("insert into "+tablename1+ "(term1, type, term2) values ('"+term1s[i]+"', '"+type+"', '"+term2.trim()+"')");
 				}catch(Exception e){
 					LOGGER.error("Exception in CharacterLearner add2TermForms" + e);
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			}
 			
@@ -283,8 +285,7 @@ public class Glossary {
 				chs.add(rs.getString("category"));
 			}
 		}catch(Exception e){
-			LOGGER.error("Exception in CharacterLearner getCharacter" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return chs;
 	}
@@ -300,7 +301,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner getAllCharacters" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return chs.toString().replaceFirst("\\|$", "");
 	}
@@ -316,7 +317,7 @@ public class Glossary {
 				stmt.execute(query);
 			}catch(Exception e){
 				LOGGER.error("Exception in CharacterLearner addInducedPair" + e);
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		}
 	}
