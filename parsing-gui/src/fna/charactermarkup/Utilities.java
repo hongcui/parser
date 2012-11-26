@@ -599,7 +599,7 @@ public class Utilities {
 				if(hassyn == 1){
 					Statement stmt1 = conn.createStatement();
 					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+glosstable.replace("fixed", "syns") + 
-							" where synnony ='"+term+"'");
+							" where synonym ='"+term+"'");
 					while(rs1.next()){
 						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
 					}					
@@ -620,7 +620,7 @@ public class Utilities {
 				if(hassyn == 1){
 					Statement stmt1 = conn.createStatement();
 					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+prefix+ "_syns" + 
-							" where synnony ='"+term+"'");
+							" where synonym ='"+term+"'");
 					while(rs1.next()){
 						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
 					}					
