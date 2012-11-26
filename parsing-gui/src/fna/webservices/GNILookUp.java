@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -45,7 +47,6 @@ import org.w3c.dom.NodeList;
 import fna.parsing.ApplicationUtilities;
 
 public class GNILookUp {
-
 	private static Properties properties = null;
 	private static FileInputStream fstream = null;
 	private static Set<Object> tagKeys = null;
@@ -65,11 +66,8 @@ public class GNILookUp {
 			properties = new Properties();
 			properties.load(fstream);
 			tagKeys = properties.keySet();
-		} catch (FileNotFoundException e) {
-			LOGGER.error("couldn't open file in GNILookUp static block", e);
-		} catch (IOException e) {
-			LOGGER.error("couldn't open file in GNILookUp static block", e);
-			e.printStackTrace();
+		}catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		} 
 	}
 
@@ -106,9 +104,8 @@ public class GNILookUp {
 				//break;
 			}			
 			saveNames();
-		} catch (Exception exe){
-			exe.printStackTrace();
-			LOGGER.error("Error in write getTagNames ", exe);
+		} catch (Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 		
@@ -252,9 +249,8 @@ public class GNILookUp {
 	        StreamResult result = new StreamResult(out);
 	        tFormer.transform(source, result); 
 	        
-	} catch (Exception exe) {
-		exe.printStackTrace();
-		LOGGER.error("Problem in markUpScientificNames" , exe);
+	} catch (Exception e) {
+		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	}
   }
 	/**
@@ -301,7 +297,7 @@ public class GNILookUp {
 		   	    
 		    
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Plazi Web Service had a problem", e);
 		} finally {
 			if (outStream != null) {
@@ -406,18 +402,16 @@ public class GNILookUp {
     			stmt.setString(3, "gni");
     			try {
     				stmt.execute();
-    			} catch (Exception exe) {
-    				if (!exe.getMessage().contains("Duplicate")) {
-    					exe.printStackTrace();
-    					LOGGER.error("Excepion in saveNames ", exe);
+    			} catch (Exception e) {
+    				if (!e.getMessage().contains("Duplicate")) {
+    					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     				}
     			}
     			
     		}
     		
-		} catch(Exception exe) {
-			exe.printStackTrace();
-			LOGGER.error("Excepion in saveNames ", exe);
+		} catch(Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		} finally {
 			if (stmt != null) {
 				stmt.close();
@@ -446,7 +440,7 @@ public class GNILookUp {
 		        dictionary.add(word.toLowerCase());
 		    }
 		} catch (IOException e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Error in write createDictionary ", e);
 		} finally {
 			in.close();
@@ -524,7 +518,7 @@ public class GNILookUp {
 		}
 		catch (Exception e) {
 			System.out.println("Error: " + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Error in write MarkUp ", e);
 		}
 	}
@@ -593,9 +587,8 @@ public class GNILookUp {
 			System.out.println(tags);
 			LOGGER.info("Tags " + tags);
 			
-		} catch (Exception exe) {
-			exe.printStackTrace();
-			LOGGER.error("Error in write readTags ", exe);
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 

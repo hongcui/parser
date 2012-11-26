@@ -1,9 +1,12 @@
 package fna.webservices;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.TagNameFilter;
@@ -16,6 +19,7 @@ import fna.parsing.ApplicationUtilities;
 import fna.webservices.beans.ScientificName;
 
 public class WebServicesUtilities {
+	private static final Logger LOGGER = Logger.getLogger(WebServicesUtilities.class);
 
 	/**
 	 * @param args
@@ -54,8 +58,8 @@ public class WebServicesUtilities {
 			if (checkZoobankServer(text)) {
 				return true;
 			}
-		} catch (Exception exe) {
-			exe.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 		return false;
@@ -163,8 +167,8 @@ public class WebServicesUtilities {
 			if (source.equalsIgnoreCase("ZOOBANK")) {
 				return checkZoobankServer(text);
 			}
-		} catch (Exception exe) {
-			exe.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 		return false;

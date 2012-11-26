@@ -4,12 +4,15 @@
 package fna.webservices;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -25,6 +28,7 @@ public class TaxonXNameExtractor {
 	private Connection conn;
 	private String table;
 	private File sourcedir;
+	private static final Logger LOGGER = Logger.getLogger(TaxonXNameExtractor.class);
 	/**
 	 * 
 	 */
@@ -43,7 +47,7 @@ public class TaxonXNameExtractor {
 				stmt.close();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -62,7 +66,7 @@ public class TaxonXNameExtractor {
 			}
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -89,7 +93,7 @@ public class TaxonXNameExtractor {
 			Statement stmt = conn.createStatement();
 			stmt.execute("insert into "+this.table+" values('"+source+"', '"+namestring+"')");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 
