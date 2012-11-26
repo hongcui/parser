@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,6 +10,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 public class CharStateHandler {
 	static protected Connection conn = null;
@@ -17,6 +21,7 @@ public class CharStateHandler {
 	static protected ArrayList<String> adverbs = new ArrayList<String>();
 	static protected ArrayList<String> notadverbs = new ArrayList<String>();
 	static protected String glosstable = null;
+	private static final Logger LOGGER = Logger.getLogger(CharStateHandler.class);
 	
 	public CharStateHandler(String database) {
 		CharStateHandler.database = database;
@@ -33,7 +38,7 @@ public class CharStateHandler {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/**
@@ -651,7 +656,10 @@ public class CharStateHandler {
 		catch (Exception e)
         {
     		System.err.println(e);
-    		e.printStackTrace();
+    		StringWriter sw = new StringWriter();
+    		PrintWriter pw = new PrintWriter(sw);
+    		e.printStackTrace(pw);
+    		LOGGER.error(sw.toString());
         }
 		return(innertagstate.replaceAll("\\s+\\.\\s+", ".")); //turn 4 . 5 to 4.5
 	}

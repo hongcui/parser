@@ -5,6 +5,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -12,13 +14,15 @@ import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 @SuppressWarnings({ "unused" })
 public class CharacterMarkup {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
 	static protected String password = "";
-	
+	private static final Logger LOGGER = Logger.getLogger(CharacterMarkup.class);
 	
 	public CharacterMarkup(String database){
 		collect(database);
@@ -67,7 +71,10 @@ public class CharacterMarkup {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
 		}
 		
 	}

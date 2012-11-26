@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,11 +10,14 @@ import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 public class OcsFreq {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "termsuser";
 	static protected String password = "termspassword";
+	private static final Logger LOGGER = Logger.getLogger(OcsFreq.class);
 
 	public OcsFreq(String database) {
 		// TODO Auto-generated constructor stub
@@ -36,7 +41,7 @@ public class OcsFreq {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	

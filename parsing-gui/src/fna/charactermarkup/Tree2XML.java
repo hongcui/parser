@@ -7,6 +7,7 @@ import java.util.regex.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 
@@ -20,6 +21,7 @@ public class Tree2XML {
     private String parsetree=null;
     private String str = "";
     public static ArrayList<String> adverbs = new ArrayList<String>();
+    private static final Logger LOGGER = Logger.getLogger(Tree2XML.class);
     //private static PrintWriter out; 
     /**
      * 
@@ -71,7 +73,7 @@ public class Tree2XML {
 			doc = builder.build(bais);
 			return doc;
 		} catch (Exception e) {
-	      e.printStackTrace();
+	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	      System.out.print("Problem parsing the xml: \n" + xml+"\n"+e.toString());
 	      throw e;
 		}
@@ -126,7 +128,7 @@ public class Tree2XML {
     	}
        	return xml.toString();
     	}catch (Exception e){
-    		e.printStackTrace();
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     		throw e;
     	}
     }

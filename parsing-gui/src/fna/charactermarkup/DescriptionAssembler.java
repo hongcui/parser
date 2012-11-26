@@ -3,6 +3,8 @@ package fna.charactermarkup;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,6 +13,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 
 @SuppressWarnings({  "unused" })
@@ -23,6 +27,7 @@ public class DescriptionAssembler {
     private String filenametype = null;
     private String fileLengthIndexes = null;
     private Integer hasSeg = new Integer(0);
+    private static final Logger LOGGER = Logger.getLogger(DescriptionAssembler.class);
 
     public DescriptionAssembler(String save2dir, String filenametype) {
         //set up a connection to the database
@@ -46,7 +51,7 @@ public class DescriptionAssembler {
             this.fileLengthIndexes =fileLenIndexes.toString();
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }        
     }
 
@@ -194,7 +199,7 @@ public class DescriptionAssembler {
             return name+".xml";
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
         return null;
     }
@@ -209,7 +214,7 @@ public class DescriptionAssembler {
             da.dump2disk();
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
     }
 

@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,12 +10,15 @@ import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 @SuppressWarnings({  "unused" })
 public class ParseComplexseg_notinuse {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "termsuser";
 	static protected String password = "termspassword";
+	private static final Logger LOGGER = Logger.getLogger(ParseComplexseg_notinuse.class);
 	int flag6;
 
 	public ParseComplexseg_notinuse() {
@@ -39,7 +44,7 @@ public class ParseComplexseg_notinuse {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	

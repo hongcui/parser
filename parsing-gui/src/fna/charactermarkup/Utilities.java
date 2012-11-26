@@ -4,6 +4,8 @@
  */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -18,6 +20,8 @@ import fna.parsing.state.StateCollector;
 import fna.parsing.state.WordNetWrapper;
 import java.util.ArrayList;
 import java.util.regex.*;
+
+import org.apache.log4j.Logger;
 /**
  * @author hongcui
  *
@@ -34,6 +38,7 @@ public class Utilities {
 	public static ArrayList<String> notSureVerbs = new ArrayList<String>();
 	public static ArrayList<String> notSureAdvs = new ArrayList<String>();
 	public static ArrayList<String> notPartOfPrepPhrase = new ArrayList<String>();
+	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
 	public static boolean debug = false;
 	public static boolean debugPOS = true;
 	//special cases
@@ -117,7 +122,7 @@ public class Utilities {
 				}
 			}			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		notSureVerbs.add(word);
 		return false;
@@ -133,7 +138,7 @@ public class Utilities {
 				return true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return false;
 	}
@@ -174,7 +179,7 @@ public class Utilities {
 				return true;
 			}			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		notPartOfPrepPhrase.add(word);
 		return false;
@@ -339,7 +344,7 @@ public class Utilities {
 	            return sb.toString();
 				
 		  	}catch(Exception e){
-		  		e.printStackTrace();
+		  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		  	}
 		  	return "";
 	}
@@ -590,7 +595,7 @@ public class Utilities {
 		try{
 			Statement stmt = conn.createStatement();
 			//check glossarytable
-			ResultSet rs = stmt.executeQuery("select term, category, hasSyn from "+glosstable+" where term rlike '"+w+"(_[0-9])?' or term rlike '_"+w+"(_[0-9])?' order by category");
+			ResultSet rs = stmt.executeQuery("select term, category, hasSyn from "+glosstable+" where term rlike '^"+w+"(_[0-9])?$' or term rlike '_"+w+"(_[0-9])?$' order by category");
 			while(rs.next()){
 				String term = rs.getString("term");
 				String cat = rs.getString("category");
@@ -610,7 +615,7 @@ public class Utilities {
 				//}
 			}
 			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
-			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '"+w+"(_[0-9])?' and category !='structure' order by category";
+			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String term = rs.getString("term");
@@ -655,7 +660,7 @@ public class Utilities {
 			characterhash.put(wc, result);
 			return result;
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return null;
 	}
@@ -699,7 +704,7 @@ public class Utilities {
 				return ch;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return null;
 	}*/
@@ -728,7 +733,7 @@ public class Utilities {
 				//stmt1.execute("insert into "+prefix+"_term_category (term, category) values ('"+termcopy+"', '"+cat+"')");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return in;
 	}

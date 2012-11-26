@@ -13,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author hongcui
  *
@@ -22,6 +24,7 @@ public class ExtractOntoFromAnno {
 	Hashtable<String, String> onto = new Hashtable<String, String>();
 	Connection conn = null;
 	String ontoname = null;
+	private static final Logger LOGGER = Logger.getLogger(ExtractOntoFromAnno.class);
 	/**
 	 * this class extract term/category pairs from GoldenGate annotated files
 	 */
@@ -38,7 +41,7 @@ public class ExtractOntoFromAnno {
 				stmt.close();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		File[] files = new File(folder).listFiles();
 		for(int i = 0; i<files.length; i++){
@@ -59,7 +62,7 @@ public class ExtractOntoFromAnno {
 				stmt.execute("insert into "+ontoname+" (term, category) values ('"+term+"','"+cat+"')");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -81,7 +84,7 @@ public class ExtractOntoFromAnno {
 		    	}
 		    }
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 		

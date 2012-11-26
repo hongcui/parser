@@ -3,12 +3,16 @@
  */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 
 import java.sql.Statement;
 import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
 
 import characterAnnotation.SplitAnnotationOutput;
 
@@ -24,7 +28,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
 
 public class CharaParserUnitTest {
 
-	
+	private static final Logger LOGGER = Logger.getLogger(CharaParserUnitTest.class);
 	public void testOnFna(){
 		//use the annotation file path below to save the parser output
 		//String annotation = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\annotation.txt";
@@ -129,12 +133,13 @@ public class CharaParserUnitTest {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
 		}
 		//parsing
 		parsing(conn, database, gloss, prefix, posedfile, parsedfile);
-
-
 	}
 
 	private void doCompare(String database, String evaluationfolder) {
@@ -159,7 +164,7 @@ public class CharaParserUnitTest {
 			sp.extracting();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -243,7 +248,7 @@ public class CharaParserUnitTest {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}

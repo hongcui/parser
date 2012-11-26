@@ -6,10 +6,13 @@ package fna.charactermarkup;
 
 //import java.sql.ResultSet;
 //import java.sql.Statement;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.*;
 
+import org.apache.log4j.Logger;
 import org.jdom.*;
 //import org.jdom.input.*;
 //import org.jdom.xpath.*;
@@ -30,6 +33,7 @@ public class NumericalHandler  {
 	static public Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts
 	static public Pattern numberpattern = Pattern.compile("[()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{2,}(?![a-z{}])"); //added , and ? for chromosome counts
 	static private boolean debug = false;
+	private static final Logger LOGGER = Logger.getLogger(NumericalHandler.class);
 	
 	public NumericalHandler() {
 	}
@@ -823,7 +827,7 @@ public class NumericalHandler  {
  		}
 		catch (Exception e)
         {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     		System.err.println(e);
         }
 		
@@ -836,7 +840,7 @@ public class NumericalHandler  {
 					System.out.println(outputter.outputString(e));
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		}
  		return innertagstate;

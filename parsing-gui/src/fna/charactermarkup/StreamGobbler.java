@@ -11,6 +11,8 @@ package fna.charactermarkup;
 import java.util.*;
 
 import java.io.*;
+
+import org.apache.log4j.Logger;
 @SuppressWarnings({ "unused" })
 class StreamGobbler extends Thread
 {
@@ -22,6 +24,7 @@ class StreamGobbler extends Thread
     static int h = 0;
     static int t = 0;
     static boolean debug = false;
+    private static final Logger LOGGER = Logger.getLogger(StreamGobbler.class);
     
     StreamGobbler(InputStream is, String type, ArrayList<String> headings, ArrayList<String> trees)
     {
@@ -53,7 +56,7 @@ class StreamGobbler extends Thread
             }
         } catch (IOException ioe)
             {
-            ioe.printStackTrace();  
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ioe.printStackTrace(pw);LOGGER.error(sw.toString());  
             }
     }
 
