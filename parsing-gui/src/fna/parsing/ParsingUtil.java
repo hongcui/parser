@@ -7,6 +7,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 import org.jdom.Comment;
@@ -36,8 +38,7 @@ public class ParsingUtil {
 			// generate the information to the listener (gui)
 			// listener.info(String.valueOf(count), "", file.getPath());
 		} catch (IOException e) {
-			LOGGER.error("Exception in ParsingUtil:outputXML");
-			e.printStackTrace();
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(e);
 		}
 	}
