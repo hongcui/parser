@@ -8,6 +8,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -71,8 +73,7 @@ public class DeHyphenAFolder {
                 createAllWordsTable();
             }
         }catch(Exception e){
-        	LOGGER.error("Database is down! (VolumeDehyphenizer)", e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
 	}
 	
@@ -108,7 +109,7 @@ public class DeHyphenAFolder {
 		            stmt.execute("update "+tablename+" set dhword=word where dhword is null");
 		       }catch(Exception e){
 		        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
-		            e.printStackTrace();
+		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		       }
 		       normalizeDocument();
 		       if(listener!= null) listener.progress(100);
@@ -160,7 +161,7 @@ public class DeHyphenAFolder {
 	            }
 	        }catch(Exception e){
 	            	LOGGER.error("Problem in VolumeDehyphenizer:check4UnmatchedBrackets", e);
-		            e.printStackTrace();
+		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	        }
 	        return has;
 	    }
@@ -173,7 +174,7 @@ public class DeHyphenAFolder {
 	            stmt.execute(query);	           
 	        }catch(Exception e){
 	        	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
-	            e.printStackTrace();
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	        }
 	    }
 	    
@@ -184,7 +185,7 @@ public class DeHyphenAFolder {
 	            stmt.execute(query);
 	            stmt.execute("delete from "+tablename1);
 	        }catch(Exception e){
-	            e.printStackTrace();
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	        }
 	    }*/
 	    /**
@@ -280,7 +281,7 @@ public class DeHyphenAFolder {
                 stmt.close();
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
-	            e.printStackTrace();
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	        }
 	    }
 	    private boolean hasUnmatchedBrackets(String text) {
@@ -315,7 +316,7 @@ public class DeHyphenAFolder {
 	                Statement stmt = conn.createStatement();
 	                stmt.execute("insert into "+tablename1+" (mix, file) values ('"+save+"', '"+source.getName()+"')");
 	            }catch (Exception e){
-	                e.printStackTrace();
+	                StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	            }
 	        }
 	        fixed.append(mix);
@@ -412,7 +413,7 @@ public class DeHyphenAFolder {
 	            }
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
-	            e.printStackTrace();
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	        }
 	    }
 	    /*

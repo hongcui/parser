@@ -6,10 +6,13 @@ package fna.parsing;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -23,6 +26,8 @@ import org.jdom.output.XMLOutputter;
  */
 public class FNAElevation {
 	static Pattern elevation = Pattern.compile("\\d+.*? m;?");
+	 private static final Logger LOGGER = Logger.getLogger(FNAElevation.class);  
+
 
 	/**
 	 * 
@@ -75,7 +80,7 @@ public class FNAElevation {
 			}
 			System.out.println(count+" files fixed");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 

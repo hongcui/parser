@@ -20,8 +20,8 @@ public class Configuration {
 		//Set the Log File path
 		try {
 			ApplicationUtilities.setLogFilePath();
-		} catch (Exception exe) {
-			exe.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

@@ -4,8 +4,11 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -22,6 +25,8 @@ import org.jdom.xpath.XPath;
 public class FNANameReviewer {
 	private XPath xpath1= XPath.newInstance("//number");
 	private XPath xpath2= XPath.newInstance("//TaxonIdentification");
+	private static final Logger LOGGER = Logger.getLogger(FNANameReviewer.class);  
+
 
 	/**
 	 * 
@@ -78,7 +83,7 @@ public class FNANameReviewer {
 		try{
 			FNANameReviewer fnr = new FNANameReviewer(xmldir);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 

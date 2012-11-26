@@ -1,9 +1,12 @@
 package fna.parsing;
 
+import org.apache.log4j.Logger;
 import org.jdom.xpath.XPath;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -13,6 +16,7 @@ import org.jdom.output.XMLOutputter;
 public class FNATaxonNameFixAuthority {
 	private String inputFolder = "E:\\work_data\\ToReview\\V8-good\\target\\Fengqiong_manually_reviewed";
 	private XPath xpath1 = XPath.newInstance("//TaxonIdentification");
+	private static final Logger LOGGER = Logger.getLogger(FNATaxonNameFixAuthority.class);  
 
 	public FNATaxonNameFixAuthority() throws Exception {
 		File xmlfolder = new File(inputFolder);
@@ -124,7 +128,7 @@ public class FNATaxonNameFixAuthority {
 		try {
 			FNATaxonNameFixAuthority fnr = new FNATaxonNameFixAuthority();
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
