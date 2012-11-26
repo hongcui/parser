@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -184,9 +186,8 @@ public class Type1Document {
 		/*Load from style-mapping properties here */
 		try {
 			loadStyleMappinFile();
-		} catch (Exception exe) {
-			exe.printStackTrace();
-			LOGGER.error("Error loading Tag styles", exe);
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		scrolledComposite.setRedraw(true);

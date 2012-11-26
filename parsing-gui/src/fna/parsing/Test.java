@@ -3,8 +3,11 @@ package fna.parsing;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,13 +143,35 @@ public class Test{
 		}
 		return seasons;
 	}
+	
+	public void deduplicateSort(List<String> tagList) {
+		HashSet<String> set = new HashSet<String>(tagList);
+		String[] sorted = set.toArray(new String[]{}); 
+		Arrays.sort(sorted);
+		tagList = Arrays.asList(sorted);
+	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String[] tests = new String[]{
+		Test t = new Test("","");
+		ArrayList<String> tagList = new ArrayList<String>();
+		tagList.add("bark");
+		tagList.add("stem");
+		tagList.add("stems");
+		tagList.add("barks");
+		tagList.add("bark");
+		
+		t.deduplicateSort(tagList);
+		
+		
+		
+		
+		
+		
+		/*String[] tests = new String[]{
 				"Flowering year round (mostly Mar–Aug).", 
 				"Flowering (Mar–)Apr(–Jun)", 
 				"Flowering Mar–Nov (following rains).  ",
@@ -158,7 +183,7 @@ public class Test{
 		for(int i = 0; i<tests.length; i++){
 			Test t = new Test(tests[i], "flowering_time");
 			t.parse();
-		}
+		}*/
 
 	}
 

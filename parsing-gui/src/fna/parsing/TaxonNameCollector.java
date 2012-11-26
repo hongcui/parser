@@ -4,6 +4,8 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,6 +14,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -31,6 +34,8 @@ public class TaxonNameCollector {
 	private Connection conn;
 	private PreparedStatement insert;
 	private TreeSet<String> names = new TreeSet<String>();
+	 private static final Logger LOGGER = Logger.getLogger(TaxonNameCollector.class);  
+
 	/**
 	 * 
 	 */
@@ -55,7 +60,7 @@ public class TaxonNameCollector {
 			}
 			saveNames();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -68,7 +73,7 @@ public class TaxonNameCollector {
 				insert.execute();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}	
 		
 	}
@@ -82,7 +87,7 @@ public class TaxonNameCollector {
 			List<Element> names = XPath.selectNodes(root, "//*[ends-with(name(), '_name')]");
 			addNames(names);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -104,7 +109,7 @@ public class TaxonNameCollector {
 				if(!namerank.contains("common") && !namerank.contains("conserved")&& !(namestr.length()==2 && namestr.endsWith(".")))this.names.add(namestr);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 
@@ -125,7 +130,7 @@ public class TaxonNameCollector {
 		TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, outputtablename, volume);
 		tnc.collect();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 	}

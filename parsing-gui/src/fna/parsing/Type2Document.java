@@ -1,8 +1,11 @@
  package fna.parsing;
 /** @author Partha Pratim Sanyal ppsanyal@email.arizona.edu*/
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Composite;
@@ -34,6 +37,8 @@ import fna.beans.Type2Bean;
 import fna.db.ConfigurationDbAccessor;
 
 public class Type2Document {
+	private static final Logger LOGGER = Logger.getLogger(Type2Document.class);  
+
 	private Text text;
 	private Text text_1;
 	private Text text_2;
@@ -590,8 +595,8 @@ public class Type2Document {
 		/* Load previously saved details here */
 		try {
 			configDb.retrieveType2Details(bean, this);
-		} catch (SQLException exe) {
-			exe.printStackTrace();
+		} catch (SQLException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		

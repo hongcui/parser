@@ -1,5 +1,7 @@
 package fna.parsing;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
@@ -66,9 +68,8 @@ public class Type4Document {
 					ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.info.savetype3"),
 							ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 					shell.dispose();
-				} catch (SQLException sqle) {
-					LOGGER.error("Unable to save paragraphs to db in Type3Document", sqle);
-					sqle.printStackTrace();
+				} catch (SQLException e) {
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 				
 			}
