@@ -1,7 +1,11 @@
 package fna.parsing;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.*;
+
+import org.apache.log4j.Logger;
 import org.jdom.xpath.XPath;
 
 import java.sql.Connection;
@@ -18,6 +22,7 @@ import org.jdom.output.XMLOutputter;
 
 
 public class V22_Transformer {
+	private static final Logger LOGGER = Logger.getLogger(V22_Transformer.class);
 	static protected Connection con = null;
 	static protected String username = "termsuser";
 	static protected String password = "termspassword";
@@ -43,7 +48,7 @@ public class V22_Transformer {
 	         con = DriverManager.getConnection(connectionUrl);
 		}
 		 catch (Exception e) {
-	         e.printStackTrace();
+	         StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	      }
 	}
 
@@ -2424,7 +2429,7 @@ private void processHabiEle(String text, int TaxonId) {
                }
            }
        }catch(Exception e){
-           e.printStackTrace();
+           StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
        }
        
    }

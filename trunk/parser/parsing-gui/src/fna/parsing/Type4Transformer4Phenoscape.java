@@ -4,6 +4,8 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -56,8 +58,7 @@ public class Type4Transformer4Phenoscape extends Type4Transformer {
 		        getDescriptionFrom(root,fn, 0);						
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			LOGGER.error("Type4Transformer : error.", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 	}
@@ -73,7 +74,7 @@ public class Type4Transformer4Phenoscape extends Type4Transformer {
 				i++;							
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/**

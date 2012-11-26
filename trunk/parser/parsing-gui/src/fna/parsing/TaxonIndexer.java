@@ -49,8 +49,7 @@ public class TaxonIndexer implements Serializable {
 			out.writeObject(ti);
 			out.close();
 		} catch (IOException e) {
-			LOGGER.error("Save the updated TaxonIndexer failed.", e);
-			e.printStackTrace();
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(
 					"Save the updated TaxonIndexer failed.", e);
 		}
@@ -67,8 +66,8 @@ public class TaxonIndexer implements Serializable {
 			
 			return ti;
 		} catch (Exception e) {
-			LOGGER.error("Load the updated TaxonIndexer failed.", e);
-			e.printStackTrace();
+			//LOGGER.error("Load the updated TaxonIndexer failed.", e);
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(
 					"Load the updated TaxonIndexer failed.", e);
 		}
@@ -99,8 +98,7 @@ public class TaxonIndexer implements Serializable {
 				reader.close();
 			}
 		} catch (Exception e) {
-			LOGGER.error("build failed in TaxonIndexer", e);
-			e.printStackTrace();
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(e);
 		}
 

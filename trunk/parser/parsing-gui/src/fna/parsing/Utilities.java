@@ -7,8 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.apache.log4j.Logger;
 
 public class Utilities {
+	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
 
 	public static void resetFolder(File folder, String subfolder) {
 		File d = new File(folder, subfolder);
@@ -43,7 +48,7 @@ public class Utilities {
 			  System.out.println("File copied.");
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 	

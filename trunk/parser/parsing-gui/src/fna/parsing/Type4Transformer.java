@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -129,8 +130,7 @@ public abstract class Type4Transformer extends Thread {
 				return treatment;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			LOGGER.error("Type4Transformer : error.", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return null;
 	}
@@ -178,7 +178,7 @@ public abstract class Type4Transformer extends Thread {
 			}
 		}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -190,7 +190,7 @@ public abstract class Type4Transformer extends Thread {
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Failed to output text file in Type4Transformer:outputDescriptionText", e);
 			throw new ParsingException("Failed to output text file.", e);
 		}

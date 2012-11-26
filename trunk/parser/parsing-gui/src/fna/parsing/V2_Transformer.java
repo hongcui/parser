@@ -1,7 +1,11 @@
 package fna.parsing;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.*;
+
+import org.apache.log4j.Logger;
 import org.jdom.xpath.XPath;
 
 import java.sql.Connection;
@@ -32,6 +36,7 @@ public class V2_Transformer {
 	public static String taxname="";
 	public static XPath synPath;
 	Pattern abbrgenus = Pattern.compile("[A-Z]\\.");
+	private static final Logger LOGGER = Logger.getLogger(V2_Transformer.class);
 	
 	public V2_Transformer()
 	{
@@ -43,7 +48,7 @@ public class V2_Transformer {
 	         con = DriverManager.getConnection(connectionUrl);
 		}
 		 catch (Exception e) {
-	         e.printStackTrace();
+	         StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	      }
 	}
 
@@ -2039,7 +2044,7 @@ private void processHabiEle(String text, int TaxonId) {
                }
            }
        }catch(Exception e){
-           e.printStackTrace();
+           StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
        }
        
    }

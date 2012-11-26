@@ -4,6 +4,8 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -89,8 +91,7 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 
 			}
 		}catch(Exception e){
-			e.printStackTrace();
-			LOGGER.error("Type4Transformer : error.", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 

@@ -1,6 +1,8 @@
 package fna.parsing;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -21,6 +24,8 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	private Connection conn;
 	private PreparedStatement insert;
 	private TreeSet<String> names = new TreeSet<String>();
+	 private static final Logger LOGGER = Logger.getLogger(TaxonNameCollector4TaxonX.class);  
+
 
 	public TaxonNameCollector4TaxonX(Connection conn, String transformeddir,
 			String outputtablename, String volume) throws Exception {
@@ -45,7 +50,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			}
 			saveNames();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -57,7 +62,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 				insert.execute();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}	
 		
 	}
@@ -73,7 +78,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			//System.out.println(xmlfile.getAbsolutePath());
 			addNames(names);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -118,7 +123,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 
@@ -141,7 +146,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, outputtablename, volume);
 			tnc.collect4TaxonX();
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 
 		

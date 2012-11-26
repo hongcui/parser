@@ -15,6 +15,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class UploadTerms2OTO{
+	
+	 private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(UploadTerms2OTO.class);  
+
 	//public static String directory = "";
 	/*
 	 * standalone set to true when running independently. The corresponding standalone folder must be set. 
@@ -106,13 +109,8 @@ public class UploadTerms2OTO{
     	  rt.exec(term_category_command);
     	  rt.exec(sentence_command);
     	 } 
-
-    	 catch(IOException ioe) 
-    	  {
-    	   ioe.printStackTrace();
-    	  }
     	 catch(Exception e) {
-    	  e.printStackTrace();
+    	  StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     	 }
     	}
     	
@@ -224,7 +222,7 @@ public class UploadTerms2OTO{
     		}
     		catch(Exception e){
     			System.err.println("Error in creating and writing to a text file: " + e.getMessage());
-    			e.printStackTrace();
+    			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     		}
     	}
     	
@@ -559,14 +557,14 @@ static int checkAck(InputStream in) throws IOException{
 		        try{
 		        	Thread.sleep(1000);
 		        }catch(Exception ee){
-		        	ee.printStackTrace();
+		        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(sw.toString());
 		        }
 		      }
 		      channel.disconnect();
 		      session.disconnect();
 		    }
 		    catch(Exception e){
-		    	e.printStackTrace();
+		    	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		    	System.out.println(e);
 		    }
 		return result;

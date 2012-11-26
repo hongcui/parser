@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.channels.FileChannel;
 
 import org.apache.log4j.Logger;
@@ -109,7 +111,7 @@ public class Type2Transformer extends Thread {
 			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
 			tnc.collect();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -121,7 +123,7 @@ public class Type2Transformer extends Thread {
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("Failed to output text file in Type2Transformer:outputDescriptionText", e);
 			throw new ParsingException("Failed to output text file.", e);
 		}		
