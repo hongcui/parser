@@ -3,11 +3,16 @@
  */
 package fna.ID;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.UUID;
+
+import org.apache.log4j.Logger;
+
 import fna.parsing.ApplicationUtilities;
 
 /**
@@ -20,6 +25,7 @@ public class TermIDAssigner {
 	private String schemaname;
 	private String tablename;
 	private String idcolumn;
+	private static final Logger LOGGER = Logger.getLogger(TermIDAssigner.class);
 	
 	public TermIDAssigner(String schemaname, String tablename, String idcolumn){
 		this.tablename = tablename;
@@ -30,7 +36,7 @@ public class TermIDAssigner {
 			String url = "jdbc:mysql://localhost/"+schemaname+"?user=termsuser&password=termspassword";
 			this.conn = DriverManager.getConnection(url);
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -54,7 +60,7 @@ public class TermIDAssigner {
 					stmt1.execute("update "+schemaname+"."+tablename+" set "+idcolumn+"='"+uuid+"' where id="+id);
 				}								
 			}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}			
 		}
 	}
