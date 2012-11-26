@@ -6,6 +6,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -33,7 +35,7 @@ public class HabitatParserDbAccessor {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in HabitatParserDbAccessor" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -50,7 +52,7 @@ public class HabitatParserDbAccessor {
 			//stmt.execute("delete from "+this.prefix+"_habitat");
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor error:" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}		
 	}
 	
@@ -73,7 +75,7 @@ public class HabitatParserDbAccessor {
 			stmt.execute("insert into "+this.prefix+"_habitat(source, habitat_string) values ('"+fname+"','"+text+"')");			
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -88,7 +90,7 @@ public class HabitatParserDbAccessor {
 			stmt.execute(query);			
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -119,7 +121,7 @@ public class HabitatParserDbAccessor {
 			}
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return results;
 	}
@@ -137,7 +139,7 @@ public class HabitatParserDbAccessor {
 		    in.close();
 		}catch (Exception e){//Catch exception if any
 			LOGGER.error("HabitatParserDbAccessor read file exception:" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return sb.toString().replaceAll("\\s+", " ");
 	}

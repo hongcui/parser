@@ -15,6 +15,8 @@
  */
 package fna.db;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -43,7 +45,7 @@ public class VolumeTransformerDbAccess {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -69,10 +71,9 @@ public class VolumeTransformerDbAccess {
 		try{
 			stmt = conn.createStatement();
 			stmt.execute("insert into "+taxonTableName+" values ('"+taxonnumber+"', '"+name+"', '"+rank+"', '"+index+"')");
-		}catch (SQLException sqlexe) {
-			LOGGER.error("database access error in VolumeTransformerDbAccess:add2TaxonTable", sqlexe);
-			sqlexe.printStackTrace();
-			throw new ParsingException("Error Accessing the database" , sqlexe);
+		}catch (SQLException e) {
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			throw new ParsingException("Error Accessing the database" , e);
 		} finally {
 			if (stmt != null) {
 				stmt.close();
