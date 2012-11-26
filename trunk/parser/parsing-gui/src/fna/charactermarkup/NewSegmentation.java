@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -8,12 +10,15 @@ import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 @SuppressWarnings({ "unused" })
 public class NewSegmentation {
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
 	static protected String password = "root";
+	private static final Logger LOGGER = Logger.getLogger(NewSegmentation.class);
 
 	public NewSegmentation(String database) {
 		// TODO Auto-generated constructor stub
@@ -34,7 +39,7 @@ public class NewSegmentation {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	

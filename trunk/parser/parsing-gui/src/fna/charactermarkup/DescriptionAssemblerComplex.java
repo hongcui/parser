@@ -10,6 +10,8 @@ import java.util.regex.*;
 import java.util.ArrayList;
 import java.io.*;
 
+import org.apache.log4j.Logger;
+
 
 @SuppressWarnings({  "unused" })
 public class DescriptionAssemblerComplex {
@@ -21,6 +23,7 @@ public class DescriptionAssemblerComplex {
     private String filenametype = null;
     private String fileLengthIndexes = null;
     private Integer hasSeg = new Integer(0);
+    private static final Logger LOGGER = Logger.getLogger(DescriptionAssemblerComplex.class);
 
     public DescriptionAssemblerComplex(String save2dir, String filenametype) {
         //set up a connection to the database
@@ -44,7 +47,7 @@ public class DescriptionAssemblerComplex {
             this.fileLengthIndexes =fileLenIndexes.toString();
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }        
     }
 
@@ -192,7 +195,7 @@ public class DescriptionAssemblerComplex {
             return name+".xml";
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
         return null;
     }
@@ -207,7 +210,7 @@ public class DescriptionAssemblerComplex {
             da.dump2disk();
         }catch(Exception e){
         	System.err.println(e);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
     }
 

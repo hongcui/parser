@@ -2,6 +2,8 @@
 package fna.charactermarkup;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -9,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -63,6 +66,7 @@ public class CompareXML {
 	private static int totalrelations = 0;
 	private static int total = 0;
 	private static int totalsegments = 0;
+	private static final Logger LOGGER = Logger.getLogger(CompareXML.class);
 	
 	
 	private String projectfolder;
@@ -84,7 +88,7 @@ public class CompareXML {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -159,7 +163,7 @@ public class CompareXML {
 			dsccalcprecisionrecall();
 			
 		}catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -722,7 +726,7 @@ public class CompareXML {
 			
 		}catch(Exception e){
 			System.out.println(q);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -787,7 +791,7 @@ public class CompareXML {
 			stmt.execute("insert into precisionrecall values('avg',"+dessize+","+desseg+","+desstr+","+desch+","+desrel+",'"+dscpperfst+"','"+dscpexactst+"','"+dscppartialst+"','"+dscpreasonst+"','"+dscpperfch+"','"+dscpexactch+"','"+dscppartialch+"','"+dscpreasonch+"','"+dscpperfrel+"','"+dscpexactrel+"','"+dscppartialrel+"','"+dscpreasonrel+"'," +
 					"'"+dscrperfst+"','"+dscrexactst+"','"+dscrpartialst+"','"+dscrreasonst+"','"+dscrperfch+"','"+dscrexactch+"','"+dscrpartialch+"','"+dscrreasonch+"','"+dscrperfrel+"','"+dscrexactrel+"','"+dscrpartialrel+"','"+dscrreasonrel+"','0','0','0','0')");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}

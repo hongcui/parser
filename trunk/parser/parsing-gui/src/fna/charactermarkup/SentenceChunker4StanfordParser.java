@@ -5,12 +5,15 @@
 package fna.charactermarkup;
 
 import java.io.ByteArrayInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Content;
 import org.jdom.Document;
@@ -57,6 +60,7 @@ main subject: z[m/e]
  */
 @SuppressWarnings({ "unchecked", "unused" })
 public class SentenceChunker4StanfordParser {
+	private static final Logger LOGGER = Logger.getLogger(SentenceChunker4StanfordParser.class);
 	private String sentsrc = null;
 	private String tableprefix = null;
 	private Connection conn = null;
@@ -128,7 +132,7 @@ public class SentenceChunker4StanfordParser {
 			SentenceChunker4StanfordParser.Vpath = XPath.newInstance(Vpathstr);
 			SentenceChunker4StanfordParser.NNpath = XPath.newInstance(NNpathstr);			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -197,7 +201,7 @@ public class SentenceChunker4StanfordParser {
 		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable/*, this.taxonnamepattern1, this.taxonnamepattern2*/);
 		return cs;
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				throw e;
 			}
 	}
@@ -268,7 +272,7 @@ end procedure
 				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -298,7 +302,7 @@ end procedure
 				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -371,7 +375,7 @@ end procedure
 				WHEN.setName("WHENCLS");
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/**
@@ -571,7 +575,7 @@ end procedure
 					trueVP = true;
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 			if(trueVP){
 				if(this.printPP){
@@ -1331,7 +1335,7 @@ end procedure
 				}
 			}
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -1431,7 +1435,7 @@ end procedure
 				}
 			}
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	

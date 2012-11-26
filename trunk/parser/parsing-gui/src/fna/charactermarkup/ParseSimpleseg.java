@@ -3,12 +3,16 @@ package fna.charactermarkup;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 @SuppressWarnings({  "unused" })
 public class ParseSimpleseg {
@@ -18,6 +22,7 @@ public class ParseSimpleseg {
 	static protected String password = "termspassword";
 	private String projectfolder = null;
 	private static CharStateHandler csh = null;
+	private static final Logger LOGGER = Logger.getLogger(ParseSimpleseg.class);
 	public ParseSimpleseg() {
 		// TODO Auto-generated constructor stub
 	}
@@ -44,7 +49,7 @@ public class ParseSimpleseg {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -601,8 +606,8 @@ public class ParseSimpleseg {
 		}
         catch (Exception e)
         {
-        	e.printStackTrace();
-        		System.err.println(e);
+        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+        		
         }
 	}
 	/**

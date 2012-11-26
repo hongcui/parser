@@ -4,6 +4,8 @@
  */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,6 +17,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -36,6 +39,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
 
 @SuppressWarnings("unchecked")
 public class ChunkedSentence {
+	private static final Logger LOGGER = Logger.getLogger(ChunkedSentence.class);
 	private String glosstable = null;
 	private String markedsent = null;
 	private String chunkedsent = null;
@@ -134,7 +138,7 @@ public class ChunkedSentence {
 				nouns.add(rs.getString("term")); //initialize nouns with "size", "color", etc.
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		this.sentsrc = sentsrc;
@@ -1851,7 +1855,10 @@ public class ChunkedSentence {
 					return null;
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				e.printStackTrace(pw);
+				LOGGER.error(sw.toString());
 			}
 		}
 		
@@ -1928,7 +1935,7 @@ public class ChunkedSentence {
 							return null;
 						}
 					}catch(Exception e){
-						e.printStackTrace();
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 					}
 				}
 			}
@@ -2141,7 +2148,7 @@ public class ChunkedSentence {
 						return new SimpleCharacterState(result.replaceAll("[<>]", "").trim());
 					}
 				}catch(Exception e){
-					e.printStackTrace();
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				}
 			}
 		}
@@ -2593,7 +2600,7 @@ parallelism scope: q[other chunks]
 			}*/
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 		if(senttag.compareTo("ignore")!=0){

@@ -3,6 +3,8 @@
  * 
  */
 package fna.charactermarkup;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -14,6 +16,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -30,6 +33,7 @@ import org.jdom.xpath.*;
 @SuppressWarnings({ "unchecked", "unused","static-access" })
 
 public class CharacterAnnotatorChunked {
+	private static final Logger LOGGER = Logger.getLogger(CharacterAnnotatorChunked.class);
 	private Element statement = null;
 	//private ChunkedSentence cs = null;
 	private static ArrayList<Element> subjects = new ArrayList<Element>();//static so a ditto sent can see the last subject
@@ -86,7 +90,7 @@ public class CharacterAnnotatorChunked {
 			}
 			this.characters = characters.replaceFirst("\\|$", "");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/**
@@ -276,7 +280,7 @@ public class CharacterAnnotatorChunked {
 				}*/
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -327,7 +331,7 @@ public class CharacterAnnotatorChunked {
 			}
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -668,7 +672,7 @@ public class CharacterAnnotatorChunked {
 							temp.add(laststruct);
 							this.subjects = temp;
 						}catch(Exception e){
-							e.printStackTrace();
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 						}
 					}else{
 						//do nothing
@@ -793,7 +797,8 @@ public class CharacterAnnotatorChunked {
 								if(relation !=null)	 this.addAttribute(relation, "modifier", cs.unassignedmodifier);
 								//TODO: otherwise, categorize modifier and create a character for the structure e.g.{thin} {dorsal} {median} <septum> {centrally} only ;
 							}catch(Exception e){
-								e.printStackTrace();
+							
+								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 							}
 						}
 						
@@ -1769,7 +1774,7 @@ public class CharacterAnnotatorChunked {
 				return true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return false;
 	}
@@ -2037,7 +2042,7 @@ public class CharacterAnnotatorChunked {
 			}	
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 
 		return result;
@@ -2327,7 +2332,7 @@ public class CharacterAnnotatorChunked {
 				this.createStructureElements(toorganname, cs);// 7-12-02 add cs				
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
@@ -2697,10 +2702,10 @@ public class CharacterAnnotatorChunked {
 		w = w.replaceAll("\\W", "");
 		String[] chinfo = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
 		if(chinfo!=null && chinfo[0].matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
-		String sw = Utilities.toSingular(w);
+		String singlew = Utilities.toSingular(w);
 		try{
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+sw+"'");
+			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+singlew+"'");
 			if(rs.next()){
 				return "parent_organ";
 			}
@@ -2712,7 +2717,10 @@ public class CharacterAnnotatorChunked {
 			rs.close();
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			LOGGER.error(sw.toString());
 		}
 		return result;
 	}

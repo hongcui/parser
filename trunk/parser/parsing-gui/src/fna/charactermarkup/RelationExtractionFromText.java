@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -30,6 +32,7 @@ public class RelationExtractionFromText {
 	static protected String password = "";
 	protected int count = 0;
 	private ProcessListener listener;
+	private static final Logger LOGGER = Logger.getLogger(RelationExtractionFromText.class);
 
 	public RelationExtractionFromText() {
 		// TODO Auto-generated constructor stub
@@ -54,7 +57,7 @@ public class RelationExtractionFromText {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -107,7 +110,7 @@ public class RelationExtractionFromText {
 			System.out.println(count);
 		}catch (Exception e){
     		//System.err.println(e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
         }
 	}
 	

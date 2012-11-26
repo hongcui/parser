@@ -14,6 +14,7 @@ import java.util.*;
 import java.io.File;
 import java.util.regex.*;
 
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Content;
 import org.jdom.Document;
@@ -41,6 +42,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
  */
 @SuppressWarnings({ "unused","static-access" })
 public class StanfordParser implements Learn2Parse, SyntacticParser{
+	private static final Logger LOGGER = Logger.getLogger(StanfordParser.class);
 	static protected Connection conn = null;
 	static protected String database = null;
 	static protected String username = "root";
@@ -93,7 +95,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);			
 			stmt.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		tagger = new POSTagger4StanfordParser(conn, this.tableprefix, glosstable);
 	}
@@ -145,7 +147,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			rs.close();
 			out.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			//throw e;
 		}
 	}
@@ -210,7 +212,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             pw.flush();
             pw.close();			
 	  	}catch(Exception e){
-	  		e.printStackTrace();
+	  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 	  		//throw e;
 	  	}
 	  	//out.close();
@@ -342,7 +344,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			rs.close();
     	}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			//throw e;
         }
     	//if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
@@ -690,7 +692,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", prefix);
 			tnc.collect();
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}*/
 
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_posedsentences.txt";
@@ -711,7 +713,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 }

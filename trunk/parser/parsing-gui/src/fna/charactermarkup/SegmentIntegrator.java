@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -32,6 +35,7 @@ public class SegmentIntegrator {
 	private static String glosstable;
 	private String lifestyle = null;
 	private String projectfolder = null;
+	private static final Logger LOGGER = Logger.getLogger(SegmentIntegrator.class);
 	
 	
 	public SegmentIntegrator(String database, String projectfolder) {
@@ -51,7 +55,7 @@ public class SegmentIntegrator {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		try{
 			//collect life_style terms
@@ -62,7 +66,7 @@ public class SegmentIntegrator {
 			}
 			this.lifestyle = lifestyle.replaceFirst("\\|$", "");
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		collect(database);
 		
@@ -83,7 +87,7 @@ public class SegmentIntegrator {
 			}
 		}
 		catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}*/
 	}
 	
@@ -110,7 +114,7 @@ public class SegmentIntegrator {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	/*
@@ -158,7 +162,7 @@ public class SegmentIntegrator {
         		}
         	}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	*/
@@ -200,7 +204,7 @@ public class SegmentIntegrator {
         	}
         	XMLintegrator(sentid, ct, oldsrcstr);
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -322,7 +326,7 @@ public class SegmentIntegrator {
 			File f = new File(this.projectfolder+"\\TestCase_Benchmark_sentence\\"+source+".xml");
 			ParsingUtil.outputXML(testroot, f, null);
 		}catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
@@ -374,7 +378,7 @@ public class SegmentIntegrator {
 				}*/
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return statement;
 	}

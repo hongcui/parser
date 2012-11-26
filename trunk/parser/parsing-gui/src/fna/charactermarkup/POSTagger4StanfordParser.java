@@ -4,6 +4,8 @@
  */
 package fna.charactermarkup;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,6 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
@@ -28,6 +32,7 @@ import fna.parsing.MainForm;
  */
 @SuppressWarnings({  "unused","static-access" })
 public class POSTagger4StanfordParser {
+	private static final Logger LOGGER = Logger.getLogger(POSTagger4StanfordParser.class);
 	static protected Connection conn = null;
 	static protected String username = "root";
 	static protected String password = "root";
@@ -309,7 +314,7 @@ public class POSTagger4StanfordParser {
 			
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw e;
 		}
 		//return "";
@@ -980,7 +985,7 @@ public class POSTagger4StanfordParser {
 				//stmt.close();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		POSTagger4StanfordParser tagger = new POSTagger4StanfordParser(conn, tableprefix, "antglossaryfixed");
 		
@@ -1000,7 +1005,7 @@ public class POSTagger4StanfordParser {
 		try{
 		System.out.println(tagger.POSTag(str, src));
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 
