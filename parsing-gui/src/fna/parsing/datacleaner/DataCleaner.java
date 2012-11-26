@@ -4,12 +4,15 @@
 package fna.parsing.datacleaner;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -22,6 +25,7 @@ import fna.parsing.ParsingUtil;
  */
 @SuppressWarnings({ "unchecked"})
 public abstract class DataCleaner{
+	protected static final Logger LOGGER = Logger.getLogger(DataCleaner.class);
 	protected String legalvalues = null;
 	protected ArrayList<String> sourceelements = new ArrayList<String>();
 	protected File outputdir = null;
@@ -71,7 +75,7 @@ public abstract class DataCleaner{
 				}
 			}
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -98,7 +102,7 @@ public abstract class DataCleaner{
 			root.detach();
 			ParsingUtil.outputXML(root, new File(outputdir, file.getName()), null);
 		}catch (Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}
