@@ -1,10 +1,14 @@
 package fna.parsing.character;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.Hashtable;
+
+import org.apache.log4j.Logger;
 
 import fna.parsing.ApplicationUtilities;
 
@@ -23,6 +27,7 @@ public class DeHyphenizer {
 	static private Connection conn = null;
 	static private String username = "termsuser";
 	static private String password = "termspassword";
+	private static final Logger LOGGER = Logger.getLogger(DeHyphenizer.class);
 	
 	public DeHyphenizer(String database, String table, String column, String countcolumn, String hyphen) {
 		// TODO Auto-generated constructor stub
@@ -32,7 +37,7 @@ public class DeHyphenizer {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		this.tablename = table;
 		this.columnname = column;
@@ -59,7 +64,7 @@ public class DeHyphenizer {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -257,7 +262,7 @@ public class DeHyphenizer {
 				}
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	}
 	
@@ -271,7 +276,7 @@ public class DeHyphenizer {
 				find = true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return find;
 	}
@@ -286,7 +291,7 @@ public class DeHyphenizer {
 				find = true;
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		return find;
 	}
@@ -309,7 +314,7 @@ public class DeHyphenizer {
 					}
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		}else{
 			deHyphenWithCount();
@@ -351,7 +356,7 @@ public class DeHyphenizer {
 					}
 				}
 			}catch(Exception e){
-				e.printStackTrace();
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			}
 		}else{
 			deHyphenWithoutCount();
