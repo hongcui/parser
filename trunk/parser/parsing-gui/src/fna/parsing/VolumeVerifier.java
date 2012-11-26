@@ -2,6 +2,8 @@ package fna.parsing;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -252,8 +254,7 @@ public class VolumeVerifier extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.error("VolumeVerifier : verifyNumber - Exception ", e);
-			e.printStackTrace();
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(e);
 		}
 
@@ -285,7 +286,7 @@ public class VolumeVerifier extends Thread {
 			}
 		} catch (Exception e) {
 			LOGGER.error("VolumeVerifier : fillInNumbers - Exception ", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				throw new ParsingException(e);
 		}
 	}
@@ -332,7 +333,7 @@ public class VolumeVerifier extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			LOGGER.error("VolumeVerifier : verifyName - Exception ", e);
 			throw new ParsingException(e);//HongCui
 		}
@@ -555,7 +556,7 @@ public class VolumeVerifier extends Thread {
 			}
 		}catch(Exception e){
 			LOGGER.error("VolumeVerifier : extractName - Exception ", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 	
 		return null;
@@ -642,7 +643,7 @@ public class VolumeVerifier extends Thread {
 				stmt.close();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}*/
 		return false;
 	}
@@ -716,7 +717,7 @@ public class VolumeVerifier extends Thread {
 			}
 		} catch (Exception e) {
 			LOGGER.error("VolumeVerifier : fillInNames - Exception ", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 				throw new ParsingException(e);
 		}
 	}

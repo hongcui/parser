@@ -1,5 +1,6 @@
 package fna.parsing;
 
+import org.apache.log4j.Logger;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
@@ -15,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class V27_Transformer {
-	
+	private static final Logger LOGGER = Logger.getLogger(V27_Transformer.class);
 	Element treatment = new Element("treatment");
 	private boolean debugref = false;
 	String keystorage = "";
@@ -763,7 +764,7 @@ public class V27_Transformer {
 				furtherMarkupKeyStatements(key);
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 		}
 		
 	}

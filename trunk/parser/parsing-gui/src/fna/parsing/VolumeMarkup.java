@@ -6,6 +6,8 @@ package fna.parsing;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +78,7 @@ public class VolumeMarkup {
 		try {
 			 runCommand(com);
 		} catch (Exception e) {
-			e.printStackTrace();
-			LOGGER.error("VolumeMarkup : markup Failed to run the unsupervised.pl", e);
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			showPerlMessage("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
@@ -96,7 +97,7 @@ public class VolumeMarkup {
 			vmDba.structureTags4Curation(tagList);
 		} catch (Exception e) {
 			LOGGER.error("Couldn't perform database operation in VolumeMarkup:update", e);
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException("Failed to execute the statement.", e);
 		}
 		

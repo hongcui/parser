@@ -3,6 +3,8 @@ package fna.parsing;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 
@@ -125,10 +127,7 @@ public class VolumeExtractor extends Thread {
 			// output the last file
 			output();
 		} catch (Exception e) {
-			LOGGER.error(
-					"Unable to parse/ extract the file in VolumeExtractor:extract",
-					e);
-			e.printStackTrace();
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
 			throw new ParsingException(e);
 		}
 	}
