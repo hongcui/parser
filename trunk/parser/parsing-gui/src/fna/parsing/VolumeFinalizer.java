@@ -105,7 +105,7 @@ public class VolumeFinalizer extends Thread {
 =======*/
        		if(!standalone){
        			this.showOutputMessage("System is done with annotating files.");
-       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"\\final\\");
+       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final\\");
        		}
        		System.out.println("Uploading data to the ONTNEW WEBSITE");
         	//UploadData ud = new UploadData(dataPrefix); //moved to step 5
