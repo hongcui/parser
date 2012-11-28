@@ -43,7 +43,7 @@ public class UploadTerms2OTO{
      */
 	public UploadTerms2OTO(String thedataprefix){
 		dataprefix = thedataprefix;
-		dumpfolder = Registry.TargetDirectory+"\to_OTO_"+dataprefix;
+		dumpfolder = Registry.TargetDirectory+"to_OTO_"+dataprefix;
 		dumpFiles(dataprefix);
 		createTextFile(dataprefix);
 		
@@ -110,7 +110,7 @@ public class UploadTerms2OTO{
     	  rt.exec(sentence_command);
     	 } 
     	 catch(Exception e) {
-    	  StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+    		 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
     	 }
     	}
     	
@@ -222,7 +222,10 @@ public class UploadTerms2OTO{
     		}
     		catch(Exception e){
     			System.err.println("Error in creating and writing to a text file: " + e.getMessage());
-    			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+    			StringWriter sw = new StringWriter();
+    			PrintWriter pw = new PrintWriter(sw);
+    			e.printStackTrace(pw);
+    			LOGGER.error(sw.toString());
     		}
     	}
     	
