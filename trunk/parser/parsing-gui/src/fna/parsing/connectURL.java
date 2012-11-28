@@ -46,7 +46,7 @@ public class connectURL {
 
       // Handle any errors that may have occurred.
       catch (Exception e) {
-         StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+         StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
       }
       finally {
          if (rs != null) try { rs.close(); } catch(Exception e) {}

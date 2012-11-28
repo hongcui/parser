@@ -83,7 +83,7 @@ public class ApplicationUtilities {
 				System.exit(0);
 			}			
 		} catch(Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (out != null) {
 				out.close();
@@ -110,7 +110,7 @@ public class ApplicationUtilities {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				LOGGER.error("couldn't open file in ApplicationUtilities:getProperty", e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			} 
 		}
 		return properties.getProperty(key);
@@ -128,7 +128,7 @@ public class ApplicationUtilities {
 			messageBox.setText(messageHeader);
 			returnVal = messageBox.open();	 
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return returnVal;
 	}
@@ -212,7 +212,7 @@ public class ApplicationUtilities {
 				tabFolder.setFocus();
 			}
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 		
