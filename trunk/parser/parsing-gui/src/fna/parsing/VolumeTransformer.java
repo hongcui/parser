@@ -360,6 +360,10 @@ public class VolumeTransformer extends Thread {
 			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
 			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 			
+			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
+			tnc.collect();
+			
 		} catch (Exception e) {
 			//LOGGER.error("VolumeTransformer : transform - error in parsing", e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -367,7 +371,7 @@ public class VolumeTransformer extends Thread {
 		}
 		//update listener.info
 		listener.clear();
-		//unpared
+		//unparsed
 		Enumeration<String> keys = unparsed.keys();
 		while(keys.hasMoreElements()){
 			String key = keys.nextElement();
@@ -385,6 +389,7 @@ public class VolumeTransformer extends Thread {
 			listener.info(""+count, value);
 			count++;
 		}
+
 	}
 
 	/**
