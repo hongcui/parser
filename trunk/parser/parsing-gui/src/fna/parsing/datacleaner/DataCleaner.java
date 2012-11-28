@@ -18,6 +18,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.ParsingUtil;
 /**
  * @author hongcui
@@ -75,7 +76,7 @@ public abstract class DataCleaner{
 				}
 			}
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -102,7 +103,7 @@ public abstract class DataCleaner{
 			root.detach();
 			ParsingUtil.outputXML(root, new File(outputdir, file.getName()), null);
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}

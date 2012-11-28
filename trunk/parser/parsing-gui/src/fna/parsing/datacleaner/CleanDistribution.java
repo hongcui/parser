@@ -10,6 +10,8 @@ import java.util.*;
 import org.jdom.Element;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
+
 /**
  * merge all kinds of distribution to outputelement/"general_distribution"
  * also parse out introduced, and cultivated from sourceelements(including elevation) 
@@ -193,7 +195,7 @@ public class CleanDistribution extends DataCleaner {
 			}
 			
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return root;
 	}
