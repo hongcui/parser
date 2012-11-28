@@ -73,7 +73,7 @@ public class DeHyphenAFolder {
                 createAllWordsTable();
             }
         }catch(Exception e){
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -109,7 +109,7 @@ public class DeHyphenAFolder {
 		            stmt.execute("update "+tablename+" set dhword=word where dhword is null");
 		       }catch(Exception e){
 		        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
-		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		       }
 		       normalizeDocument();
 		       if(listener!= null) listener.progress(100);
@@ -161,7 +161,7 @@ public class DeHyphenAFolder {
 	            }
 	        }catch(Exception e){
 	            	LOGGER.error("Problem in VolumeDehyphenizer:check4UnmatchedBrackets", e);
-		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	        }
 	        return has;
 	    }
@@ -174,7 +174,7 @@ public class DeHyphenAFolder {
 	            stmt.execute(query);	           
 	        }catch(Exception e){
 	        	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
-	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	        }
 	    }
 	    
@@ -185,7 +185,7 @@ public class DeHyphenAFolder {
 	            stmt.execute(query);
 	            stmt.execute("delete from "+tablename1);
 	        }catch(Exception e){
-	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	        }
 	    }*/
 	    /**
@@ -281,7 +281,7 @@ public class DeHyphenAFolder {
                 stmt.close();
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
-	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	        }
 	    }
 	    private boolean hasUnmatchedBrackets(String text) {
@@ -316,7 +316,7 @@ public class DeHyphenAFolder {
 	                Statement stmt = conn.createStatement();
 	                stmt.execute("insert into "+tablename1+" (mix, file) values ('"+save+"', '"+source.getName()+"')");
 	            }catch (Exception e){
-	                StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	                StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	            }
 	        }
 	        fixed.append(mix);
@@ -413,7 +413,7 @@ public class DeHyphenAFolder {
 	            }
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:normalizeDocument", e);
-	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	        }
 	    }
 	    /*
