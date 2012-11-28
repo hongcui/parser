@@ -50,7 +50,7 @@ public class UnknownResolver {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -82,7 +82,7 @@ public class UnknownResolver {
 			}
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: markupUnknows", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		Enumeration en = unmarked.keys();
 		while(en.hasMoreElements()){
@@ -137,7 +137,7 @@ public class UnknownResolver {
 			sb = sb.replace(sb.lastIndexOf("|"), sb.lastIndexOf("|")+1, "");
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: getRequiredString", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return sb.toString();
 	}
@@ -165,7 +165,7 @@ public class UnknownResolver {
 		}
 		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return tags.toString();
 	}
@@ -184,7 +184,7 @@ public class UnknownResolver {
 			tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
 			LOGGER.error("Error in UnknownResolver: collectLearnedStateNames", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return tags.toString();
 	}
