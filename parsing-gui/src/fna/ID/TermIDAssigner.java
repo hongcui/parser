@@ -36,7 +36,7 @@ public class TermIDAssigner {
 			String url = "jdbc:mysql://localhost/"+schemaname+"?user=termsuser&password=termspassword";
 			this.conn = DriverManager.getConnection(url);
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -60,7 +60,7 @@ public class TermIDAssigner {
 					stmt1.execute("update "+schemaname+"."+tablename+" set "+idcolumn+"='"+uuid+"' where id="+id);
 				}								
 			}catch(Exception e){
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}			
 		}
 	}
