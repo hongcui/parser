@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.MainForm;
 
 public class ManipulateGraphML {
@@ -96,7 +97,7 @@ public class ManipulateGraphML {
 	      }
 	    }
 	    catch (Exception e){
-	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	      System.exit(0);
 	    }
 	    
@@ -154,7 +155,7 @@ public class ManipulateGraphML {
         	        tFormer.transform(source, dest); 
 		      }
 	    } catch(Exception e){
-	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString()); 
+	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString()); 
 	      }
 
 	}
@@ -202,7 +203,7 @@ public class ManipulateGraphML {
 			        
 		      }
 	      } catch(Exception e){
-	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString()); 
+	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString()); 
 	      }
 
 		
@@ -266,7 +267,7 @@ public class ManipulateGraphML {
 			        tFormer.transform(source, dest);
 		      }
 	      } catch(Exception e){
-	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString()); 
+	    	 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString()); 
 	      }
 	}
 	
