@@ -542,23 +542,27 @@ static int checkAck(InputStream in) throws IOException{
 		      while(true){
 		    	  if(in.available() >0) {
 		    		  br = new BufferedReader(new InputStreamReader(in));
+		    		  System.out.println("in becomes available");
+		    	  }else{
+		    		  System.out.println("in not available");
 		    	  }
 		    	  	  //while(in.available()>0){
-		    	  	while(br.ready()){	
-				    
+		    	  while(br!=null && br.ready()){	
+		    		System.out.println("reading from in...");  
 		        	String l = br.readLine();
 		        	result.add(l);
 		        	System.out.println(l);
 		        	//int i=in.read(tmp, 0, 1024);
 		        	//if(i<=0) break;		          
 		        	//sb.append(new String(tmp, 0, i));		          
-		        }
+		    	  }
 		   	     if(channel.isClosed()){
 		   	    	String t = channel.getExitStatus()+"";
 		        	result.add(t);
+		        	 System.out.println("channel closed");
 		        	System.out.println("exit-status: "+t);
 		        	break;
-		        }
+		   	     }
 		      //Mohan's code to quit if the input stream is empty. Which means the system is just waiting.
 		        /*else if(in.available()<=0)
 		        {
@@ -567,11 +571,12 @@ static int checkAck(InputStream in) throws IOException{
 		        	System.out.println("exit-status: "+t);
 			        break;
 		        }*/
-			    try{
-			        	Thread.sleep(1000);
-			        }catch(Exception ee){
-			        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			        }
+			    /*try{
+			        Thread.sleep(1000);
+			        System.out.println("waiting for 1000");
+			    }catch(Exception ee){
+			        StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			    }*/
 		      }
 		      channel.disconnect();
 		      session.disconnect();
