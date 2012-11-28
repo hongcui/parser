@@ -61,7 +61,7 @@ public class Type3Document {
 							ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 					shell.dispose();
 				} catch (SQLException e) {
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 				
 			}

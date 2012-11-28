@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
@@ -49,7 +51,7 @@ public class TaxonIndexer implements Serializable {
 			out.writeObject(ti);
 			out.close();
 		} catch (IOException e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(
 					"Save the updated TaxonIndexer failed.", e);
 		}
@@ -67,7 +69,7 @@ public class TaxonIndexer implements Serializable {
 			return ti;
 		} catch (Exception e) {
 			//LOGGER.error("Load the updated TaxonIndexer failed.", e);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(
 					"Load the updated TaxonIndexer failed.", e);
 		}
@@ -98,7 +100,7 @@ public class TaxonIndexer implements Serializable {
 				reader.close();
 			}
 		} catch (Exception e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 

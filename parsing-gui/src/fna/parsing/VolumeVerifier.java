@@ -196,7 +196,8 @@ public class VolumeVerifier extends Thread {
 
 			}
 		} catch (Exception e) {
-			LOGGER.error("VolumeVerifier : verifyStyle - Exception ", e);
+			//LOGGER.error("VolumeVerifier : verifyStyle - Exception ", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 
@@ -254,7 +255,7 @@ public class VolumeVerifier extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 
@@ -286,7 +287,7 @@ public class VolumeVerifier extends Thread {
 			}
 		} catch (Exception e) {
 			LOGGER.error("VolumeVerifier : fillInNumbers - Exception ", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				throw new ParsingException(e);
 		}
 	}
@@ -333,8 +334,8 @@ public class VolumeVerifier extends Thread {
 				}
 			}
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-			LOGGER.error("VolumeVerifier : verifyName - Exception ", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			//LOGGER.error("VolumeVerifier : verifyName - Exception ", e);
 			throw new ParsingException(e);//HongCui
 		}
 
@@ -556,7 +557,7 @@ public class VolumeVerifier extends Thread {
 			}
 		}catch(Exception e){
 			LOGGER.error("VolumeVerifier : extractName - Exception ", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	
 		return null;
@@ -643,7 +644,7 @@ public class VolumeVerifier extends Thread {
 				stmt.close();
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}*/
 		return false;
 	}
@@ -716,8 +717,8 @@ public class VolumeVerifier extends Thread {
 				System.out.println("add name :"+taxonname+ " for file "+i+".xml");
 			}
 		} catch (Exception e) {
-			LOGGER.error("VolumeVerifier : fillInNames - Exception ", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			//LOGGER.error("VolumeVerifier : fillInNames - Exception ", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				throw new ParsingException(e);
 		}
 	}

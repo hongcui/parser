@@ -1,5 +1,6 @@
 package fna.parsing;
 
+import org.apache.log4j.Logger;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
@@ -15,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Fna_Finalizer {
+	private static final Logger LOGGER = Logger.getLogger(Fna_Finalizer.class);
+
 	static String filename = null;
 	Element treatment = new Element("treatment");
 	private boolean debugref = false;
@@ -80,7 +83,8 @@ public class Fna_Finalizer {
 				System.out.println(taxonname);
 				mapping.put(i, taxonname);
 			}else{
-				System.out.println("Problem in main");
+				System.err.println("Fna_Finalizer.Main: Problem in main");
+				LOGGER.error("Fna_Finalizer.Main: Problem in main");
 			}
 			
 			transformer.output(filename);

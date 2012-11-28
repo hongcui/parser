@@ -99,6 +99,7 @@ public class VolumeTransformer extends Thread {
 					Registry.ConfigurationDirectory
 							+ "/style-mapping.properties"));
 		} catch (IOException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(
 					"Failed to load the style mapping file!", e);
 		}
@@ -116,7 +117,7 @@ public class VolumeTransformer extends Thread {
 				stmt.execute("create table if not exists "+ publicationtable+" (publication varchar(500) NOT NULL)");				
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}	
 
 	}
@@ -360,8 +361,8 @@ public class VolumeTransformer extends Thread {
 			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 			
 		} catch (Exception e) {
-			LOGGER.error("VolumeTransformer : transform - error in parsing", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			//LOGGER.error("VolumeTransformer : transform - error in parsing", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 		//update listener.info
@@ -411,7 +412,7 @@ public class VolumeTransformer extends Thread {
 				furtherMarkupKeyStatements(key);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}
@@ -704,9 +705,8 @@ public class VolumeTransformer extends Thread {
 				}
 			}else{
 				System.err.println("distribution not match: "+text);
-			}
-			
-			
+				LOGGER.error("VolumeTransformer.parseDistriTag: "+"distribution not match: "+text);
+			}						
 		}
 	}
 	
@@ -789,11 +789,11 @@ public class VolumeTransformer extends Thread {
 			vtDbA.add2TaxonTable(number, name, namerank, index+1);
 		} catch (ParsingException e) {
 			// TODO Auto-generated catch block
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
 		}
 		if(debug) System.out.println("name:"+nameinfo[0]);
@@ -803,11 +803,11 @@ public class VolumeTransformer extends Thread {
 				vtDbA.add2AuthorTable(nameinfo[1]);
 			} catch (ParsingException e) {
 				// TODO Auto-generated catch block
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
 			}
 			if(debug) System.out.println("authority:"+nameinfo[1]);
@@ -824,11 +824,11 @@ public class VolumeTransformer extends Thread {
 					vtDbA.add2AuthorTable(m.group(1).trim());
 				} catch (ParsingException e) {
 					// TODO Auto-generated catch block
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
 				}
 				//System.out.println("authority:"+m.group(1).trim());
@@ -1022,10 +1022,10 @@ public class VolumeTransformer extends Thread {
 			try {
 				vtDbA.add2PublicationTable(pub);
 			} catch (ParsingException e) {
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
 			} catch (SQLException e) {
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
 			}
 		}
@@ -1047,8 +1047,8 @@ public class VolumeTransformer extends Thread {
 			out.write(text);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-			LOGGER.error("Failed to output text file in VolumeTransformer:outputDescriptionText", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			//LOGGER.error("Failed to output text file in VolumeTransformer:outputDescriptionText", e);
 			throw new ParsingException("Failed to output text file.", e);
 		}
 	}

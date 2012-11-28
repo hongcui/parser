@@ -127,7 +127,7 @@ public class VolumeExtractor extends Thread {
 			// output the last file
 			output();
 		} catch (Exception e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 	}
@@ -347,7 +347,8 @@ public class VolumeExtractor extends Thread {
 			listener.info(count + "", file);
 
 		} catch (IOException e) {
-			LOGGER.error("Exception in VolumeExtractor : output", e);
+			//LOGGER.error("Exception in VolumeExtractor : output", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 	}

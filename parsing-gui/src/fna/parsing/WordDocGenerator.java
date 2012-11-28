@@ -5,6 +5,8 @@ package fna.parsing;
 
 import java.io.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Hong Updates
  * this program put resultant document.xml files from WordDocSegmenter.java
@@ -12,6 +14,8 @@ import java.io.*;
  * the files containing keys are named n_key.docx. 
  */
 public class WordDocGenerator {
+	private static final Logger LOGGER = Logger.getLogger(WordDocGenerator.class);
+
 	String sourcedir = "C:/DEMO/FNA-v19-excerpt/target/"+ApplicationUtilities.getProperty("EXTRACTED");
 	String packagedir = "C:/DOCCreation/FNA19package";
 	String worddir = "word";
@@ -53,6 +57,7 @@ public class WordDocGenerator {
 			p.waitFor(); 
 			System.out.println("process exit with value "+p.exitValue()); 
 		} catch(Exception e) { 
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			System.out.println(e.getMessage()); 
 		} 
 	}

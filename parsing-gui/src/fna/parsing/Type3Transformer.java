@@ -107,7 +107,7 @@ public class Type3Transformer extends Thread {
 			listener.progress(1);
 			 runCommand(com);
 		} catch (Exception e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//LOGGER.error("Type3Markup : markup Failed to run bootstrapDescriptionExtraction.pl", e);
 			throw new ParsingException("Failed to run bootstrapDescriptionExtraction.pl.", e);
 		}
@@ -236,7 +236,8 @@ public class Type3Transformer extends Thread {
 			/* Producer */
 			outputter.output(doc, out);
 		} catch (IOException e) {
-			LOGGER.error("Exception in Type3PreMarkup : output", e);
+			//LOGGER.error("Exception in Type3PreMarkup : output", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 
