@@ -2390,12 +2390,14 @@ public class MainForm {
 				    case SWT.NO:
 						if(MainForm.upload2OTO){
 							int count = mainDb.finalizeTermCategoryTable();
-							UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
-							ApplicationUtilities.showPopUpWindow(
+							if(MainForm.upload2OTO){
+								UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+								ApplicationUtilities.showPopUpWindow(
 									count+ " "+
 									ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
 									ApplicationUtilities.getProperty("popup.header.info"), 
 									SWT.OK);
+							}
 						}						
 						break;
 				    case SWT.RETRY:
@@ -2406,12 +2408,14 @@ public class MainForm {
 
 				}else{ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
-					UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
-					ApplicationUtilities.showPopUpWindow(
-							count+" "+
-							ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
-							ApplicationUtilities.getProperty("popup.header.info"), 
-							SWT.OK);
+					if(MainForm.upload2OTO){
+						UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
+						ApplicationUtilities.showPopUpWindow(
+								count+" "+
+								ApplicationUtilities.getProperty("popup.char.uploadterms2OTO"),
+								ApplicationUtilities.getProperty("popup.header.info"), 
+								SWT.OK);
+					}
 					
 				}
 			}
