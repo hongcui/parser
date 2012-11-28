@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.ApplicationUtilities;
+
 public class WordNetWrapper {
 	private static final Logger LOGGER = Logger.getLogger(WordNetWrapper.class);
 	Hashtable<String, Integer> pos = new Hashtable<String, Integer>();
@@ -62,7 +64,7 @@ public class WordNetWrapper {
 			}*/
 
 			}catch(Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 	}
 	
