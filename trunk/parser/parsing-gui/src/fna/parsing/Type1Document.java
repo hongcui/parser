@@ -187,7 +187,7 @@ public class Type1Document {
 		try {
 			loadStyleMappinFile();
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 		scrolledComposite.setRedraw(true);
@@ -279,7 +279,7 @@ public class Type1Document {
 				//do nothing
 			}else if (i==1){//both are empty
 				//pathName = null;
-				throw new ParsingException("No details to save");
+				throw new ParsingException("Type1Document.createStyleMappingFile: No details to save");
 			}
 
 		}

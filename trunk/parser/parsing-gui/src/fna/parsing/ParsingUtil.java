@@ -38,7 +38,7 @@ public class ParsingUtil {
 			// generate the information to the listener (gui)
 			// listener.info(String.valueOf(count), "", file.getPath());
 		} catch (IOException e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
 		}
 	}

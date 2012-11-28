@@ -110,7 +110,7 @@ public class UploadTerms2OTO{
     	  rt.exec(sentence_command);
     	 } 
     	 catch(Exception e) {
-    		 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+    		 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
     	 }
     	}
     	
@@ -222,10 +222,8 @@ public class UploadTerms2OTO{
     		}
     		catch(Exception e){
     			System.err.println("Error in creating and writing to a text file: " + e.getMessage());
-    			StringWriter sw = new StringWriter();
-    			PrintWriter pw = new PrintWriter(sw);
-    			e.printStackTrace(pw);
-    			LOGGER.error(sw.toString());
+    			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+
     		}
     	}
     	
@@ -323,6 +321,7 @@ public class UploadTerms2OTO{
 
     			if(checkAck(in)!=0){
     			  System.err.println("failed in ScpFrom");
+    			  LOGGER.error("Failed in UploadTerms2OTO.ScpFrom");
     			}
 
     		        // send '\0'
@@ -396,8 +395,9 @@ public class UploadTerms2OTO{
     	      channel.connect();
 
     	      if(checkAck(in)!=0){
-    	    	  System.out.println("Error is SCPto");
-    		System.exit(0);
+    	    	  System.out.println("Error in SCPto");
+    	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
+    	    	  System.exit(0);
     	      }
 
     	      File _lfile = new File(lfile);
@@ -409,7 +409,8 @@ public class UploadTerms2OTO{
     	        command+=(" "+(_lfile.lastModified()/1000)+" 0\n"); 
     	        out.write(command.getBytes()); out.flush();
     	        if(checkAck(in)!=0){
-    	        	System.out.println("Error is SCPto");
+    	        	System.out.println("Error in SCPto");
+    	        	LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
     	  	  System.exit(0);
     	        }
     	      }
@@ -426,7 +427,8 @@ public class UploadTerms2OTO{
     	      command+="\n";
     	      out.write(command.getBytes()); out.flush();
     	      if(checkAck(in)!=0){
-    	    	  System.out.println("Error is SCPto");
+    	    	  System.out.println("Error in SCPto");
+    	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
     		System.exit(0);
     	      }
 
@@ -443,7 +445,8 @@ public class UploadTerms2OTO{
     	      // send '\0'
     	      buf[0]=0; out.write(buf, 0, 1); out.flush();
     	      if(checkAck(in)!=0){
-    	    	  System.out.println("Error is SCPto");
+    	    	  System.out.println("Error in SCPto");
+    	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
     	    	  System.exit(0);
     	      }
     	      out.close();
@@ -490,9 +493,12 @@ static int checkAck(InputStream in) throws IOException{
     return b;
   }
 
-/*
- * Used to execute commands on the sql server
- */
+
+	/**
+	 * Used to execute commands on the sql server
+	 * @param command
+	 * @return ArrayList of at least 1 element, which is the exit status. If there are other output, the size of the ArrayList > 1
+	 */
 	public static ArrayList<String> execute(String command)
 	{
 		ArrayList<String> result = new ArrayList<String>();
@@ -526,16 +532,20 @@ static int checkAck(InputStream in) throws IOException{
 		      channel.connect();
 		      
 		      //wait for in become available
-		      do{
-		      }while(in.available()<=0 && err.available()<=0);
+		      //do{
+		      //}while(in.available()<=0 && err.available()<=0);
 		      
 		      System.out.println(channel.toString());
-		      BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		      BufferedReader br = null;
 		      //byte[] tmp=new byte[1024];
 		      //StringBuffer sb = new StringBuffer();
 		      while(true){
-		        //while(in.available()>0){
-		        while(br.ready()){	
+		    	  if(in.available() >0) {
+		    		  br = new BufferedReader(new InputStreamReader(in));
+		    	  }
+		    	  	  //while(in.available()>0){
+		    	  	while(br.ready()){	
+				    
 		        	String l = br.readLine();
 		        	result.add(l);
 		        	System.out.println(l);
@@ -550,24 +560,24 @@ static int checkAck(InputStream in) throws IOException{
 		        	break;
 		        }
 		      //Mohan's code to quit if the input stream is empty. Which means the system is just waiting.
-		        else if(in.available()<=0)
+		        /*else if(in.available()<=0)
 		        {
 		        	String t = channel.getExitStatus()+"";
 		        	result.add(t);
 		        	System.out.println("exit-status: "+t);
 			        break;
-		        }
-		        try{
-		        	Thread.sleep(1000);
-		        }catch(Exception ee){
-		        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(sw.toString());
-		        }
+		        }*/
+			    try{
+			        	Thread.sleep(1000);
+			        }catch(Exception ee){
+			        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			        }
 		      }
 		      channel.disconnect();
 		      session.disconnect();
 		    }
 		    catch(Exception e){
-		    	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+		    	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		    	System.out.println(e);
 		    }
 		return result;

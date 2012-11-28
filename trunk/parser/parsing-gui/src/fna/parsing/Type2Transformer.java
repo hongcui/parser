@@ -111,7 +111,7 @@ public class Type2Transformer extends Thread {
 			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
 			tnc.collect();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -123,8 +123,7 @@ public class Type2Transformer extends Thread {
 			out.write(textNormalize);
 			out.close(); // don't forget to close the output stream!!!
 		} catch (IOException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-			LOGGER.error("Failed to output text file in Type2Transformer:outputDescriptionText", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to output text file.", e);
 		}		
 	}

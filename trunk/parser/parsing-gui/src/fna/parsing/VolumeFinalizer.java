@@ -72,7 +72,7 @@ public class VolumeFinalizer extends Thread {
 			outputFinal();
 		}catch(Exception e){
 			this.showOutputMessage(e.toString());
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
         //check for final result errors
         File finalFileList= null;
@@ -178,7 +178,7 @@ public class VolumeFinalizer extends Thread {
 			rs.close();
 			stmt.close();						
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}		
 	}
 	/**
@@ -205,8 +205,8 @@ public class VolumeFinalizer extends Thread {
             }
             baseroot.detach();
         } catch (Exception e) {
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-            LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+            //LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
             throw new ParsingException("Failed to output the final result.", e);
         }
     }
@@ -228,8 +228,8 @@ public class VolumeFinalizer extends Thread {
 			root.detach();
 			return root;
 		}catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-			LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			//LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
 			throw new ParsingException("Failed to output the final result.", e);
 		}
 	}
@@ -306,8 +306,8 @@ public class VolumeFinalizer extends Thread {
 				parsed.add(result.getPath());
 			}
         } catch (Exception e) {
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-            LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+            //LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
             throw new ParsingException("Failed to output the final result.", e);
         }
 		return parsed;
@@ -345,7 +345,7 @@ public class VolumeFinalizer extends Thread {
 				ParsingUtil.outputXML(root, new File(target, f) ,null);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}
@@ -385,7 +385,7 @@ public class VolumeFinalizer extends Thread {
                 conn = DriverManager.getConnection(URL);
             }
         }catch(Exception e){
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
         VolumeFinalizer vf = new VolumeFinalizer(null, "fnav19", conn, "fnaglossaryfixed");
         vf.start();*/

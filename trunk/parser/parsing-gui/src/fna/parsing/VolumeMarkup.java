@@ -78,7 +78,7 @@ public class VolumeMarkup {
 		try {
 			 runCommand(com);
 		} catch (Exception e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			showPerlMessage("VolumeMarkup : markup Failed to run the unsupervised.pl" + e.getMessage() + "\n");
 			throw new ParsingException("Failed to run the unsupervised.pl.", e);
 		}
@@ -97,7 +97,7 @@ public class VolumeMarkup {
 			vmDba.structureTags4Curation(tagList);
 		} catch (Exception e) {
 			LOGGER.error("Couldn't perform database operation in VolumeMarkup:update", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", e);
 		}
 		
