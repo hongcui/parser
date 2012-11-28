@@ -49,7 +49,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in ConfigurationDbAccessor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -77,7 +77,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception exe) {
 			
 			LOGGER.error("Couldn't retrieve Tag Details in ConfigurationDbAccessor" + exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();
@@ -124,7 +124,7 @@ public class ConfigurationDbAccessor {
 		} catch (Exception exe) {
 			if(!exe.getMessage().contains("Duplicate entry")) {
 			 LOGGER.error("Couldn't insert Tag Details in ConfigurationDbAccessor:saveSemanticTagDetails" + exe);
-			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		} finally {
 
@@ -175,7 +175,7 @@ public class ConfigurationDbAccessor {
 
 		} catch (Exception exe) {
 			 LOGGER.error("Couldn't insert paragraph Details in ConfigurationDbAccessor:saveParagraphTagDetails" + exe);
-			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 
 			if (stmt != null) {
@@ -320,7 +320,7 @@ public class ConfigurationDbAccessor {
 			success = true;
 			
 		} catch (SQLException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		} finally {
 			if (pstmt != null) {
@@ -460,7 +460,7 @@ public class ConfigurationDbAccessor {
 			}
 			
 		} catch (SQLException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();

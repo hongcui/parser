@@ -38,7 +38,7 @@ public class Type4TransformerDbAccessor {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in Type3PreMarkupDbAccessor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -55,7 +55,7 @@ public class Type4TransformerDbAccessor {
 			stmt.execute("create table if not exists "+prefix+"_"+tablename+" (ofilename varchar(100) NOT NULL, nfilename varchar(100), primary key(ofilename))");			
 		}catch(Exception e){
 			LOGGER.error("Type4TransformerDbAccessor error:" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}	
 	}
 	
@@ -73,7 +73,7 @@ public class Type4TransformerDbAccessor {
 			}
 		}catch(Exception e){
 			LOGGER.error("Type3PreMarkupDbAccessor error:" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}		
 	}
 	
