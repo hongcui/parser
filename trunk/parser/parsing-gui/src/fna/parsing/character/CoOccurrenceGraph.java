@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.ApplicationUtilities;
+
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -51,9 +53,9 @@ import prefuse.visual.VisualItem;
 	        	System.out.println("graphPath=="+graphPath);
 	        	graph = new GraphMLReader().readGraph(graphPath);
 	        } catch ( DataIOException e ) {
-	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	            System.err.println("Error loading graph. Exiting...");
-	            System.exit(1);
+	            //System.exit(1);
 	        }
 	        
 	        

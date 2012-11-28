@@ -23,7 +23,7 @@ public class Glossary {
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in CharacterLearner" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	private static String tablename = null;
@@ -59,7 +59,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner constructor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}*/
 	}
 
@@ -183,7 +183,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner populateTable" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}*/
 	/**
@@ -244,7 +244,7 @@ public class Glossary {
 					stmt.execute("insert into "+tablename1+ "(term1, type, term2) values ('"+term1s[i]+"', '"+type+"', '"+term2.trim()+"')");
 				}catch(Exception e){
 					LOGGER.error("Exception in CharacterLearner add2TermForms" + e);
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 			}
 			
@@ -285,7 +285,7 @@ public class Glossary {
 				chs.add(rs.getString("category"));
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return chs;
 	}
@@ -301,7 +301,7 @@ public class Glossary {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner getAllCharacters" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return chs.toString().replaceFirst("\\|$", "");
 	}
@@ -317,7 +317,7 @@ public class Glossary {
 				stmt.execute(query);
 			}catch(Exception e){
 				LOGGER.error("Exception in CharacterLearner addInducedPair" + e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		}
 	}

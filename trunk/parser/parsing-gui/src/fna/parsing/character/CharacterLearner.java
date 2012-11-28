@@ -74,7 +74,7 @@ public class CharacterLearner  implements Learn2Parse{
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 		} catch (ClassNotFoundException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -129,7 +129,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in  CharacterLearner constructor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		//glossary is created in VolumeDehyphenizer
 	//	this.glossary = new Glossary(new File(Registry.ConfigurationDirectory + "FNAGloss.txt"), true, this.database, this.tablePrefix);
@@ -155,7 +155,7 @@ public class CharacterLearner  implements Learn2Parse{
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+this.tablePrefix+"_bootstrap (state1 varchar(100), character1 varchar(200), PRIMARY KEY (state1, character1))");
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}*/
 		
 		//Bootstrap b = new Bootstrap(stategroups, glossary, database, "bootstrap");
@@ -180,7 +180,7 @@ public class CharacterLearner  implements Learn2Parse{
 
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner markupCharState" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -205,7 +205,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner assembleDescription" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	public ArrayList getMarkedDescription(String filename){
@@ -225,7 +225,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner getMarkedDescription" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return results;
 	}
@@ -568,7 +568,7 @@ public class CharacterLearner  implements Learn2Parse{
 				stmt.execute("update "+this.tablePrefix+"_sentence set charsegment =\""+matchedseg+"\" where sentid ="+clauseid);
 			}catch (Exception e){
 				LOGGER.error("Exception in  CharacterLearner group" + e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 			/*clause
 			 * try{
@@ -581,7 +581,7 @@ public class CharacterLearner  implements Learn2Parse{
 				}
 				stmt.execute("update "+this.tablePrefix+"_clause set charsegment =\""+matchedseg+"\" where clauseid ="+clauseid);
 			}catch (Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}*/
 		}
 	}
@@ -601,7 +601,7 @@ public class CharacterLearner  implements Learn2Parse{
 				}
 			}catch (Exception e){
 				LOGGER.error("Exception in  CharacterLearner add2LearnedStates" + e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		/*}else{
 			String t1 = term.replaceAll("_", ""); 
@@ -624,7 +624,7 @@ public class CharacterLearner  implements Learn2Parse{
 					t = t2;
 				}
 			}catch (Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		}*/
 		return t;
@@ -650,7 +650,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in  CharacterLearner collectStateNames" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return tags.toString()+Glossary.getAllCharacters();
 	}
@@ -680,7 +680,7 @@ public class CharacterLearner  implements Learn2Parse{
 		tags = tags.replace(tags.lastIndexOf("|"), tags.lastIndexOf("|")+1, "");
 		}catch(Exception e){
 			LOGGER.error("Exception in  CharacterLearner collectOrganNames" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return tags.toString();
 		/*StringBuffer names = new StringBuffer();
@@ -695,7 +695,7 @@ public class CharacterLearner  implements Learn2Parse{
 				names.append(rs.getString("word")+"|");
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return names.toString().replaceFirst("\\|$", "");*/
 	}
@@ -791,7 +791,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner markSentences" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -817,7 +817,7 @@ public class CharacterLearner  implements Learn2Parse{
 			stmt.execute("delete from "+this.tablePrefix+"_fileclauselink");
 		}catch(Exception e){
 			LOGGER.error("Exception in  CharacterLearner createClauseTables" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	/**
@@ -849,7 +849,7 @@ public class CharacterLearner  implements Learn2Parse{
 			info[2] = rs.getString("charsegment");
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner getInfo" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return info;
 	}
@@ -956,7 +956,7 @@ public class CharacterLearner  implements Learn2Parse{
 			}
 		}catch (Exception e){
 			LOGGER.error("Exception in  CharacterLearner addClause" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}

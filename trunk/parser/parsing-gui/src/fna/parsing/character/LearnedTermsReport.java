@@ -81,20 +81,20 @@ public class LearnedTermsReport {
 				}
 			}
 			if(!s){
-				System.err.println("Learned state table does not exist! Program exists.");
-				System.exit(1);
+				LOGGER.error("Learned state table does not exist! Program exists.");
+				//System.exit(1);
 			}
 			if(!g){
-				System.err.println("Glossary table does not exist! Program exists.");
-				System.exit(1);
+				LOGGER.error("Glossary table does not exist! Program exists.");
+				//System.exit(1);
 			}
 			if(!o1){
-				System.err.println("Learned organ table does not exist! Program exists.");
-				System.exit(1);
+				LOGGER.error("Learned organ table does not exist! Program exists.");
+				//System.exit(1);
 			}
 			if(!o2){
-				System.err.println("Learned pos table does not exist! Program exists.");
-				System.exit(1);
+				LOGGER.error("Learned pos table does not exist! Program exists.");
+				//System.exit(1);
 			}
 			//create a table holding singular structure terms from the glossary
 			createGlossStructureTable();
@@ -104,7 +104,7 @@ public class LearnedTermsReport {
 					otablename, "structure", null, "_", MainForm.dataPrefixCombo.getText().replaceAll("-", "_"), null);//TODO: replace last null with glossary
 			dh.deHyphen();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -187,7 +187,7 @@ public class LearnedTermsReport {
 			stmt.execute("create table if not exists "+LearnedTermsReport.gstablename+" as select term from "+gtablename+" where category in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative') and status !='learned' and term not in (select distinct term2 from termforms where type ='pl')");
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport createGlossStructureTable", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	/**
@@ -209,7 +209,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport createLearnedStructureTable", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -270,7 +270,7 @@ public class LearnedTermsReport {
 			unused.removeAll(toremove);
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport unusedStructures", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return unused;
 	}
@@ -307,7 +307,7 @@ public class LearnedTermsReport {
 			
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport unusedStates", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return unused;
 	}
@@ -322,7 +322,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport statesAssignedCharacters", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -370,7 +370,7 @@ public class LearnedTermsReport {
 			}*/
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getLearnedStructuresCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return learnedstructures.size();
 	}
@@ -385,7 +385,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getLearnedStatesCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return learnedstates.size();
 	}
@@ -400,7 +400,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllCharacterCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return -1;
 	}
@@ -417,7 +417,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return -1;
 	}
@@ -434,7 +434,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStateCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return -1;
 	}
@@ -450,7 +450,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport matchInGlossStates", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return match;
 	}
@@ -466,7 +466,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport findInGlossStates", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return find;
 	}
@@ -483,7 +483,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport getAllStructureCount", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return -1;
 	}
@@ -499,7 +499,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport matchInGlossStructure", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return match;
 	}
@@ -515,7 +515,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport findInGlossStructure", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return find;
 	}
@@ -532,7 +532,7 @@ public class LearnedTermsReport {
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in LearnedTermsReport stringMatchInGloss", e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return find;
 	}
