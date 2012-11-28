@@ -134,6 +134,33 @@ public class Test {
 		result = result.replaceFirst("value", modifiers+" value").replaceAll("\\s+", " ");
 		return result;
 	}
+	
+	private static String normalizemodifier(String str) {
+		String[] tokens = str.trim().split("\\s+");
+		List<String> chunkedtokens = Arrays.asList(tokens);
+		String result = "";
+		Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
+		int base = 0;
+		Matcher m = modifierlist.matcher(str.trim());
+		while(m.matches()){
+			result += m.group(1);
+			int start = (m.group(1).trim()+" a").trim().split("\\s+").length+base-1; 
+			String l = m.group(2);
+			int end = start+(l.trim()+" b").trim().split("\\s+").length-1;
+			str = m.group(3);
+			m = modifierlist.matcher(str);
+			String newtoken = l.replaceAll("\\s+", "~");
+			result += newtoken;
+			base = end;
+			//adjust chunkedtokens
+			for(int i= start; i < end; i++){
+				chunkedtokens.set(i, "");
+			}
+			chunkedtokens.set(start, newtoken);
+		}
+		result +=str;
+		return result;
+	}
 	/**
 	 * @param args
 	 */
@@ -142,7 +169,8 @@ public class Test {
 		
 		System.out.println(
 		//t.addSentmod("{distal} (face)", "distal [basal leaf]")
-		t.combineModifiers("<character name=\"n\" modifier=\"a\" value=\"c\"/>")
+		//t.combineModifiers("<character name=\"n\" modifier=\"a\" value=\"c\"/>")
+		t.normalizemodifier("leaves shallowly to deeply pinnatifid, weekly to strongly angled")		
 		);
 		//String text = "that often do not overtop the heads";
 		//t.breakText(text);

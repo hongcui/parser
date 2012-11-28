@@ -18,6 +18,8 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
+
 public class CompareXML {
 
 	protected static Connection conn = null;
@@ -88,7 +90,7 @@ public class CompareXML {
 			}
 		}
 		catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -163,7 +165,7 @@ public class CompareXML {
 			dsccalcprecisionrecall();
 			
 		}catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -726,7 +728,7 @@ public class CompareXML {
 			
 		}catch(Exception e){
 			System.out.println(q);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -791,7 +793,7 @@ public class CompareXML {
 			stmt.execute("insert into precisionrecall values('avg',"+dessize+","+desseg+","+desstr+","+desch+","+desrel+",'"+dscpperfst+"','"+dscpexactst+"','"+dscppartialst+"','"+dscpreasonst+"','"+dscpperfch+"','"+dscpexactch+"','"+dscppartialch+"','"+dscpreasonch+"','"+dscpperfrel+"','"+dscpexactrel+"','"+dscppartialrel+"','"+dscpreasonrel+"'," +
 					"'"+dscrperfst+"','"+dscrexactst+"','"+dscrpartialst+"','"+dscrreasonst+"','"+dscrperfch+"','"+dscrexactch+"','"+dscrpartialch+"','"+dscrreasonch+"','"+dscrperfrel+"','"+dscrexactrel+"','"+dscrpartialrel+"','"+dscrreasonrel+"','0','0','0','0')");
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}

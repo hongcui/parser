@@ -13,6 +13,8 @@ import java.util.*;
 import java.io.*;
 
 import org.apache.log4j.Logger;
+
+import fna.parsing.ApplicationUtilities;
 @SuppressWarnings({ "unused" })
 class StreamGobbler extends Thread
 {
@@ -56,7 +58,7 @@ class StreamGobbler extends Thread
             }
         } catch (IOException ioe)
             {
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ioe.printStackTrace(pw);LOGGER.error(sw.toString());  
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ioe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());  
             }
     }
 

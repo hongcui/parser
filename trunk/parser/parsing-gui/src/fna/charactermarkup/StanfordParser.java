@@ -95,7 +95,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);			
 			stmt.close();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		tagger = new POSTagger4StanfordParser(conn, this.tableprefix, glosstable);
 	}
@@ -147,7 +147,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			rs.close();
 			out.close();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
 		}
 	}
@@ -199,8 +199,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 			//format
             if(headings.size() != trees.size()){
-            	System.err.println("Error reading parsing results");
-            	throw new Exception("Parsing error. System terminates.");
+            	throw new Exception("Error reading Stanford parsing results. Parsing error. System terminates.");
             }
             StringBuffer sb = new StringBuffer();
             for(int i = 0; i<headings.size(); i++){
@@ -212,7 +211,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             pw.flush();
             pw.close();			
 	  	}catch(Exception e){
-	  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	  		//throw e;
 	  	}
 	  	//out.close();
@@ -344,7 +343,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			rs.close();
     	}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
         }
     	//if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
@@ -692,7 +691,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", prefix);
 			tnc.collect();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}*/
 
 		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_posedsentences.txt";
@@ -713,7 +712,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 }
