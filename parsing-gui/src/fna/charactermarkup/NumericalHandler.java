@@ -20,6 +20,8 @@ import org.jdom.*;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
+import fna.parsing.ApplicationUtilities;
+
 /**
  * @author hongcui
  * chara rewrite of CharStateHandler in JDOM terms
@@ -827,8 +829,7 @@ public class NumericalHandler  {
  		}
 		catch (Exception e)
         {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
-    		System.err.println(e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 		
 		if(debug){
@@ -840,7 +841,7 @@ public class NumericalHandler  {
 					System.out.println(outputter.outputString(e));
 				}
 			}catch(Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		}
  		return innertagstate;

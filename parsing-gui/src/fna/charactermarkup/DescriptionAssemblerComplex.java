@@ -12,6 +12,8 @@ import java.io.*;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.ApplicationUtilities;
+
 
 @SuppressWarnings({  "unused" })
 public class DescriptionAssemblerComplex {
@@ -46,8 +48,7 @@ public class DescriptionAssemblerComplex {
             }
             this.fileLengthIndexes =fileLenIndexes.toString();
         }catch(Exception e){
-        	System.err.println(e);
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }        
     }
 
@@ -142,7 +143,7 @@ public class DescriptionAssemblerComplex {
 			}
     	}catch (Exception e)
         {
-    		System.err.println(e);
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
     	return charstates;
 	}
@@ -166,7 +167,7 @@ public class DescriptionAssemblerComplex {
            s.println (content);
            s.close();
         }catch (Exception e){
-           System.err.println ("Error writing to file "+save2dir+filename);
+        	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
     }
 
@@ -194,8 +195,7 @@ public class DescriptionAssemblerComplex {
             name = name.replaceAll("_+", "_").replaceFirst("_$", "");
             return name+".xml";
         }catch(Exception e){
-        	System.err.println(e);
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
         return null;
     }
@@ -209,8 +209,7 @@ public class DescriptionAssemblerComplex {
         try{
             da.dump2disk();
         }catch(Exception e){
-        	System.err.println(e);
-            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
     }
 

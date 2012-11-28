@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.ApplicationUtilities;
+
 public class MarkedSentGenerator_notinuse {
 	static protected Connection conn = null;
 	static protected String database = null;
@@ -38,7 +40,7 @@ public class MarkedSentGenerator_notinuse {
 			}
 		}
 		catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 

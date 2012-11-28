@@ -22,6 +22,7 @@ import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.state.WordNetWrapper;
 
 /**
@@ -132,7 +133,7 @@ public class SentenceChunker4StanfordParser {
 			SentenceChunker4StanfordParser.Vpath = XPath.newInstance(Vpathstr);
 			SentenceChunker4StanfordParser.NNpath = XPath.newInstance(NNpathstr);			
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -201,7 +202,7 @@ public class SentenceChunker4StanfordParser {
 		ChunkedSentence cs = new ChunkedSentence(this.sentindex , tree, treecp, this.markedsent, this.sentsrc, this.tableprefix,this.conn, this.glosstable/*, this.taxonnamepattern1, this.taxonnamepattern2*/);
 		return cs;
 			}catch(Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				throw e;
 			}
 	}
@@ -272,7 +273,7 @@ end procedure
 				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -302,7 +303,7 @@ end procedure
 				collapseElement(SBAR, allText(SBAR), "s");
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -375,7 +376,7 @@ end procedure
 				WHEN.setName("WHENCLS");
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	/**
@@ -575,7 +576,7 @@ end procedure
 					trueVP = true;
 				}
 			}catch(Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 			if(trueVP){
 				if(this.printPP){
@@ -692,8 +693,8 @@ end procedure
 			String inname = in.getAttributeValue("text");
 			if(e.getName().startsWith("NP") && e.getAttributeValue("text") != null){
 				String fnp = e.getAttributeValue("text");
-				if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-				else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+				if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+				else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 				return fnp.trim();
 			}
 			//boolean inPRN = false;
@@ -723,8 +724,8 @@ end procedure
 								String fnp = all.substring(0, index)+n;
 								if(containsUnmatchedBrackets(fnp)) return "";
 								if(inname.equals("to") && fnp.indexOf(",")>=0 && (fnp.indexOf(",") < fnp.indexOf("-LRB-") && fnp.indexOf(",") > fnp.indexOf("-RRB-"))) return ""; //in cases like "imbricate to subequal , bases entire", "to" is not a prep, so fnp "subequal , bases" is ignored ; "," must be outside of ()
-								if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-								else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+								if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+								else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 								return fnp.trim();
 							}
 							
@@ -750,8 +751,8 @@ end procedure
 						//if(inPRN == inPRN((Element)c)){
 						if(inSamePRN(e, (Element)c)){
 							String fnp = ((Element)c).getAttributeValue("text");;
-							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-							else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+							else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 							if(containsUnmatchedBrackets(fnp)) return "";
 							return fnp.trim();
 						}
@@ -760,8 +761,8 @@ end procedure
 						//if(inPRN == inPRN((Element)c)){
 						if(inSamePRN(e, (Element)c)){
 							String fnp = ((Element)c).getAttributeValue("text");
-							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) System.err.println(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 							
-							else if(inname.equals("to")) System.err.println(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 							
+							else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 							if(containsUnmatchedBrackets(fnp)) return "";
 							return fnp.trim();
 						}
@@ -801,7 +802,7 @@ end procedure
 	private boolean inSamePRN(Element e1, Element e2){
 		Iterator<Content> it = e1.getDescendants();
 		if(e1==e2) {
-			System.err.println("not possible");
+			LOGGER.error("not possible");
 			System.exit(1);
 		}
 		int left = 0;
@@ -1335,7 +1336,7 @@ end procedure
 				}
 			}
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -1435,7 +1436,7 @@ end procedure
 				}
 			}
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -1512,7 +1513,7 @@ end procedure
 					String pos = ((Element)cont).getName();
 					if(pos.compareToIgnoreCase("PUNCT") != 0){
 						if(this.tokensinsent[c].compareToIgnoreCase(word)!=0){
-							System.err.println(c+"th token in sentence does not match that in the tree");
+							LOGGER.error(c+"th token in sentence does not match that in the tree");
 							System.exit(1);
 						}
 						if(this.posoftokens[c].compareTo("") !=0 && this.posoftokens[c].compareToIgnoreCase(pos)!=0){

@@ -22,6 +22,7 @@ import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.state.SentenceOrganStateMarker;
 
 
@@ -138,7 +139,7 @@ public class ChunkedSentence {
 				nouns.add(rs.getString("term")); //initialize nouns with "size", "color", etc.
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 		this.sentsrc = sentsrc;
@@ -1858,7 +1859,7 @@ public class ChunkedSentence {
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
-				LOGGER.error(sw.toString());
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		}
 		
@@ -1935,7 +1936,7 @@ public class ChunkedSentence {
 							return null;
 						}
 					}catch(Exception e){
-						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
 				}
 			}
@@ -2148,7 +2149,7 @@ public class ChunkedSentence {
 						return new SimpleCharacterState(result.replaceAll("[<>]", "").trim());
 					}
 				}catch(Exception e){
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 			}
 		}
@@ -2600,7 +2601,7 @@ parallelism scope: q[other chunks]
 			}*/
 		}
 		catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 		if(senttag.compareTo("ignore")!=0){

@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 
+import fna.parsing.ApplicationUtilities;
+
 
 /**
  * @author hongcui
@@ -73,7 +75,7 @@ public class Tree2XML {
 			doc = builder.build(bais);
 			return doc;
 		} catch (Exception e) {
-	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+	      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	      System.out.print("Problem parsing the xml: \n" + xml+"\n"+e.toString());
 	      throw e;
 		}
@@ -123,12 +125,12 @@ public class Tree2XML {
     		}
     	}    	
     	if(tokens.size()>0){
-    		System.err.println("error reading xml");
+    		LOGGER.error("error reading xml");
     		System.exit(2);
     	}
        	return xml.toString();
     	}catch (Exception e){
-    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
     		throw e;
     	}
     }
