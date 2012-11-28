@@ -17,6 +17,8 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 
+import fna.parsing.ApplicationUtilities;
+
 /**
  * first run dehypenizer, then run unsupervised.pl, 
  * run on untagged sentences/originalsent
@@ -135,7 +137,7 @@ public class StateCollector  {
 				stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 			
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable, true, display, charLog);//tag organ names
@@ -386,7 +388,7 @@ public class StateCollector  {
 				tags.append(tag+"|");
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return tags.toString()+glossary.getAllCharacters();
 	}*/
@@ -458,7 +460,7 @@ public class StateCollector  {
 			sentences.put(source, taggedsent); //do this in addClause
 		}
 	}catch (Exception e){
-		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	}
 }
 */
@@ -505,7 +507,7 @@ public class StateCollector  {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		//StateCollector sc = new StateCollector(conn, "fnav19", "fnaglossaryfixed");
 		//sc.collect();

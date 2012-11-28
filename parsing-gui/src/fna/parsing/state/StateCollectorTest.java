@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+
+import fna.parsing.ApplicationUtilities;
 /**
  * DO NOT treat a list of states, such as imbricate, lanceolate or ovate because it is common for an author to enumerate different characters in a list
  * Treat only states connected by or/to, such as /{elliptic} to {oblong}/ or {ovate}, {glabrous} or /{villous} to {tomentose}/, clasping or short_decurrent,  
@@ -223,7 +225,7 @@ public class StateCollectorTest extends StateCollector {
 					return false;
 				}
 			}catch (Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 			
 		}else{
@@ -253,7 +255,7 @@ public class StateCollectorTest extends StateCollector {
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}	
 		StateCollectorTest sct = new StateCollectorTest(conn, "fnav19", false, "fnaglossaryfixed", null, null); /*using learned semanticroles only*/
 		sct.collect();
