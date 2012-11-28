@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import fna.parsing.ApplicationUtilities;
+
 @SuppressWarnings({ "unused" })
 public class CharacterMarkup {
 	static protected Connection conn = null;
@@ -74,7 +76,7 @@ public class CharacterMarkup {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
-			LOGGER.error(sw.toString());
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}
@@ -170,7 +172,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -264,7 +266,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -310,7 +312,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -381,7 +383,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -638,7 +640,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 		
@@ -894,7 +896,7 @@ public class CharacterMarkup {
 			
 		}catch (Exception e)
         {
-    		System.err.println(e);
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -956,7 +958,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -1009,7 +1011,7 @@ public class CharacterMarkup {
 		}
 		catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -1033,7 +1035,7 @@ public class CharacterMarkup {
 		}
 		catch (Exception e)
         {
-            		System.err.println(e);
+            		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -1090,7 +1092,7 @@ public class CharacterMarkup {
 		}
         catch (Exception e)
         {
-            		System.err.println(e);
+            		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -1123,7 +1125,7 @@ public class CharacterMarkup {
 		}
 		catch (Exception e)
         {
-            		System.err.println(e);
+            		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	
@@ -1216,7 +1218,7 @@ public class CharacterMarkup {
 	}
     catch (Exception e)
     {
-    		System.err.println(e);
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
     }
 }
 
@@ -1246,7 +1248,7 @@ protected void patterns(){
 	}
     catch (Exception e)
     {
-    		System.err.println(e);
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
     }
 }*/
 	
@@ -1293,7 +1295,7 @@ protected void patterns(){
 		}
         catch (Exception e)
         {
-        		System.err.println(e);
+        		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}*/
 	
@@ -1370,7 +1372,7 @@ protected void patterns(){
 
 		}catch (Exception e)
         {
-    		System.err.println(e);
+    		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
         }
 	}
 	

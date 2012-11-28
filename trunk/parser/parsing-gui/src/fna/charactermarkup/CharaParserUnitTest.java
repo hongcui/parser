@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import characterAnnotation.SplitAnnotationOutput;
 
+import fna.parsing.ApplicationUtilities;
 import fna.parsing.state.SentenceOrganStateMarker;
 
 /**
@@ -136,7 +137,7 @@ public class CharaParserUnitTest {
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
-			LOGGER.error(sw.toString());
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		//parsing
 		parsing(conn, database, gloss, prefix, posedfile, parsedfile);
@@ -164,7 +165,7 @@ public class CharaParserUnitTest {
 			sp.extracting();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -248,7 +249,7 @@ public class CharaParserUnitTest {
 				}
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
 	}
