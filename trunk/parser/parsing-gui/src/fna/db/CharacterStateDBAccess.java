@@ -31,7 +31,7 @@ public class CharacterStateDBAccess {
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 		} catch (ClassNotFoundException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} 
 	}
 	
@@ -39,7 +39,7 @@ public class CharacterStateDBAccess {
 		try{
 			this.conn = DriverManager.getConnection(url);
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		this.prefix = prefix;
 		this.glossarytable = glossarytable;
@@ -73,7 +73,7 @@ public class CharacterStateDBAccess {
 				
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getDecisionCategory", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		} finally {
 			if (rset != null) {
@@ -113,7 +113,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 				
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getDecisionCategory", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		} finally {
 			if (rset != null) {
@@ -168,7 +168,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getTerms", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		}
 		
@@ -215,7 +215,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 						
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getTerms", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		} finally {
 			if (rset != null) {
@@ -278,7 +278,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTerms", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			
 		} finally {
 			
@@ -311,7 +311,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			}
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getDecision", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();
@@ -347,7 +347,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:getProcessedGroups", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (rset != null) {
 				rset.close();
@@ -386,7 +386,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveDecision", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (pstmt != null) {
 				pstmt.close();
@@ -428,7 +428,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTermCategory", exe);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} 
 		return true;
 		

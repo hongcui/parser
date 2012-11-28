@@ -45,7 +45,7 @@ public class VolumeTransformerDbAccess {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -72,7 +72,7 @@ public class VolumeTransformerDbAccess {
 			stmt = conn.createStatement();
 			stmt.execute("insert into "+taxonTableName+" values ('"+taxonnumber+"', '"+name+"', '"+rank+"', '"+index+"')");
 		}catch (SQLException e) {
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , e);
 		} finally {
 			if (stmt != null) {
@@ -98,7 +98,7 @@ public class VolumeTransformerDbAccess {
 				stmt.execute("insert into " +authorTableName +"  values ('"+authority+"')");
 			}
 		} catch (SQLException sqlexe) {
-			LOGGER.error("Couldn't update in VolumeTransformerDbAccess:add2AuthorTable", sqlexe);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);sqlexe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 		} finally {
 			
@@ -128,7 +128,8 @@ public class VolumeTransformerDbAccess {
 					publicationTableName + "  values ('"+publication+"')");
 			}
 		} catch (SQLException sqlexe) {
-			LOGGER.error("Couldn't update in VolumeTransformerDbAccess:add2AuthorTable", sqlexe);
+			//LOGGER.error("Couldn't update in VolumeTransformerDbAccess:add2AuthorTable", sqlexe);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);sqlexe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 			
 		}  finally {

@@ -60,7 +60,7 @@ public class VolumeMarkupDbAccessor {
     			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
     			conn = DriverManager.getConnection(url);
     	} catch (Exception e) {
-    			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+    			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
     	}
     		
 	
@@ -120,7 +120,7 @@ public class VolumeMarkupDbAccessor {
 			return deduplicateSort(tagList);
 		} catch (SQLException e) {
 			//LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:updateData", sqlexe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , e);
 		} finally {
 			if (rs != null) {
@@ -185,7 +185,7 @@ public class VolumeMarkupDbAccessor {
 			return this.deduplicateSort(curationList);
 		} catch (SQLException e) {
 			//LOGGER.error("Couldn't update sentence table in VolumeMarkupDbAccessor:contentTerms4Curation", sqlexe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , e);
 		} finally {
 			if (rs != null) {
@@ -218,7 +218,7 @@ public class VolumeMarkupDbAccessor {
 				curationList.add(word);
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 
@@ -263,7 +263,7 @@ public class VolumeMarkupDbAccessor {
 			}
 			words = deduplicateSort(words);
 		} catch (SQLException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if(rset != null) {
 				rset.close();
@@ -310,7 +310,7 @@ public class VolumeMarkupDbAccessor {
 						words.add(wc);
 					}
 				} catch (SQLException e) {
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
 		}
 	}
@@ -329,7 +329,7 @@ public class VolumeMarkupDbAccessor {
 				stmt.execute("insert into "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+"(word, semanticrole) values ('"+w+"','"+role+"')");
 			}
 		} catch (SQLException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}				
 	}
 
@@ -397,7 +397,7 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 				}	
 			}			
 		} catch (SQLException e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if(rset != null) {
 				rset.close();
@@ -418,7 +418,7 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 			Statement stmt = conn.createStatement();
 			stmt.execute("insert into "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS")+"(term, type) values ('"+term+"','"+type+"')");
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
@@ -431,7 +431,7 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 				originals.add(rs.getString("originalsent"));
 			}
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return originals;
 	}

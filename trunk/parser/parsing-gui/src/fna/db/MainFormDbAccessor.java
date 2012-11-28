@@ -72,7 +72,7 @@ public class MainFormDbAccessor {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} 
 	}
 	
@@ -84,7 +84,7 @@ public class MainFormDbAccessor {
 			stmt.execute("create table if not exists "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+" (term varchar(100) not null, source varchar(200), savedid varchar(40))");
 			stmt.close();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	/**
@@ -107,7 +107,7 @@ public class MainFormDbAccessor {
 			}			
 		}catch(Exception e){
 			//LOGGER.error("Couldn't update wordpos table in MainFormDbAccessor:changePOStoB", sqlexe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , e);
 		}
 	}
@@ -136,7 +136,7 @@ public class MainFormDbAccessor {
 				}
 		} catch (SQLException sqlexe) {
 			//LOGGER.error("Couldn't update sentence table in MainFormDbAccessor:removeMarkUpData", sqlexe);
-			//sqlStringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);sqlexe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Error Accessing the database" , sqlexe);
 			
 		} /*catch (ClassNotFoundException clexe) {
@@ -185,7 +185,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:loadTagsData", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:loadTagsData", clex);
@@ -244,7 +244,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:loadTagsTableData", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:loadTagsTableData", clex);
@@ -306,7 +306,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:updateContextData", clex);
@@ -373,7 +373,7 @@ public class MainFormDbAccessor {
 
 		} catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:saveTagData", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} finally {
 			if (rs != null) {
@@ -410,7 +410,7 @@ public class MainFormDbAccessor {
 			}
 		}catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} finally {
 			if (rset != null) {
@@ -463,7 +463,7 @@ public class MainFormDbAccessor {
 			}
 		}catch (SQLException exe) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", exe);
 		} finally {
 			if (rset != null) {
@@ -502,7 +502,7 @@ public class MainFormDbAccessor {
 		}
 	}catch (SQLException exe) {
 		//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:datasetPrefixRetriever", exe);
-		//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		throw new ParsingException("Failed to execute the statement.", exe);
 	} finally {
 		if (rset != null) {
@@ -550,7 +550,7 @@ public class MainFormDbAccessor {
 			}
 			
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			
 			if (stmt != null) {
@@ -688,7 +688,7 @@ public class MainFormDbAccessor {
 				}
 			}
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			
 			if (rset != null) {
@@ -753,7 +753,7 @@ public class MainFormDbAccessor {
 			stmt.executeUpdate();
 			
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			
 			if (stmt != null) {
@@ -784,7 +784,7 @@ public class MainFormDbAccessor {
 			pstmt.executeBatch();
 			
 		} catch (SQLException e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (pstmt != null) {
 				pstmt.close();
@@ -816,7 +816,7 @@ public class MainFormDbAccessor {
 				}
 			}
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			
 			if (rset != null) {
@@ -867,7 +867,7 @@ public class MainFormDbAccessor {
 			}
 			//stmt.executeBatch();
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			
 			if (pstmt != null) {
@@ -924,7 +924,7 @@ public class MainFormDbAccessor {
 			}
 			pstmt.executeBatch();
 		} catch (SQLException e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			if (pstmt != null) {
 				pstmt.close();
@@ -946,7 +946,7 @@ public class MainFormDbAccessor {
 			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS"));
 			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS")+ " (word varchar(50), type varchar(20), primary key(word))");			
 		} catch (SQLException e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			try{
 			if (stmt != null) {
@@ -958,7 +958,7 @@ public class MainFormDbAccessor {
 			//}		
 			}catch(Exception e){
 				LOGGER.error("Exception in MainFormDbAccessor", e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 			
 		}
@@ -976,7 +976,7 @@ public class MainFormDbAccessor {
 			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE"));
 			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2), savedid varchar(40), primary key(word, semanticrole))");			
 		} catch (SQLException e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
 			try{
 			if (stmt != null) {
@@ -988,7 +988,7 @@ public class MainFormDbAccessor {
 			//}		
 			}catch(Exception e){
 				LOGGER.error("Exception in MainFormDbAccessor", e);
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 			
 		}
@@ -1043,7 +1043,7 @@ public class MainFormDbAccessor {
 			context.setStyleRanges(srs.toArray(new StyleRange[]{}));
 		} catch (SQLException e) {
 			//LOGGER.error("Couldn't execute db query in MainFormDbAccessor:updateContextData", exe);
-			//StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException("Failed to execute the statement.", e);
 		} /*catch (ClassNotFoundException clex) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:updateContextData", clex);
@@ -1104,7 +1104,7 @@ public class MainFormDbAccessor {
 				count++;
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return count;
 	}
