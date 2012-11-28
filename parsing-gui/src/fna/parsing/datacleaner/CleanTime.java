@@ -12,6 +12,8 @@ import java.util.List;
 import org.jdom.Element;
 import org.jdom.xpath.XPath;
 
+import fna.parsing.ApplicationUtilities;
+
 /**
  * @author hongcui
  *
@@ -55,7 +57,7 @@ public class CleanTime extends DataCleaner{
 				}
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return root;
 	}
