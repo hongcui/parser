@@ -744,14 +744,14 @@ public class MainForm {
 
 		//upload terms to OTO checkbox
 		uploadTerm = new Button(grpCreateANew, SWT.CHECK);
-		uploadTerm.setBounds(355, 134, 300, 23);
+		uploadTerm.setBounds(23, 160, 300, 23);
 		uploadTerm.setText(ApplicationUtilities.getProperty("upload2OTO"));
 		uploadTerm.setSelection(false);
 		
 		
 		//contain indexed part: rib 5 => the fifth rib
 		containIndexedParts = new Button(grpCreateANew, SWT.CHECK);
-		containIndexedParts.setBounds(23, 180, 700, 23);
+		containIndexedParts.setBounds(23, 200, 700, 23);
 		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts"));
 		containIndexedParts.setSelection(false);
 		

@@ -139,7 +139,7 @@ public class StateCollector  {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		
+					
 		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(this.conn, this.tableprefix, this.glosstable, true, display, charLog);//tag organ names
 		this.sentences = sosm.markSentences();
 		parseSentences();//create StateGroups 

@@ -361,7 +361,7 @@ public class VolumeTransformer extends Thread {
 			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 			
 			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
-			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
 			tnc.collect();
 			
 		} catch (Exception e) {

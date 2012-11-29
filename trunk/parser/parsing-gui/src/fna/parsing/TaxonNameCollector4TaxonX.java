@@ -141,7 +141,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 				conn = DriverManager.getConnection(URL);
 			}
 			String transformeddir = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\transformed";
-			String outputtablename = "plazi_8538_taxonames";
+			String outputtablename = "plazi_8538_taxonnames";
 			String volume = "plazi_8538";
 			TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(conn, transformeddir, outputtablename, volume);
 			tnc.collect4TaxonX();
