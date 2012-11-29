@@ -744,7 +744,7 @@ public class MainForm {
 
 		//upload terms to OTO checkbox
 		uploadTerm = new Button(grpCreateANew, SWT.CHECK);
-		uploadTerm.setBounds(23, 160, 300, 23);
+		uploadTerm.setBounds(23, 170, 300, 23);
 		uploadTerm.setText(ApplicationUtilities.getProperty("upload2OTO"));
 		uploadTerm.setSelection(false);
 		
@@ -752,8 +752,13 @@ public class MainForm {
 		//contain indexed part: rib 5 => the fifth rib
 		containIndexedParts = new Button(grpCreateANew, SWT.CHECK);
 		containIndexedParts.setBounds(23, 200, 700, 23);
-		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts"));
+		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts1"));
 		containIndexedParts.setSelection(false);
+		
+		Label part2 = new Label(grpCreateANew, SWT.NONE);
+		part2.setBounds(50, 225, 700, 23);
+		part2.setText(ApplicationUtilities.getProperty("ContainIndexedParts2"));
+		
 		
 		/*controls for reloading and resuming the last project */
 /*		Group grpContinueWithThe = new Group(composite, SWT.NONE);
