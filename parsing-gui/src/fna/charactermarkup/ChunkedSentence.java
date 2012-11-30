@@ -1119,13 +1119,20 @@ public class ChunkedSentence {
 					if(token.matches(".*?\\bmore\\b.*")){
 						more = "more";
 					}else if(token.matches(".*?\\b\\w+er\\b.*")){
-						more = "er";
+						if(token.matches("^rather\\s*")){ //To prevent matching rather than.
+							more = "rather";
+						}else{
+							more = "er";
+						}
+						
+						
 					}
 				}else if(more.compareTo("er") == 0 && !token.matches(".*?\\b(\\w+er|more|less|and|or|than)\\b.*") ){
 					more = "";
 					firstmorei = this.chunkedtokens.size();;
 				}
-				if(token.matches(".*?\\bthan\\b.*")){
+				//if(token.matches(".*?\\bthan\\b.*")){
+				if(token.matches(".*?\\bthan\\b.*")&&!more.contains("rather")){
 					//needs normalization
 					thani = i;
 					if(firstmorei == thani){
@@ -2475,6 +2482,12 @@ parallelism scope: q[other chunks]
 				}
 			}//Case A n[wider than long]
 			else{
+				//mohan special case if charainfo is null//
+			/*	if(charainfo==null)
+				{
+					charainfo="".split("\\s");
+				}*/
+				//End mohan case
 				token = "n["+token.replaceFirst("n\\[", charainfo[0]+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHANC"; //character

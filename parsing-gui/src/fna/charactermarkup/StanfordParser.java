@@ -681,33 +681,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\transformed";
 		*/
 		
-		/*try{
-			Connection conn = null;
-			if(conn == null){
-				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
-				conn = DriverManager.getConnection(URL);
-			}
-			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, prefix+"_taxonnames", prefix);
-			tnc.collect();
-		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}*/
 
-		//String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_posedsentences.txt";
-		//String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\v19\\target\\fnav19_parsedsentences.txt";
 
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav5", "fnaglossaryfixed", false);
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "plazi_ant_first", "antglossaryfixed", false);
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "fnav19", "fnaglossaryfixed", false);
-
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, "treatiseh", "treatisehglossaryfixed", false);
 
 
-//		sp.POSTagging();
-//		sp.parsing();
+
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
