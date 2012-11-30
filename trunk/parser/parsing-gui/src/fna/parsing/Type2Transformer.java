@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.channels.FileChannel;
+import java.sql.DriverManager;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -106,8 +107,11 @@ public class Type2Transformer extends Thread {
 				listener.progress((i+1)*100/total);
 				listener.info((i)+"", f.getName()); 
 			}
-			
-			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+			if(MainForm.conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			}
+			String transformeddir = Registry.TargetDirectory+"transformed\\";
 			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
 			tnc.collect();
 		}catch(Exception e){

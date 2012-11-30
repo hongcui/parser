@@ -1312,11 +1312,12 @@ public class MainForm {
 		startTransformationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				transformationTable.removeAll();
+				
 				if(type.equals("")) {
 					startTransformation(); // start the transformation process
 				} 
 				else if (type.equals("type2")) {
-					startType2Transformation(); // When the doc selected is type 4
+					startType2Transformation(); // When the doc selected is type 2
 				}				
 				else if (type.equals("type3")) {
 					startType3Transformation(); // start pre-mark up process

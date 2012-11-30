@@ -360,6 +360,11 @@ public class VolumeTransformer extends Thread {
 			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
 			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
 			
+			if(MainForm.conn == null){
+				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+			}
+
 			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
 			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
 			tnc.collect();
