@@ -124,7 +124,7 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 			if (variety!=null) varietystr = variety.getTextNormalize().toLowerCase();
 			values.put("variety", varietystr);
 			insertIntoFilename2TaxonTable();
-			values = new Hashtable<String, String>();
+			resetValues();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
