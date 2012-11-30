@@ -87,8 +87,9 @@ public class SentenceOrganStateMarker {
 				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
 				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
 				if(colors==null){
-					colors = this.colorsFromGloss();
-					colors += "|shades_of";
+					colors = this.colorsFromGloss().trim();
+					if(colors.length()==0) colors += "shades_of";
+					else colors += "|shades_of";
 					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
 					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
 				}
@@ -103,9 +104,9 @@ public class SentenceOrganStateMarker {
 				}
 				if(taxonnames!=null && taxonnames.length()!=0){
 					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
-					this.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
+					SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
 					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
-					this.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
+					SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
 
 				}
 
@@ -186,7 +187,8 @@ public class SentenceOrganStateMarker {
 	private String markTaxonNames(String text) {
 		//markup taxon names
 		//formatting taxon names m . chamissoi => m-name-chamissoi
-		Matcher m = SentenceOrganStateMarker.taxonnamepattern2.matcher(text);
+		if(taxonnamepattern2==null) return text; 
+		Matcher m = taxonnamepattern2.matcher(text);
 		String remain = text;
 		while(m.matches()){
 			String name = (m.group(1)==null? "" : m.group(1))+m.group(2);
