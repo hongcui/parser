@@ -4,12 +4,15 @@
 package fna.parsing;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -23,6 +26,15 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
+
+import conversion.DescriptionParser;
+import conversion.TaxonCharacterMatrix;
+import dao.FilenameTaxonDao;
+
+import taxonomy.ITaxon;
+import taxonomy.SubTaxonException;
+import taxonomy.TaxonHierarchy;
+import taxonomy.TaxonRank;
 
 import fna.charactermarkup.SentenceChunker4StanfordParser;
 import fna.charactermarkup.StanfordParser;
@@ -70,6 +82,7 @@ public class VolumeFinalizer extends Thread {
 		//if(!standalone) listener.setProgressBarVisible(true);
 		try{
 			outputFinal();
+			if(MainForm.createMatrix) createMatrix();
 		}catch(Exception e){
 			this.showOutputMessage(e.toString());
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -99,20 +112,129 @@ public class VolumeFinalizer extends Thread {
         
         else//Should add the code to generate the files and uploading and executing it here in the else loop.
         {
-/*<<<<<<< .mine
-        	System.out.println("Uploading data to the ONTNEW WEBSITE");
-        	//UploadData ud = new UploadData(dataPrefix);
-=======*/
        		if(!standalone){
        			this.showOutputMessage("System is done with annotating files.");
        			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final\\");
        		}
-       		//System.out.println("Uploading data to the ONTNEW WEBSITE");
-        	//UploadData ud = new UploadData(dataPrefix); //moved to step 5
-//>>>>>>> .r1182
         }
     }
+    private void createMatrix() {
+    	//check file names to determine top and lower taxon rank
+  		if(!standalone){
+   			this.showOutputMessage("\n System is generating a taxon-character matrix from annotated files");
+      	}
+
+    	Object[] rankrange = getTaxonRankRange();
+		TaxonHierarchy th = makeHierarchyTwoLevel((String)rankrange[0], (TaxonRank)rankrange[1], (TaxonRank)rankrange[2]);
+		th.printSimple();
+		TaxonCharacterMatrix matrix = new TaxonCharacterMatrix(th);
+		matrix.generateMatrixFile(Registry.TargetDirectory+rankrange[0]+"matrix.txt");
+  		if(!standalone){
+   			this.showOutputMessage("The taxon-character matrix is saved in "+Registry.TargetDirectory+rankrange[0]+"matrix.txt");
+   		}
+	}
+
     /**
+     * assume file names indicate the sequence in original description
+     * assume all file names belong to the same highest rank.
+     * @return object[0] taxon name of the taxon with the highest rank, 
+     *         object[1] the highest rank
+     *         object[2] the lowest rank
+     */
+	private Object[] getTaxonRankRange() {
+		ArrayList<String> ranks = new ArrayList<String>();
+		ranks.add("domain");
+		ranks.add("kingdom");
+		ranks.add("phylum");
+		ranks.add("subphylum");
+		ranks.add("superdivision");
+		ranks.add("division");
+		ranks.add("subdivision");
+		ranks.add("superclass");
+		ranks.add("class");
+		ranks.add("subclass");
+		ranks.add("superorder");
+		ranks.add("order");
+		ranks.add("suborder");
+		ranks.add("superfamily");
+		ranks.add("family");
+		ranks.add("subfamily");
+		ranks.add("tribe");
+		ranks.add("subtribe");
+		ranks.add("genus");
+		ranks.add("subgenus");
+		ranks.add("section");
+		ranks.add("subsection");
+		ranks.add("species");
+		ranks.add("subspecies");
+		ranks.add("variety");
+		
+		
+		
+		Object[] results = new Object[]{};
+		File[] files = (new File(Registry.TargetDirectory+"final")).listFiles();
+		int[] filenames = new int[files.length];
+		//from 1.xml 10.xml, 100.xml ...
+		
+		int i = 0;
+		for(File file: files){
+			filenames[i++]= Integer.parseInt(file.getName().replace(".xml", ""));
+		}
+		//to 1, 2, 3, 4
+		Arrays.sort(filenames); 
+		
+		try{
+			Statement stmt = conn.createStatement();
+			ResultSet rs = null;
+			//look for the highest rank
+			for(String rank: ranks){
+				rs = stmt.executeQuery("select "+rank+" from "+this.dataPrefix+"_filename2taxon where length("+rank+")>0");
+				if(rs.next()){
+					results[0] = rs.getString(rank);
+					results[1] = TaxonRank.valueOf(rank);
+					break; //found highest rank
+				}
+			}
+			//look for the lowest rank
+			for(i = ranks.size()-1; i >=0; i--){
+				rs = stmt.executeQuery("select "+ranks.get(i)+" from "+this.dataPrefix+"_filename2taxon where length("+ranks.get(i)+")>0");
+				if(rs.next()){
+					results[2] = rs.getString(ranks.get(i));
+					break; //found highest rank
+				}
+			}		
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		return results;
+	}
+
+	private TaxonHierarchy makeHierarchyTwoLevel(String topName, TaxonRank topRank, TaxonRank bottomRank) {
+		FilenameTaxonDao dao = new FilenameTaxonDao();
+		System.out.println("Making hierarchy for family: " + topName);
+		DescriptionParser parser = new DescriptionParser(topName, topRank);
+		ITaxon taxon = parser.parseTaxon();
+		String rankTop = dao.getFilenameForDescription(topRank, topName);
+		List<String> rankLower = dao.getFilenamesForManyDescriptions(topRank, topName, bottomRank);
+		rankLower.remove(rankTop);
+		TaxonHierarchy h = new TaxonHierarchy(taxon);
+		DescriptionParser bottomParser;
+		for(String s : rankLower) {
+			String bottomName = dao.getTaxonValues(s).get(bottomRank.toString().toLowerCase());
+			System.out.println("Bottom name: " + bottomName);
+			bottomParser = new DescriptionParser(bottomName, bottomRank);
+			ITaxon bottomTaxon = bottomParser.parseTaxon();
+			try {
+				h.addSubTaxon(bottomTaxon);
+			}
+			catch (SubTaxonException e) {
+				//System.out.println(e.getMessage());
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
+		}
+		return h;
+	}
+	/**
      * stanford parser
      * @throws ParsingException
      */

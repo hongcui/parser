@@ -158,8 +158,10 @@ public class MainForm {
 	public static Combo dataPrefixCombo;
 	public static Combo glossaryPrefixCombo;
 	public static Button uploadTerm;
+	public static Button generateMatrix;
 	public static Button containIndexedParts;
 	public static boolean upload2OTO; 
+	public static boolean createMatrix;
 	public static boolean containindexedparts;
 	/* This Group belongs to Markup Tab -> Others tab*/
 	//private Group termRoleGroup;
@@ -644,15 +646,15 @@ public class MainForm {
 		}
 		
 		CLabel lblSelectA = new CLabel(composite, SWT.NONE);
-		lblSelectA.setBounds(20, 37, 288, 21);
+		lblSelectA.setBounds(20, 32, 288, 21);
 		lblSelectA.setText(ApplicationUtilities.getProperty("labelSelectProject"));
 		
 		projectDirectory = new Text(composite, SWT.BORDER);
 		projectDirectory.setToolTipText(ApplicationUtilities.getProperty("chooseDirectoryTooltip"));
-		projectDirectory.setBounds(33, 70, 586, 21);
+		projectDirectory.setBounds(33, 60, 586, 21);
 		
 		final Button browseConfigurationButton = new Button(composite, SWT.NONE);
-		browseConfigurationButton.setBounds(624, 70, 100, 23);
+		browseConfigurationButton.setBounds(624, 60, 100, 23);
 		browseConfigurationButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				browseConfigurationDirectory(); // browse the configuration directory
@@ -681,6 +683,7 @@ public class MainForm {
 				saveProject(); 
 				saveFlag = false;
 				if(uploadTerm.getSelection()) upload2OTO = true;
+				if(generateMatrix.getSelection()) createMatrix = true;
 				if(containIndexedParts.getSelection()) containindexedparts = true;
 				try {
 					int option_chosen =getType(type); 
@@ -708,13 +711,13 @@ public class MainForm {
 
 		//dataPrefix combo										
 		combo = new Combo(grpCreateANew, SWT.NONE);
-		combo.setBounds(23, 134, 138, 23);
+		combo.setBounds(23, 109, 138, 23);
 		combo.setToolTipText(ApplicationUtilities.getProperty("application.dataset.instruction"));
 		dataPrefixCombo = combo;
 		combo.setItems(prefixes);
 														
 		CLabel label = new CLabel(grpCreateANew, SWT.NONE);
-		label.setBounds(23, 100, 344, 21);
+		label.setBounds(23, 80, 344, 21);
 		label.setText(ApplicationUtilities.getProperty("datasetprefix"));
 		combo.addModifyListener(new ModifyListener() {
 			public void modifyText(final ModifyEvent me) {
@@ -738,28 +741,33 @@ public class MainForm {
 
 		//glossary combo
 		Combo glossaryCombo = new Combo(grpCreateANew, SWT.NONE);
-		glossaryCombo.setBounds(199, 134, 138, 23);
+		glossaryCombo.setBounds(199, 109, 138, 23);
 		glossaryCombo.setItems(glossprefixes);
 		glossaryPrefixCombo = glossaryCombo;
 
+		//contain indexed part: rib 5 => the fifth rib
+		containIndexedParts = new Button(grpCreateANew, SWT.CHECK);
+		containIndexedParts.setBounds(23, 140, 730, 23);
+		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts"));
+		containIndexedParts.setSelection(false);
+		
+		/*Label part2 = new Label(grpCreateANew, SWT.NONE);
+		part2.setBounds(50, 225, 700, 23);
+		part2.setText(ApplicationUtilities.getProperty("ContainIndexedParts2"));*/
+		
+	
 		//upload terms to OTO checkbox
 		uploadTerm = new Button(grpCreateANew, SWT.CHECK);
-		uploadTerm.setBounds(23, 170, 300, 23);
+		uploadTerm.setBounds(23, 170, 700, 23);
 		uploadTerm.setText(ApplicationUtilities.getProperty("upload2OTO"));
 		uploadTerm.setSelection(false);
 		
-		
-		//contain indexed part: rib 5 => the fifth rib
-		containIndexedParts = new Button(grpCreateANew, SWT.CHECK);
-		containIndexedParts.setBounds(23, 200, 700, 23);
-		containIndexedParts.setText(ApplicationUtilities.getProperty("ContainIndexedParts1"));
-		containIndexedParts.setSelection(false);
-		
-		Label part2 = new Label(grpCreateANew, SWT.NONE);
-		part2.setBounds(50, 225, 700, 23);
-		part2.setText(ApplicationUtilities.getProperty("ContainIndexedParts2"));
-		
-		
+		//upload terms to OTO checkbox
+		generateMatrix = new Button(grpCreateANew, SWT.CHECK);
+		generateMatrix.setBounds(23, 200, 600, 23);
+		generateMatrix.setText(ApplicationUtilities.getProperty("generateMatrix"));
+		generateMatrix.setSelection(false);
+	
 		/*controls for reloading and resuming the last project */
 /*		Group grpContinueWithThe = new Group(composite, SWT.NONE);
 		grpContinueWithThe.setToolTipText("Continue with the last project");
@@ -2822,12 +2830,13 @@ public class MainForm {
 			for(; i<result.size()-1; i++){ 
 				choice =  new Button(MainForm.grpTermSets, SWT.RADIO);
 				choice.setText(result.get(i));
-				choice.setBounds(30, 60+(i+1)*30, 200, 23);
+				choice.setBounds(30, 60+(i+1)*30, 500, 23);
 				choice.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {
 						Button button = (Button) e.widget;
 						button.setSelection(true);
-						downloadTermSet(dataprefix, button.getText(), position);
+						String filename = button.getText();
+						downloadTermSet(dataprefix, filename, position);
 					}
 				});
 			}
@@ -2840,7 +2849,8 @@ public class MainForm {
 				public void widgetSelected(final SelectionEvent e) {
 					Button button = (Button) e.widget;
 					button.setSelection(true);
-					downloadTermSet(dataprefix, button.getText(), position);
+					String filename = button.getText();
+					downloadTermSet(dataprefix, filename, position);
 				}
 			});
 
@@ -2856,7 +2866,7 @@ public class MainForm {
 			text.setText("You chose not to use any "+dataprefix +" term set(s) that is(are) available. Please proceed to the next step. ");
 			text.setBounds(23, position, 700, 23);
 		}else{				
-			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+file, Registry.TargetDirectory+"/"+file);
+			UploadTerms2OTO.scpFrom(ApplicationUtilities.getProperty("OTO.dowloadable.dir")+file, Registry.TargetDirectory+file);
 			//restore sql dump 
 			Statement stmt = null;
 			try{
@@ -2869,10 +2879,16 @@ public class MainForm {
 				//save local version of term_category table
 				stmt.execute("drop table if exists "+dataprefix+"_term_category_local");
 				stmt.execute("drop table if exists "+dataprefix+"_syns");
-				stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local");
-				
+				try{
+					stmt.execute("alter table "+dataprefix+"_term_category RENAME TO "+dataprefix+"_term_category_local");
+				}catch(Exception e){
+					//ignore the error _term_category not exist
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+					e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+
+				}
 				//create new version of term_category table
-				String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_sqllog.txt\"";//write output to log file
+				String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_download_sqllog.txt\"";//write output to log file
 				//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
 				System.out.println(mysqlrestore);
 				String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <

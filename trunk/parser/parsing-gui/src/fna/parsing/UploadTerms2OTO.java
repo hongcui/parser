@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import com.jcraft.jsch.*;
 
@@ -16,34 +17,27 @@ import java.util.Calendar;
 
 public class UploadTerms2OTO{
 	
-	 private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(UploadTerms2OTO.class);  
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(UploadTerms2OTO.class);  
 
-	//public static String directory = "";
-	/*
-	 * standalone set to true when running independently. The corresponding standalone folder must be set. 
-	 * The corresponding dataprefix and an folder where the dump files are stored should be given.
-	 * dataprefix MUST be the dataprefix used in the to-be-uploaded table names.
-	 * Also have to update term_category_command and sentence_command
-	 */
+	private static String dumpfolder; 
+	private static String dataprefix;
 
-	//private static boolean standalone = true; 
-	//the following variables dumpfolder and dataprefix need to be set only when run this class 
-	// in the standalone (not part of charaparser) mode, i.e., run the main method.
-	//Mysql dumps generated and the text file containing sql statements will be saved in this dumpfolder
-	//private static String dumpfolder = "C:\\Users\\mohankrishna89\\Desktop\\Fengqiong\\Part_H_v2";
-	private static String dumpfolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target";
-	private static String dataprefix = "";
 	
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     public static Calendar cal = Calendar.getInstance();
     
+    private boolean standalone = true;
     /**
      * 
      * @param dataprefix: must the the dataprefix set in the configuration tab of CharaParser
      */
 	public UploadTerms2OTO(String thedataprefix){
 		dataprefix = thedataprefix;
-		dumpfolder = Registry.TargetDirectory+"to_OTO_"+dataprefix;
+		if(standalone)
+			dumpfolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\BiosemanticsWorkshopTest\\TreatisePartO\\target\\"; //must have the trailing \\ !
+		else 
+			dumpfolder = Registry.TargetDirectory;
+		
 		dumpFiles(dataprefix);
 		createTextFile(dataprefix);
 		
@@ -60,27 +54,6 @@ public class UploadTerms2OTO{
 		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
 		execute(excom);
 	}
-	
-	
-	public static void main(String[] args) {	
-		dumpFiles(dataprefix);
-		createTextFile(dataprefix);
-		
-		String textfile = dataprefix+"_sqlscript.txt";
-		scpTo(textfile);
-		String tcategory = dataprefix+"_term_category_dump.sql";
-		scpTo(tcategory);
-		String tsentence = dataprefix+"_sentence_dump.sql";
-		scpTo(tsentence);
-		
-		
-		String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
-		execute(backup);
-		
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
-		execute(excom);
-	}
-	
     /*
      * Used to create the dumps which need to be uploaded to the website
      */
@@ -94,8 +67,8 @@ public class UploadTerms2OTO{
     	  //rt.exec("C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets treatise_o_term_category -r  C:\\Users\\mohankrishna89\\Documents\\dumps\\newdump.sql");
     	  //if(standalone)
     	  //{
-    		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+dumpfolder+"\\"+dataprefix+"_term_category_dump.sql";
-    		  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+dumpfolder+"\\"+dataprefix+"_sentence_dump.sql";
+    		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
+    		  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
 
     	  //}
     	  //else
@@ -137,7 +110,7 @@ public class UploadTerms2OTO{
     				directory=(String) Registry.TargetDirectory;
     			}*/
     			//FileWriter fstream = new FileWriter(directory+"\\"+dataprefix+"_"+filename+".txt");
-    			FileWriter fstream = new FileWriter(dumpfolder+"\\"+dataprefix+"_"+filename+".txt");
+    			FileWriter fstream = new FileWriter(dumpfolder+dataprefix+"_"+filename+".txt");
     			BufferedWriter out = new BufferedWriter(fstream);
     			//store all the commands into a text file
     			String[] commands=new String[28];
@@ -303,10 +276,13 @@ public class UploadTerms2OTO{
 
     		        // read a content of lfile
     		        fos=new FileOutputStream(prefix==null ? lfile : prefix+file);
+    		        //File local = new File(prefix==null ? lfile : prefix+file);
+    		        //if(!local.exists()) local.createNewFile();
+    		        //fos=new FileOutputStream(local);
     		        int foo;
     		        while(true){
     		          if(buf.length<filesize) foo=buf.length;
-    			  else foo=(int)filesize;
+    		          else foo=(int)filesize;
     		          foo=in.read(buf, 0, foo);
     		          if(foo<0){
     		            // error 
@@ -332,7 +308,11 @@ public class UploadTerms2OTO{
     		    }
     		    catch(Exception e){
     		      System.out.println(e);
-    		      try{if(fos!=null)fos.close();}catch(Exception ee){}
+    		      StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+
+    		      try{if(fos!=null)fos.close();}catch(Exception ee){
+        		      sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString()); 
+    		      }
     		    }
     		  }
     	
@@ -351,7 +331,7 @@ public class UploadTerms2OTO{
 			}
     		String localfile= directory+"\\"+filename;
     		*/
-    		String localfile= dumpfolder+"\\"+filename;
+    		String localfile= dumpfolder+filename;
     		String fileonserver="hongcui@biosemantics.arizona.edu:/home/sirls/hongcui/"+filename;
     		
     		FileInputStream fis=null;
@@ -530,37 +510,36 @@ static int checkAck(InputStream in) throws IOException{
 		  
 		      InputStream in =channel.getInputStream();
 		      channel.connect();
+		      System.out.println(channel.toString());
 		      
 		      //wait for in become available
 		      //do{
-		      //}while(in.available()<=0 && err.available()<=0);
+		      //}while(in.available()<=0 && err.available()<=0 && !channel.isClosed());
 		      
-		      System.out.println(channel.toString());
+
 		      BufferedReader br = null;
-		      //byte[] tmp=new byte[1024];
+		      byte[] tmp=new byte[1024];
 		      //StringBuffer sb = new StringBuffer();
 		      while(true){
 		    	  if(in.available() >0) {
-		    		  br = new BufferedReader(new InputStreamReader(in));
-		    		  System.out.println("in becomes available");
-		    	  }else{
-		    		  System.out.println("in not available");
-		    	  }
-		    	  	  //while(in.available()>0){
-		    	  while(br!=null && br.ready()){	
-		    		System.out.println("reading from in...");  
-		        	String l = br.readLine();
-		        	result.add(l);
-		        	System.out.println(l);
-		        	//int i=in.read(tmp, 0, 1024);
-		        	//if(i<=0) break;		          
-		        	//sb.append(new String(tmp, 0, i));		          
+		    		  //System.out.println(l);
+	    			  int i=in.read(tmp, 0, 1024);
+	    			  if(i<=0) break;		          
+	    			  //sb.append(new String(tmp, 0, i));	
+	    			  String[] lines = new String(tmp, 0, i).replaceFirst("\\n$", "").split("\\n");
+		    		  result.addAll(Arrays.asList(lines));
+		    		  /*br = new BufferedReader(new InputStreamReader(in));
+		    		  while(br!=null && br.ready()){	
+		    			  //System.out.println("reading from in...");  
+		    			  String l = br.readLine();
+		    			  result.add(l);          
+		    		  }*/
 		    	  }
 		   	     if(channel.isClosed()){
 		   	    	String t = channel.getExitStatus()+"";
 		        	result.add(t);
-		        	 System.out.println("channel closed");
-		        	System.out.println("exit-status: "+t);
+		        	//System.out.println("channel closed");
+		        	//System.out.println("exit-status: "+t);
 		        	break;
 		   	     }
 		      //Mohan's code to quit if the input stream is empty. Which means the system is just waiting.
@@ -583,10 +562,30 @@ static int checkAck(InputStream in) throws IOException{
 		    }
 		    catch(Exception e){
 		    	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		    	System.out.println(e);
+		    	//System.out.println(e);
 		    }
 		return result;
 	}
 
-
+	public static void main(String[] args) {	
+		String dataprefix = "treatise_o_test";
+		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix);
+		
+		/*dumpFiles(dataprefix);
+		createTextFile(dataprefix);
+		
+		String textfile = dataprefix+"_sqlscript.txt";
+		scpTo(textfile);
+		String tcategory = dataprefix+"_term_category_dump.sql";
+		scpTo(tcategory);
+		String tsentence = dataprefix+"_sentence_dump.sql";
+		scpTo(tsentence);
+		
+		
+		String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+		execute(backup);
+		
+		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
+		execute(excom);*/
+	}
 }
