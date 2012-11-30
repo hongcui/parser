@@ -486,7 +486,8 @@ end procedure
 		//do extraction here
 		//print(VP, child, "", chaso);
 		String np = firstNP(VP, lVB).trim();
-		if(np.length()>0){
+		//if(np.length()>0){
+		if(np.length()>0 && !np.matches("^,.*")){ //to prevent strings starting with a comma Eg: , the lateral lobes
 			String chunk = "v["+lVB.getAttributeValue("text")+ "] o["+np+"]";
 			collapseElement(VP, chunk, "b");
 		}else{

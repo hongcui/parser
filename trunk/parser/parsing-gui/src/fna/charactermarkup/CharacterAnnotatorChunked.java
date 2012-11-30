@@ -164,6 +164,14 @@ public class CharacterAnnotatorChunked {
 						}
 						cs.setInSegment(true);
 						cs.setRightAfterSubject(true);
+					}else{
+						//didn't know why the above if was coded that way, because it is correct English syntax that a organ chunk follows a prep chunk, such as in spring flowers bloom.
+						establishSubject(nextck.toString().replaceAll("(\\w\\[|\\])", ""), cs);
+						if(this.partofinference){
+							this.cstructures.addAll(this.subjects);
+						}
+						cs.setInSegment(true);
+						cs.setRightAfterSubject(true);
 					}
 				}
 			}else{ //ck is a character
@@ -1640,13 +1648,14 @@ public class CharacterAnnotatorChunked {
 		boolean lastIsStruct = false;
 		boolean lastIsChara = false;
 		boolean lastIsComma = false;
+		
 		//mohan code to get the original subject if the subject is empty Store the chunk into the modifier
 		
 		if(this.latestelements.size()==0)
 		{
 			//String content = ck.toString().replaceAll(" ","-");
 			String content = ckstring.replaceAll(" ","-");
-			//String structure = "m[" +content+"]";
+			//String structure = "m["+content+"]";
 			String structure = content.replaceAll("]-o\\[", "-").replaceAll("[{()}]", "");
 			if(cs.unassignedmodifier == null){
 				cs.unassignedmodifier = structure;
@@ -2096,7 +2105,8 @@ public class CharacterAnnotatorChunked {
 			}
 			o = o.trim();
 			for(int i = ws1.length-1; i>=0; i--){
-				String escaped = ws1[i].replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
+				//String escaped = ws1[i].replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");
+				String escaped = ws1[i].replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}").replaceAll("\\-", " ");
 				if(constraintType(ws1[i].replaceAll("\\W", ""), o)!=null){
 					part1 = part1.replaceFirst("\\s*"+escaped+"$", "");
 					part2 = ws1[i]+" "+part2;
