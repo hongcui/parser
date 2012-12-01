@@ -57,7 +57,9 @@ public class VolumeFinalizer extends Thread {
     private static boolean standalone = false;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-    private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
+	private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO";
+
+    //private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4";
     //private static String standalonefolder = "C:\\Users\\mohankrishna89\\Desktop\\Ant Work\\Plazi_8405_tx";
@@ -123,7 +125,23 @@ public class VolumeFinalizer extends Thread {
   		if(!standalone){
    			this.showOutputMessage("\n System is generating a taxon-character matrix from annotated files");
       	}
-
+  		//generate filename2taxon table
+  		if(this.dataPrefix.contains("treatise")){
+  			FileName2TaxonTreatise fntf = new FileName2TaxonTreatise(Registry.SourceDirectory, conn, dataPrefix);
+  			fntf.createFilename2taxonTable();
+  			fntf.populateFilename2TaxonTable();
+  		}
+  		if(this.dataPrefix.contains("fna")){
+  			FileName2TaxonFNA fntf = new FileName2TaxonFNA(Registry.SourceDirectory, conn, dataPrefix);
+  			fntf.createFilename2taxonTable();
+  			fntf.populateFilename2TaxonTable();
+  		}
+  		
+		//generate configuration files to SDD
+  		createDatabasePropertiesFile();
+  		createDescriptionPropertiesFile();
+  		
+  		//start SDD process
     	Object[] rankrange = getTaxonRankRange();
 		TaxonHierarchy th = makeHierarchyTwoLevel((String)rankrange[0], (TaxonRank)rankrange[1], (TaxonRank)rankrange[2]);
 		th.printSimple();
@@ -135,6 +153,76 @@ public class VolumeFinalizer extends Thread {
 	}
 
     /**
+     * jaxb.annotation.directory = /bin/annotationSchema/jaxb
+	   input.path = C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\final
+     */
+    private void createDescriptionPropertiesFile() {
+    	StringBuffer sb = new StringBuffer();
+    	sb.append("jaxb.annotation.directory = /bin/annotationSchema/jaxb"+System.getProperty("line.separator"));
+    	sb.append("input.path = ");
+    	sb.append(Registry.TargetDirectory+"final"+System.getProperty("line.separator"));
+    	try{
+    		//C:\Documents and Settings\Hong Updates\workspace\parsing-gui
+    		//C:\Documents and Settings\Hong Updates\workspace\SDD\src\dao\database.properties
+     		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD\\src\\conversion\\description.properties";   		
+    		FileWriter fstream = new FileWriter(outputfile);
+    		BufferedWriter out = new BufferedWriter(fstream);
+    		out.write(sb.toString());
+    		out.close();
+    	}catch (Exception e){//Catch exception if any
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+    	}    		  		
+	}
+
+
+
+	/**
+     *  user = root
+		password = root
+		driver = com.mysql.jdbc.Driver
+		url = jdbc:mysql://localhost:3306/
+		singular-plural-database = markedupdatasets
+		singular-plural-table-name = treatise_o_test_singularplural
+		filename-database = markedupdatasets
+		filename-table-name = treatise_o_test_filename2taxon
+     */
+    private void createDatabasePropertiesFile() {
+    	StringBuffer sb = new StringBuffer();
+    	sb.append("user = ");
+    	sb.append(ApplicationUtilities.getProperty("database.username")+System.getProperty("line.separator"));
+    	sb.append("password = ");
+    	sb.append(ApplicationUtilities.getProperty("database.password")+System.getProperty("line.separator"));
+    	sb.append("driver = ");
+    	sb.append(ApplicationUtilities.getProperty("database.driverPath")+System.getProperty("line.separator"));
+    	sb.append("url = ");
+    	sb.append("jdbc:mysql://localhost:3306/"+System.getProperty("line.separator"));
+    	sb.append("singular-plural-database = ");
+    	sb.append(ApplicationUtilities.getProperty("database.name")+System.getProperty("line.separator"));
+    	sb.append("singular-plural-table-name = ");
+    	sb.append(this.dataPrefix+"_singularplural");    	
+    	sb.append("filename-database = ");
+    	sb.append(ApplicationUtilities.getProperty("database.name")+System.getProperty("line.separator"));
+    	sb.append("filename-table-name = ");
+    	sb.append(this.dataPrefix+"_filename2taxon");
+    	
+    	try{
+    		
+    		//C:\Documents and Settings\Hong Updates\workspace\parsing-gui
+    		//C:\Documents and Settings\Hong Updates\workspace\SDD\src\dao\database.properties
+    		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD\\src\\dao\\database.properties";   		
+   		  	FileWriter fstream = new FileWriter(outputfile);
+   		  	BufferedWriter out = new BufferedWriter(fstream);
+   		  	out.write(sb.toString());
+   		  	out.close();
+    	}catch (Exception e){//Catch exception if any
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+    	}
+    		  
+	}
+
+
+
+	/**
      * assume file names indicate the sequence in original description
      * assume all file names belong to the same highest rank.
      * @return object[0] taxon name of the taxon with the highest rank, 
