@@ -124,6 +124,7 @@ public class CharacterAnnotatorChunked {
 		//this.text = cs.getOriginalText();
 		this.text = cs.getText();
 		this.sentsrc = sentsrc;
+		if(sentsrc.endsWith("-0")) reset();
 		Element text = new Element("text");//make <text> the first element in statement
 		text.addContent(this.text);
 		if(!this.evaluation) this.statement.addContent(text);
@@ -164,6 +165,7 @@ public class CharacterAnnotatorChunked {
 						}
 						cs.setInSegment(true);
 						cs.setRightAfterSubject(true);
+
 					}else{
 						//didn't know why the above if was coded that way, because it is correct English syntax that a organ chunk follows a prep chunk, such as in spring flowers bloom.
 						establishSubject(nextck.toString().replaceAll("(\\w\\[|\\])", ""), cs);
@@ -172,12 +174,15 @@ public class CharacterAnnotatorChunked {
 						}
 						cs.setInSegment(true);
 						cs.setRightAfterSubject(true);
+
 					}
 				}
 			}else{ //ck is a character
-				reestablishSubject();	//creates a subject
-				cs.setInSegment(true);
-				cs.setRightAfterSubject(true);
+				if(!sentsrc.endsWith("-0")){
+					reestablishSubject();	//reuse the previous subject only when this sentence is not the first one in the treatment
+					cs.setInSegment(true);
+					cs.setRightAfterSubject(true);
+				}
 				cs.resetPointer(); //make sure ck is annotated
 			}
 		}
@@ -506,6 +511,28 @@ public class CharacterAnnotatorChunked {
 				establishSubject(ck.toString().replaceFirst("^l\\[", "").replaceFirst("\\]$", "")/*, false*/, cs);// 7-12-02 add cs				
 			}else if(ck instanceof ChunkSimpleCharacterState){
 				String content = ck.toString().replaceFirst("^a\\[", "").replaceFirst("\\]$", "");
+				/*if(content.contains("character[")){ //width of ... => a[character[width]]: ignore
+					int p = cs.getPointer();
+					String token = cs.getTokenAt(p);
+					if(token.matches("-L[RS]B-/-L[RS]B-")){
+						do{
+							token = cs.getTokenAt(++p);
+						}while(!token.matches("-R[RS]B-/-R[RS]B-"));
+					}//ignore bracketed chunk after character
+					token = cs.getTokenAt(++p);	
+					while(token.length() == 0) token = cs.getTokenAt(++p);
+					if(token.startsWith("r[p[of]")){ //positive case, proceeding the pointer
+						Chunk next = null;
+						do{
+							next = cs.nextChunk();
+						}while(p > cs.getPointer());
+						//get the o part and annotate it as nonsubjectorgan
+						String newchunk = next.toString().replaceFirst("r\\[p\\[.*? o\\[", "").replaceAll("\\]", "").trim();
+						ArrayList<Element> structures = createStructureElements(newchunk, cs);
+						this.updateLatestElements(structures);
+						continue;
+					}
+				}*/
 				//ArrayList<Element> chars = processSimpleCharacterState(content, lastStructures());//with teeth closely spaced
 				//ArrayList<Element> parents = this.attachToLast? lastStructures() : subjects;
 				if(this.latestelements.size() == 0){//other Chunk types may also need this place holder
@@ -850,6 +877,7 @@ public class CharacterAnnotatorChunked {
 				singlephrase = true; //position
 			}
 		}
+		if(this.latestelements.size()==0) return;
 		Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 		if(organconstraint){//must be associated with a character or a relation
 			//z[{basal} (tubercles)] not markedly n[{longer} than {distal} (ones)] -LRB-/-LRB- r[p[except] o[r[p[in] o[{sterile} (fruits)]]]] -RRB-/-RRB- ; 
@@ -1567,7 +1595,22 @@ public class CharacterAnnotatorChunked {
 		//c: {loosely} {arachnoid}
 		String[] words = c.split("\\s+");
 		if(Utilities.isVerb(words[words.length-1], ChunkedSentence.verbs, ChunkedSentence.notverbs) || p.compareTo("to")==0){//t[c[{connected}] r[p[by] o[{conspicuous} {arachnoid} <trichomes>]]] TODO: what if c was not included in this chunk?
+			//this is a relation, find entity 1
+			ArrayList<Element> entity1 = null;
+			if(this.latestelements.size()==0){
+				establishSubject("(whole_organism)", cs); //to make sure lastestelement is not empty
+			}
+			Element e = this.latestelements.get(this.latestelements.size()-1);
+			if(e.getName().matches("("+this.delims+")") || e.getName().compareTo("character")==0 ){
+				entity1 = this.subjects;
+			}else{
+				entity1 = (ArrayList<Element>)this.latestelements.clone();
+				//entity1.remove(entity1.size()-1);
+			}
+			//find relation
 			String relation = (c+" "+p).replaceAll("\\s+", " ");
+			
+			//find entity 2
 			o = o.replaceAll("(o\\[|\\])", "");
 			/*if(!o.endsWith(")") &&!o.endsWith("}")){ //1-5 series => 1-5 (series)
 				String t = o.substring(o.lastIndexOf(' ')+1);
@@ -1581,16 +1624,7 @@ public class CharacterAnnotatorChunked {
 				//System.out.println("forced organ in: "+o);
 			}
 			ArrayList<Element> structures = processObject("o["+o+"]", cs);// 7-12-02 add cs
-			ArrayList<Element> entity1 = null;
-			
-			Element e = this.latestelements.get(this.latestelements.size()-1);
-			if(e.getName().matches("("+this.delims+")") || e.getName().compareTo("character")==0 ){
-				entity1 = this.subjects;
-			}else{
-				entity1 = (ArrayList<Element>)this.latestelements.clone();
-				//entity1.remove(entity1.size()-1);
-			}
-			
+						
 			relations = createRelationElements(relation, entity1, structures, m, false, cs);// 7-12-02 add cs
 			updateLatestElements(structures);
 		}else{//c: {loosely} {arachnoid} : should be m[loosly] architecture[arachnoid]
@@ -2129,6 +2163,7 @@ public class CharacterAnnotatorChunked {
 	 */
 	private ArrayList<Element> createStructureElements(String listofstructures/*, boolean makeconstraint*/, ChunkedSentence cs)  throws Exception{// 7-12-02 add cs
 		ArrayList<Element> results = new ArrayList<Element>();	
+		listofstructures = listofstructures.replaceAll("(^l\\[|\\]$)", "");
 		//String[] organs = listofstructures.replaceAll(" (and|or|plus) ", " , ").split("\\)\\s*,\\s*"); //TODO: flower and leaf blades???
 		String[] organs = listofstructures.replaceAll(",", " , ").split("\\)\\s+(and|or|plus|,)\\s+"); //TODO: flower and leaf blades???		
 		//mohan 28/10/2011. If the first organ is a preposition then join the preposition with the following organ
