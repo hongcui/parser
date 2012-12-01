@@ -664,10 +664,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		String database = "markedupdatasets";
 
-		String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\transformed";
+		String prefix = "treatise_o_test";
+		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
-		String prefix = "fnav19_excerpt";
+		String prefix = "fnav19_excerpt";*/
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_posedsentences.txt";
 		String parsedfile ="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\fnav2\\target\\fnav2_parsedsentences.txt";
 		String prefix = "fnav2"; //should be volume name
@@ -683,7 +687,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
 
 
 
