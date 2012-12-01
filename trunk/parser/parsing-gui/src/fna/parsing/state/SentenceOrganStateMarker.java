@@ -688,7 +688,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_8538", "antglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatise_o_test", "treatiseoglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
