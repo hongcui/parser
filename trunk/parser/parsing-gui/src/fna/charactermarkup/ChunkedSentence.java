@@ -2469,6 +2469,12 @@ parallelism scope: q[other chunks]
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHAN";
+			} else if(afterthan.matches("\\{?half\\}?.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
+				if(charainfo==null){chara="size";}
+				else{chara = charainfo[0];}
+				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
+				this.chunkedtokens.set(id, token);
+				return "ChunkTHAN";
 			}//Case C
 			else if(afterthan.indexOf("(")>=0){ //contains organ
 				if(charainfo==null){//is a constraint, lobed n[more than...]
