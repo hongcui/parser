@@ -26,7 +26,7 @@ public class UploadTerms2OTO{
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     public static Calendar cal = Calendar.getInstance();
     
-    private boolean standalone = true;
+    private boolean standalone = false;
     /**
      * 
      * @param dataprefix: must the the dataprefix set in the configuration tab of CharaParser
@@ -37,55 +37,57 @@ public class UploadTerms2OTO{
 			dumpfolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\BiosemanticsWorkshopTest\\TreatisePartO\\target\\"; //must have the trailing \\ !
 		else 
 			dumpfolder = Registry.TargetDirectory;
-		
-		dumpFiles(dataprefix);
-		createTextFile(dataprefix);
-		
-		String textfile = dataprefix+"_sqlscript.txt";
-		scpTo(textfile);
-		String tcategory = dataprefix+"_term_category_dump.sql";
-		scpTo(tcategory);
-		String tsentence = dataprefix+"_sentence_dump.sql";
-		scpTo(tsentence);
-		
-	    String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
-		execute(backup);
-		
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
-		execute(excom);
 	}
     /*
      * Used to create the dumps which need to be uploaded to the website
      */
+
+	public boolean upload() {
+		boolean success = dumpFiles(dataprefix);
+		if(!success) return false;
+		
+		success = createTextFile(dataprefix);
+		if(!success) return false;
+		
+		String textfile = dataprefix+"_sqlscript.txt";
+		success = scpTo(textfile);
+		if(!success) return false;
+		
+		String tcategory = dataprefix+"_term_category_dump.sql";
+		success = scpTo(tcategory);
+		if(!success) return false;
+		
+		String tsentence = dataprefix+"_sentence_dump.sql";
+		success = scpTo(tsentence);
+		if(!success) return false;
+		
+	    String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+		ArrayList<String> result = execute(backup);
+		if(result.size()>1 || result.get(result.size()-1).equals("-1")) return false;
+		
+		//String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
+		String excom = "mysql -u termsuser -ptermspassword < "+textfile;//write output to log file
+		result = execute(excom);
+		if(result.size()>1|| result.get(result.size()-1).equals("-1")) return false;
+		//need check _sqllog.txt for error messages
+		return true;
+	}
     
-    public static void dumpFiles(String dataprefix) {
+    public static boolean dumpFiles(String dataprefix) {
       try {
     	  Runtime rt = Runtime.getRuntime();
-    	  String term_category_command = "";
-    	  String sentence_command = "";
-    	  //rt.exec("/C:/Program Files/MySQL/MySQL Server 5.0/bin/mysqldump -u [username] -p[password]  [ databaseName] -r  /D:/databasebackup/backup.sql");
-    	  //rt.exec("C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets treatise_o_term_category -r  C:\\Users\\mohankrishna89\\Documents\\dumps\\newdump.sql");
-    	  //if(standalone)
-    	  //{
-    		  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
-    		  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
-
-    	  //}
-    	  //else
-    	  //{
-    		  //term_category_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_term_category_dump.sql";
-        	  //sentence_command = "C:\\Program Files\\MySQL\\MySQL Server 5.5\\bin\\mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_sentence_dump.sql";	  
-    	//	  term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_term_category_dump.sql";
-        //	  sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r "+(String) Registry.TargetDirectory+"\\"+dataprefix+"_sentence_dump.sql";	  
-    	  //}
+    	  String term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
+    	  String sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
     	  
     	  rt.exec(term_category_command);
     	  rt.exec(sentence_command);
-    	 } 
-    	 catch(Exception e) {
+    	  return true;
+      } 
+      catch(Exception e) {
     		 StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-    	 }
-    	}
+      }
+      return false;
+    }
     	
     	
     	/*
@@ -93,7 +95,7 @@ public class UploadTerms2OTO{
     	 * create a text file with the following commands in it. 
     	 * datasetprefix is the prefix for the set of the new tables to be created
     	 */
-    	public static void createTextFile(String dataprefix)
+    	public static boolean createTextFile(String dataprefix)
     	{
     		try{
     			/*DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
@@ -192,19 +194,21 @@ public class UploadTerms2OTO{
     			}
     			
     			out.close();
+    			return true;
     		}
     		catch(Exception e){
     			System.err.println("Error in creating and writing to a text file: " + e.getMessage());
     			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 
     		}
+    		return false;
     	}
     	
     	/**
     	 * copy from a remote server to local machine
     	 * 
     	 */
-    		  public static void scpFrom (String rfile, String lfile){
+    		  public static boolean scpFrom (String rfile, String lfile){
     		    FileOutputStream fos=null;
     		    try{
     		    	//hongcui@:
@@ -305,6 +309,7 @@ public class UploadTerms2OTO{
     		      }
 
     		      session.disconnect();
+    		      return true;
     		    }
     		    catch(Exception e){
     		      System.out.println(e);
@@ -314,12 +319,13 @@ public class UploadTerms2OTO{
         		      sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString()); 
     		      }
     		    }
+    		    return false;
     		  }
     	
     	/*
     	 * Provide the function with a file name and it will upload the file based on the current directory
     	 */
-    	public static void scpTo(String filename)
+    	public static boolean scpTo(String filename)
     	{
     		/*String directory="";
 			if(standalone){
@@ -377,7 +383,7 @@ public class UploadTerms2OTO{
     	      if(checkAck(in)!=0){
     	    	  System.out.println("Error in SCPto");
     	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
-    	    	  System.exit(0);
+    	    	  //System.exit(0);
     	      }
 
     	      File _lfile = new File(lfile);
@@ -391,7 +397,7 @@ public class UploadTerms2OTO{
     	        if(checkAck(in)!=0){
     	        	System.out.println("Error in SCPto");
     	        	LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
-    	  	  System.exit(0);
+    	        	//System.exit(0);
     	        }
     	      }
 
@@ -409,17 +415,28 @@ public class UploadTerms2OTO{
     	      if(checkAck(in)!=0){
     	    	  System.out.println("Error in SCPto");
     	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
-    		System.exit(0);
+    	    	  //System.exit(0);
     	      }
 
     	      // send a content of lfile
     	      fis=new FileInputStream(lfile);
     	      byte[] buf=new byte[1024];
+    	      System.out.println("start sending");
+			  
+    	      try{
+		        Thread.sleep(1000);
+		        System.out.println("waiting for 1000");//for fis to get ready
+    	      }catch(Exception ee){
+		        StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ee.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+    	      }
+    	      
     	      while(true){
     	        int len=fis.read(buf, 0, buf.length);
-    		if(len<=0) break;
+    	        System.out.println("sent "+len);
+    	        if(len<=0) break;
     	        out.write(buf, 0, len); //out.flush();
     	      }
+    	      System.out.println("All sent");
     	      fis.close();
     	      fis=null;
     	      // send '\0'
@@ -427,7 +444,7 @@ public class UploadTerms2OTO{
     	      if(checkAck(in)!=0){
     	    	  System.out.println("Error in SCPto");
     	    	  LOGGER.error("UploadTerms2OTO.SCPto: checkAck problem");
-    	    	  System.exit(0);
+    	    	  //System.exit(0);
     	      }
     	      out.close();
 
@@ -435,11 +452,13 @@ public class UploadTerms2OTO{
     	      session.disconnect();
 
     	      //System.exit(0);
+    	      return true;
     	    }
     	    catch(Exception e){
     	      System.out.println(e);
     	      try{if(fis!=null)fis.close();}catch(Exception ee){}
     	    }
+    	    return false;
     	  }
 
     	
@@ -448,6 +467,7 @@ public class UploadTerms2OTO{
    */
 static int checkAck(InputStream in) throws IOException{
     int b=in.read();
+
     // b may be 0 for success,
     //          1 for error,
     //          2 for fatal error,

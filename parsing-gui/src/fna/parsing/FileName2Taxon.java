@@ -47,6 +47,16 @@ public abstract class FileName2Taxon {
 		}
 	}
 
+	/**
+	 * 
+	 */
+	public FileName2Taxon(String inputfilepath, Connection conn, String prefix) {
+		resetValues();		
+		this.inputfilepath = inputfilepath;
+		this.dataprefix = prefix;
+		this.conn = conn;
+	}
+	
 	protected void resetValues() {
 		values.put("filename", "");
 		values.put("hasdescription", "");

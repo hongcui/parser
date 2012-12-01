@@ -6,6 +6,7 @@ package fna.parsing;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.Connection;
 import java.util.Hashtable;
 
 import org.jdom.Document;
@@ -72,6 +73,13 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 	 */
 	public FileName2TaxonFNA(String inputfilepath, String database, String prefix) {
 		super(inputfilepath, database, prefix);
+	}
+	
+	/**
+	 * 
+	 */
+	public FileName2TaxonFNA(String inputfilepath, Connection conn, String prefix) {
+		super(inputfilepath, conn, prefix);
 	}
 
 	@Override

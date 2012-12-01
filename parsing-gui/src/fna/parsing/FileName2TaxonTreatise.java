@@ -6,6 +6,7 @@ package fna.parsing;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.Connection;
 import java.util.Hashtable;
 
 import org.jdom.Document;
@@ -45,6 +46,12 @@ public class FileName2TaxonTreatise extends FileName2Taxon {
 	public FileName2TaxonTreatise(String inputfilepath, String database,
 			String prefix) {
 		super(inputfilepath, database, prefix);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public FileName2TaxonTreatise(String inputfilepath, Connection conn,
+			String prefix) {
+		super(inputfilepath, conn, prefix);
 		// TODO Auto-generated constructor stub
 	}
 
