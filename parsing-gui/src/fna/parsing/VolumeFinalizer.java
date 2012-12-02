@@ -57,7 +57,7 @@ public class VolumeFinalizer extends Thread {
     private static boolean standalone = false;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-	private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO";
+	private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae";
 
     //private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
@@ -125,6 +125,7 @@ public class VolumeFinalizer extends Thread {
   		if(!standalone){
    			this.showOutputMessage("\n System is generating a taxon-character matrix from annotated files");
       	}
+  	
   		//generate filename2taxon table
   		if(this.dataPrefix.contains("treatise")){
   			FileName2TaxonTreatise fntf = new FileName2TaxonTreatise(Registry.SourceDirectory, conn, dataPrefix);
@@ -160,7 +161,7 @@ public class VolumeFinalizer extends Thread {
     	StringBuffer sb = new StringBuffer();
     	sb.append("jaxb.annotation.directory = /bin/annotationSchema/jaxb"+System.getProperty("line.separator"));
     	sb.append("input.path = ");
-    	sb.append(Registry.TargetDirectory+"final"+System.getProperty("line.separator"));
+    	sb.append((Registry.TargetDirectory+"final/").replaceAll("\\", "/")+System.getProperty("line.separator"));
     	try{
     		//C:\Documents and Settings\Hong Updates\workspace\parsing-gui
     		//C:\Documents and Settings\Hong Updates\workspace\SDD\src\dao\database.properties
@@ -199,7 +200,7 @@ public class VolumeFinalizer extends Thread {
     	sb.append("singular-plural-database = ");
     	sb.append(ApplicationUtilities.getProperty("database.name")+System.getProperty("line.separator"));
     	sb.append("singular-plural-table-name = ");
-    	sb.append(this.dataPrefix+"_singularplural");    	
+    	sb.append(this.dataPrefix+"_singularplural"+System.getProperty("line.separator"));    	
     	sb.append("filename-database = ");
     	sb.append(ApplicationUtilities.getProperty("database.name")+System.getProperty("line.separator"));
     	sb.append("filename-table-name = ");
@@ -259,7 +260,7 @@ public class VolumeFinalizer extends Thread {
 		
 		
 		
-		Object[] results = new Object[]{};
+		Object[] results = new Object[3];
 		File[] files = (new File(Registry.TargetDirectory+"final")).listFiles();
 		int[] filenames = new int[files.length];
 		//from 1.xml 10.xml, 100.xml ...
@@ -276,19 +277,20 @@ public class VolumeFinalizer extends Thread {
 			ResultSet rs = null;
 			//look for the highest rank
 			for(String rank: ranks){
-				rs = stmt.executeQuery("select "+rank+" from "+this.dataPrefix+"_filename2taxon where length("+rank+")>0");
+				String q ="select `"+rank+"` from "+this.dataPrefix+"_filename2taxon where length(`"+rank+"`)>0";
+				rs = stmt.executeQuery(q);
 				if(rs.next()){
-					results[0] = rs.getString(rank);
-					results[1] = TaxonRank.valueOf(rank);
+					results[0] = rs.getString(1);
+					results[1] = TaxonRank.valueOf(rank.toUpperCase());
 					break; //found highest rank
 				}
 			}
 			//look for the lowest rank
 			for(i = ranks.size()-1; i >=0; i--){
-				rs = stmt.executeQuery("select "+ranks.get(i)+" from "+this.dataPrefix+"_filename2taxon where length("+ranks.get(i)+")>0");
+				rs = stmt.executeQuery("select `"+ranks.get(i)+"` from "+this.dataPrefix+"_filename2taxon where length(`"+ranks.get(i)+"`)>0");
 				if(rs.next()){
-					results[2] = rs.getString(ranks.get(i));
-					break; //found highest rank
+					results[2] = TaxonRank.valueOf(ranks.get(i).toUpperCase());;
+					break; //found lower rank
 				}
 			}		
 		}catch(Exception e){

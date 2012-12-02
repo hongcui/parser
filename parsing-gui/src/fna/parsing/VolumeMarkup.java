@@ -70,7 +70,7 @@ public class VolumeMarkup {
 //		+ databasenameprefix;
 		
 		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED")+" " +"\""+workdir
-		+ todofoldername + "\" "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim();
+		+ todofoldername + "\" "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable;
 		
 		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
 		System.out.println("Run command: " + com);
