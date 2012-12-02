@@ -512,7 +512,7 @@ sub importfromkb{
 
 
 	#$stmt1 = "select distinct word from ".$kb.".learnedboundarywords where word !='' and not isnull(word)";
-	$stmt1 = "select distinct word from ".$kb." where category !='structure'";
+	$stmt1 = "select distinct term from ".$kb." where category !='structure'";
 	$sth1 = $dbh->prepare($stmt1);
 	$sth1->execute() or die $sth1->errstr."\n";
 	while($w = $sth1->fetchrow_array()){
@@ -544,7 +544,7 @@ sub importfromkb{
 	#}
 
 	#$stmt1 = "select distinct structure from ".$kb.".learnedstructures where structure !='' and not isnull(structure)";
-	$stmt1 = "select distinct structure from ".$kb." where category='structure'";
+	$stmt1 = "select distinct term from ".$kb." where category='structure'";
 	$sth1 = $dbh->prepare($stmt1);
 	$sth1->execute() or die $sth1->errstr."\n";
 	while($w = $sth1->fetchrow_array()){
