@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
@@ -89,9 +90,18 @@ public abstract class FileName2Taxon {
 
 	protected void populateFilename2TaxonTable(){
 		File[] xmls = (new File(this.inputfilepath)).listFiles();
-		int size = xmls.length;
+		int[] filenames = new int[xmls.length];
+		//from 1.xml 10.xml, 100.xml ...
+		
+		int i = 0;
+		for(File xml: xmls){
+			filenames[i++]= Integer.parseInt(xml.getName().replace(".xml", ""));
+		}
+		//to 1, 2, 3, 4
+		Arrays.sort(filenames); 
+		//int size = xmls.length;
 		//must be in the original order in the original volume.
-		for(int i = 1; i <= size; i++){
+		for(i = filenames[0]; i <= filenames[filenames.length-1]; i++){
 			System.out.println(i+".xml");
 			populateFilename2TaxonTableUsing(new File(this.inputfilepath, i+".xml"));
 		}

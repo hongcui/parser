@@ -26,7 +26,7 @@ public class UploadTerms2OTO{
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     public static Calendar cal = Calendar.getInstance();
     
-    private boolean standalone = false;
+    private boolean standalone = true;
     /**
      * 
      * @param dataprefix: must the the dataprefix set in the configuration tab of CharaParser
@@ -34,7 +34,7 @@ public class UploadTerms2OTO{
 	public UploadTerms2OTO(String thedataprefix){
 		dataprefix = thedataprefix;
 		if(standalone)
-			dumpfolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\BiosemanticsWorkshopTest\\TreatisePartO\\target\\"; //must have the trailing \\ !
+			dumpfolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\"; //must have the trailing \\ !
 		else 
 			dumpfolder = Registry.TargetDirectory;
 	}
@@ -588,8 +588,9 @@ static int checkAck(InputStream in) throws IOException{
 	}
 
 	public static void main(String[] args) {	
-		String dataprefix = "treatise_o_test";
+		String dataprefix = "fnav7_test";
 		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix);
+		uto.upload();
 		
 		/*dumpFiles(dataprefix);
 		createTextFile(dataprefix);
