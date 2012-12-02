@@ -80,20 +80,10 @@ public class SentenceOrganStateMarker {
 		//preparing...
 		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
 		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
-
-		try{
-				Statement stmt = conn.createStatement();
-				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
-				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
-				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
-				if(colors==null){
-					colors = this.colorsFromGloss().trim();
-					if(colors.length()==0) colors += "shades_of";
-					else colors += "|shades_of";
-					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
-					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
-				}
+	
+			try{
 				//collect all taxonnames to be used in processParentheses in ChunkedSentence
+				Statement stmt = conn.createStatement();
 				String taxonnames = "";
 				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_taxonnames");
 				while(rs.next()){
@@ -107,18 +97,34 @@ public class SentenceOrganStateMarker {
 					SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
 					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
 					SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
+	
+				}
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 
+		try{
+				Statement stmt = conn.createStatement();
+				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
+				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
+				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
+				if(colors==null){
+					colors = this.colorsFromGloss().trim();
+					if(colors.length()==0) colors += "shades_of";
+					else colors += "|shades_of";
+					pt = "\\b(?<="+colors+")\\s+(?="+colors+")\\b";
+					colorpattern = Pattern.compile(pt); //spaces that surrounded by colors
 				}
 
 				//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
-				rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
+				ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
 				//leave ditto as it is
 				while(rs.next()){//read sent in in reversed order
 					String tag = rs.getString("tag");
 					String sent = rs.getString("sentence").trim();
 					if(sent.length()!=0){
 					String source = rs.getString("source");
-					//if(!source.equals("1_0.txtp11.txt-0")) continue;
+					//if(!source.equals("232.txt-0")) continue;
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
@@ -688,7 +694,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatise_o_test", "treatiseoglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav7_test", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
