@@ -117,7 +117,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("984.txt-7")!=0) continue;
+				//if(src.compareTo("232.txt-0")!=0) continue;
 				str = tagger.POSTag(str, src);
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -664,10 +664,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		String database = "markedupdatasets";
 
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
-		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
-		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\transformed";
-		String prefix = "treatise_o_test";
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\transformed";
+		String prefix = "fnav7_test";
 		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
@@ -687,13 +687,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 
 
 
 
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
