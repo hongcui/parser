@@ -26,7 +26,7 @@ public class UploadTerms2OTO{
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     public static Calendar cal = Calendar.getInstance();
     
-    private boolean standalone = true;
+    private boolean standalone = false;
     /**
      * 
      * @param dataprefix: must the the dataprefix set in the configuration tab of CharaParser
@@ -555,6 +555,21 @@ static int checkAck(InputStream in) throws IOException{
 		    			  result.add(l);          
 		    		  }*/
 		    	  }
+		    	  //collect error messages
+		    	  if(err.available() >0) {
+		    		  //System.out.println(l);
+	    			  int i=err.read(tmp, 0, 1024);
+	    			  if(i<=0) break;		          
+	    			  //sb.append(new String(tmp, 0, i));	
+	    			  String[] lines = new String(tmp, 0, i).replaceFirst("\\n$", "").split("\\n");
+		    		  result.addAll(Arrays.asList(lines));
+		    		  /*br = new BufferedReader(new InputStreamReader(in));
+		    		  while(br!=null && br.ready()){	
+		    			  //System.out.println("reading from in...");  
+		    			  String l = br.readLine();
+		    			  result.add(l);          
+		    		  }*/
+		    	  }
 		   	     if(channel.isClosed()){
 		   	    	String t = channel.getExitStatus()+"";
 		        	result.add(t);
@@ -582,6 +597,7 @@ static int checkAck(InputStream in) throws IOException{
 		    }
 		    catch(Exception e){
 		    	StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		    	result.add("-1"); //last element is the exit status bit
 		    	//System.out.println(e);
 		    }
 		return result;
