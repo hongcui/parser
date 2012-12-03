@@ -584,10 +584,23 @@ public class MainForm {
 						}else{//Use ant glossary to populate the table in step 6.
 							categories = setDefaultCharacterTabDecisions();
 							comboDecision.setItems(categories);
-							comboDecision.setText(categories[0]);
+							comboDecision.setText(categories.length==0? "" : categories[0]);
 							//the fixed string[]
 						}
-						 
+						//reset the table to clear previous grouping decisions
+						try{
+							if(conn == null){
+								Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+								conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+							}
+							Statement stmt = conn.createStatement();
+							stmt.execute("drop table if exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions");
+							stmt.execute("create table if not exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+						}catch (Exception e){
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+							e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
+						
 						processedGroups.clear();
 						// set the groups list
 						setCharactertabGroups();
@@ -2429,7 +2442,7 @@ public class MainForm {
 				    default : //Do Nothing! :-)
 				    }
 
-				}else{ //no terms left
+				}else if(noOfTermGroups == getNumberOfGroupsSaved() && !isTermsNotGrouped()){ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
 					if(count>0 && MainForm.upload2OTO){
 						UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
