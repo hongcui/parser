@@ -118,31 +118,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
 				//if(src.compareTo("232.txt-0")!=0) continue;
-				str = tagger.POSTag(str, src);
+				try{
+					str = tagger.POSTag(str, src);
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
 	       		count++;
 	       		
 			}
-			//mohan code change to just get one entry
-			/*ResultSet rs = stmt.executeQuery("select sentid,source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
-			int count = 1;
-			while(rs.next()){
-				int sentid=rs.getInt(1);
-				String src = rs.getString(2);
-				String str = rs.getString(3);
-				//TODO: may need to fix "_"
-				//if(src.compareTo("56.txt-7")!=0) continue;
-				if(sentid==664)
-				{
-				str = tagger.POSTag(str, src);
-	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
-	       		out.println(str);
-	       		count++;
-				}
-	       		
-			}*/
-			//End mohan change.
 			stmt2.close();
 			rs.close();
 			out.close();
@@ -220,9 +205,6 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	
 	public void extracting() throws Exception{
     	try{
-	       //String test="(ROOT  (S (NP      (NP (NN body) (NN ovoid))      (, ,)      (NP        (NP (CD 2-4))        (PP (IN x)          (NP            (NP (CD 1-1.5) (NN mm))            (, ,)            (ADJP (RB not) (JJ winged)))))      (, ,))    (VP (VBZ woolly))    (. .)))";
-	       // test="(ROOT  (NP    (NP      (NP (NNP Ray))      (ADJP (JJ laminae)        (NP (CD 6))))    (: -)    (NP      (NP        (NP (CD 7) (NNS x))        (NP (CD 2/CD-32) (NN mm)))      (, ,)      (PP (IN with)        (NP (CD 2))))    (: -)    (NP      (NP (CD 5) (NNS hairs))      (PP (IN inside)        (NP          (NP (NN opening))          (PP (IN of)            (NP (NN tube))))))    (. .)))";
-	       // test="(S (NP (NP (NN margins) (UCP (NP (JJ entire)) (, ,) (ADJP (JJ dentate)) (, ,) (ADJP (RB pinnately) (JJ lobed)) (, ,) (CC or) (NP (JJ pinnatifid) (NN pinnately))) (NN compound)) (, ,) (NP (JJ spiny)) (, ,)) (VP (JJ tipped) (PP (IN with) (NP (NNS tendrils)))) (. .))";
 	        FileInputStream istream = new FileInputStream(this.parsedfile); 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(istream));
 			String line = "";
@@ -257,15 +239,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						text += line.replace(System.getProperty("line.separator"), ""); 
 					}
 				}else{
-					//if(i != 359 && i !=484 && i!=517 && i!=549 && i != 1264 && i!=1515 && i!=1613 && i !=1782 && i !=2501 && i !=2793 && i!=4798 && i!=9243 && i!=10993 && i!=12449 && text.startsWith("(ROOT")){
-					//if(i !=2793 && text.startsWith("(ROOT")){//FNAv19 865[162.txt-0], 310, 1638 (SentenceOrganStateMarkup); 5262[466.txt-14]
-					if(/*194.txt-5*&&*/ text.startsWith("(ROOT")){//treatiseh
-					//if(/*i != 2468 && i != 3237 &&i != 9555 && i != 9504 &&*/ i !=2018 && i !=2793 && text.startsWith("(ROOT")){//bhl	
+					if(text.startsWith("(ROOT")){//treatiseh
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
 					//Document doccp = (Document)doc.clone();
 					if(rs.relative(i)){
+						try{ //if exception is thrown at any of the following steps, move on the next sentence.
 						String sent = rs.getString(2);
 						String src = rs.getString(1);
 						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
@@ -329,15 +309,17 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
-						
+						}catch(Exception e){
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
 						rs.relative(i*-1); //reset the pointer
 						}
 					}
 					text = "";
 					i = 0;
 				}
-			}
-			if(finalize){
+			}//end while
+			if(finalize){ //output the last sentence
 				placeDescription(description, pdescID, baseroot);
 				VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");		
 			}
