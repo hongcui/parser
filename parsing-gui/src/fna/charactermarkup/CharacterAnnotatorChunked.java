@@ -43,7 +43,7 @@ public class CharacterAnnotatorChunked {
 	private String delims = "comma|or";
 	private static int structid = 1;
 	private static int relationid = 1;
-	private String unassignedcharacter = null;
+	public static String unassignedcharacter = null;
 	//private String unassignedmodifiers = null; //holds modifiers that may be applied to the next chunk
 	protected Connection conn = null;
 	private String tableprefix = null;
@@ -65,7 +65,14 @@ public class CharacterAnnotatorChunked {
 	private boolean evaluation = true;
 	private String sentsrc;
 	private boolean nosubject;
-
+	private static XPath unknownsubject;
+	static{
+		try{
+			unknownsubject = XPath.newInstance(".//*[@name='unknown_subject']");
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+	}
 	
 	/**
 	 * 
@@ -138,7 +145,7 @@ public class CharacterAnnotatorChunked {
 			if(this.partofinference){
 				this.cstructures.addAll(this.subjects);
 			}
-			cs.setInSegment(true);
+			cs.setInSegment(true); //inSegment = true: meaning found the subject.
 			cs.setRightAfterSubject(true);
 		}else{//not start with a subject
 			if(ck instanceof ChunkPrep){	//check if the first chunk is a preposition chunk. If so, make the subjects and the latest elements from the previous sentence empty, and skip+ignore this chunk.
@@ -222,6 +229,16 @@ public class CharacterAnnotatorChunked {
 		if(!this.evaluation) mayBeSameRelation(cs);// 7-12-02 add cs
 		if(this.partofinference){
 			puncBasedPartOfRelation(cs); // 7-12-02 add cs
+		}
+		
+		//if unknown_subject has no characters and no relations, remove them.
+		List<Element> unknowns = unknownsubject.selectNodes(this.statement);
+		for(Element unknown : unknowns){
+			if(unknown.getChildren().size()==0){ 
+				String id = unknown.getAttributeValue("id");
+				List<Element> relations = XPath.selectNodes(this.statement, ".//relation[@from='"+id+"']|.//relation[@to='"+id+"']");
+				if(relations.size()==0) unknown.detach();
+			}
 		}
 		
 		XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
@@ -960,7 +977,8 @@ public class CharacterAnnotatorChunked {
 	 * @param scope
 	 */
 	private void annotateScopeChunk(Chunk scopeck, Attribute scope, ChunkedSentence cs) throws Exception{
-		ArrayList<Element> subjectcopy = this.subjects;//snap shot of current subject
+		ArrayList<Element> subjectcopy = (ArrayList<Element>)this.subjects.clone();//snap shot of current subject
+		ArrayList<Element> latestelementscopy = (ArrayList<Element>)this.latestelements.clone();
 		String content = scopeck.toString();
 		if(content.matches("^[xgq]\\[.*"))	content = content.replaceFirst("^[xgq]\\[", "").replaceFirst("\\]$", "").trim();
 		ArrayList<String> chunks = Utilities.breakText(content+"");
@@ -974,6 +992,7 @@ public class CharacterAnnotatorChunked {
 		//annotateByChunk(newcs, false);//annotate it
 		annotateByChunk(newcs);//annotate it		
 		this.subjects = subjectcopy; //restore
+		this.latestelements = latestelementscopy;
 		// 7-12-02 cs.resetScopeAttributes(); //restore
 	}
 	
@@ -1650,6 +1669,22 @@ public class CharacterAnnotatorChunked {
 	 * @param asrelation: if this PP should be treated as a relation
 	 */
 	private void processPrep(String ckstring, ChunkedSentence cs)  throws Exception{// 7-12-02 add cs
+		//mohan code to get the original subject if the subject is empty Store the chunk into the modifier
+		if(this.latestelements.size()==0)
+		{
+			//String content = ck.toString().replaceAll(" ","-");
+			String content = ckstring.replaceAll(" ","-");
+			//String structure = "m["+content+"]";
+			String structure = content.replaceAll("]-o\\[", "-").replaceAll("[{()}]", "");
+			if(cs.unassignedmodifier == null){
+				cs.unassignedmodifier = structure;
+			}else{
+				cs.unassignedmodifier += structure;
+			}
+		return;
+		}		
+		//end mohan code
+		
 		//r[{} {} p[of] o[.....]]
 		String modifier = ckstring.substring(0, ckstring.indexOf("p[")).replaceFirst("^r\\[", "").replaceAll("[{}]", "").trim();
 		//sometime o[] is not here as in ckstring=r[p[at or above]] {middle}
@@ -1675,53 +1710,13 @@ public class CharacterAnnotatorChunked {
 			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.indexOf("] o[")).replaceAll("(\\w\\[|])", "");
 			object  = ckstring.substring(ckstring.indexOf("o[")).replaceFirst("\\]+$", "")+"]";//nested or not
 		}*/
-		
-		
+
+
 		
 		object = NumericalHandler.originalNumForm(object);
 		boolean lastIsStruct = false;
 		boolean lastIsChara = false;
 		boolean lastIsComma = false;
-		
-		//mohan code to get the original subject if the subject is empty Store the chunk into the modifier
-		
-		if(this.latestelements.size()==0)
-		{
-			//String content = ck.toString().replaceAll(" ","-");
-			String content = ckstring.replaceAll(" ","-");
-			//String structure = "m["+content+"]";
-			String structure = content.replaceAll("]-o\\[", "-").replaceAll("[{()}]", "");
-			if(cs.unassignedmodifier == null){
-				cs.unassignedmodifier = structure;
-			}else{
-				cs.unassignedmodifier += structure;
-			}
-				
-			return;
-		}
-		
-		//end mohan code
-		
-		Element lastelement = this.latestelements.get(this.latestelements.size()-1);
-		
-		
-		
-		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
-			lastIsStruct = true;
-		}else if(lastelement.getName().compareTo("character") == 0){
-			lastIsChara = true;
-		}else if(lastelement.getName().matches("("+this.delims+")")){
-			lastIsComma = true;
-			if(this.printComma){
-				System.out.println("prep ahead of character: "+ckstring);
-			}
-		}
-		//of o[3-7]
-		if(lastIsStruct && object.matches("o\\[\\(?\\[?\\d.*?\\d\\+?\\]")){
-			this.annotateNumericals(object.replaceAll("(o\\[|\\])", ""), "count", null, this.latestelements, false, cs);//added cs
-			return;
-		}
-		
 		ArrayList<Element> structures = new ArrayList<Element>();
 		//3/30/2011: try to separate "in {} {} arrays" cases from "at {flowering}", "in fruit", and "in size" cases
 		//allow () be added around the last bare word if there is a {} before the bare word, or if the word is not a character (size, profile, lengths)
@@ -1738,6 +1733,40 @@ public class CharacterAnnotatorChunked {
 					object = object.replaceFirst("\\[", "[(").replaceFirst("\\]", ")]");
 				}
 			}*/
+		
+		Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
+		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
+			if(lastelement.getAttributeValue("name").equals("unknown_subject")){
+				//case of "width of interocular area ..."
+				this.latestelements.remove(this.latestelements.size()-1);				
+				if(this.subjects.size()>=1){
+					Element lasttemp =this.subjects.get(this.subjects.size()-1);
+					if(lasttemp.getAttribute("name")!=null && lasttemp.getAttributeValue("name").equals("unknown_subject")){
+						this.subjects.remove(this.subjects.size()-1);
+					}
+				}			
+				structures = processObject(object, cs);
+				if(this.subjects.size()==0) this.subjects = structures;
+				this.updateLatestElements(structures);
+				return;
+			}else{
+				lastIsStruct = true;
+			}
+		}else if(lastelement.getName().compareTo("character") == 0){
+			lastIsChara = true;
+		}else if(lastelement.getName().matches("("+this.delims+")")){
+			lastIsComma = true;
+			if(this.printComma){
+				System.out.println("prep ahead of character: "+ckstring);
+			}
+		}
+		//of o[3-7]
+		if(lastIsStruct && object.matches("o\\[\\(?\\[?\\d.*?\\d\\+?\\]")){
+			this.annotateNumericals(object.replaceAll("(o\\[|\\])", ""), "count", null, this.latestelements, false, cs);//added cs
+			return;
+		}
+		
+
 		if(object.matches(".*?\\)\\]+$")){
 			structures = linkObjects(modifier, pp, object, lastIsStruct,
 					lastIsChara, lastelement, cs); // 7-12-02 add cs
@@ -2034,6 +2063,7 @@ public class CharacterAnnotatorChunked {
 			if(value.indexOf("moreorless")>=0){
 				value = value.replaceAll("moreorless", "more or less");
 			}
+			value = value.replaceAll("-", " ");
 			value = value.replaceAll(" , ", ", ").trim();
 			String v = e.getAttributeValue(attribute);
 			if(v==null || !v.matches(".*?(^|; )"+value+"(;|$).*")){

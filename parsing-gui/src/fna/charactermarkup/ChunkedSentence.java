@@ -1715,6 +1715,59 @@ public class ChunkedSentence {
 			return chunk;
 		}
 		
+		//create a new ChunkedSentence object
+		if(token.startsWith("s[")){
+			ArrayList<String> tokens = new ArrayList<String>();
+			String text = token.replaceFirst("s\\[", "").replaceFirst("\\]$", "");
+			//break text into correct tokens: s[that is {often} {concealed} r[p[by] o[(trichomes)]]] ;
+			tokens = Utilities.breakText(text);
+			this.pointer++;
+			text=text.trim();
+			if(!text.matches(".*?[,;\\.:]$")){
+				text +=" .";
+				tokens.add(".");
+			}
+			Chunk c = new ChunkSBAR(text);
+			c.setChunkedTokens(tokens);
+			return c;
+		}
+		if(token.matches("\\W") ){//treat L/RRBs as either , or null
+			pointer++;
+			this.unassignedmodifier = null;
+			//if(pointer == this.chunkedtokens.size()) return new ChunkEOL(""); //treat . in () as chunkcomma, because EOL will reset unassignedmodifier and unassignedcharacters. Width (tr.) of ventral areas needs character width.
+			return new ChunkComma("");
+		}
+		
+		if(token.matches("\\b(and|either)\\b")){
+			pointer++;
+			this.unassignedmodifier = null;
+			return null;
+		}
+		//end of a segment
+		if(token.matches("SG[;:\\.]SG")){
+			this.inSegment = false;
+			pointer++;
+			//this.unassignedmodifier = null;
+			return new ChunkEOL(""); //end of line/statement
+		}
+		
+		if(token.matches("SG,SG")){
+			this.inSegment = false;
+			pointer++;
+			this.unassignedmodifier = null;
+			return new ChunkEOS("");//end of segment/substence
+		}
+		
+		//start of a segment
+		if(!this.inSegment){
+			this.inSegment = true;
+			chunk = getNextOrgan();//pointer++
+			if(chunk != null){
+				this.unassignedmodifier = null;
+				return chunk;
+			}
+		}
+		
 		//create a new ChunkedSentence object for bracketed text 
 		//if(token.startsWith("-LRB-/-LRB-")){
 		if(token.startsWith("-LRB-/-LRB-") || token.startsWith("-LSB-/-LSB-")){
@@ -1743,6 +1796,7 @@ public class ChunkedSentence {
 					geo = true;
 				}
 				text = text.replaceFirst("-R[RS]B-/-R[RS]B-$", "").trim();
+				if(tokens.get(tokens.size()-1).matches("-R[RS]B-/-R[RS]B-")) tokens.set(tokens.size()-1, null);
 				if(!text.matches(".*?[,;\\.:]$")){
 					text +=" .";
 					tokens.add(".");
@@ -1776,58 +1830,6 @@ public class ChunkedSentence {
 			*/
 		}
 		
-		
-		//create a new ChunkedSentence object
-		if(token.startsWith("s[")){
-			ArrayList<String> tokens = new ArrayList<String>();
-			String text = token.replaceFirst("s\\[", "").replaceFirst("\\]$", "");
-			//break text into correct tokens: s[that is {often} {concealed} r[p[by] o[(trichomes)]]] ;
-			tokens = Utilities.breakText(text);
-			this.pointer++;
-			text=text.trim();
-			if(!text.matches(".*?[,;\\.:]$")){
-				text +=" .";
-				tokens.add(".");
-			}
-			Chunk c = new ChunkSBAR(text);
-			c.setChunkedTokens(tokens);
-			return c;
-		}
-		if(token.matches("\\W") ){//treat L/RRBs as either , or null
-			pointer++;
-			this.unassignedmodifier = null;
-			return new ChunkComma("");
-		}
-		
-		if(token.matches("\\b(and|either)\\b")){
-			pointer++;
-			this.unassignedmodifier = null;
-			return null;
-		}
-		//end of a segment
-		if(token.matches("SG[;:\\.]SG")){
-			this.inSegment = false;
-			pointer++;
-			//this.unassignedmodifier = null;
-			return new ChunkEOL(""); //end of line/statement
-		}
-		
-		if(token.matches("SG,SG")){
-			this.inSegment = false;
-			pointer++;
-			this.unassignedmodifier = null;
-			return new ChunkEOS("");//end of segment/substence
-		}
-		
-		//start of a segment
-		if(!this.inSegment){
-			this.inSegment = true;
-			chunk = getNextOrgan();//pointer++
-			if(chunk != null){
-				this.unassignedmodifier = null;
-				return chunk;
-			}
-		}
 		
 		//all chunks
 		if(token.matches("^\\w+\\[.*")){
@@ -2298,7 +2300,7 @@ public class ChunkedSentence {
 		}*/
 	}
 	/**
-	 * 
+	 * at least 1 u[posterior o[(segment)] ...
 	 * @return e.g. z[m[leaf] e[blade]], apex, 
 	 * margins and apexes
 	 * {} <> <>
@@ -2310,11 +2312,25 @@ public class ChunkedSentence {
 		int i = 0;
 		for(i = pointer; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
+			if(token.matches("-L[RS]B-/-L[RS]B-")){
+				//collect until the matching right brackets are found
+				int left = 1;
+				String text = token+" "; 				
+				do{
+					token = this.chunkedtokens.get(++i);
+					if(token.matches("-L[RS]B-/-L[RS]B-")) left++;
+					if(token.matches("-R[RS]B-/-R[RS]B-")) left--;
+					text += token+" ";
+				}while(left!=0);
+				organ += text;
+				continue;
+			}
 			if(token.startsWith("z[")){
 				pointer++;
 				return new ChunkOrgan(token);
 			}
-			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")\\b.*") || token.matches(".*?[,;:\\.].*")){
+			//at-{least} should not be matched by preppostions
+			if(token.matches(".*?\\b("+ChunkedSentence.prepositions+")[ \\]].*") || token.matches(".*?[,;:\\.].*")){
 				break;
 			}
 			if(found && token.matches("\\b(and|or)\\b")){
@@ -2329,7 +2345,7 @@ public class ChunkedSentence {
 				if(organ.indexOf("u[")>=0){
 					organ = organ.replaceFirst("u\\[o\\[", "").replaceFirst("\\]{2,2}$", "");
 				}
-				organ = organ.replaceAll("[<(]", "(").replaceAll("[>)]", ")").trim();
+				organ = organ.replaceAll("[<(]", "(").replaceAll("[>)]", ")").replaceAll("(\\w\\[|\\])", "").trim();
 				return new ChunkOrgan("z["+organ+"]");
 			}
 			organ += token+" ";
@@ -2343,7 +2359,7 @@ public class ChunkedSentence {
 			if(organ.matches("^\\w+\\[")){
 				organ = organ.replaceAll("(\\w+\\[|\\])", "");
 			}
-			organ = organ.replaceAll("[<(]", "(").replaceAll("[>)]", ")").trim();
+			organ = organ.replaceAll("[<(]", "(").replaceAll("[>)]", ")").replaceAll("(\\w\\[|\\])", "").trim();
 			return new ChunkOrgan("z["+organ+"]");
 		}
 		
@@ -2469,8 +2485,11 @@ parallelism scope: q[other chunks]
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
 				return "ChunkTHAN";
-			} else if(afterthan.matches("\\{?half\\}?.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
-				if(charainfo==null){chara="size";}
+			} else if(afterthan.matches("\\{?half\\}?.*")){// "n[{more} than half]" => n[size[{more} than half]]
+				if(charainfo==null){
+					chara=CharacterAnnotatorChunked.unassignedcharacter==null? "size": CharacterAnnotatorChunked.unassignedcharacter;
+					CharacterAnnotatorChunked.unassignedcharacter = null;
+					}
 				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);

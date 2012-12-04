@@ -337,7 +337,6 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		sent = ratio2number(sent);//bhl
 		sent = sent.replaceAll("(?<=\\d)\\s*/\\s*(?=\\d)", "/");
 		sent = sent.replaceAll("(?<=\\d)\\s+(?=\\d)", "-"); //bhl: two numbers connected by a space
-		sent = sent.replaceAll("at least", "at-least");
 		sent = sent.replaceAll("<?\\{?\\btwice\\b\\}?>?", "2 times");
 		sent = sent.replaceAll("<?\\{?\\bthrice\\b\\}?>?", "3 times");
 		sent = sent.replaceAll("2\\s*n\\s*=", "2n=");
@@ -646,10 +645,26 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		String database = "markedupdatasets";
 
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_posedsentences.txt";
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\transformed";
+		String prefix = "treatise_o_test";*/
+		
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\transformed";
-		String prefix = "fnav7_test";
+		String prefix = "fnav7_test";*/
+		
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv5Caryophyllaceae\\target\\fnav5_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv5Caryophyllaceae\\target\\fnav5_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv5Caryophyllaceae\\transformed";
+		String prefix = "fnav5_test";*/
+		
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\target\\fnav8_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\target\\fnav8_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\transformed";
+		String prefix = "fnav8_test";
+		
 		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
 		String transformeddir = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\transformed";
@@ -669,9 +684,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
-
-
 
 
 		sp.POSTagging();

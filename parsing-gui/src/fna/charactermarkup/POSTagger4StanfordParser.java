@@ -258,7 +258,7 @@ public class POSTagger4StanfordParser {
 	        	   if(mc.matches()){
 	        		   sb.append(word+"/IN ");
 	        	   }else if(word.contains("taxonname-")){
-	        		   sb.append(word+"/NNS ");
+	        		   sb.append(word+"/NNS "); 
 	        	   }else if(word.matches("in-.*?(-view|profile)")){
 	        		   sb.append(word+"/RB ");
 	        	   }else if(word.endsWith("ly") && word.indexOf("~") <0){ //character list is not RB
