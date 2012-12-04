@@ -515,6 +515,7 @@ public class Utilities {
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String[] ch = characterhash.get(w);
+		if(w.matches("at[-_]least")) return null;
 		if(ch != null){
 			return ch;
 		}else{
@@ -523,6 +524,7 @@ public class Utilities {
 				//return "shape";
 				w = w.replaceFirst("shaped", "-shaped");
 			}
+
 
 			if(w.indexOf('-')>0){
 				String[] ws = w.split("-+");
