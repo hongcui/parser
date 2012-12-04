@@ -128,6 +128,7 @@ public class SentenceOrganStateMarker {
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
+					sent = sent.replaceAll("\\bat least\\b", "at_least");
 					String text = stringColors(sent);
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 					text = text.replaceAll("more or less", "moreorless");
@@ -694,7 +695,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav7_test", "fnaglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav8_test", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
