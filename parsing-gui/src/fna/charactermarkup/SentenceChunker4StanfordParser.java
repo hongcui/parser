@@ -1132,7 +1132,7 @@ end procedure
 		//detach any leaf element encountered along the path
 		String id = "";
 		String chunktext = chunk.length() ==0 ? allText(e) : chunk;//if chunk is "", then collapse all text/child nodes 
-		chunktext = chunktext.trim().replaceAll("(\\w\\[|\\])", "");
+		chunktext = chunktext.trim().replaceAll("(\\w\\[|\\])", "").replaceAll("\\s+", " ");
 		//Element thechild = null;
 		String text = "";
 		ArrayList<Element> tobedeleted = new ArrayList<Element>();
@@ -1146,7 +1146,7 @@ end procedure
 							id = ((Element)c).getAttributeValue("id");	
 					}
 					if(((Element)c).getAttribute("text") != null){
-						String t = ((Element)c).getAttributeValue("text");
+						String t = ((Element)c).getAttributeValue("text").replaceAll("\\s+", " ");
 						text+=t+" ";
 						t = t.replaceAll("(\\w\\[|\\])", "");
 						chunktext = chunktext.replaceFirst("^"+t, "").trim();
@@ -1162,7 +1162,7 @@ end procedure
 				}
 			}
 		}catch (Exception ex){
-			ex.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ex.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 
 		//delete
@@ -1182,9 +1182,10 @@ end procedure
 				}
 			}					
 		}catch (Exception ex){
-			ex.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ex.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}			
 		//format text
+		text = text.trim();
 		if(chunk.length()>0){//if chunk is "", then collapse all text/child nodes without inserting symbols 
 			text = text.replaceFirst(pattern, symbol+
 					"["+chunk+"]"); //this replacement may have no effect on text because the chunk does not consist of consecutive words.
@@ -1383,6 +1384,10 @@ end procedure
 				Element lastPP = null;
 				while(itc.hasNext()){
 					Element e = itc.next();
+					if(e.getChild("IN")!=null && e.getChild("IN").getAttributeValue("text").compareTo("than")==0){
+						//"than" can never be in a pp list
+						return;
+					}
 					String ename = e.getName();
 					if(!ename.matches("(PP|IN|CC|NP|PUNCT|TO|ADVP)")){//added TO
 						isList=false;

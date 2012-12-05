@@ -830,6 +830,7 @@ public class CharacterAnnotatorChunked {
 				}				
 			}else if(ck instanceof ChunkEOS || ck instanceof ChunkEOL){
 				if(cs.unassignedmodifier!=null && cs.unassignedmodifier.length()>0){
+					if(this.latestelements.size()>0){
 					Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 					if(lastelement.getName().compareTo("structure") == 0){
 						Iterator<Element> it = this.latestelements.iterator();
@@ -861,6 +862,7 @@ public class CharacterAnnotatorChunked {
 						while(it.hasNext()){
 							this.addAttribute(it.next(), "modifier", cs.unassignedmodifier);
 						}
+					}
 					}
 				}
 				this.attachToLast = false;
@@ -1296,7 +1298,7 @@ public class CharacterAnnotatorChunked {
 		ArrayList<Element> tostructures = this.processObject(object, cs); // 7-12-02 add cs//TODO: fix content is wrong. i8: o[a] architecture[surrounding (involucre)]
 		results.addAll(tostructures);
 		
-		this.createRelationElements(relation.replaceAll("(\\w\\[|\\])", ""), this.subjects, tostructures, modifier, false, cs);// 7-12-02 add cs
+		this.createRelationElements(relation.replaceAll("(\\w+\\[|\\])", ""), this.subjects, tostructures, modifier, false, cs);// 7-12-02 add cs
 		return results;
 	}
 
@@ -1833,7 +1835,8 @@ public class CharacterAnnotatorChunked {
 				l = l < 0 ? object.lastIndexOf('[') : l; 
 				String last = object.substring(l+1).replaceAll("\\W+$", "");
 				if(object.indexOf('{')>=0 || !isCharacter(last)){// if there are other modifiers/characters, then must make "last" a structure
-					object = object.replaceFirst(last+"(?=\\]+$)", "("+last+")");
+					String temp = last.replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}");//escape
+					object = object.replaceFirst(temp+"(?=\\]+$)", "("+last+")");
 				}								
 			}
 		}
@@ -2607,7 +2610,7 @@ public class CharacterAnnotatorChunked {
 			parenthetical = cvalue;
 			cvalue = "";
 		}
-		
+		cvalue = cvalue.replaceAll("[()]", "");
 		if(cvalue.length() > 0){
 			character = new Element("character");
 			//if(this.inbrackets){character.setAttribute("in_bracket", "true");}
@@ -2636,7 +2639,15 @@ public class CharacterAnnotatorChunked {
 				character.setAttribute("value", cvalue);
 			}
 			boolean usedm = false;
+			//what if parents is empty?
+			if(parents.size()==0){
+				if(this.sentsrc.endsWith("-0")){
+					this.establishSubject("(unknown_subject)", cs);
+					parents = this.subjects;
+				}
+			}
 			Iterator<Element> it = parents.iterator();
+
 			while(it.hasNext()){
 				Element e = it.next();
 				character = (Element)character.clone();

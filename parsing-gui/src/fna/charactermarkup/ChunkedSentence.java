@@ -53,6 +53,7 @@ public class ChunkedSentence {
 	private String text = null;
 	private String sentsrc = null;
 	private String tableprefix = null;
+	private Hashtable<String, String> thantype = new Hashtable<String, String>();
 	public static final String locationpp="near|from";
 	public static final String units= "cm|mm|dm|m|meter|meters|microns|micron|unes|µm|um";
 	public static final String percentage="%|percent";
@@ -139,7 +140,10 @@ public class ChunkedSentence {
 				nouns.add(rs.getString("term")); //initialize nouns with "size", "color", etc.
 			}
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
+					+sw.toString());
 		}
 		
 		this.sentsrc = sentsrc;
@@ -1114,7 +1118,9 @@ public class ChunkedSentence {
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
 				//scan for JJRs
 				String token = this.chunkedtokens.get(i);
-				if(more.length()==0 && (token.matches(".*?\\b(\\w+er|more|less)\\b.*") && (token.indexOf("<")<0)|| this.markedsent.indexOf(token+" than")>=0)){ //<inner> is not, but <longer> than is 
+				if(more.length()==0 && 
+						((token.matches(".*?\\b(\\w+er|more|less)\\b.*") && token.indexOf("er>")<0)
+								|| (token.length()>0 && this.markedsent.indexOf(token+" than")>=0))){ //<inner> is not, but <longer> than is 
 					firstmorei = i;
 					if(token.matches(".*?\\bmore\\b.*")){
 						more = "more";
@@ -1124,8 +1130,6 @@ public class ChunkedSentence {
 						}else{
 							more = "er";
 						}
-						
-						
 					}
 				}else if(more.compareTo("er") == 0 && !token.matches(".*?\\b(\\w+er|more|less|and|or|than)\\b.*") ){
 					more = "";
@@ -1138,7 +1142,7 @@ public class ChunkedSentence {
 					if(firstmorei == thani){
 						//token can be a complex chunk and firstmorei == thani
 						//e.g.: r[p[of] o[10-14 , orientation[{orientation~list~spreading~to~appressed}] -LRB-/-LRB- {thinner} than (phyllaries) -RRB-/-RRB- , {dark-c-green} , shape[{shape~list~broadly~ovate~or~ovate~to~oblong}] (bractlets)]]
-						Pattern than = Pattern.compile("(.*? )(\\{(?:\\w+er|more|less)\\}?.* than \\(.*?\\))(.*)");
+						Pattern than = Pattern.compile("(.*? )(\\{(?:\\w+er|more|less)\\}?.*? than .*?\\(.*?\\))(.*)");
 						Matcher m = than.matcher(token);
 						String newtoken = "";
 						while(m.matches()){
@@ -1675,6 +1679,10 @@ public class ChunkedSentence {
 		token = token.compareTo("±")==0? "moreorless" : token;
 		token = token.matches(".*?\\d.*")? NumericalHandler.originalNumForm(token) : token;
 		
+		if(token.compareTo("and")==0){
+			pointer++;
+			return new ChunkComma(",");
+		}
 		//all tokens: 
 		//number:
 		//if(token.matches(".*?\\d+$")){ //ends with a number
@@ -1868,7 +1876,9 @@ public class ChunkedSentence {
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				e.printStackTrace(pw);
-				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")+
+						sw.toString());
 			}
 		}
 		
@@ -1945,7 +1955,10 @@ public class ChunkedSentence {
 							return null;
 						}
 					}catch(Exception e){
-						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+						LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+								System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
+								+sw.toString());
 					}
 				}
 			}
@@ -2059,6 +2072,12 @@ public class ChunkedSentence {
 										}		
 									}
 									scs = (scs.trim().length()>0? scs.trim()+"] ": "")+o;
+									//if there is position: v[engages] position[basal] o[(half)]
+									if(scs.contains("position[")){
+										String temp1 = scs.substring(0, scs.indexOf(" position[")).trim(); 
+										String temp2 = scs.substring(scs.indexOf(" position[")).replaceAll("(\\w+\\[|\\])", "").trim();
+										scs = temp1+" o["+temp2+"]";
+									}
 									this.pointer = j+1;
 									return new ChunkVP("b["+scs+"]"); 
 								}
@@ -2458,6 +2477,7 @@ parallelism scope: q[other chunks]
 			return "ChunkCHPP"; //character/state-pp
 		}
 		if(token.startsWith("n[")){//returns three different types of ChunkTHAN
+			if(thantype.get(token)!=null) return thantype.get(token);
 			Pattern p = Pattern.compile("\\bthan\\b");
 			Matcher m = p.matcher(token);
 			m.find();
@@ -2468,7 +2488,7 @@ parallelism scope: q[other chunks]
 			
 			String[] charainfo = null;
 			String chara = "";
-			if(!charword.matches("("+ChunkedSentence.more+")")){
+			if(!charword.matches("\\{?("+ChunkedSentence.more+")\\}?")){
 				charainfo = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 			}
 			String afterthan = token.substring(token.indexOf(" than ")+6);
@@ -2478,12 +2498,14 @@ parallelism scope: q[other chunks]
 				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
+				thantype.put(token, "ChunkTHAN");
 				return "ChunkTHAN"; //character
 			}else if(afterthan.matches(".*?\\d.*")){// "n[{longer} than 3 (cm)]" => n[size[{longer} than 3 (cm)]]
 				if(charainfo==null){chara="count";}
 				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
+				thantype.put(token, "ChunkTHAN");
 				return "ChunkTHAN";
 			} else if(afterthan.matches("\\{?half\\}?.*")){// "n[{more} than half]" => n[size[{more} than half]]
 				if(charainfo==null){
@@ -2493,16 +2515,19 @@ parallelism scope: q[other chunks]
 				else{chara = charainfo[0];}
 				token = "n["+token.replaceFirst("n\\[", chara+"[")+"]";
 				this.chunkedtokens.set(id, token);
+				thantype.put(token, "ChunkTHAN");
 				return "ChunkTHAN";
 			}//Case C
 			else if(afterthan.indexOf("(")>=0){ //contains organ
 				if(charainfo==null){//is a constraint, lobed n[more than...]
 					token = "n["+token.replaceFirst("n\\[", "constraint[")+"]";
 					this.chunkedtokens.set(id, token);
+					thantype.put(token, "ChunkTHAN");
 					return "ChunkTHAN";
 				}else{//n[more deeply lobed than...
 					token = "n["+(beforechar.length()>0? "m["+beforechar+"] ": "")+charainfo[0]+"["+charword+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"] constraint[than "+afterthan+"]";
 					this.chunkedtokens.set(id, token);
+					thantype.put(token, "ChunkTHAN");
 					return "ChunkTHAN";
 				}
 			}//Case A n[wider than long]
@@ -2515,6 +2540,7 @@ parallelism scope: q[other chunks]
 				//End mohan case
 				token = "n["+token.replaceFirst("n\\[", charainfo[0]+"[")+"]";
 				this.chunkedtokens.set(id, token);
+				thantype.put(token, "ChunkTHANC");
 				return "ChunkTHANC"; //character
 			}
 		}
@@ -2639,7 +2665,10 @@ parallelism scope: q[other chunks]
 			}*/
 		}
 		catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
+					+sw.toString());
 		}
 		
 		if(senttag.compareTo("ignore")!=0){
