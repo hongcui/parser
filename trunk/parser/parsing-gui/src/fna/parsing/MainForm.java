@@ -2348,7 +2348,7 @@ public class MainForm {
 					/*Save the decision first */
 					charDb.saveDecision(cooccurrences.get(0).getGroupNo(), decision4group);
 					
-					/*Save the terms remain in the group */
+					/*Save the terms remain in the group. In case of unpaired, cooccurrences hold all the unpaired terms in the group */
 					for (CoOccurrenceBean cbean : cooccurrences) {
 						TermsDataBean tbean = new TermsDataBean();
 						tbean.setFrequency(Integer.parseInt(cbean.getFrequency().getText()));
@@ -2391,6 +2391,7 @@ public class MainForm {
 				//}//if(unpaired)
 
 				/** Logic for the terms removed from the groups goes here */
+				/* noOfTermGroups=the number of original groups; getNumberofGroupsSaved() can be greater when new groups are generated*/
 				if (noOfTermGroups <= getNumberOfGroupsSaved() && isTermsNotGrouped()) {
 					int choice = 0;
 					if(charStatePopUp){
@@ -2442,7 +2443,7 @@ public class MainForm {
 				    default : //Do Nothing! :-)
 				    }
 
-				}else if(noOfTermGroups == getNumberOfGroupsSaved() && !isTermsNotGrouped()){ //no terms left
+				}else if(noOfTermGroups <= getNumberOfGroupsSaved() && !isTermsNotGrouped()){ //no terms left
 					int count = mainDb.finalizeTermCategoryTable();
 					if(count>0 && MainForm.upload2OTO){
 						UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
