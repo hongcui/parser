@@ -3,6 +3,9 @@
  * 
  */
 package fna.charactermarkup;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -24,6 +27,7 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.*;
 
 import fna.parsing.ApplicationUtilities;
+import fna.parsing.Registry;
 
 
 /**
@@ -135,6 +139,8 @@ public class CharacterAnnotatorChunked {
 		Element text = new Element("text");//make <text> the first element in statement
 		text.addContent(this.text);
 		if(!this.evaluation) this.statement.addContent(text);
+		if(this.text.startsWith("characters of ") && this.text.replaceAll("[^,;\\.:]", "").length()<=1) return this.statement; //characters of abc. one sentence.
+		if(! (this.text.replaceAll("\\S+taxonname-\\S+", "").contains("\\w"))) return this.statement; //the sentence contain 1 or more taxonames, no other text
 		//because sentence tags are not as reliable as chunkedsentence
 		//no longer get subject text from cs
 		//instead, annotate chunk by chunk
@@ -248,6 +254,8 @@ public class CharacterAnnotatorChunked {
 		}
 		return this.statement;
 	}
+	
+	
 
 	/**
 	 * assuming subject organs of subsentences in a sentence are parts of the subject organ of the sentence
