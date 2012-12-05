@@ -64,7 +64,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
@@ -121,7 +121,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")+ "source:"+ src + System.getProperty("line.separator")+
+							sw.toString());
 				}
 	       		stmt2.execute("insert into "+this.tableprefix+"_"+this.POSTaggedSentence+" values('"+rs.getString(1)+"','"+str+"')");
 	       		out.println(str);
@@ -244,10 +247,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
 					//Document doccp = (Document)doc.clone();
+					String src = "";
 					if(rs.relative(i)){
 						try{ //if exception is thrown at any of the following steps, move on the next sentence.
 						String sent = rs.getString(2);
-						String src = rs.getString(1);
+						src = rs.getString(1);
 						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
 						//int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
 						String thisfileindex = src.replaceFirst("\\.txt.*$", "");
@@ -310,7 +314,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
 						}catch(Exception e){
-							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+							LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+									System.getProperty("line.separator")+ "source:"+ src + System.getProperty("line.separator")+
+									sw.toString());
 						}
 						rs.relative(i*-1); //reset the pointer
 						}
@@ -644,11 +651,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 
 		String database = "markedupdatasets";
+		
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
+		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_parsedsentences.txt";
+		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\transformed";
+		String prefix = "donat_test";*/
 
-		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\transformed";
-		String prefix = "treatise_o_test";*/
+		String prefix = "treatise_o_test";
 		
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_parsedsentences.txt";
@@ -660,10 +672,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv5Caryophyllaceae\\transformed";
 		String prefix = "fnav5_test";*/
 		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\target\\fnav8_test_posedsentences.txt";
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\target\\fnav8_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\target\\fnav8_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv8Ericaceae\\transformed";
-		String prefix = "fnav8_test";
+		String prefix = "fnav8_test";*/
 		
 		/*String posedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_posedsentences.txt";
 		String parsedfile = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt\\target\\fnav19_excerpt_parsedsentences.txt";
@@ -684,12 +696,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

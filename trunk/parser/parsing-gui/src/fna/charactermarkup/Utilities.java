@@ -452,7 +452,7 @@ public class Utilities {
 		if(word.matches("(not|at-?least|throughout|much)")){
 			return true;
 		}
-		if(word.matches("in.*?(profile|view)")){//covers in-dorsal-view, in-profile
+		if(word.matches("\\b(in|at).*(profile|view|closure)\\b")){//covers in-dorsal-view, in-profile
 			return true;
 		}
 		/*mohan code to make as-long-as an adverb*/
