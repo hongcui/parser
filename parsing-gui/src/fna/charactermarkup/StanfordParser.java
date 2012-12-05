@@ -64,19 +64,24 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
 	private boolean printSent = true;
 	private boolean printProgress = true;
 	private boolean evaluation = false;
+	public static String newline = System.getProperty("line.separator");
+	//String output = Registry.TargetDirectory+"HumanReadable.txt";
+	String output = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\HumanReadable.txt";
+	private File outfile = new File(output);
 
 	/**
 	 * 
 	 */
 	public StanfordParser(String posedfile, String parsedfile, String database, String tableprefix, String glosstable, boolean evaluation) {
 		// TODO Auto-generated constructor stub
+		if(outfile.exists()) outfile.delete();
 		this.posedfile = new File(posedfile); 
 		this.parsedfile = new File(parsedfile);
 		this.database = database;
@@ -309,6 +314,21 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							//if(statement!=null) description.addContent(statement);
 							statement = cac.annotate(src, src, cs); //src: 100.txt-18
 
+							//print a human readable file 
+							//String newline = System.getProperty("line.separator");
+							//String humanreadable = i+"["+src+"]: "+cs.toString()+newline;
+							String humanreadable = getHumanReadableText(statement)+newline+newline;
+							  try{
+								  // Create file 
+								  FileWriter fstream = new FileWriter(outfile, true);
+								  BufferedWriter out = new BufferedWriter(fstream);
+								  out.write(humanreadable);
+								  //Close the output stream
+								  out.close();
+							}catch (Exception e){//Catch exception if any
+								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+							}
+
 							if(statement!=null) description.addContent(statement);
 
 							pdescID = thisdescID;
@@ -339,6 +359,56 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
     }
 
 
+	/**
+	 * turn statement in xml format to a text format
+	 */
+	@SuppressWarnings("unchecked")
+	private String getHumanReadableText(Element statement) {
+		
+		List<Element> structures = statement.getChildren("structure");
+		Hashtable<String, Element> id2elements = new Hashtable<String, Element>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(statement.getAttributeValue("id")+":"+statement.getChildText("text")+newline);
+		StringBuffer rsb = new StringBuffer();
+		for(Element structure : structures){
+			String structurename = (structure.getAttribute("constraint")!=null? structure.getAttributeValue("constraint")+" " : "")+structure.getAttributeValue("name");
+			sb.append(newline+structurename+":"+newline);
+			List<Element> characters = structure.getChildren("character");
+			for(Element character : characters){
+				sb.append("\t");
+				List<Attribute> attributes = character.getAttributes();
+				for(Attribute attribute: attributes){
+					if(attribute.getName().matches("name")){
+						sb.append(attribute.getValue()+":");
+					}else if(attribute.getName().matches("value")){
+						sb.append(attribute.getValue()+"; ");
+					}else if(attribute.getName().compareTo("constraintid")==0){//do nothing
+					}else{
+						sb.append(attribute.getName()+":"+attribute.getValue()+"; ");
+					}
+				}
+				sb.append(newline);
+			}
+			String structid = structure.getAttributeValue("id");
+			try{
+				XPath relationid = XPath.newInstance(".//relation[@from='"+structid+"']");
+				List<Element> relations = relationid.selectNodes(statement);
+				for(Element relation : relations){
+					sb.append("\t");
+					sb.append((relation.getAttribute("negation")!=null && relation.getAttributeValue("negation").compareTo("false")==0? "" : "not "));
+					sb.append(relation.getAttributeValue("name")+":");
+					String toid = relation.getAttributeValue("to");
+					String toname = ((Element)XPath.selectSingleNode(statement, ".//structure[@id='"+toid+"']")).getAttributeValue("name");
+					sb.append(toname);					
+				}
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")+sw.toString());
+			}
+		}
+		return sb.toString();
+	}
 
 	public static String normalizeSpacesRoundNumbers(String sent) {
 		sent = ratio2number(sent);//bhl
@@ -652,15 +722,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 		String database = "markedupdatasets";
 		
-		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
+		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\transformed";
-		String prefix = "donat_test";*/
+		String prefix = "donat_test";
 
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\transformed";
-		String prefix = "treatise_o_test";
+		String prefix = "treatise_o_test";*/
 		
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\fnav7_test_parsedsentences.txt";
@@ -701,8 +771,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
