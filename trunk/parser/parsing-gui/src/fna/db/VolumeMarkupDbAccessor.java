@@ -170,7 +170,7 @@ public class VolumeMarkupDbAccessor {
 	 		
 	 		String sql = "select dhword from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS")+
 			//" where count>=3 and inbrackets=0 and dhword not like '%\\_%' and " +
-			" where inbrackets=0 and dhword not like '%\\_%' and " +		
+			" where dhword not like '%\\_%' and " +		
 			" dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where saved_flag='red')"+
 			filter +
 			" and dhword not in (select word from "+ this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+") order by dhword";
