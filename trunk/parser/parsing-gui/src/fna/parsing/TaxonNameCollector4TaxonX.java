@@ -57,9 +57,12 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	private void saveNames() {
 		try{
 			for(String name: names){
-				insert.setString(1, name);	
-				insert.setString(2, this.volume);
-				insert.execute();
+				name = name.replaceAll("\\.", "");
+				if(name.length()>2){
+					insert.setString(1, name);	
+					insert.setString(2, this.volume);
+					insert.execute();
+				}
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
