@@ -124,7 +124,7 @@ public class SentenceOrganStateMarker {
 					String sent = rs.getString("sentence").trim();
 					if(sent.length()!=0){
 					String source = rs.getString("source");
-					//if(!source.equals("232.txt-0")) continue;
+					if(!source.equals("1_1.txtp0.txt-1")) continue;
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
