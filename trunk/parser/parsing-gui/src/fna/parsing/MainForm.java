@@ -3742,6 +3742,7 @@ public class MainForm {
 	private void saveProject() {
 
 		StringBuffer sb = new StringBuffer();
+		this.dataPrefixCombo.setText(this.dataPrefixCombo.getText().toLowerCase());
 		sb.append(configurationText.getText()).append("\\\n");
 		sb.append(sourceText.getText()).append("\\\n");
 		sb.append(targetText.getText());
