@@ -72,8 +72,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private boolean printProgress = true;
 	private boolean evaluation = false;
 	public static String newline = System.getProperty("line.separator");
-	//String output = Registry.TargetDirectory+"HumanReadable.txt";
-	String output = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\HumanReadable.txt";
+	String output = Registry.TargetDirectory+"HumanReadable.txt";
+	//String output = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\HumanReadable.txt";
 	private File outfile = new File(output);
 
 	/**
