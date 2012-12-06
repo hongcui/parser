@@ -61,7 +61,7 @@ public class UploadTerms2OTO{
 		success = scpTo(tsentence);
 		if(!success) return false;
 		
-	    String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+	    String backup = "mysqldump --lock-tables=false -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
 		ArrayList<String> result = execute(backup);
 		if(result.size()>1 || result.get(result.size()-1).equals("-1")) return false;
 		
@@ -76,8 +76,8 @@ public class UploadTerms2OTO{
     public static boolean dumpFiles(String dataprefix) {
       try {
     	  Runtime rt = Runtime.getRuntime();
-    	  String term_category_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
-    	  String sentence_command = "mysqldump -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
+    	  String term_category_command = "mysqldump --lock-tables=false -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
+    	  String sentence_command = "mysqldump --lock-tables=false -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
     	  
     	  rt.exec(term_category_command);
     	  rt.exec(sentence_command);
