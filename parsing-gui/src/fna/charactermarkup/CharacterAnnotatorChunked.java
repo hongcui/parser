@@ -139,8 +139,12 @@ public class CharacterAnnotatorChunked {
 		Element text = new Element("text");//make <text> the first element in statement
 		text.addContent(this.text);
 		if(!this.evaluation) this.statement.addContent(text);
-		if(this.text.startsWith("characters of ") && this.text.replaceAll("[^,;\\.:]", "").length()<=1) return this.statement; //characters of abc. one sentence.
-		if(! (this.text.replaceAll("\\S*?taxonname-\\S+", "").matches(".*?\\w.*"))) return this.statement; //the sentence contain 1 or more taxonames, no other text
+		if(this.text.startsWith("Characters of ") && this.text.replaceAll("[^,;\\.:]", "").length()<=1){
+			return this.statement; //characters of abc. one sentence.
+		}
+		if(! (cs.toString().replaceAll("\\S*?taxonname-\\S+", "").matches(".*?\\w.*"))){
+			return this.statement; //the sentence contain 1 or more taxonames, no other text
+		}
 		//because sentence tags are not as reliable as chunkedsentence
 		//no longer get subject text from cs
 		//instead, annotate chunk by chunk
