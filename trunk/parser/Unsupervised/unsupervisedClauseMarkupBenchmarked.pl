@@ -589,17 +589,17 @@ my ($create, $del);
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentence');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_wordpos');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", savedid varchar(40), primary key (word, pos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", savedid varchar(40), primary key (word, pos)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_heuristicnouns');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_heuristicnouns (word varchar(200) not null, type varchar(20))');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_heuristicnouns (word varchar(200) not null, type varchar(20)) CHARACTER SET utf8');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 #$del = $dbh->prepare('drop table if exists '.$prefix.'_propernouns');
@@ -614,38 +614,38 @@ $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentInFile');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentInFile (filename varchar(200) not null unique primary key, endindex int not null) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentInFile (filename varchar(200) not null unique primary key, endindex int not null) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_modifiers');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(200) not null unique primary key, count int, istypemodifier tinyint) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(200) not null unique primary key, count int, istypemodifier tinyint) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_isA');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_isA (autoid int not null auto_increment primary key, instance varchar(50), class varchar(50)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_isA (autoid int not null auto_increment primary key, instance varchar(50), class varchar(50)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_unknownwords');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(200) not null primary key, flag varchar(200)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(200) not null primary key, flag varchar(200)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_singularplural');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(200), plural varchar(200), primary key (singular, plural)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(200), plural varchar(200), primary key (singular, plural)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_discounted');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(200), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(200), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_substructure');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) CHARACTER SET utf8 engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 }
