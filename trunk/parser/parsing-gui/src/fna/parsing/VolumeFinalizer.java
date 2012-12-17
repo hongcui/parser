@@ -27,14 +27,14 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 
-import conversion.DescriptionParser;
-import conversion.TaxonCharacterMatrix;
-import dao.FilenameTaxonDao;
+//import conversion.DescriptionParser;
+//import conversion.TaxonCharacterMatrix;
+//import dao.FilenameTaxonDao;
 
-import taxonomy.ITaxon;
-import taxonomy.SubTaxonException;
-import taxonomy.TaxonHierarchy;
-import taxonomy.TaxonRank;
+//import taxonomy.ITaxon;
+//import taxonomy.SubTaxonException;
+//import taxonomy.TaxonHierarchy;
+//import taxonomy.TaxonRank;
 
 import fna.charactermarkup.SentenceChunker4StanfordParser;
 import fna.charactermarkup.StanfordParser;
@@ -143,14 +143,14 @@ public class VolumeFinalizer extends Thread {
   		createDescriptionPropertiesFile();
   		
   		//start SDD process
-    	Object[] rankrange = getTaxonRankRange();
+    	/*Object[] rankrange = getTaxonRankRange();
 		TaxonHierarchy th = makeHierarchyTwoLevel((String)rankrange[0], (TaxonRank)rankrange[1], (TaxonRank)rankrange[2]);
 		th.printSimple();
 		TaxonCharacterMatrix matrix = new TaxonCharacterMatrix(th);
 		matrix.generateMatrixFile(Registry.TargetDirectory+rankrange[0]+"matrix.txt");
   		if(!standalone){
    			this.showOutputMessage("The taxon-character matrix is saved in "+Registry.TargetDirectory+rankrange[0]+"matrix.txt");
-   		}
+   		}*/
 	}
 
     /**
@@ -230,7 +230,7 @@ public class VolumeFinalizer extends Thread {
      *         object[1] the highest rank
      *         object[2] the lowest rank
      */
-	private Object[] getTaxonRankRange() {
+	/*private Object[] getTaxonRankRange() {
 		ArrayList<String> ranks = new ArrayList<String>();
 		ranks.add("domain");
 		ranks.add("kingdom");
@@ -297,8 +297,8 @@ public class VolumeFinalizer extends Thread {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		return results;
-	}
-
+	}*/
+    /*
 	private TaxonHierarchy makeHierarchyTwoLevel(String topName, TaxonRank topRank, TaxonRank bottomRank) {
 		FilenameTaxonDao dao = new FilenameTaxonDao();
 		System.out.println("Making hierarchy for family: " + topName);
@@ -324,6 +324,7 @@ public class VolumeFinalizer extends Thread {
 		}
 		return h;
 	}
+	*/
 	/**
      * stanford parser
      * @throws ParsingException
