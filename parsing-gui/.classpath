@@ -51,13 +51,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/prefuse.jar"/>
 	<classpathentry exported="true" kind="lib" path="radiogroup-0.1.0.jar" sourcepath="radiogroup-0.1.0-src.zip"/>
 	<classpathentry exported="true" kind="con" path="org.dyno.visual.swing.VS_LIBRARY/layoutext"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/com.ibm.icu_4.4.2.v20110208.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/org.eclipse.core.databinding_1.4.0.I20110111-0800.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/org.eclipse.core.databinding.beans_1.2.100.I20100824-0800.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/org.eclipse.core.databinding.observable_1.4.0.I20110222-0800.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/org.eclipse.core.databinding.property_1.4.0.I20110222-0800.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files (x86)/eclipse-SDK-3.7-win32/eclipse/plugins/org.eclipse.jface.databinding_1.5.0.I20100907-0800.jar"/>
-	<classpathentry kind="lib" path="C:/Users/mohankrishnag/workspace/parsing-gui/lib/jsoup-1.6.1.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/annotationEvaluations"/>
+	<classpathentry kind="lib" path="lib/jsoup-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/jsch-0.1.48.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

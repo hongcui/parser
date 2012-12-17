@@ -1,6 +1,8 @@
  /* $Id$ */
 package fna.charactermarkup;
 
+//import characterAnnotation.CompareXML;
+
 public class MainPgm {
 
 	public MainPgm(String database, String projectfolder) {
@@ -11,7 +13,7 @@ public class MainPgm {
 		new Segmentation(database);
 		new ParseSimpleseg(database, projectfolder);//output to C:\\DATA\\evaluation\\fnav19\\TestCase_Benchmark\\
 		new SegmentIntegrator(database, projectfolder);
-		new CompareXML(database, projectfolder);
+		//new CompareXML(database, projectfolder);
 		//not needed
 		//ParseComplexseg.main(null);
 		//OcsFreq.main(null);
