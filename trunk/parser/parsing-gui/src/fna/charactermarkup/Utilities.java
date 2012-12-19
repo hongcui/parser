@@ -6,6 +6,7 @@ package fna.charactermarkup;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -511,7 +512,8 @@ public class Utilities {
 	public static String[] lookupCharacter(String w, Connection conn, Hashtable<String, String[]> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
-		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		//w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
+		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[_–-]", "").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>merous
 		w = w.replaceFirst(".*?_(?=[a-z]+$)", ""); //_or_ribbed
 		String wc = w;
 		String[] ch = characterhash.get(w);
@@ -998,10 +1000,20 @@ public class Utilities {
 
 
 	public static void main(String[] argv){
-		//Utilities.lookupCharacter(w, conn, characterhash)
+		Connection conn = null;
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+		    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
+			//String URL = ApplicationUtilities.getProperty("database.url");
+			conn = DriverManager.getConnection(URL);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		Utilities.lookupCharacter("1-veined", conn, new Hashtable<String, String[]>(), "fnaglossaryfixed", "fnav4");
 		//System.out.println(Utilities.isNoun(",", new ArrayList<String>()));
 		//System.out.println(Utilities.plural("disc"));
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
-		System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
+		//System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
 	}
 }
