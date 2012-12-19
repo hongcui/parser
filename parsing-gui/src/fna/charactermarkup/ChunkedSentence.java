@@ -364,10 +364,11 @@ public class ChunkedSentence {
 				this.chunkedtokens.set(i, gchunk);								
 			}else if(chunk.equals("-LRB-/-LRB-")){
 				int x = i;
-				//whether a bracket appears after a comma 
+				//whether a bracket appears after a comma or a semicolon/period
 				boolean aftercomma = false;
 				int j = x-1;
 				while(j>=0 && this.chunkedtokens.get(j).length()==0){j=j-1;}
+				if(j<0) aftercomma = true; //the bracket is the first token in the sentence [i.e., after a semicolon or a period]
 				if(j>=0 && this.chunkedtokens.get(j).equals(",")){
 					aftercomma = true;
 				}
