@@ -3068,17 +3068,17 @@ public class MainForm {
 			public void widgetSelected(SelectionEvent e) {	
 				ArrayList<String> words = null;
 				if(type.compareTo("others")==0){
-					words = fetchContentTerms();
+					words = fetchContentTerms(contextText);
 				}else if(type.compareTo("structures")==0){
 					if(inistructureterms==null || inistructureterms.size()==0){
-						words = fetchStructureTerms();
+						words = fetchStructureTerms(contextText);
 						inistructureterms = (ArrayList<String>) words.clone();
 					}else{
 						words = (ArrayList<String>) inistructureterms.clone();
 					}
 				}else if(type.compareTo("characters")==0){
 					if(inicharacterterms==null || inicharacterterms.size()==0){
-						words = fetchCharacterTerms();
+						words = fetchCharacterTerms(contextText);
 						inicharacterterms = (ArrayList<String>) words.clone();
 					}else{
 						words = (ArrayList<String>) inicharacterterms.clone();
@@ -4942,7 +4942,7 @@ public class MainForm {
 	 * 
 	 * @return filtered candidate structure words
 	 */
-	private ArrayList<String> fetchStructureTerms(){
+	private ArrayList<String> fetchStructureTerms(StyledText contextText){
 		ArrayList <String> words = new ArrayList<String>();
 		ArrayList <String> filteredwords = new ArrayList<String>();
 		ArrayList <String> noneqwords = new ArrayList<String>();
@@ -4959,6 +4959,7 @@ public class MainForm {
 				if(Utilities.mustBeVerb(word, this.conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 					//if(Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 						noneqwords.add(word);
+						contextText.append(word+" is excluded\n");
 					//}					
 					continue;
 				}
@@ -4983,7 +4984,7 @@ public class MainForm {
 	 * 5. cache results to reduce cost
 	 * @return filtered candidate character words
 	 */
-	private ArrayList<String> fetchCharacterTerms(){
+	private ArrayList<String> fetchCharacterTerms(StyledText contextText){
 		ArrayList <String> words = new ArrayList<String>();;
 		ArrayList <String> filteredwords = new ArrayList<String>();
 		ArrayList <String> noneqwords = new ArrayList<String>();
@@ -4998,6 +4999,8 @@ public class MainForm {
 			for(String word: words){
 				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
 					noneqwords.add(word);
+					//display filtered word in the context box
+					contextText.append(word+" is excluded\n");
 					continue;
 				}
 				filteredwords.add(word);
@@ -5012,7 +5015,7 @@ public class MainForm {
 		return filteredwords;	
 		}
 	
-	private ArrayList<String> fetchContentTerms() {
+	private ArrayList<String> fetchContentTerms(StyledText contextText) {
 		ArrayList<String> words = new ArrayList<String>();
 		ArrayList <String> filteredwords = new ArrayList<String>();
 		ArrayList <String> noneqwords = new ArrayList<String>();
@@ -5034,6 +5037,7 @@ public class MainForm {
 			for(String word: words){
 				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
 					noneqwords.add(word);
+					contextText.append(word+" is excluded\n");
 					continue;
 				}
 				filteredwords.add(word);
