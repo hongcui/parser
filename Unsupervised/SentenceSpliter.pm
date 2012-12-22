@@ -55,9 +55,9 @@ my @PLACES = ( 'arc', 'al', 'ave', "blv?d", 'cl', 'ct', 'cres', 'dr', "expy?",
 		'Tenn', 'Tex', 'Ut', 'Vt', 'Va', 'Wash', 'Wis', 'Wisc', 'Wy',
 		'Wyo', 'USAFA', 'Alta' , 'Man', 'Ont', 'Qué', 'Sask', 'Yuk');
 my @MONTHS = ('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec','sept');
-my @MISC = ( 'vs', 'etc', 'no', 'esp');
-my @BOT1 = ('diam', 'sq','Rottb');
-my @BOT2 = ('ca', 'fl', 'Fl','Fr','fr', 'var'); # can not start a new sentence right after the abbrev.
+my @MISC = ( 'vs', 'etc', 'no', 'esp', 'fig', 'eg', 'et al', 'cf');
+my @BOT1 = ('diam', 'sq','Rottb', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v','w','x','y','z');#single letter genus name abbrev
+my @BOT2 = ('ca', 'fl', 'Fl','Fr','fr', 'var', 'sp', 'nov'); # can not start a new sentence right after the abbrev.
 @ABBREVIATIONS = (@PEOPLE, @ARMY, @INSTITUTES, @COMPANIES, @PLACES, @MONTHS, @MISC, @BOT1); 
 
 
