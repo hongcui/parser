@@ -112,7 +112,7 @@ public class Type2Transformer extends Thread {
 				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
 			String transformeddir = Registry.TargetDirectory+"transformed\\";
-			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
+			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
 			tnc.collect();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

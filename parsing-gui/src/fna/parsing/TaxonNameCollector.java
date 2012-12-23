@@ -125,7 +125,7 @@ public class TaxonNameCollector {
 			conn = DriverManager.getConnection(URL);
 		}
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\v19_hong_reviewed_final";
-		String outputtablename = "fnav19_taxonnames";
+		String outputtablename = "fnav19_"+ApplicationUtilities.getProperty("TAXONNAMES");
 		String volume = "fnav19";
 		TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, outputtablename, volume);
 		tnc.collect();
