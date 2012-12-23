@@ -85,7 +85,7 @@ public class SentenceOrganStateMarker {
 				//collect all taxonnames to be used in processParentheses in ChunkedSentence
 				Statement stmt = conn.createStatement();
 				String taxonnames = "";
-				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_taxonnames");
+				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
 				while(rs.next()){
 					if(taxonnames == null){taxonnames="";}
 					else{
