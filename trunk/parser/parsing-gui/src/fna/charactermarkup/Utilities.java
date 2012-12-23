@@ -53,6 +53,7 @@ public class Utilities {
 	 * @return
 	 */
 	public static boolean mustBeVerb(String word, Connection conn, String prefix){
+		if(word.length()==0) return false;
 		if(sureVerbs.contains(word)) return true;
 		if(notSureVerbs.contains(word)) return false;
 		WordNetWrapper wnw = new WordNetWrapper(word);
