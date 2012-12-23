@@ -25,10 +25,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +72,6 @@ public class MainFormDbAccessor {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 			conn = DriverManager.getConnection(url);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} 
@@ -87,6 +88,19 @@ public class MainFormDbAccessor {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
+	
+	public void createTyposTable(){
+        try{
+            Statement stmt = conn.createStatement();
+            String typotable = MainForm.dataPrefixCombo.getText().trim()+"_"+ApplicationUtilities.getProperty("TYPOS");
+            stmt.execute("drop table if exists "+typotable);
+            String query = "create table if not exists "+typotable+" (typo varchar(150), correction varchar(150), primary key (typo, correction))";
+            stmt.execute(query);	           
+        }catch(Exception e){
+        	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
+            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+        }
+    }
 	/**
 	 * change pos for these removedtags to 'b' in wordpos table
 	 * @param removedTags
@@ -1005,7 +1019,7 @@ public class MainFormDbAccessor {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select source,originalsent from "+tablePrefix+"_sentence where sentence like '% "+word+" %' or sentence like '"+word+" %' or sentence like '% "+word+"'  or tag = '"+word+"'";
+			String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			context.cut();
@@ -1019,6 +1033,7 @@ public class MainFormDbAccessor {
 				//System.out.println(src+"::"+sentence+" \r\n");
 				//context.append(src+"::"+sentence+" \r\n");
 			}	
+			if(text.length()==0) {text="the word "+word + " is a system reserved word, please categorize it as 'neither'.";}
 			//format sentences
 			ArrayList<StyleRange> srs = new ArrayList<StyleRange>();
 			String[] tokens = text.split("\\s");
@@ -1115,6 +1130,161 @@ public class MainFormDbAccessor {
 		pstmt.setString(1, term);
 		pstmt.setString(2, cat);
 		pstmt.execute();		
+	}
+
+	/**
+	 * correct the typos in database
+	 * @param typos
+	 * @return hashtable of typos with associated source files
+	 * 
+	 */
+	public Hashtable<String, TreeSet<String>> correctTyposInDB(Hashtable<String, String> typos) {
+		Hashtable<String, TreeSet<String>> typosources = new Hashtable<String, TreeSet<String>>();
+		Enumeration<String> en = typos.keys();
+		while(en.hasMoreElements()){
+			String typo = en.nextElement();
+			String correction = typos.get(typo);
+			try{
+				//find sources
+				TreeSet<String> sources = typosources.get(typo);
+				PreparedStatement stmt = conn.prepareStatement("select source from "+
+						MainForm.dataPrefixCombo.getText().trim()+"_"+ ApplicationUtilities.getProperty("SENTENCETABLE") +
+						" where sentence REGEXP '[[:<:]]"+typo+"[[:>:]]'"); //originalsent already corrected
+				ResultSet rs = stmt.executeQuery();
+				while(rs.next()){
+					String src = rs.getString(1);
+					src = src.substring(0, src.lastIndexOf("-"));					
+					if(sources == null){
+						sources = new TreeSet<String>();
+					}
+					sources.add(src);					
+				}
+				typosources.put(typo, sources);
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
+			//make corrections in db tables
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("POSTABLE"), "word", typo, correction);
+			correctTypoInTableWordMatch(ApplicationUtilities.getProperty("SENTENCETABLE"), "sentence",  typo, correction, "sentid");
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("ALLWORDS"), "word", typo, correction);
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("UNKNOWNWORDS"), "word", typo, correction);
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("TAXONNAMES"), "name", typo, correction);
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("SINGULARPLURAL"), "singular", typo, correction);
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("SINGULARPLURAL"), "plural", typo, correction);
+			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("NONEQTERMSTABLE"), "term", typo, correction);
+		}
+		return typosources;
+		
+	}
+	
+	/**
+	 * 
+	 * @param table
+	 * @param typo
+	 * @param correction
+	 * @param exactmatch
+	 */
+	public void correctTypoInTableWordMatch(String table, String column, String typo, String correction, String PK) {
+		try{
+			//mysql can't do word-based match, so had to update sentence one by one
+			PreparedStatement stmt = conn.prepareStatement("select "+PK+", "+column+" from "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" where "+column+" REGEXP '[[:<:]]"+typo+"[[:>:]]'");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){
+				String key = rs.getString(1);
+				String text = rs.getString(2);
+				String correctioncp = correction;
+				Pattern p = Pattern.compile("(.*?)\\b("+typo+")\\b(.*)", Pattern.CASE_INSENSITIVE);
+				//need be case insenstive, but keep the original case
+				Matcher m = p.matcher(text);
+				while(m.matches()){
+					text =m.group(1);
+					String w = m.group(2);
+					if(w.matches("^[A-Z].*")){
+						correction = correction.substring(0,1).toUpperCase()+correction.substring(1); 
+					}else{
+						correction = correctioncp;
+					}
+					text+=correction;
+					text+=m.group(3);
+					m = p.matcher(text);
+				}
+				//put corrected back
+				PreparedStatement stmt1 = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+column+"='"+text+"' where "+PK+"='"+key+"'");
+				stmt1.execute();
+			}
+		}catch(Exception e){
+			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}		
+	}
+	/**
+	 * 
+	 * @param table
+	 * @param typo
+	 * @param correction
+	 * @param exactmatch
+	 */
+	public void correctTypoInTableExactMatch(String table, String column, String typo, String correction) {
+		try{
+			String	where = column+"='"+typo+"'";
+			String 	set = column+"='"+correction+"'";
+			PreparedStatement stmt = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+set+" where "+where);
+			stmt.executeUpdate();
+		}catch(Exception e){
+			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}		
+	}
+
+	/**
+	 * insert a record into the known typo database table.
+	 * if (correction, typo) exists in the table, just remove the record, not need to insert (typo, correction).
+	 * @param typo
+	 * @param correction
+	 */
+	public void insertTypo(String typo, String correction){
+		try{
+			PreparedStatement stmt = conn.prepareStatement("select * from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
+			stmt.setString(1, correction);
+			stmt.setString(2, typo);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				//delete the record
+				stmt = conn.prepareStatement("delete from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
+				stmt.setString(1, correction);
+				stmt.setString(2, typo);
+				stmt.execute();	
+				return;
+			}
+			
+			PreparedStatement stmt1 = conn.prepareStatement("insert into  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" (typo, correction) values (?, ?)");
+			stmt1.setString(1, typo);
+			stmt1.setString(2, correction);
+			stmt1.execute();
+		}catch(Exception e){
+			if(!e.toString().contains("duplicate key")){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
+		}	
+	}
+	
+	
+	/**
+	 * read typos from the known database table into the hashtable.
+	 * @param typos
+	 */
+	public void readInTypos(Hashtable<String, String> typos) {
+		try{
+			PreparedStatement stmt = conn.prepareStatement("select typo, correction from "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS"));
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next()){
+				typos.put(rs.getString(1), rs.getString(2));
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}		
+		
 	}
 	
 	

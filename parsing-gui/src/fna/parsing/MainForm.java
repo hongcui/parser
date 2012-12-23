@@ -13,6 +13,8 @@ package fna.parsing;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -38,10 +40,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ColumnLayoutData;
 import org.eclipse.swt.SWT;
@@ -60,6 +66,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -113,7 +120,7 @@ public class MainForm {
 
 
 	@SuppressWarnings("unused")
-
+	private Hashtable<String, String> typos = new Hashtable<String, String>();
 	private Hashtable<String, String> categorizedtermsS = new Hashtable<String, String>();
 	private Hashtable<String, String> categorizedtermsC = new Hashtable<String, String>();
 	private Hashtable<String, String> categorizedtermsO = new Hashtable<String, String>();
@@ -345,6 +352,7 @@ public class MainForm {
 			}
 			window.open();
 		} catch (Exception e) {
+			e.printStackTrace();
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
 			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -2165,6 +2173,19 @@ public class MainForm {
 		runTagButton.setToolTipText("Prepare for the next step");
 		runTagButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				contextStyledText.setText("Preparing for the next step. Please proceed to the next step when \"Done\" is displayed in this box.\n");
+				//read in typos from database
+				if(typos.size()==0){
+					try{
+						mainDb.readInTypos(typos);						
+					}catch(Exception ex){
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);ex.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					}
+				}
+				if(typos.size()>0) {
+					contextStyledText.setText("Correcting typos identified in source and in database\n");
+					correctTypos();
+				}
 				//saveTag(tabFolder);
 				loadTagTable(tabFolder);
 			}
@@ -2827,6 +2848,74 @@ public class MainForm {
 	}
 
 	/**
+	 * 
+	 */
+	protected void correctTypos() {
+		Hashtable<String, TreeSet<String>> sources = mainDb.correctTyposInDB(typos);	
+		correctTyposInSource(sources);
+	}
+	
+	/**
+	 * correct typos corresponding source files
+	 * @param sources: typo=>list of sources
+	 */
+	private void correctTyposInSource(Hashtable<String, TreeSet<String>> sources) {
+		String descriptionfolder = Registry.TargetDirectory+"descriptions";
+		String descriptiondfolder = Registry.TargetDirectory+"descriptions-dehyphened";
+		Enumeration<String> en = sources.keys();
+		while(en.hasMoreElements()){
+			String typo = en.nextElement();
+			String correction = typos.get(typo);
+			TreeSet<String> sourcefiles = sources.get(typo);
+			for(String file : sourcefiles){
+				try{
+					File f = new File(descriptionfolder, file);
+					String content = IOUtils.toString(new FileInputStream(f));
+					String correctioncp = correction;
+					Pattern p = Pattern.compile("(.*?)\\b("+typo+")\\b(.*)", Pattern.CASE_INSENSITIVE);
+					//need be case insenstive, but keep the original case
+					Matcher m = p.matcher(content);
+					while(m.matches()){
+						content =m.group(1);
+						String w = m.group(2);
+						if(w.matches("^[A-Z].*")){
+							correction = correction.substring(0,1).toUpperCase()+correction.substring(1); 
+						}else{
+							correction = correctioncp;
+						}
+						content+=correction;
+						content+=m.group(3);
+						m = p.matcher(content);
+					}
+					IOUtils.write(content, new FileOutputStream(f));
+					
+					f = new File(descriptiondfolder, file);
+					content = IOUtils.toString(new FileInputStream(f));
+					//need be case insenstive, but keep the original case
+					m = p.matcher(content);
+					while(m.matches()){
+						content =m.group(1);
+						String w = m.group(2);
+						if(w.matches("^[A-Z].*")){
+							correction = correction.substring(0,1).toUpperCase()+correction.substring(1); 
+						}else{
+							correction = correctioncp;
+						}
+						content+=correction;
+						content+=m.group(3);
+						m = p.matcher(content);
+					}
+					IOUtils.write(content, new FileOutputStream(f));					
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+					e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}
+			}
+		}
+	}
+		
+	
+	/**
 	 * if there is a termset ready for download for the dataprefix on OTO, 
 	 * update local dataset with the reviewed termset.
 	 * @param trim
@@ -3010,11 +3099,8 @@ public class MainForm {
 		url.addSelectionListener(new SelectionAdapter(){
 	        @Override
 	        public void widgetSelected(SelectionEvent e) {
-	               System.out.println("You have selected: "+e.text);
+	               //System.out.println("You have selected: "+e.text);
 	               try {
-	                //  Open default external browser 
-	                //IWebBrowser b = PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser();
-	                //b.openURL(new URL(e.text));
 	            	org.eclipse.swt.program.Program.launch(e.text);  
 	              } 
 	             catch (Exception ex) {
@@ -3787,6 +3873,7 @@ public class MainForm {
 		if(vd == null || !vd.isAlive()){
 			mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
 			mainDb.createNonEQTable();
+			mainDb.createTyposTable();
 			String workdir = Registry.TargetDirectory;
 			//if there is a characters folder,add the files in characters folder to descriptions folder
 			mergeCharDescFolders(new File(workdir));
@@ -3912,7 +3999,6 @@ public class MainForm {
 				//			ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 				//this.tagListCombo.setText("");
 				//this.modifierListCombo.setText("");
-				contextStyledText.setText("Preparing for the next step. Please proceed to the next step when \"Done\" is displayed in this box.\n");
 				try{
 					if(conn == null){
 						Class.forName("com.mysql.jdbc.Driver");
@@ -4955,6 +5041,10 @@ public class MainForm {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix,glossaryPrefixCombo.getText().trim());
 			words = vmdb.structureTags4Curation(words);
 			for(String word: words){
+				if(word.compareToIgnoreCase("ditto")==0) continue;
+				if(word.compareToIgnoreCase("general")==0) continue;
+				if(word.length()==0) continue;
+				if(word.startsWith("[") && word.endsWith("]")) continue;
 				//before structure terms are set, partOfPrepPhrases can not be reliability determined
 				if(Utilities.mustBeVerb(word, this.conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 					//if(Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
@@ -4997,7 +5087,7 @@ public class MainForm {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix, glossaryPrefixCombo.getText().trim());
 			words = (ArrayList<String>)vmdb.descriptorTerms4Curation();
 			for(String word: words){
-				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
+				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 					noneqwords.add(word);
 					//display filtered word in the context box
 					contextText.append(word+" is excluded\n");
@@ -5035,7 +5125,7 @@ public class MainForm {
 			}
 			String prefix = dataPrefixCombo.getText().replaceAll("-", "_").trim();
 			for(String word: words){
-				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) || Utilities.partOfPrepPhrase(word, this.conn, prefix)){
+				if(Utilities.mustBeVerb(word, conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 					noneqwords.add(word);
 					contextText.append(word+" is excluded\n");
 					continue;
@@ -5050,7 +5140,7 @@ public class MainForm {
 		return filteredwords;
 	}
 	
-	protected void loadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, ArrayList <String> words, final StyledText contextText, String type) {
+	protected void loadTermArea(Composite termRoleMatrix, ScrolledComposite scrolledComposite, ArrayList <String> words, final StyledText contextText, final String type) {
 		int count = 0;
 		try {
 			if(termRoleMatrix.isDisposed()){
@@ -5066,7 +5156,7 @@ public class MainForm {
 			termRoleMatrix.setVisible(true);
 			Hashtable<String, String> categorizedterms = null;
 			if(type.compareToIgnoreCase("structures") ==0){
-				categorizedterms = categorizedtermsS;
+				categorizedterms = categorizedtermsS; //the global variable categorizedtermsS is populated when the local variable thiscategorizedterms is populated below
 			}
 			if(type.compareToIgnoreCase("characters") ==0){
 				categorizedterms = categorizedtermsC;
@@ -5078,7 +5168,7 @@ public class MainForm {
 			if (words != null) {
 				ArrayList<Control> tabList = new ArrayList<Control>();
 				for (String word : words){
-					thiscategorizedterms.put(word, type);
+					thiscategorizedterms.put(word, type); //populate term list 
 					count++;					
 					final Composite termRoleGroup = new Composite(termRoleMatrix, SWT.NONE);
 					termRoleGroup.setLayoutData(new RowLayout(SWT.HORIZONTAL));	
@@ -5115,10 +5205,96 @@ public class MainForm {
 					if(count%2 == 0) clabel.setBackground(grey);
 					clabel.setBounds(15, (count-1)*y+m, 93, y-2*m);
 					
-					Label tlabel = new Label(termRoleGroup, SWT.NONE);
+					
+					//replace label with text, so the reviewer may correct the typo in the terms
+					/*Text ttext = new Text(termRoleGroup, SWT.NONE);
+					ttext.setText(word);
+					if(count%2 == 0) ttext.setBackground(grey);
+					ttext.setBounds(125, (count-1)*y+m, 150, y-2*m);*/
+					
+					final Label tlabel = new Label(termRoleGroup, SWT.NONE);
 					tlabel.setText(word);
 					if(count%2 == 0) tlabel.setBackground(grey);
 					tlabel.setBounds(125, (count-1)*y+m, 150, y-2*m);
+					
+
+					tlabel.addMouseListener(new MouseListener(){
+
+						@Override
+						public void mouseDoubleClick(MouseEvent arg0) {
+							
+							final Shell typodialog = new Shell(shell, SWT.DIALOG_TRIM|SWT.APPLICATION_MODAL);
+							typodialog.setText("Correct Typo");
+							Label label = new Label(typodialog, SWT.NULL);
+							final String theword = tlabel.getText();
+						    label.setText("Change "+theword);
+						    label.setBounds(10, 10, 150, 23);
+						    
+						    label = new Label(typodialog, SWT.NULL);
+						    label.setText("To " );
+						    label.setBounds(10, 35, 20, 23);
+						    
+						    final Text text = new Text(typodialog, SWT.BORDER);
+						    text.setBounds(30, 35, 100, 23);
+						    
+						    Button change = new Button(typodialog, SWT.PUSH);
+						    change.setBounds(10, 70, 50, 23 );
+						    change.setText("Correct");
+						    change.addSelectionListener(new SelectionAdapter() {
+								public void widgetSelected(final SelectionEvent e) {
+									String term = text.getText();
+									//rewrite the label
+									tlabel.setText(term);
+									//update term hashes
+									if(type.compareToIgnoreCase("structures") ==0){
+										categorizedtermsS.put(term, categorizedtermsS.get(theword));
+										categorizedtermsS.remove(theword);
+									}
+									if(type.compareToIgnoreCase("characters") ==0){
+										categorizedtermsC.put(term, categorizedtermsC.get(theword));
+										categorizedtermsC.remove(theword);
+									}
+									if(type.compareToIgnoreCase("others") ==0){
+										categorizedtermsO.put(term, categorizedtermsO.get(theword));
+										categorizedtermsO.remove(theword);
+									}
+									
+									//updata sentence table first because context box uses it and needs also be refreshed 
+									mainDb.correctTypoInTableWordMatch("sentence", "originalsent",  theword, term, "sentid");
+									//save corrections
+									mainDb.insertTypo(theword, term); //to db table, can be read in in a scenario of stop and resume
+									//if (term, theword) is in typos, remove the record, don't add
+									if(typos.get(term)!=null && typos.get(term).compareToIgnoreCase(theword)==0) typos.remove(term);
+									else typos.put(theword, term); //in-memoy, save the typos/corrections and make corrections in source text and tables at the beginning of step 5.
+									typodialog.dispose();
+								}
+							});
+						    
+						    Button cancel = new Button(typodialog, SWT.PUSH);
+						    cancel.setBounds(70, 70, 50, 23 );
+						    cancel.setText("Cancel");
+						    cancel.addSelectionListener(new SelectionAdapter() {
+								public void widgetSelected(final SelectionEvent e) {
+									typodialog.dispose();
+								}
+							});
+							typodialog.pack();
+							typodialog.open();
+						}
+
+						@Override
+						public void mouseDown(MouseEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void mouseUp(MouseEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+					});
 					
 					final Button button_1 = new Button(termRoleGroup, SWT.RADIO);
 					button_1.setBounds(325, (count-1)*y+m, 90, y-2*m);
@@ -5130,6 +5306,7 @@ public class MainForm {
 					    	  Control[] controls = button_1.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
+					    		//String term = ((Text)controls[1]).getText().trim();
 						    	 thiscategorizedterms.put(term, "structures");
 					    	  }
 					      }						
@@ -5145,6 +5322,7 @@ public class MainForm {
 					    	  Control[] controls = button_2.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
+					    		 // String term = ((Text)controls[1]).getText().trim();
 						    	 thiscategorizedterms.put(term, "characters");
 					    	  }
 					      }						
@@ -5160,6 +5338,7 @@ public class MainForm {
 					    	  Control[] controls = button_3.getParent().getChildren();
 					    	  if(controls[1] instanceof Label){
 					    		 String term = ((Label)controls[1]).getText().trim();
+					    		 //String term = ((Text)controls[1]).getText().trim();
 						    	 thiscategorizedterms.put(term, "others");
 					    	  }
 					      }						
@@ -5172,6 +5351,7 @@ public class MainForm {
 					
 					clabel.pack();
 					tlabel.pack();
+					//ttext.pack();
 					button_1.pack();
 					button_2.pack();
 					button_3.pack();
