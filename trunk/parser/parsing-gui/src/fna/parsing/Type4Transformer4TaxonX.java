@@ -86,7 +86,7 @@ public class Type4Transformer4TaxonX extends Type4Transformer {
 				catch(Exception e){
 					e.printStackTrace();
 				}
-				TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_taxonnames", this.dataprefix);
+				TaxonNameCollector tnc = new TaxonNameCollector4TaxonX(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
 				tnc.collect4TaxonX();
 
 			}

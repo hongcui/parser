@@ -366,7 +366,7 @@ public class VolumeTransformer extends Thread {
 			}
 
 			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
-			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_taxonnames", dataPrefix);
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), dataPrefix);
 			tnc.collect();
 			
 		} catch (Exception e) {
