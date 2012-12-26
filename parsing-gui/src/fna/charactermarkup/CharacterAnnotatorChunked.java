@@ -1078,6 +1078,16 @@ public class CharacterAnnotatorChunked {
 		return afteror;
 	}
 
+	/**
+	 * 
+	 * @param chunktext plain text numerical expression such as 3-5 cm
+	 * @param character size, count, ratio, or other characters
+	 * @param modifier often, rarely etc.
+	 * @param parents elements this character belong to
+	 * @param resetfrom if true: remove from and from_unit
+	 * @param cs the chunkedsentence this eleement/character belong to
+	 * @return
+	 */
 	private ArrayList<Element> annotateNumericals(String chunktext, String character, String modifier, ArrayList<Element> parents, boolean resetfrom, ChunkedSentence cs) { //added cs
 		ArrayList<Element> chars = NumericalHandler.parseNumericals(chunktext, character);
 		if(chars.size()==0){//failed, simplify chunktext
@@ -1625,7 +1635,7 @@ public class CharacterAnnotatorChunked {
 	private ArrayList<Element> processCHPP(String content, ChunkedSentence cs)  throws Exception {// 7-12-02 add cs
 		ArrayList<Element> relations = new ArrayList<Element>();
 		//having oval outline
-		if(this.characterPrep(content)){
+		if(this.characterPrep(content, cs)){
 			return relations;
 		}		
 		String c = content.substring(0, content.indexOf("r["));
@@ -1737,7 +1747,7 @@ public class CharacterAnnotatorChunked {
 		//String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\b\\w\\[|])", "")+"]";
 		//String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\[|])", "")+"]";
 		//TODO: r[p[in] o[outline]] or r[p[with] o[irregular ventral profile]]
-		if(characterPrep(ckstring)){
+		if(characterPrep(ckstring, cs)){
 			return;		
 		}
 		/*String pp = null;
@@ -1749,8 +1759,6 @@ public class CharacterAnnotatorChunked {
 			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.indexOf("] o[")).replaceAll("(\\w\\[|])", "");
 			object  = ckstring.substring(ckstring.indexOf("o[")).replaceFirst("\\]+$", "")+"]";//nested or not
 		}*/
-
-
 		
 		object = NumericalHandler.originalNumForm(object);
 		boolean lastIsStruct = false;
@@ -1838,11 +1846,11 @@ public class CharacterAnnotatorChunked {
 	 * @param ckstring:r[p[in] o[outline]]
 	 * @return
 	 */
-	private boolean characterPrep(String ckstring) {
+	private boolean characterPrep(String ckstring, ChunkedSentence cs) {
 		boolean done =false;
 		if(ckstring.indexOf(" ") < 0) return done;
-		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\W", "");
-		if(lastword.matches("("+this.characters+")")){
+		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\]+", "").trim();
+		if(lastword.matches("("+this.characters+")")){//r[p[in] o[outline]]
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 			if(lastelement.getName().compareTo("character")==0){//shell oval in outline
 				Iterator<Element> it = this.latestelements.iterator();
@@ -1858,6 +1866,40 @@ public class CharacterAnnotatorChunked {
 					lastelement = it.next();
 					lastelement.setAttribute("name", lastword);
 					lastelement.setAttribute("value", cvalue);
+				}
+				done = true;
+			}
+		}else if(lastword.matches("("+ChunkedSentence.units+")") || lastword.matches(".*?\\d+.*")){//r[p[with] o[a {diameter} 15-65 um]]
+			//get the values
+			String value = "";
+			String character = "";
+			ckstring = ckstring.substring(ckstring.indexOf("o[")).replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").trim();
+			if(lastword.matches(".*?\\d+.*")){
+				value = lastword;
+				character = ckstring.replaceFirst(lastword+"$", "").replaceAll("\\b("+ChunkedSentence.stop+")\\b", "").trim();
+			}
+			else{
+				ckstring = ckstring.replaceFirst(lastword+"$", "").trim();
+				value = ckstring.substring(ckstring.lastIndexOf(" ")).trim();
+				character = ckstring.replaceFirst(value+".*$", "").replaceAll("\\b("+ChunkedSentence.stop+")\\b", "").trim();
+				value = value +" "+lastword;
+			}
+			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
+			if(lastelement.getName().compareTo("character")==0){//what may belong to this case?
+				Iterator<Element> it = this.latestelements.iterator();
+				while(it.hasNext()){
+					lastelement = it.next();
+					lastelement.setAttribute("name", character);
+				}
+				done = true;
+			}else if(lastelement.getName().compareTo("structure")==0){//Valves with a diameter 15 - 65 µm
+				Iterator<Element> it = this.latestelements.iterator();
+				while(it.hasNext()){
+					lastelement = it.next();
+					ArrayList<Element> parents = new ArrayList<Element>();
+					parents.add(lastelement);
+					ArrayList<Element> results = annotateNumericals(value, character, "", parents, false, cs);
+					this.updateLatestElements(results);
 				}
 				done = true;
 			}
