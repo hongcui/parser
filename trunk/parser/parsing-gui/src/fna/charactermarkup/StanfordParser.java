@@ -64,12 +64,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
 	private boolean printSent = true;
-	private boolean printProgress = true;
+	private boolean printProgress = false;
 	private boolean evaluation = false;
 	public static String newline = System.getProperty("line.separator");
 	String output = Registry.TargetDirectory+"HumanReadable.txt";
@@ -249,6 +249,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				}else{
 					if(text.startsWith("(ROOT")){//treatiseh
 					text = text.replaceAll("(?<=[A-Z])\\$ ", "S ");
+					text = text.replaceAll("&", "and");
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
 					//Document doccp = (Document)doc.clone();
@@ -721,11 +722,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 
 		String database = "markedupdatasets";
-		
-		String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
+		String posedfile = "E:\\Data\\Diatom\\target\\donat_test_posedsentences.txt";
+		String parsedfile = "E:\\Data\\Diatom\\target\\donat_test_parsedsentences.txt";
+		String transformedir = "E:\\Data\\Diatom\\transformed";
+		String prefix = "diatom_test";
+		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\transformed";
-		String prefix = "donat_test";
+		String prefix = "donat_test";*/
 
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\treatise_o_test_parsedsentences.txt";
@@ -766,13 +770,13 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "treatiseoglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
