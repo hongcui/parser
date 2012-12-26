@@ -65,10 +65,11 @@ public class CharacterAnnotatorChunked {
 	private boolean debugNum = false;
 	private boolean printComma = false;
 	private boolean printAttach = false;
-	private boolean printParenthetical = true;
-	private boolean evaluation = true;
+	private boolean printParenthetical = false;
+	private boolean evaluation = false;
 	private String sentsrc;
 	private boolean nosubject;
+	private boolean printProvenance = false;
 	private static XPath unknownsubject;
 	static{
 		try{
@@ -889,6 +890,13 @@ public class CharacterAnnotatorChunked {
 		//newcs.setInSegment(true);
 		//annotateByChunk(newcs, true); //no need to updateLatestElements
 		//this.inbrackets =false;
+		if(isProvenanceChunk(ck)){
+			if(this.latestelements.size()>0){
+				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
+				this.addAttribute(lastelement, "provenance", ck.toString().replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim());
+			}
+			return;
+		}
 		String content = ck.toString().replaceFirst("\\s+\\W+$", "").trim(); //removes " ." from "abc ."
 		//deal with single phrase brackets here: position and organ
 		boolean singlephrase = false;
@@ -931,6 +939,23 @@ public class CharacterAnnotatorChunked {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param ck
+	 * @return true if a bracketed chunk is a reference/citation, refers to figs or tables, otherwise false
+	 */
+	private boolean isProvenanceChunk(Chunk ck) {
+		String content = ck.toString();
+		boolean is =false;
+		if(content.matches(".*?\\b(fig\\s*\\.?\\s*|table|tab\\s*\\.\\s*)\\b?\\s*\\d.*")) is = true;
+		if(content.matches(".*?\\b(figs|tables)\\s*[,\\.]?\\s*\\d+.{0,2}\\s*(\\.|,|\\band\\b|-)\\s*\\d+.*")) is = true;
+		//2002 , p . 19 .
+		if(content.matches("[a-z]+\\s*(et al\\s*.|and [a-z]+)\\s*\\d\\d\\d\\d.*")) is = true;
+		
+		if(this.printProvenance ) System.out.println(is+" "+content);
+		
+		return is;
+	}
 	//find the character/relation that is associated with structure 
 	private List<Element> charrel(Element structure) throws Exception {
 		// TODO Auto-generated method stub
