@@ -178,9 +178,9 @@ public class NumericalHandler  {
 					}
 				}
 				//format expression value+unit
-				length = length.matches(".*[cmdµ]?m$")? length : length + " "+lunit;
-				width = width.matches(".*[cmdµ]?m$")? width : width + " "+wunit;
-				if(height.length()>0) height = height.matches(".*[cmdµ]?m$")? height : height + " "+hunit;
+				length = length.matches(".*[cmdµu]?m$")? length : length + " "+lunit;
+				width = width.matches(".*[cmdµu]?m$")? width : width + " "+wunit;
+				if(height.length()>0) height = height.matches(".*[cmdµu]?m$")? height : height + " "+hunit;
 				
 				//annotation
 				annotateSize(length, innertagstate, "length");
@@ -339,7 +339,8 @@ public class NumericalHandler  {
         	//int sizect = 0;
 			String toval;
 			String fromval;
-			numberexp = annotateSize(numberexp, innertagstate, "size");
+			cname = cname==null || cname.length()==0? cname = "size" : cname;
+			numberexp = annotateSize(numberexp, innertagstate, cname);
         	
         	
         	
@@ -581,7 +582,7 @@ public class NumericalHandler  {
         	matcher2.reset();     	
         	//Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?)*|[±]?[\\d]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	//Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./%]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?)*|[±]?[\\d\\./%]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
-        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./%]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?)*|\\[?[±]?[\\d\\./%]+[+]?\\]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
+        	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./%]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?)*|\\[?[±]?[\\d\\./%]+[+]?\\]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµu]?m))");
         	matcher2 = pattern16.matcher(numberexp);
         	while ( matcher2.find()){
         		i=matcher2.start();
@@ -851,7 +852,7 @@ public class NumericalHandler  {
 		int i;
 		int j;
 		Matcher matcher2;
-		Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\[\\]\\–\\-\\.\\s\\+]+[\\s]?([dcmµ]?m)(?![\\w])(([\\s]diam)?([\\s]wide)?)");
+		Pattern pattern13 = Pattern.compile("[xX\\×±\\d\\[\\]\\–\\-\\.\\s\\+]+[\\s]?([dcmµu]?m)(?![\\w])(([\\s]diam)?([\\s]wide)?)");
 		matcher2 = pattern13.matcher(plaincharset);
 		String toval="";
 		String fromval="";
@@ -989,7 +990,7 @@ public class NumericalHandler  {
 			j = extreme.length();
 			if(extreme.substring(i,j).contains("–")|extreme.substring(i,j).contains("-") && !extreme.substring(i,j).contains("×") && !extreme.substring(i,j).contains("x") && !extreme.substring(i,j).contains("X")){
 				String extract = extreme.substring(i,j);
-				Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
+				Pattern pattern18 = Pattern.compile("[\\s]?[dcmµu]?m(([\\s]diam)?([\\s]wide)?)");
 		    	Matcher matcher3 = pattern18.matcher(extract);
 		    	unit="";
 		    	if ( matcher3.find()){
@@ -1019,7 +1020,7 @@ public class NumericalHandler  {
 			}
 			else{
 				String extract = extreme.substring(i,j);
-				Pattern pattern18 = Pattern.compile("[\\s]?[dcmµ]?m(([\\s]diam)?([\\s]wide)?)");
+				Pattern pattern18 = Pattern.compile("[\\s]?[dcmµu]?m(([\\s]diam)?([\\s]wide)?)");
 		    	Matcher matcher3 = pattern18.matcher(extract);
 		    	unit="";
 		    	if ( matcher3.find()){
