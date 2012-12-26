@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 
 import fna.charactermarkup.ChunkedSentence;
+import fna.charactermarkup.StanfordParser;
 import fna.charactermarkup.Utilities;
 import fna.parsing.ApplicationUtilities;
 
@@ -51,6 +52,7 @@ public class SentenceOrganStateMarker {
 	private static String colors = null;
 	private static String pt;
 	private static Pattern colorpattern;
+	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. +-]+)\\s*(?:to|and|-)\\s*([\\d\\. +-]+)(.*)");
 	//private static Pattern thelargest = Pattern.compile("(.*)(,\\s*\\S+est})( [^<].*)"); //tested and failed. too general. many superlatives are not subjects.
 	private static Pattern thelargest = Pattern.compile("(.*)(,\\s*(?:the )?\\S+est})( [^<].*)"); //narrowed down to size cases by checking group(3)
 	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up until|vis-a-vis|with reference to|with regard to";
@@ -64,6 +66,7 @@ public class SentenceOrganStateMarker {
 	private boolean debug = false;
 	private boolean superlative = false;
 	private boolean printto = true;
+	private boolean printCompoundPP = false;
 	public static String taxonnames = null;
 	public static Pattern taxonnamepattern1 = null;
 	public static Pattern taxonnamepattern2 = null;
@@ -131,9 +134,13 @@ public class SentenceOrganStateMarker {
 					sent = sent.replaceAll("\\bat least\\b", "at_least");
 					String text = stringColors(sent);
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
+					//deal with numbers
+					text = toNumber(text);
+					text = text.replaceAll("\\b(ca|c)\\s*\\.\\s*(?=\\d)", "");
+					text = formatNumericalRange(text);
 					text = text.replaceAll("more or less", "moreorless");
 					text = text.replaceAll("&#176;", "°");
-					text = text.replaceAll("\\bca\\s*\\.", "ca");
+					//text = text.replaceAll("\\bca\\s*\\.", "ca");
 					text = text.replaceAll("\\bdiam\\s*\\.(?=\\s?[,a-z])", "diam");
 					text = stringCompoundPP(text);
 					text = markTaxonNames(text);
@@ -191,6 +198,44 @@ public class SentenceOrganStateMarker {
 		this.organnames = collectOrganNames();
 		this.statenames = collectStateNames();
 	}
+	
+	private String toNumber(String text) {
+		text = StanfordParser.toNumber(text); //dealt with 2-9
+		text = text.replaceAll("\\bten\\b", "10");
+		return text;
+	}
+
+	/**
+	 * from 5-6 to 10 => 5-10
+	 * between 1.0 and 2.0 => 10-20
+	 * 10 to 20
+	 * @param text
+	 * @return
+	 */
+	private String formatNumericalRange(String text) {
+		String copy = text;
+		text = text.replaceAll("\\bone\\b\\s?\\b(?=to\\s?\\d)", "1 "); //one to 3 valves
+		if(text.contains("from") || text.contains("between")){
+			Matcher m = range.matcher(text);
+			while(m.matches()){
+				text = m.group(1)+m.group(2)+" - "+m.group(3)+m.group(4);
+				m = range.matcher(text);
+			}
+		}		
+		if(text.contains(" to ") || text.contains(" up to ")){
+			text = text.replaceAll("(?<=\\d\\s?("+ChunkedSentence.units+")?) to (?=\\d)", " - ");// three to four???
+			//deal with: to-range such as "to 3 cm", "to 24 × 5 mm", "to 2 . 7 × 1 . 7 – 2 mm", "3 – 20 ( – 25 )" 
+			text = text.replaceAll(" (up )?to (?=[\\d\\. ]{1,6} )", " 0 - "); // <trees> to 3 cm => <trees> 0 - 3 cm: works for case 1,  3, (case 4 should not match)
+			text = text.replaceAll(" (?<=0 - [\\d\\. ]{1,6} [a-z ]?)× (?=[\\d\\. ]{1,6} [a-z])", " × 0 - "); //deal with case 2
+			text = text.replaceAll(" 0 - (?=[\\d\\.\\ ]{1,8} [-–])", " ");// 0 - 1 . 3  - 2 . 0 => 1 . 3 - 2 . 0
+		}
+		if(!copy.equals(text) && printto){
+			System.out.println("[to range original] "+copy);
+			System.out.println("[to range now] "+text);
+		}
+		
+		return text.replaceAll("\\s+", " ").trim();
+	}
 	private String markTaxonNames(String text) {
 		//markup taxon names
 		//formatting taxon names m . chamissoi => m-name-chamissoi
@@ -224,7 +269,7 @@ public class SentenceOrganStateMarker {
 	            did = true;
 	        }
 	        result += text;
-	        if(did) System.out.println("[result]:"+result);
+	        if(did && printCompoundPP ) System.out.println("[result]:"+result);
 	        return result;
 	    }
 	
@@ -345,17 +390,6 @@ public class SentenceOrganStateMarker {
 			//if(adjnounsent.containsKey(modifier) && taggedsent.matches(".*?[<{]*\\b(?:"+adjnounslist+")\\b[}>]*.*") ){
 			//	taggedsent = fixInner(source, taggedsent, modifier, true);//@TODO: debug: need to put tag in after the modifier inner
 			//}
-		}
-		//deal with: to-range such as "to 3 cm", "to 24 × 5 mm", "to 2 . 7 × 1 . 7 – 2 mm", "3 – 20 ( – 25 )" 
-		if(taggedsent.contains(" to ") || taggedsent.contains(" up to ")){
-			String copy = taggedsent;
-			taggedsent = taggedsent.replaceAll(" (up )?to (?=[\\d\\. ]{1,6} )", " 0 - "); // <trees> to 3 cm => <trees> 0 - 3 cm: works for case 1,  3, (case 4 should not match)
-			taggedsent = taggedsent.replaceAll(" (?<=0 - [\\d\\. ]{1,6} [a-z ]?)× (?=[\\d\\. ]{1,6} [a-z])", " × 0 - "); //deal with case 2
-			taggedsent = taggedsent.replaceAll(" 0 - (?=[\\d\\.\\ ]{1,8} [-–])", " ");// 0 - 1 . 3  - 2 . 0 => 1 . 3 - 2 . 0
-			if(!copy.equals(taggedsent) && printto){
-				System.out.println("[to range original] "+copy);
-				System.out.println("[to range now] "+taggedsent);
-			}
 		}
  		return taggedsent;
 	}
@@ -695,7 +729,7 @@ public class SentenceOrganStateMarker {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "donat_test", "antglossaryfixed", true, null, null);
+		SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "diatom_test", "diatomglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "pltest", "antglossaryfixed", false);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "fnav19", "fnaglossaryfixed", true, null, null);
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "treatiseh", "treatisehglossaryfixed", false);
