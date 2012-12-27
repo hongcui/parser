@@ -52,7 +52,7 @@ public class SentenceOrganStateMarker {
 	private static String colors = null;
 	private static String pt;
 	private static Pattern colorpattern;
-	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. +-]+)\\s*(?:to|and|-)\\s*([\\d\\. +-]+)(.*)");
+	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. \\(\\)\\?+-]+)\\s*(?:to|and|-)\\s*([\\d\\. \\(\\)\\?+-]+)(.*)");
 	//private static Pattern thelargest = Pattern.compile("(.*)(,\\s*\\S+est})( [^<].*)"); //tested and failed. too general. many superlatives are not subjects.
 	private static Pattern thelargest = Pattern.compile("(.*)(,\\s*(?:the )?\\S+est})( [^<].*)"); //narrowed down to size cases by checking group(3)
 	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up until|vis-a-vis|with reference to|with regard to";
@@ -135,8 +135,9 @@ public class SentenceOrganStateMarker {
 					String text = stringColors(sent);
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 					//deal with numbers
+					text = text.replaceAll("(?<=\\d)(?=("+ChunkedSentence.units+")\\b)", " "); //23mm => 23 mm
 					text = toNumber(text);
-					text = text.replaceAll("\\b(ca|c)\\s*\\.\\s*(?=\\d)", "");
+					text = text.replaceAll("\\b(ca|c)\\s*\\.?\\s*(?=\\d)", "");
 					text = formatNumericalRange(text);
 					text = text.replaceAll("more or less", "moreorless");
 					text = text.replaceAll("&#176;", "°");
@@ -221,7 +222,8 @@ public class SentenceOrganStateMarker {
 				text = m.group(1)+m.group(2)+" - "+m.group(3)+m.group(4);
 				m = range.matcher(text);
 			}
-		}		
+		}
+		text = text.replaceAll("\\bdiameter\\s+of\\b\\s*(?=\\d)", "diameter ");
 		if(text.contains(" to ") || text.contains(" up to ")){
 			text = text.replaceAll("(?<=\\d\\s?("+ChunkedSentence.units+")?) to (?=\\d)", " - ");// three to four???
 			//deal with: to-range such as "to 3 cm", "to 24 × 5 mm", "to 2 . 7 × 1 . 7 – 2 mm", "3 – 20 ( – 25 )" 

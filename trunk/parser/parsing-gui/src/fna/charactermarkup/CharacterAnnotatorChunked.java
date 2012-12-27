@@ -1856,6 +1856,7 @@ public class CharacterAnnotatorChunked {
 				Iterator<Element> it = this.latestelements.iterator();
 				while(it.hasNext()){
 					lastelement = it.next();
+					if(lastelement.getName().compareTo("comma")==0) continue;
 					lastelement.setAttribute("name", lastword);
 				}
 				done = true;
@@ -1864,6 +1865,7 @@ public class CharacterAnnotatorChunked {
 				Iterator<Element> it = this.latestelements.iterator();
 				while(it.hasNext()){
 					lastelement = it.next();
+					if(lastelement.getName().compareTo("comma")==0) continue;
 					lastelement.setAttribute("name", lastword);
 					lastelement.setAttribute("value", cvalue);
 				}
@@ -1885,22 +1887,35 @@ public class CharacterAnnotatorChunked {
 				value = value +" "+lastword;
 			}
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
-			if(lastelement.getName().compareTo("character")==0){//what may belong to this case?
+			int i = 2;
+			while(lastelement.getName().compareTo("comma")==0 && this.latestelements.size()-i>=0){
+				lastelement = this.latestelements.get(this.latestelements.size()-i);
+				i++;
+			}
+			if(lastelement.getName().compareTo("character")==0){//Valves concentrically strongly undulate with a diameter between 4-35 µm (Fig .198 )
+				ArrayList<Element> results = new ArrayList<Element>();
 				Iterator<Element> it = this.latestelements.iterator();
 				while(it.hasNext()){
 					lastelement = it.next();
-					lastelement.setAttribute("name", character);
+					if(lastelement.getName().compareTo("comma")==0) continue;
+					ArrayList<Element> parents = new ArrayList<Element>();
+					parents.add(lastelement.getParentElement());
+					results.addAll(annotateNumericals(value, character, "", parents, false, cs));	
 				}
+				if(results.size()>0) this.updateLatestElements(results);
 				done = true;
 			}else if(lastelement.getName().compareTo("structure")==0){//Valves with a diameter 15 - 65 µm
+				ArrayList<Element> results = new ArrayList<Element>();
 				Iterator<Element> it = this.latestelements.iterator();
 				while(it.hasNext()){
 					lastelement = it.next();
+					if(lastelement.getName().compareTo("comma")==0) continue;
 					ArrayList<Element> parents = new ArrayList<Element>();
 					parents.add(lastelement);
-					ArrayList<Element> results = annotateNumericals(value, character, "", parents, false, cs);
+					results.addAll(annotateNumericals(value, character, "", parents, false, cs));
 					this.updateLatestElements(results);
 				}
+				if(results.size()>0) this.updateLatestElements(results);
 				done = true;
 			}
 		}
@@ -2145,7 +2160,7 @@ public class CharacterAnnotatorChunked {
 			if(value.indexOf("moreorless")>=0){
 				value = value.replaceAll("moreorless", "more or less");
 			}
-			value = value.replaceAll("-", " ");
+			//value = value.replaceAll("-", " "); //bad idea: figs 400-403 => figs 400 403
 			value = value.replaceAll(" , ", ", ").trim();
 			String v = e.getAttributeValue(attribute);
 			if(v==null || !v.matches(".*?(^|; )"+value+"(;|$).*")){
