@@ -567,8 +567,9 @@ public class CharacterAnnotatorChunked {
 				}*/
 				//ArrayList<Element> chars = processSimpleCharacterState(content, lastStructures());//with teeth closely spaced
 				//ArrayList<Element> parents = this.attachToLast? lastStructures() : subjects;
-				if(this.latestelements.size() == 0){//other Chunk types may also need this place holder
-					this.establishSubject("(unknown_subject)", cs); //put in a place holder
+				
+				if(this.latestelements.size() == 0 && !content.startsWith("character[")){//other Chunk types may also need this place holder
+					this.establishSubject("(unknown_subject)", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
 				}
 				ArrayList<Element> parents = lastStructures();
 				//if latestelements is empty, then subjects is empty too, indicating a problem
@@ -1399,14 +1400,16 @@ public class CharacterAnnotatorChunked {
 			}
 		}
 		if(character.compareToIgnoreCase("character")==0 && modifier.length() ==0){//high relief: character=relief, reset the character of "high" to "relief"
-			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
-			if(lastelement.getName().compareTo("character")==0){
-				Iterator<Element> it = this.latestelements.iterator();
-				while(it.hasNext()){
-					lastelement = it.next();
-					lastelement.setAttribute("name", state);
+			if(this.latestelements.size()>0){//start of a sentence with "diameter of xxx"
+				Element lastelement = this.latestelements.get(this.latestelements.size()-1);
+				if(lastelement.getName().compareTo("character")==0){
+					Iterator<Element> it = this.latestelements.iterator();
+					while(it.hasNext()){
+						lastelement = it.next();
+						lastelement.setAttribute("name", state);
+					}
+				//}else if(lastelement.getName().compareTo("structure")==0){ e.g. comma
 				}
-			//}else if(lastelement.getName().compareTo("structure")==0){ e.g. comma
 			}else{
 				this.unassignedcharacter = state;
 			}
@@ -1731,7 +1734,7 @@ public class CharacterAnnotatorChunked {
 	private void processPrep(String ckstring, ChunkedSentence cs)  throws Exception{// 7-12-02 add cs
 		//special case I
 		//mohan code to get the original subject, if the subject is empty Store the chunk into the modifier
-		if(this.latestelements.size()==0)
+		if(this.latestelements.size()==0 && this.unassignedcharacter==null)
 		{
 			//String content = ck.toString().replaceAll(" ","-");
 			String content = ckstring.replaceAll(" ","-");
@@ -1763,20 +1766,22 @@ public class CharacterAnnotatorChunked {
 		if(!object.startsWith("o[")) object = "o["+object+"]";		
 		
 		object = NumericalHandler.originalNumForm(object);
-		boolean lastIsStruct = false;
-		boolean lastIsChara = false;
-		boolean lastIsComma = false;
-		ArrayList<Element> structures = new ArrayList<Element>();
+
+
 		//3/30/2011: try to separate "in {} {} arrays" cases from "at {flowering}", "in fruit", and "in size" cases
 		//allow () be added around the last bare word if there is a {} before the bare word, or if the word is not a character (size, profile, lengths)
 		object = parenthesis(object);
-		
+		ArrayList<Element> structures = new ArrayList<Element>();
 		//special case III
 		//length r[p[of] o[(pervalvar) (axis)]]: this.unassignedcharacter = length, ck has object o[(pervalvar) (axis)]
 		//construct organ element only. the character will be used as character name in the annotation of the chunk following this prep chunk
 		if(this.unassignedcharacter!=null && ckstring.startsWith("r[p[of]")){ //
-			structures = processObject(object, cs); // 7-12-02 add cs
-			updateLatestElements(structures);
+			if(this.latestelements.size()==0){//start of a sentence, need to establish a subject
+				this.establishSubject(object.replaceAll("(\\w\\[|\\])", ""), cs);
+			}else{
+				structures = processObject(object, cs);
+				updateLatestElements(structures);
+			}			
 			return;
 		}
 		
@@ -1793,7 +1798,9 @@ public class CharacterAnnotatorChunked {
 					object = object.replaceFirst("\\[", "[(").replaceFirst("\\]", ")]");
 				}
 			}*/
-		
+		boolean lastIsStruct = false;
+		boolean lastIsChara = false;
+		boolean lastIsComma = false;
 		Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
 		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
 			if(lastelement.getAttributeValue("name").equals("unknown_subject")){
