@@ -195,11 +195,13 @@ public class CharacterAnnotatorChunked {
 
 					}
 				}
-			}else{ //ck is a character
-				if(!sentsrc.endsWith("-0")){
+			}else{ //ck is a character state
+				if(!sentsrc.endsWith("-0") && !ck.toString().contains("character[")){
 					reestablishSubject();	//reuse the previous subject only when this sentence is not the first one in the treatment
 					cs.setInSegment(true);
 					cs.setRightAfterSubject(true);
+				}else if (ck.toString().contains("character[")){
+					reset(); //when sentence start with character (e.g. Diameter ...), clear up latestelement and subject caches. 
 				}
 				cs.resetPointer(); //make sure ck is annotated
 			}
@@ -645,7 +647,15 @@ public class CharacterAnnotatorChunked {
 				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|%|\\s|"+ChunkedSentence.units+")+\\s?(?=[a-z]|$)", "");//4-5[+]
 				String content = rest.replace(modifier2, "").replaceAll("(\\{|\\})", "").trim();
 				modifier2 = modifier2.replaceAll("(\\w+\\[|\\]|\\{|\\})", "").trim();
-				ArrayList<Element> chars = annotateNumericals(content, text.indexOf("size")>=0 || content.indexOf('/')>0 || content.indexOf('%')>0 || content.indexOf('.')>0? "size" : null, (modifier1+";"+modifier2).replaceAll("(^\\W|\\W$)", ""), lastStructures(), resetfrom, cs); //added cs
+				String character = null;
+				if(this.unassignedcharacter != null){
+					character = this.unassignedcharacter;
+					this.unassignedcharacter = null;
+				}				
+				if(character == null){
+					character = text.indexOf("size")>=0 || content.indexOf('/')>0 || content.indexOf('%')>0 || content.indexOf('.')>0? "size" : null;
+				}
+				ArrayList<Element> chars = annotateNumericals(content, character, (modifier1+";"+modifier2).replaceAll("(^\\W|\\W$)", ""), lastStructures(), resetfrom, cs); //added cs
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkTHAN){
 				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]$", ""), this.subjects, cs); // 7-12-02 add cs
@@ -1396,7 +1406,8 @@ public class CharacterAnnotatorChunked {
 					lastelement = it.next();
 					lastelement.setAttribute("name", state);
 				}
-			}else if(lastelement.getName().compareTo("structure")==0){
+			//}else if(lastelement.getName().compareTo("structure")==0){ e.g. comma
+			}else{
 				this.unassignedcharacter = state;
 			}
 			results = this.latestelements;
@@ -1718,7 +1729,8 @@ public class CharacterAnnotatorChunked {
 	 * @param asrelation: if this PP should be treated as a relation
 	 */
 	private void processPrep(String ckstring, ChunkedSentence cs)  throws Exception{// 7-12-02 add cs
-		//mohan code to get the original subject if the subject is empty Store the chunk into the modifier
+		//special case I
+		//mohan code to get the original subject, if the subject is empty Store the chunk into the modifier
 		if(this.latestelements.size()==0)
 		{
 			//String content = ck.toString().replaceAll(" ","-");
@@ -1734,6 +1746,12 @@ public class CharacterAnnotatorChunked {
 		}		
 		//end mohan code
 		
+		//special case II
+		// r[p[in] o[outline]] or r[p[with] o[irregular ventral profile]], r[p[with] o[a {diameter} 15-65 um]]
+		if(characterPrep(ckstring, cs)){
+			return;		
+		}
+		
 		//r[{} {} p[of] o[.....]]
 		String modifier = ckstring.substring(0, ckstring.indexOf("p[")).replaceFirst("^r\\[", "").replaceAll("[{}]", "").trim();
 		//sometime o[] is not here as in ckstring=r[p[at or above]] {middle}
@@ -1743,22 +1761,6 @@ public class CharacterAnnotatorChunked {
 		String pp = ckstring.substring(ckstring.indexOf("p["), objectindex).replaceAll("(\\w\\[|])", "");
 		String object = ckstring.substring(objectindex+1).replaceFirst("\\]$", "").trim(); //to keep chunking clues in bracketed expressions 8/6/2012, need more test.
 		if(!object.startsWith("o[")) object = "o["+object+"]";		
-		//String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\b\\w\\[)|]", "")+"]";
-		//String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\b\\w\\[|])", "")+"]";
-		//String object = "o["+ckstring.substring(objectindex).trim().replaceAll("(\\[|])", "")+"]";
-		//TODO: r[p[in] o[outline]] or r[p[with] o[irregular ventral profile]]
-		if(characterPrep(ckstring, cs)){
-			return;		
-		}
-		/*String pp = null;
-		String object = null;
-		if(ckstring.matches(".*?\\]{4,}$")){//nested2 
-			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.lastIndexOf("] o[")).replaceAll("(\\w\\[|])", "");
-			object  = ckstring.substring(ckstring.lastIndexOf("o[")).replaceFirst("\\]+$", "")+"]";	
-		}else{//nested1 or not nested
-			pp = ckstring.substring(ckstring.indexOf("p["), ckstring.indexOf("] o[")).replaceAll("(\\w\\[|])", "");
-			object  = ckstring.substring(ckstring.indexOf("o[")).replaceFirst("\\]+$", "")+"]";//nested or not
-		}*/
 		
 		object = NumericalHandler.originalNumForm(object);
 		boolean lastIsStruct = false;
@@ -1768,6 +1770,17 @@ public class CharacterAnnotatorChunked {
 		//3/30/2011: try to separate "in {} {} arrays" cases from "at {flowering}", "in fruit", and "in size" cases
 		//allow () be added around the last bare word if there is a {} before the bare word, or if the word is not a character (size, profile, lengths)
 		object = parenthesis(object);
+		
+		//special case III
+		//length r[p[of] o[(pervalvar) (axis)]]: this.unassignedcharacter = length, ck has object o[(pervalvar) (axis)]
+		//construct organ element only. the character will be used as character name in the annotation of the chunk following this prep chunk
+		if(this.unassignedcharacter!=null && ckstring.startsWith("r[p[of]")){ //
+			structures = processObject(object, cs); // 7-12-02 add cs
+			updateLatestElements(structures);
+			return;
+		}
+		
+		//general cases:
 		/*if(! object.matches(".*?\\}\\]+$")){ //contains organ: > or untagged: arrays
 			//add () around the last word if it is bare
 			if(object.matches(".*?[a-z]\\]+$")){
@@ -1843,7 +1856,7 @@ public class CharacterAnnotatorChunked {
 
 	/**
 	 * 
-	 * @param ckstring:r[p[in] o[outline]]
+	 * @param ckstring:r[p[in] o[outline]], r[p[with] o[a {diameter} 15-65 um]]
 	 * @return
 	 */
 	private boolean characterPrep(String ckstring, ChunkedSentence cs) {
