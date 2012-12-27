@@ -549,7 +549,7 @@ end procedure
 		String ptag = parent==null? "" : parent.getName(); //parent is null when it is collaped in a previous run.
 		
 		
-		if(ptag.compareTo("NP") == 0 ||ptag.compareTo("NX") == 0||ptag.compareTo("X") == 0|| ptag.compareTo("S") == 0 || 
+		if(ptag.compareTo("NP") == 0 ||ptag.compareTo("NX") == 0||ptag.compareTo("X") == 0|| ptag.compareTo("S") == 0 || ptag.compareTo("SBAR") == 0 || 
 				ptag.compareTo("FRAG") == 0 || ptag.compareTo("UCP") == 0 ||
 				ptag.compareTo("PRN") == 0 ||ptag.compareTo("WHNP") == 0 ||ptag.compareTo("SINV") == 0 ||
 				ptag.compareTo("PP") == 0 ||ptag.compareTo("ROOT") == 0 || ptag.compareTo("") == 0){		
@@ -563,7 +563,7 @@ end procedure
 			if(this.printPP){
 				System.out.println();
 				System.out.println(this.sentindex+": "+this.markedsent);
-				System.out.println("parent is [NP/S/FRAG/UCP/PRN/WHNP/PP/ROOT]");
+				System.out.println("parent is [NP/S/SBAR/FRAG/UCP/PRN/WHNP/PP/ROOT]");
 				//System.out.println("IN text: "+up2Text(parent, PP)+" "+lPPIN.getAttributeValue("text"));
 				System.out.println("IN text: "+lPPIN.getAttributeValue("text"));
 				System.out.println("child text:"+firstNP(PP, lPPIN));
