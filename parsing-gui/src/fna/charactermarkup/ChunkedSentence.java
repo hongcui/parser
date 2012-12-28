@@ -98,7 +98,7 @@ public class ChunkedSentence {
 	private boolean printNormTo = false;
 	private boolean printExp = false;
 	private boolean printRecover = false;
-	private boolean printParentheses = true;
+	private boolean printParentheses = false;
 	private String clauseModifierConstraint;
 	private String clauseModifierContraintId;
 	private ArrayList<Attribute> scopeattributes = new ArrayList<Attribute>();
@@ -126,6 +126,7 @@ public class ChunkedSentence {
 		eqcharacters.put("long", "length");
 		eqcharacters.put("broad", "width");
 		eqcharacters.put("diam", "diameter");
+		//eqcharacters.put("diameter", "diameter");
 				
 		this.tableprefix = tableprefix;
 		this.glosstable = glosstable;
@@ -798,7 +799,7 @@ public class ChunkedSentence {
 				}
 			}			
 			/*end mohan*/
-			if(t.matches("\\{\\w+\\}") || t.contains("~list~")){
+			if(t.matches("\\{\\w+\\}") || t.contains("~list~") || t.matches(".*?\\d+?")){
 				chunk = t+" "+chunk;
 				foundm = true;
 			}else if(!foundm && (t.endsWith(">") ||t.endsWith(")") )){ //if m o m o, collect two chunks
@@ -1678,7 +1679,7 @@ public class ChunkedSentence {
 			else return chunk;
 		}
 		token = token.compareTo("±")==0? "moreorless" : token;
-		token = token.matches(".*?\\d.*")? NumericalHandler.originalNumForm(token) : token;
+		token = token.matches(".*?\\d.*") && !token.startsWith("r[p[")? NumericalHandler.originalNumForm(token) : token;
 		
 		if(token.compareTo("and")==0){
 			pointer++;
@@ -2427,7 +2428,7 @@ parallelism scope: q[other chunks]
 		//}
 		if(token.startsWith("r[")){
 			//r[p[around] o[10 mm]] should be ChunkValue
-			if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?.*("+ChunkedSentence.units+")\\]+")){
+			if(token.matches(".* o\\[\\(?[0-9+×x°²½/¼*/%-]+\\)?.*("+ChunkedSentence.units+")\\]+") && !token.contains("p[in]")){
 				token = token.replaceFirst("\\[p\\[", "[m[").replaceAll("[or]\\[", "").replaceFirst("\\]+$", "");
 				this.chunkedtokens.set(id, token);
 				return "ChunkValue";
