@@ -799,7 +799,7 @@ public class ChunkedSentence {
 				}
 			}			
 			/*end mohan*/
-			if(t.matches("\\{\\w+\\}") || t.contains("~list~") || t.matches(".*?\\d+?")){
+			if((t.matches("\\{\\w+\\}") && !t.matches("\\{("+StanfordParser.characters+")\\}")) || t.contains("~list~") || t.matches(".*?\\d+?")){
 				chunk = t+" "+chunk;
 				foundm = true;
 			}else if(!foundm && (t.endsWith(">") ||t.endsWith(")") )){ //if m o m o, collect two chunks
