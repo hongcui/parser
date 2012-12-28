@@ -632,10 +632,17 @@ public class CharacterAnnotatorChunked {
 					text = text.replaceFirst("to\\s+", "0-");
 					resetfrom = true;
 				}
-				ArrayList<Element> parents = this.attachToLast? lastStructures() : subjects;
+				ArrayList<Element> parents = lastStructures();
+				if(parents.size()==0){
+					if(this.latestelements.size() == 0){//other Chunk types may also need this place holder
+						this.establishSubject("(unknown_subject)", cs); //put in a place holder only when content is not like "diameter (of xxx 5 -10 um)"
+						parents = this.subjects;
+					}
+				}
+				/*ArrayList<Element> parents = this.attachToLast? lastStructures() : subjects;
 				if(printAttach && subjects.get(0).getAttributeValue("name").compareTo(lastStructures().get(0).getAttributeValue("name")) != 0){
 					System.out.println(text + " attached to "+parents.get(0).getAttributeValue("name"));
-				}				
+				}*/				
 				if(debugNum){
 					System.out.println();
 					System.out.println(">>>>>>>>>>>>>"+text);
@@ -656,7 +663,7 @@ public class CharacterAnnotatorChunked {
 				if(character == null){
 					character = text.indexOf("size")>=0 || content.indexOf('/')>0 || content.indexOf('%')>0 || content.indexOf('.')>0? "size" : null;
 				}
-				ArrayList<Element> chars = annotateNumericals(content, character, (modifier1+";"+modifier2).replaceAll("(^\\W|\\W$)", ""), lastStructures(), resetfrom, cs); //added cs
+				ArrayList<Element> chars = annotateNumericals(content, character, (modifier1+";"+modifier2).replaceAll("(^\\W|\\W$)", ""), parents, resetfrom, cs); //added cs
 				updateLatestElements(chars);
 			}else if(ck instanceof ChunkTHAN){
 				ArrayList<Element> chars = processTHAN(ck.toString().replaceFirst("^n\\[", "").replaceFirst("\\]$", ""), this.subjects, cs); // 7-12-02 add cs
@@ -1749,7 +1756,32 @@ public class CharacterAnnotatorChunked {
 		}		
 		//end mohan code
 		
-		//special case II
+		//special case II: striae 5.5-9.0 [in 10 um]
+		//change numerical character to "count"
+		//attach "in 10 um" to count as constraint
+		if(ckstring.startsWith("r[p[in]") && ckstring.matches(".*?\\d+\\s*("+ChunkedSentence.units+")\\]+")){
+			if(this.latestelements.size()>0){
+				Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
+				if(lastelement.getName().compareTo("structure")==0){
+					XPath countpath = XPath.newInstance(".//character[@name='count']|.//character[@name='size']");
+					List<Element> counts = countpath.selectNodes(lastelement);
+					for(Element count: counts){
+						Attribute att = count.getAttribute("name");
+						att.setValue("count");
+						this.addAttribute(count, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+					}
+					return;
+				}else if(lastelement.getAttribute("from")!=null || lastelement.getAttribute("to")!=null || 
+						(lastelement.getAttribute("value")!=null && lastelement.getAttributeValue("value").matches(".*?\\d.*"))){
+					Attribute att = lastelement.getAttribute("name");
+					att.setValue("count");
+					this.addAttribute(lastelement, "constraint", ckstring.replaceAll("(\\w\\[|\\])", ""));
+					return;
+				}
+			}
+		}
+		
+		//special case III
 		// r[p[in] o[outline]] or r[p[with] o[irregular ventral profile]], r[p[with] o[a {diameter} 15-65 um]]
 		if(characterPrep(ckstring, cs)){
 			return;		
@@ -1772,7 +1804,8 @@ public class CharacterAnnotatorChunked {
 		//allow () be added around the last bare word if there is a {} before the bare word, or if the word is not a character (size, profile, lengths)
 		object = parenthesis(object);
 		ArrayList<Element> structures = new ArrayList<Element>();
-		//special case III
+		
+		//special case IV
 		//length r[p[of] o[(pervalvar) (axis)]]: this.unassignedcharacter = length, ck has object o[(pervalvar) (axis)]
 		//construct organ element only. the character will be used as character name in the annotation of the chunk following this prep chunk
 		if(this.unassignedcharacter!=null && ckstring.startsWith("r[p[of]")){ //
@@ -1902,6 +1935,7 @@ public class CharacterAnnotatorChunked {
 			}
 			else{
 				ckstring = ckstring.replaceFirst(lastword+"$", "").trim();
+				if(ckstring.indexOf(" ")<0) return done; //don't have character, e.g. "in 10 um"
 				value = ckstring.substring(ckstring.lastIndexOf(" ")).trim();
 				character = ckstring.replaceFirst(value+".*$", "").replaceAll("\\b("+ChunkedSentence.stop+")\\b", "").trim();
 				value = value +" "+lastword;
