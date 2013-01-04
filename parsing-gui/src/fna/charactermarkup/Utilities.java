@@ -512,6 +512,7 @@ public class Utilities {
 	 */
 	public static String[] lookupCharacter(String w, Connection conn, Hashtable<String, String[]> characterhash, String glosstable, String prefix) {
 		if(w.trim().length()==0) return null;
+		if(w.contains("[")) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
 		//w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
 		w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[_–-]", "").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>merous
@@ -536,6 +537,9 @@ public class Utilities {
 			ch = lookup(w, conn, characterhash, glosstable, wc, prefix);
 			if(ch == null && wc.indexOf('-')>0){//pani_culiform
 				ch = lookup(wc.replaceAll("-", ""), conn, characterhash, glosstable, wc, prefix);
+			}
+			if(ch == null && wc.indexOf('-')>0){//pani_culiform
+				ch = lookup(wc, conn, characterhash, glosstable, wc, prefix);
 			}
 		}
 		return ch;
