@@ -55,8 +55,6 @@ public class CharacterAnnotatorChunked {
 	//private boolean inbrackets = false; //repeated by the scope approach (dealing with parenthetical expressions)  
 	private String text  = null;
 	private String notInModifier = "a|an|the";
-	private String lifestyle = "";
-	private String characters = "";
 	private boolean partofinference = false;
 	private ArrayList<Element> pstructures = new ArrayList<Element>();//parent structures
 	private ArrayList<Element> cstructures = new ArrayList<Element>();//children structures
@@ -89,23 +87,7 @@ public class CharacterAnnotatorChunked {
 		this.evaluation = evaluation;
 		this.nosubject = false;
 		if(this.evaluation) this.partofinference = false; //partofinterference causes huge number of "relations"
-		try{
-			//collect life_style terms
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='life_style'");
-			while(rs.next()){
-				this.lifestyle += rs.getString(1)+"|";
-			}
-			this.lifestyle = lifestyle.replaceFirst("\\|$", "");
-			
-			rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='character'");
-			while(rs.next()){
-				this.characters += rs.getString(1)+"|";
-			}
-			this.characters = characters.replaceFirst("\\|$", "");
-		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}
+
 	}
 	/**
 	 * reset annotator to process next description paragraph.
@@ -291,7 +273,7 @@ public class CharacterAnnotatorChunked {
 				Element structure = it.next();
 				String name = structure.getAttributeValue("name").trim();
 				if(name.length()<=0) continue;
-				if(lifestyle.matches(".*\\b"+name+"\\b.*")){
+				if(StanfordParser.lifestyle.matches(".*\\b"+name+"\\b.*")){
 					if(structure.getAttribute("constraint_type") !=null)
 						name = structure.getAttributeValue("constraint_type")+" "+name;
 					if(structure.getAttribute("constraint_parent_organ") !=null)
@@ -446,9 +428,11 @@ public class CharacterAnnotatorChunked {
 				}
 				ArrayList<Element> structures = createStructureElements(structure/*, false*/, cs);// 7-12-02 add cs
 				//deal with "type" case
-				Element laste = this.latestelements.get(this.latestelements.size()-1);
-				if(laste.getName().equals("structure")){//u[m[sometimes] woody o[(caudices)]] after z[{underground} (stems)], create a type for the subject
-					annotateType(content, laste);
+				if(this.latestelements.size()>0){
+					Element laste = this.latestelements.get(this.latestelements.size()-1);
+					if(laste.getName().equals("structure")){//u[m[sometimes] woody o[(caudices)]] after z[{underground} (stems)], create a type for the subject
+						annotateType(content, laste);
+					}
 				}else{
 					updateLatestElements(structures);
 				}
@@ -929,7 +913,7 @@ public class CharacterAnnotatorChunked {
 		}
 		
 		if(! singlephrase && size<=3){
-			String[] charainfo = Utilities.lookupCharacter(token, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+			String[] charainfo = token.matches("\\w\\[.*")? null : Utilities.lookupCharacter(token, conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 			if(charainfo != null && charainfo[0].contains("position")){
 				singlephrase = true; //position
 			}
@@ -1754,6 +1738,7 @@ public class CharacterAnnotatorChunked {
 			}
 		return;
 		}		
+
 		//end mohan code
 		
 		//special case II: striae 5.5-9.0 [in 10 um]
@@ -1834,9 +1819,15 @@ public class CharacterAnnotatorChunked {
 		boolean lastIsStruct = false;
 		boolean lastIsChara = false;
 		boolean lastIsComma = false;
+		
+		//e.g there {position} r[p[in] o[the (middle)]] r[p[of] o[the {elongated} (valve)]]
+		if(this.latestelements.size()==0 && this.unassignedcharacter!=null)
+		{
+			this.establishSubject("(unknown_subject)", cs); 
+		}	
 		Element lastelement = this.latestelements.get(this.latestelements.size()-1); 
 		if(lastelement.getName().compareTo("structure") == 0){//latest element is a structure
-			if(lastelement.getAttributeValue("name").equals("unknown_subject")){
+			/*if(lastelement.getAttributeValue("name").equals("unknown_subject")){ //this is case is dealt with in other ways.
 				//case of "width of interocular area ..."
 				this.latestelements.remove(this.latestelements.size()-1);				
 				if(this.subjects.size()>=1){
@@ -1849,9 +1840,9 @@ public class CharacterAnnotatorChunked {
 				if(this.subjects.size()==0) this.subjects = structures;
 				this.updateLatestElements(structures);
 				return;
-			}else{
+			}else{*/
 				lastIsStruct = true;
-			}
+			//}
 		}else if(lastelement.getName().compareTo("character") == 0){
 			lastIsChara = true;
 		}else if(lastelement.getName().matches("("+this.delims+")")){
@@ -1903,7 +1894,7 @@ public class CharacterAnnotatorChunked {
 		boolean done =false;
 		if(ckstring.indexOf(" ") < 0) return done;
 		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\]+", "").trim();
-		if(lastword.matches("("+this.characters+")")){//r[p[in] o[outline]]
+		if(lastword.matches("("+StanfordParser.characters+")")){//r[p[in] o[outline]]
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 			if(lastelement.getName().compareTo("character")==0){//shell oval in outline
 				Iterator<Element> it = this.latestelements.iterator();
@@ -1924,7 +1915,7 @@ public class CharacterAnnotatorChunked {
 				}
 				done = true;
 			}
-		}else if(lastword.matches("("+ChunkedSentence.units+")") || lastword.matches(".*?\\d+.*")){//r[p[with] o[a {diameter} 15-65 um]]
+		}else if(lastword.matches("("+ChunkedSentence.units+")") || (lastword.matches(".*?\\d+[^a-z]*") && !lastword.matches("\\(1\\d\\d\\d\\)"))) {//r[p[with] o[a {diameter} 15-65 um]], do not match (1976) [reference]
 			//get the values
 			String value = "";
 			String character = "";
