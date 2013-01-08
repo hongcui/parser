@@ -52,7 +52,7 @@ public class SentenceOrganStateMarker {
 	private static String colors = null;
 	private static String pt;
 	private static Pattern colorpattern;
-	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. \\(\\)\\?+-]+)\\s*(?:to|and|-)\\s*([\\d\\. \\(\\)\\?+-]+)(.*)");
+	private static Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\. /\\(\\)\\?+-]+)\\s*(?:to|and|-)\\s*([\\d\\. /\\(\\)\\?+-]+)(.*)");
 	//private static Pattern thelargest = Pattern.compile("(.*)(,\\s*\\S+est})( [^<].*)"); //tested and failed. too general. many superlatives are not subjects.
 	private static Pattern thelargest = Pattern.compile("(.*)(,\\s*(?:the )?\\S+est})( [^<].*)"); //narrowed down to size cases by checking group(3)
 	public static String compoundprep = "according to|ahead of|along with|apart from|as for|aside from|as per|as to as well as|away from|because of|but for|by means of|close to|contrary to|depending on|due to|except for|forward of|further to|in addition to|in association with|in between|in case of|in combination with|in face of|in favour of|in front of|in lieu of|in spite of|instead of|in view of|near to|next to|on account of|on behalf of|on board|on to|on top of|opposite to|other than|out of|outside of|owing to|preparatory to|prior to|regardless of|save for|thanks to|together with|up against|up until|vis-a-vis|with reference to|with regard to";
@@ -127,7 +127,7 @@ public class SentenceOrganStateMarker {
 					String sent = rs.getString("sentence").trim();
 					if(sent.length()!=0){
 					String source = rs.getString("source");
-					//if(!source.equals("1_1.txtp0.txt-1")) continue;
+					//if(!source.equals("Cyclotella_praekutzingiana24.txt-1")) continue;
 					String osent = rs.getString("originalsent");
 					sent = sent.replaceAll("</?[BNOM]>", "");
 					sent = sent.replaceAll("\\bshades of\\b", "shades_of");
@@ -136,6 +136,7 @@ public class SentenceOrganStateMarker {
 					text = text.replaceAll("[ _-]+\\s*shaped", "-shaped").replaceAll("(?<=\\s)µ\\s+m\\b", "um");
 					//deal with numbers
 					text = text.replaceAll("(?<=\\d)(?=("+ChunkedSentence.units+")\\b)", " "); //23mm => 23 mm
+					text = StanfordParser.ratio2number(text);
 					text = toNumber(text);
 					text = text.replaceAll("\\b(ca|c)\\s*\\.?\\s*(?=\\d)", "");
 					text = formatNumericalRange(text);
@@ -209,6 +210,7 @@ public class SentenceOrganStateMarker {
 	/**
 	 * from 5-6 to 10 => 5-10
 	 * between 1.0 and 2.0 => 10-20
+	 * from 1/3 to 1/2 
 	 * 10 to 20
 	 * @param text
 	 * @return
