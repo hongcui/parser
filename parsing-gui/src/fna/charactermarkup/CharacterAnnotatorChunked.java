@@ -69,9 +69,17 @@ public class CharacterAnnotatorChunked {
 	private boolean nosubject;
 	private boolean printProvenance = false;
 	private static XPath unknownsubject;
+	private static XPath negatedstructure;
+	private static XPath path1;
+	//private static XPath path2;
+	//private static XPath path3;
 	static{
 		try{
 			unknownsubject = XPath.newInstance(".//*[@name='unknown_subject']");
+			negatedstructure = XPath.newInstance(".//structure[@negation='true']");
+		    path1 = XPath.newInstance(".//character[@value='none']");
+		    //path2 = XPath.newInstance(".//character[@name='presence'][@value='no']");
+	        //path3 = XPath.newInstance(".//character[@value='present']");
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
@@ -235,6 +243,21 @@ public class CharacterAnnotatorChunked {
 				if(relations.size()==0) unknown.detach();
 			}
 		}
+		//nomarlization count
+        /* count = "none" =>count = 0 */
+        List<Element> es = path1.selectNodes(this.statement);
+        for (Element e : es) {
+            e.setAttribute("value", "0");
+        }
+		//nomarlization presence
+		List<Element> negated = negatedstructure.selectNodes(this.statement);
+		nomarlizePresence(negated);
+		
+        /* the remaining presence = no cases */
+        //es = path2.selectNodes(this.statement);
+        //for (Element e : es) {
+        //    e.setAttribute("value", "absent");
+       /// }
 		
 		XMLOutputter xo = new XMLOutputter(Format.getPrettyFormat());
 		if(printAnnotation){
@@ -245,6 +268,55 @@ public class CharacterAnnotatorChunked {
 	}
 	
 	
+	/**
+	 * no organ present => organ present modifier = "not"
+	 * no red organ => organ red modifier = "not"
+	 * a has no organ => a has organ negation = "true"
+	 * no organ touched a => organ touched a negation = "true"
+	 * 
+	 * 
+	 * if a relation is involved, negate the relation (not the character)
+	 * if not, negate the characters of the structure
+	 * if no characters, add count=presence modifier = "not".
+	 * @param negated
+	 */
+	private void nomarlizePresence(List<Element> negatedstructures) {
+		if(negatedstructures.size()==0) return;
+        try {		 
+           //add negation = true for relations
+            for(Element s : negatedstructures){       	
+            	String path = ".//relation[@from='"+s.getAttributeValue("id")+"']|.//relation[@to='"+s.getAttributeValue("id")+"']";            	
+	            boolean negaterelation =false;
+	            boolean negatecharacter = false;
+	            if(path.compareTo("")!=0){
+		            List<Element> relations = XPath.selectNodes(this.statement, path);
+		            for(Element relation : relations){
+		            	relation.getAttribute("negation").setValue("true");
+		            	negaterelation = true;
+		            }
+	            }
+		        if(!negaterelation){
+            		 List<Element> characters = s.getChildren("character");
+            		 for(Element character: characters){
+            			 this.addAttribute(character, "modifier", "not"); //add modifier="not" for characters
+            			 negatecharacter = true;
+            		 }
+            		 if(!negatecharacter){
+                		negatecharacter = false;
+                		Element count = new Element("character");
+                		this.addAttribute(count, "name", "count");
+                		this.addAttribute(count, "value", "present");
+                		this.addAttribute(count, "modifier", "not");
+                		s.addContent(count);
+                	 }
+		        }
+	            //finally remove negation = "true" from the negatedstructures
+	            	s.removeAttribute("negation");
+            }
+        } catch (Exception e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+        }
+	}
 
 	/**
 	 * assuming subject organs of subsentences in a sentence are parts of the subject organ of the sentence
@@ -2689,8 +2761,10 @@ public class CharacterAnnotatorChunked {
 						}
 						w = w.replaceAll("(\\{|\\})", "");
 						String[] charainfo = (Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, glosstable, tableprefix));
-						if(charainfo==null && w.matches("no")){
-							chara = "presence";
+						if(charainfo==null && w.matches("no")){			
+							for(Element parent: parents){
+								this.addAttribute(parent, "negation", "true");
+							}
 						}
 						if(charainfo==null && Utilities.isAdv(w, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){//TODO: can be made more efficient, since sometimes character is already given
 							modifiers +=w+" ";
@@ -2721,7 +2795,7 @@ public class CharacterAnnotatorChunked {
 										}*/
 									}
 								}else{
-									w = w + (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "");//attach syn info to the word w
+									w = w + (charainfo[1].length()>0? "_"+charainfo[1] : "");//attach syn info to the word w
 									createCharacterElement(parents, results,
 											modifiers, w, chara, "",cs);// 7-12-02 add cs //default type "" = individual vaues
 									modifiers = "";

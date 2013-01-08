@@ -1364,6 +1364,7 @@ end procedure
 			//candidates.addAll(XPath.selectNodes(root, ".//UCP/CC"));
 			Iterator<Element> it = candidates.iterator();
 			while(it.hasNext()){
+				
 				Element CC = (Element)it.next();
 				Element PP = CC.getParentElement();
 				List<Element> children = PP.getChildren();
@@ -1387,6 +1388,19 @@ end procedure
 					if(e.getChild("IN")!=null && e.getChild("IN").getAttributeValue("text").compareTo("than")==0){
 						//"than" can never be in a pp list
 						return;
+					}
+					if(e.getChild("NP")!=null){
+						//the PP has it's own object, as in 
+						
+						//(PP
+		                //(PP (IN from)
+		                //  (NP (DT the) (NNS mantle)))
+		                //(CC or)
+		                //(PP (IN from)
+		                //  (PP (IN near)
+		                //    (NP
+		                //      (NP (DT the) (NN mantle3valve) (NNS interface))
+						return; 
 					}
 					String ename = e.getName();
 					if(!ename.matches("(PP|IN|CC|NP|PUNCT|TO|ADVP)")){//added TO
@@ -1437,8 +1451,8 @@ end procedure
 					Element IN = new Element("IN");
 					IN.setAttribute("text", "i["+alltext+"]");
 					IN.setAttribute("id", id);
-					PP.addContent(IN);
-					PP.addContent(NP);
+					PP.addContent(IN);//combined in-list
+					PP.addContent(NP);//the object of the in-list
 				}
 			}
 		}catch (Exception e){
