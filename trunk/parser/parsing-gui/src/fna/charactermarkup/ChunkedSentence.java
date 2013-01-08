@@ -1120,7 +1120,7 @@ public class ChunkedSentence {
 			for(int i = 0; i<this.chunkedtokens.size(); i++){
 				//scan for JJRs
 				String token = this.chunkedtokens.get(i);
-				if(more.length()==0 && 
+				if(/*more.length()==0 &&*/ //result in the capture of "more" that is not immediately before the "than" token (i.e., hide the "more" that is immediately before "than")
 						((token.matches(".*?\\b(\\w+er|more|less)\\b.*") && token.indexOf("er>")<0)
 								|| (token.length()>0 && this.markedsent.indexOf(token+" than")>=0))){ //<inner> is not, but <longer> than is 
 					firstmorei = i;
@@ -1713,16 +1713,18 @@ public class ChunkedSentence {
 			}
 		}
 
-		if(token.indexOf("=")>0){//chromosome count 2n=, FNA specific
-			String l = "";
-			String t= this.chunkedtokens.get(pointer++);
-			while(t.indexOf("SG")<0){
-				l +=t+" ";
-				t= this.chunkedtokens.get(pointer++);				
+		if(token.indexOf("=")>0){//chromosome count 2n=, FNA specific, also seen in Diatom descriptions
+			if(token.matches(".?\\b\\d?[xn]=\\s*\\d.*")){
+				String l = "";
+				String t= this.chunkedtokens.get(pointer++);
+				while(t.indexOf("SG")<0 && this.chunkedtokens.size()>pointer-1){
+					l +=t+" ";
+					t= this.chunkedtokens.get(pointer++);				
+				}
+				l = l.replaceFirst("\\b\\d?[xn]=", "").trim();
+				chunk = new ChunkChrom(l);
+				return chunk;
 			}
-			l = l.replaceFirst("\\d[xn]=", "").trim();
-			chunk = new ChunkChrom(l);
-			return chunk;
 		}
 		
 		//create a new ChunkedSentence object
@@ -2083,7 +2085,8 @@ public class ChunkedSentence {
 									this.pointer = j+1;
 									return new ChunkVP("b["+scs+"]"); 
 								}
-								String[] chinfo = Utilities.lookupCharacter(t, conn, characterhash, glosstable, tableprefix);
+								
+								String[] chinfo = t.matches("\\w\\[.*")? null : Utilities.lookupCharacter(t, conn, characterhash, glosstable, tableprefix);
 								if((!findc &&!findo) && t.matches("^[rwl]\\[.*")){
 									scs = scs.replaceFirst("^\\]\\s+", "").trim()+"] ";
 									scs += t;
@@ -2455,9 +2458,11 @@ parallelism scope: q[other chunks]
 					if(id+1 < this.chunkedtokens.size() && token.startsWith("{")){
 						//r[p[to]] {reniform}
 						String[] charainfo = Utilities.lookupCharacter(token, conn, characterhash, glosstable, tableprefix);
-						this.chunkedtokens.set(id, "a["+charainfo[0]+"[to_"+token.replaceAll("[{}]", "")+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"]]");
-						this.chunkedtokens.set(id+1, "");
-						return "ChunkSimpleCharacterState";
+						if(charainfo!=null){
+							this.chunkedtokens.set(id, "a["+charainfo[0]+"[to_"+token.replaceAll("[{}]", "")+ (charainfo[1].length()>0? "_"+charainfo[1]+"_" : "")+"]]");
+							this.chunkedtokens.set(id+1, "");
+							return "ChunkSimpleCharacterState";
+						}
 					}
 				}
 			}else{

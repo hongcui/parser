@@ -61,6 +61,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	private POSTagger4StanfordParser tagger = null;
 	private String tableprefix = null;
 	private String glosstable = null;
+	public static String lifestyle = "";
+	public static String characters = "";
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
@@ -97,7 +99,25 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
-			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);			
+			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);	
+			
+			try{
+				//collect life_style terms
+				stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='life_style'");
+				while(rs.next()){
+					this.lifestyle += rs.getString(1)+"|";
+				}
+				this.lifestyle = lifestyle.replaceFirst("\\|$", "");
+				
+				rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='character'");
+				while(rs.next()){
+					this.characters += rs.getString(1)+"|";
+				}
+				this.characters = characters.replaceFirst("\\|$", "");
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -554,14 +574,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 
 	public static String ratio2number(String sent){
-		String small = "\\b(?:one|two|three|four|five|six|seven|eight|nine)\\b";
-		String big = "\\b(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)s?\\b";
+		String small = "\\b(?:one|two|three|four|five|six|seven|eight|nine)";
+		String big = "(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)s?\\b";
 		//ratio
 		Pattern ptn = Pattern.compile("(.*?)("+small+"\\s*-?_?\\s*"+big+")(.*)");
 		Matcher m = ptn.matcher(sent);
 		while(m.matches()){
 			String ratio = m.group(2);
-			ratio = toRatio(ratio);
+			ratio = toRatio(ratio.replaceAll("_", "-"));
 			sent = m.group(1)+ratio+m.group(3);
 			m = ptn.matcher(sent);
 		}
@@ -775,8 +795,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		sp.POSTagging();
-		sp.parsing();
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
