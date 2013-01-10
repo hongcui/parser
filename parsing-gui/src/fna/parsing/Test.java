@@ -156,7 +156,36 @@ public class Test{
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Test t = new Test("","");
+		String text="a {diameter} from 15 to 65 um";
+		Pattern range = Pattern.compile("(.*?)\\b(?:from|between)\\s*([\\d\\.+-]+)\\s*(?:to|and)\\s*([\\d\\.+-]+)(.*)");
+		Matcher m = range.matcher(text);
+		while(m.matches()){
+			text = m.group(1)+m.group(2)+"-"+m.group(3)+m.group(4);
+			m = range.matcher(text);
+		}
+		System.out.println(text);
+		/*String typo="mine";
+		String text="Mine dogs, mine cats";
+		String correction = "my";
+		String correctioncp = correction;
+		Pattern p = Pattern.compile("(.*?)\\b("+typo+")\\b(.*)", Pattern.CASE_INSENSITIVE);
+		//need be case insenstive, but keep the original case
+		Matcher m = p.matcher(text);
+		while(m.matches()){
+			text =m.group(1);
+			String w = m.group(2);
+			if(w.matches("^[A-Z].*")){
+				correction = correction.substring(0,1).toUpperCase()+correction.substring(1); 
+			}else{
+				correction = correctioncp;
+			}
+			text+=correction;
+			text+=m.group(3);
+			m = p.matcher(text);
+		}
+		System.out.println(text);*/
+		
+		/*Test t = new Test("","");
 		ArrayList<String> tagList = new ArrayList<String>();
 		tagList.add("bark");
 		tagList.add("stem");
@@ -164,7 +193,7 @@ public class Test{
 		tagList.add("barks");
 		tagList.add("bark");
 		
-		t.deduplicateSort(tagList);
+		t.deduplicateSort(tagList);*/
 		
 		
 		
