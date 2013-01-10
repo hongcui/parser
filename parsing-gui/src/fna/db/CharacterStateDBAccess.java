@@ -102,8 +102,8 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 				String tablePrefix = MainForm.dataPrefixCombo.getText();
 				
 				//String sql = "SELECT distinct category FROM " + tablePrefix+"_character order by category";
-				//String sql = "SELECT distinct category FROM "+this.glossarytable+" order by category";  //This line is changed to the following
-				String sql = "SELECT distinct category FROM antglossaryfixed order by category"; // The default glossary
+				String sql = "SELECT distinct category FROM "+this.glossarytable+" order by category";  //This line is changed to the following
+				//String sql = "SELECT distinct category FROM antglossaryfixed order by category"; // The default glossary
 				stmt = conn.prepareStatement(sql);
 				rset = stmt.executeQuery();
 				while(rset.next()) {
