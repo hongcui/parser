@@ -2269,7 +2269,7 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private void addAttribute(Element e, String attribute, String value) {
-		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\|<|>))", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
+		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+")\\b", "").trim();
 		if(this.evaluation && attribute.startsWith("constraint_")) attribute="constraint"; 
