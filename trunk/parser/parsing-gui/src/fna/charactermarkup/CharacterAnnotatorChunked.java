@@ -1987,7 +1987,7 @@ public class CharacterAnnotatorChunked {
 				}
 				done = true;
 			}
-		}else if(lastword.matches("("+ChunkedSentence.units+")") || (lastword.matches(".*?\\d+[^a-z]*") && !lastword.matches("\\(1\\d\\d\\d\\)"))) {//r[p[with] o[a {diameter} 15-65 um]], do not match (1976) [reference]
+		}else if(lastword.matches("("+ChunkedSentence.units+")") || (lastword.matches(".*?\\d+[^a-z]*") && !lastword.matches(".*?\\d/\\d.*") && !lastword.matches("\\(1\\d\\d\\d\\)"))) {//r[p[with] o[a {diameter} 15-65 um]], do not match (1976) [reference], do not match 2/3 - 3/4
 			//get the values
 			String value = "";
 			String character = "";
