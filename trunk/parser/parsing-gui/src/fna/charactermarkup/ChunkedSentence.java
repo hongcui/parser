@@ -93,12 +93,12 @@ public class ChunkedSentence {
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
 	
-	private boolean printNorm = false;
-	private boolean printNormThan = false;
-	private boolean printNormTo = false;
-	private boolean printExp = false;
-	private boolean printRecover = false;
-	private boolean printParentheses = false;
+	private boolean printNorm = true;
+	private boolean printNormThan = true;
+	private boolean printNormTo = true;
+	private boolean printExp = true;
+	private boolean printRecover = true;
+	private boolean printParentheses = true;
 	private String clauseModifierConstraint;
 	private String clauseModifierContraintId;
 	private ArrayList<Attribute> scopeattributes = new ArrayList<Attribute>();
@@ -1239,7 +1239,7 @@ public class ChunkedSentence {
 				int j = i;
 				String chara ="";
 				do{
-					if(j >= 0) chara = this.chunkedtokens.get(--j);
+					if(j > 0) chara = this.chunkedtokens.get(--j).trim();
 				}while(chara.length()==0);
 				
 				if(chara.startsWith("{") && chara.endsWith("}")){//found the character
@@ -1509,12 +1509,22 @@ public class ChunkedSentence {
 							if(!rest.equals(np.trim())) np = np.replace(rest, ""); //perserve spaces for later
 							String object = np.replaceAll("\\s+", " ").trim();
 							if(object.length()>0){
-								token = head + "] o["+np.replaceAll("\\s+", " ").trim()+"]"+brackets;
-								if(!token.startsWith("r\\[")) token = "r[p["+token+"]";
-								this.chunkedtokens.set(i, token);
+								token = head + "] o["+np.replaceAll("\\s+", " ").trim()+"]"+brackets; //token = r[p[on] o[{proximal} 2/3-3/4]]: <leaves> on {proximal} 2/3-3/4
+								if(!token.startsWith("r[")) token = "r[p["+token+"]";
+								//if next token is r[p[ too, join the pp
 								int npsize = np.split("\\s").length; //split on single space to perserve correct count of tokens
-								for(int k = i+1; k<=i+npsize; k++){
+								int k = i+1;
+								for(; k<=i+npsize; k++){
 									this.chunkedtokens.set(k, "");
+								}
+								while(this.chunkedtokens.get(k).length()==0)k++;
+								if(this.chunkedtokens.get(k).startsWith("r[p[")){//join
+									token = token.replaceAll("(\\w\\[|\\])", "");
+									token = chunkedtokens.get(k).replaceFirst("r\\[p\\[", "r[p["+token+" ");
+									this.chunkedtokens.set(k, token);
+									this.chunkedtokens.set(i, "");
+								}else{
+									this.chunkedtokens.set(i, token);
 								}
 								if(this.printNorm){
 									System.out.println("!default normalized to (.|;|,|and|or|r[)!: "+token);
