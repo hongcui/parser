@@ -694,8 +694,8 @@ end procedure
 			String inname = in.getAttributeValue("text");
 			if(e.getName().startsWith("NP") && e.getAttributeValue("text") != null){
 				String fnp = e.getAttributeValue("text");
-				if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-				else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+				if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.info(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+				else if(inname.equals("to")) LOGGER.info(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 				return fnp.trim();
 			}
 			//boolean inPRN = false;
@@ -725,8 +725,8 @@ end procedure
 								String fnp = all.substring(0, index)+n;
 								if(containsUnmatchedBrackets(fnp)) return "";
 								if(inname.equals("to") && fnp.indexOf(",")>=0 && (fnp.indexOf(",") < fnp.indexOf("-LRB-") && fnp.indexOf(",") > fnp.indexOf("-RRB-"))) return ""; //in cases like "imbricate to subequal , bases entire", "to" is not a prep, so fnp "subequal , bases" is ignored ; "," must be outside of ()
-								if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-								else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+								if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.info(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+								else if(inname.equals("to")) LOGGER.info(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 								return fnp.trim();
 							}
 							
@@ -752,8 +752,8 @@ end procedure
 						//if(inPRN == inPRN((Element)c)){
 						if(inSamePRN(e, (Element)c)){
 							String fnp = ((Element)c).getAttributeValue("text");;
-							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
-							else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.info(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 
+							else if(inname.equals("to")) LOGGER.info(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 							if(containsUnmatchedBrackets(fnp)) return "";
 							return fnp.trim();
 						}
@@ -762,8 +762,8 @@ end procedure
 						//if(inPRN == inPRN((Element)c)){
 						if(inSamePRN(e, (Element)c)){
 							String fnp = ((Element)c).getAttributeValue("text");
-							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.error(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 							
-							else if(inname.equals("to")) LOGGER.error(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
+							if(fnp.contains("-LRB-") ||fnp.contains("-RRB-") ||fnp.contains("-LSB-") ||fnp.contains("-RSB-")) LOGGER.info(sentsrc+":"+sentindex+": bad np  ["+inname+"]: "+fnp); 							
+							else if(inname.equals("to")) LOGGER.info(sentsrc+":"+sentindex+": to np  ["+inname+"]: "+fnp); 
 							if(containsUnmatchedBrackets(fnp)) return "";
 							return fnp.trim();
 						}
