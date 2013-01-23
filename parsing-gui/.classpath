@@ -53,5 +53,7 @@
 	<classpathentry exported="true" kind="con" path="org.dyno.visual.swing.VS_LIBRARY/layoutext"/>
 	<classpathentry kind="lib" path="lib/jsoup-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.48.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-2.0.3/jdom-2.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
