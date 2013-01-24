@@ -79,7 +79,7 @@ public class POSTagger4StanfordParser {
 	//end mohan declaration
 	private static Pattern asaspattern = Pattern.compile("(.*?\\b)(as\\s+[\\w{}<>]+\\s+as)(\\b.*)");
 	private static Pattern modifierlist = Pattern.compile("(.*?\\b)(\\w+ly\\s+(?:to|or)\\s+\\w+ly)(\\b.*)");
-	private static String negations = "not|rarely|seldom";
+	private static String negations = "not|never|seldom";//not -ly words. -ly words are already treated in character list patterns
 
 	/**
 	 * 
@@ -744,7 +744,8 @@ public class POSTagger4StanfordParser {
 	/**
 	 * connect a list of character states of the same character together, 
 	 * for example: keeled , elliptic to broadly ovate => shape~list~keeled~punct~elliptic~to~broadly~ovate 
-	 * example 2: not keeled , elliptic to broadly ovate => not keeled, shape~list~elliptic~to~broadly~ovate
+	 * example 2: not keeled , elliptic to broadly ovate => not keeled , shape~list~elliptic~to~broadly~ovate //"not"-state with a comma can not be in a range. "rarely" may.
+	 * example 3: not keeled or ovate => shape~list~not~keeled~or~ovate //because of "or", the modifer needs to be applied to all states in the or-list
 	 * deal also with sentences with parentheses
 	 * @return
 	 */
@@ -848,12 +849,11 @@ public class POSTagger4StanfordParser {
 	}
 
 	/**
-	 * put a list of states of the same character connected by to/or in a chunk
-	 * color, color, or color
-	 * color or color to color
-	 * dealt with negation modifiers such as not: 
-	 * not colorA or colorB => not {color~list~colorA~or~colorB}
-	 * not colorA, color B to colorC => not color A, {color~list~colorB~to~colorC}
+	 * connect a list of character states of the same character together, 
+	 * for example: keeled , elliptic to broadly ovate => shape~list~keeled~punct~elliptic~to~broadly~ovate 
+	 * example 2: not keeled , elliptic to broadly ovate => shape~list~not~keeled~punct~elliptic~to~broadly~ovate //"rarely" will be treated the same way as "not"
+	 * example 3: not keeled or ovate => shape~list~not~keeled~or~ovate //because of "or", the modifer needs to be applied to all states in the or-list
+	 *
 	 * @return updated string in format of {shape~list~elliptic~to~broadly~ovate} 
 	 */
 	//private String normalizeCharacterLists(String list){
@@ -916,10 +916,10 @@ public class POSTagger4StanfordParser {
 			//	result += this.chunkedtokens.get(i)+" ";
 			//}
 			if(end>start){ //if it is a list
-				//triage: not a, b, or c; not a, b to c
+				//triage: "not a, b, or c" is fine; "not a, b to c" is not
 				if(connector.trim().equals("`")){//if connector is "to", then "not"-modified state should be removed.
 					//check if l starts with "not"
-					while(l.matches("("+this.negations+")\\b.*")){//remove negated states from the begaining of l one by one
+					while(l.matches("(not|never)\\b.*")){//remove negated states from the begaining of l one by one
 						String notstate = l.substring(0, l.indexOf(",")+1);
 						l = l.substring(l.indexOf(",")+1).trim();
 						start = start + (notstate.trim()+" b").trim().split("\\s+").length - 1;

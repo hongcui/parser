@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -1528,13 +1529,214 @@ public class CharacterAnnotatorChunked {
 		//}
 	}
 	/**
+	 * 
+	 * @param content: shape[{shape~list~not~keeled~punct~elliptic~to~broadly~ovate}]
+	 * @param parents: parent elements
+	 * @param cs: current chunkedsentence
+	 * @return new Elements created from the character list
+	 * @throws Exception
+	 */
+	private ArrayList<Element> processCharacterList(String content,
+			ArrayList<Element> parents, ChunkedSentence cs)  throws Exception {
+		String contentcp = content;
+		ArrayList<Element> results= new ArrayList<Element>();
+		//collect any modifier in front of the list
+		String frontmodifier = "";
+		while(content.indexOf("m[")>=0){
+			String m = content.substring(content.indexOf("m["), content.indexOf("]", content.indexOf("m["))+1);
+			frontmodifier += m+" ";
+			content = content.replace(m, "").trim();
+			
+		}
+		frontmodifier = frontmodifier.trim().replaceAll("(m\\[|\\])", "");
+		
+
+		//collect character and value list
+		String[] parts = content.split("\\s*\\[\\s*");
+		if(parts.length<2){
+			return results; //@TODO: parsing failure
+		}
+		String cname = parts[0];
+		if(this.unassignedcharacter!=null){
+			cname = this.unassignedcharacter;
+			this.unassignedcharacter = null;
+		}
+		String cvalue = parts[1].replaceFirst("\\{"+cname+"~list~", "").replaceFirst("\\W+$", "").replaceAll("~", " ").trim();
+		
+		//special case : "ttt" 
+		if(cname.endsWith("ttt")){
+			this.createCharacterElement(parents, results, frontmodifier, cvalue, cname.replaceFirst("ttt$", ""), "", cs);// 7-12-02 add cs
+			return results;
+		}
+		
+		//collect any modifier after the list. this modifier applies to the last state (be conservative)
+		String aftermodifier = "";
+		boolean findm = false;
+		do{
+			findm = false;
+			String last = cvalue.substring(cvalue.lastIndexOf(' ')+1);
+			if(Utilities.lookupCharacter(last, conn, ChunkedSentence.characterhash, glosstable, tableprefix)==null && Utilities.isAdv(last, ChunkedSentence.adverbs, ChunkedSentence.notadverbs)){
+				aftermodifier +=last+ " ";
+				cvalue = cvalue.replaceFirst(last+"$", "").trim();
+				findm = true;
+			}
+		}while(findm);
+		
+		//main logic
+		String characterlist = cvalue;
+		String pattern = characterlist.replaceAll(" or ", "@").replaceAll(" to ", "`").replaceAll("[^@`]", "");
+		if(pattern.equals("@")){// rarely A or B ; A or rarely B: one "or", may have punct as well
+			String[] orstates = characterlist.split(" (punct or|or|punct) ");
+			createIndividualElements(orstates, results, parents, frontmodifier, aftermodifier, cname, cvalue, cs, "or");
+		}else if(pattern.equals("`")){// rarely A to B ; A to rarely B: one "or", may have punct as well
+			String[] tostates = characterlist.split(" (punct to|to|punct) ");//white, pink, to red
+			for(int i = 0; i < tostates.length-1; i++){
+				//for(int j = i+1; j < tostates.length; j++){
+					createTOedElements(tostates[i], tostates[i+1], results, parents, frontmodifier, aftermodifier, cname, cs);
+				//}
+			}
+			createIndividualElements(characterlist.split(" (punct to|punct or|to|or|punct) "), results, parents, frontmodifier, aftermodifier, cname, cvalue, cs, "to");
+		}else if(pattern.equals("`@") || pattern.equals("@`") || pattern.equals("@`@")){ 
+			//split by to, then by or: 
+			//	rarely pink to red or purle => rarely pink to red, or rarely pink to purle
+			//	pink to rarely red or purle => pink to rarely red, or pink to purle
+			//  A or B to C or D => A to C, A to D, B to C, B to D
+			String[] rangestates = characterlist.split(" (punct to|to) ");
+			String[] fromstates = rangestates[0].split(" (punct or|or|punct) ");
+			String[] tostates = rangestates[1].split(" (punct or|or|punct) ");
+			for (String fromstate : fromstates){
+				for (String tostate : tostates){
+					createTOedElements(fromstate, tostate, results, parents, frontmodifier, aftermodifier, cname, cs);
+				}
+			}	
+			//create individual elements in a seperate step to avoid duplicated from and to characters. 
+			createIndividualElements(characterlist.split(" (punct to|punct or|to|or|punct) "), results, parents, frontmodifier, aftermodifier, cname, cvalue, cs, "to");
+		}else if(pattern.equals("`@`")){
+			//split by or, then by to: pink to red or purple to brown => pink to red, or, purple to brown
+			String[] orstates = characterlist.split(" or ");
+			for (String orstate : orstates){
+				String[] tostates = orstate.split(" to ");
+				createTOedElements(tostates[0], tostates[1], results, parents, frontmodifier, aftermodifier, cname, cs);
+			}
+			createIndividualElements(characterlist.split(" (punct to|punct or|to|or|punct) "), results, parents, frontmodifier, aftermodifier, cname, cvalue, cs, "to");
+		}else{
+			//for more complex cases such as
+			//shape[{shape~list~rarely~linear~or~linear-lanceolate~to~usually~elliptic~to~ovate~or~rarely~orbiculate}] => @``@
+			//1. treat all "to" as "or" and create individual elements
+			//2. 
+			createIndividualElements(characterlist.split(" (punct or|punct to|to|or|punct) "), results, parents, frontmodifier, aftermodifier, cname, cvalue, cs, "to");
+			LOGGER.info(sentsrc+":"+"Check complex range expression: "+contentcp); 
+			//throw new Exception ();
+		}
+	return results;
+	}
+	
+	/**
+	 * 
+	 * @param orstates: states from an or-list (a list with 1 "or"): "red, dark green, or blue" => {"red", "dark green", "blue"}
+	 * @param results: new character elements to be created
+	 * @param parents: parent elements for the characters to be created
+	 * @param frontmodifier: modifier that appear before a list: "frequently red, dark green, or blue".
+	 * @param aftermodifier: modifier that appear after a list: "red, dark green, or blue frequently".
+	 * @param cname: character name
+	 * @param cvalue: character value
+	 * @param cs: current chunkedsentence
+	 * @param key: "or"/"to", if "or", frontmodifier will be applied to all later states
+	 * @throws Exception 
+	 */
+	private void createIndividualElements(String[] orstates, ArrayList<Element> results, ArrayList<Element> parents, String frontmodifier, String aftermodifier, String cname, String cvalue, ChunkedSentence cs, String key) throws Exception {
+		//the first modifier applies to all state until another modifier is found
+		for(int i = 0; i < orstates.length; i++){
+			String state = orstates[i].trim();//usually papillate or hirsute distally
+			if(state.length() == 0){
+				String err = "an empty state found in a character list: ";
+				for(String statestr: orstates){
+					err +=statestr+",";
+				}
+				err = err.replaceFirst(",$", "");
+				throw new Exception(err);			
+			}
+			String statevalue = getFirstCharacter(state);
+			String statemodifier = state.replace(statevalue, "").trim();
+			if(i == 0){
+				frontmodifier = (frontmodifier+" "+ statemodifier).trim();
+				statemodifier = frontmodifier;
+			}
+			if(statemodifier.length() == 0 && key.equals("or")) statemodifier = frontmodifier;
+			if(i !=0 && key.equals("to") ) frontmodifier = "";
+			
+			if(i == orstates.length-1){//last state, apply aftermodifier
+				statemodifier = (statemodifier+" "+ aftermodifier).trim();
+			}
+			String charactertext = statemodifier.length()==0? statevalue : "m["+statemodifier+"] "+statevalue;
+			results.addAll(this.processCharacterText(charactertext, parents, cname, cs));// 7-12-02 add cs
+		}
+	}
+	/**
+	 * Modifiers of either *end* apply to the entire range and individual states: 
+	 * 	rarely white to pink = rarely (white to pink) 
+	 * 	white to pink rarely = rarely (white to pink)
+	 * 
+	 * If there is a modifier to to-value, then the modifier applies only to to-value
+	 * 	rarely white to often pink = (rarely white) to (often pink)
+	 * 	white to often pink =  white to (often pink)
+	 * @param from: from state(s), may have modifiers to left or right of the state
+	 * @param to: to state(s), may have modifiers to left or right of the state
+	 * @return the range character element created
+	 * @throws Exception 
+	 * 
+	 * replaces createRangeCharacterElement.
+	 */
+	private String createTOedElements(String from, String to, ArrayList<Element> results, 
+			ArrayList<Element> parents, String frontmodifier, String aftermodifier, String charactername, ChunkedSentence cs) throws Exception {
+		Element rangecharacter = new Element("character");
+		rangecharacter.setAttribute("char_type", "range_value");
+		rangecharacter.setAttribute("name", charactername);
+		
+		String fromvalue = getFirstCharacter(from);
+		String frommodifier = (frontmodifier+" "+from.replace(fromvalue, "")).trim();
+		String tovalue = getFirstCharacter(to);
+		
+		if(fromvalue == null || tovalue ==null) {
+			throw new Exception("from or to value is null");
+		}
+		String tomodifier = to.replace(tovalue, "").trim();
+		if(tomodifier.length() == 0) tomodifier = frommodifier;
+		
+		rangecharacter.setAttribute("from", from.replaceAll("-c-", " ")); //a or b to c => b to c
+		rangecharacter.setAttribute("to", to.replaceAll("-c-", " "));
+		
+		boolean usedm = false;
+		Iterator<Element> it = parents.iterator();
+		while(it.hasNext()){
+			Element e = it.next();
+			//rangecharacter = (Element)rangecharacter.clone();
+			if(frontmodifier.trim().length() >0){
+				addAttribute(rangecharacter, "modifier", frommodifier.trim()); //may not have modifier
+				usedm = true;
+			}
+			results.add(rangecharacter); //add to results
+			e.addContent(rangecharacter);//add to e
+		}
+		if(usedm){
+			frontmodifier = "";
+		}
+
+		//add additional clause-level modifiers or constraints to the new elements
+		addClauseModifierConstraint(cs, rangecharacter);
+		this.addScopeConstraints(cs, rangecharacter);
+		
+		//current frontmodifier
+		return frontmodifier;
+	}
+	/**
 	 * TODO: {shape-list-usually-flat-to-convex-punct-sometimes-conic-or-columnar}
 	 *       {pubescence-list-sometimes-bristly-or-hairy}
 	 * @param content: pubescence[m[not] {pubescence-list-sometimes-bristly-or-hairy}]
 	 * @param parents
 	 * @return
 	 */
-	private ArrayList<Element> processCharacterList(String content,
+	/*private ArrayList<Element> processCharacterList_old(String content,
 			ArrayList<Element> parents, ChunkedSentence cs)  throws Exception {// 7-12-02 add cs
 		ArrayList<Element> results= new ArrayList<Element>();
 		String modifier = "";
@@ -1563,7 +1765,7 @@ public class CharacterAnnotatorChunked {
 			this.createCharacterElement(parents, results, modifier, cvalue, cname.replaceFirst("ttt$", ""), "", cs);// 7-12-02 add cs
 			return results;
 		}
-		if(cvalue.indexOf(" to ")>=0){
+		if(cvalue.indexOf(" to ")>=0){//add range values
 			createRangeCharacterElement(parents, results, modifier, cvalue.replaceAll("punct", ",").replaceAll("(\\{|\\})", ""), cname, cs); //add a general statement: coloration="red to brown" // 7-12-02 add cs
 		}
 		String mall = "";
@@ -1610,31 +1812,32 @@ public class CharacterAnnotatorChunked {
 			}
 			results.addAll(this.processCharacterText("m["+modifier+"] "+state, parents, cname, cs));// 7-12-02 add cs
 			//doesn't make sense to remove modifier marks and process a character string (with modifier) as plain tokens
-			/*if(m.length()==0){
-				state = (modifier+" "+mall+" "+state.replaceAll("\\s+", "#")).trim(); //prefix the previous modifier 
-			}else{
-				modifier = modifier.matches(".*?\\bnot\\b.*")? modifier +" "+m : m; //update modifier
-				//cvalues[i] = (mall+" "+cvalues[i]).trim();
-				state = (modifier+" "+mall+" "+state.replaceAll("\\s+", "#")).trim(); //prefix the previous modifier 
-			}
-			String[] tokens = state.split("\\s+");
-			tokens[tokens.length-1] = tokens[tokens.length-1].replaceAll("#", " ");
-			results.addAll(this.processCharacterText(tokens, parents, cname));
-			//results.addAll(this.processCharacterText(new String[]{state}, parents, cname));*/
+			//if(m.length()==0){
+			//	state = (modifier+" "+mall+" "+state.replaceAll("\\s+", "#")).trim(); //prefix the previous modifier 
+			//}else{
+			//	modifier = modifier.matches(".*?\\bnot\\b.*")? modifier +" "+m : m; //update modifier
+			//	//cvalues[i] = (mall+" "+cvalues[i]).trim();
+			//	state = (modifier+" "+mall+" "+state.replaceAll("\\s+", "#")).trim(); //prefix the previous modifier 
+			//}
+			//String[] tokens = state.split("\\s+");
+			//tokens[tokens.length-1] = tokens[tokens.length-1].replaceAll("#", " ");
+			//results.addAll(this.processCharacterText(tokens, parents, cname));
+			//results.addAll(this.processCharacterText(new String[]{state}, parents, cname));
 		}
 
 		return results;
-	}
+	}*/
 	/**
-	 * crowded to open
+	 * white to blue
 	 * for categorical range-value
+	 * get the two ends of a range in a text string that contains "to".
 	 * @param parents
 	 * @param results
 	 * @param modifier
 	 * @param cvalue
 	 * @param cname
 	 */
-	private String createRangeCharacterElement(ArrayList<Element> parents,
+	/*private String createRangeCharacterElement_old(ArrayList<Element> parents,
 			ArrayList<Element> results, String modifiers, String cvalue,
 			String cname, ChunkedSentence cs) {// 7-12-02 add cs
 		Element character = new Element("character");
@@ -1669,7 +1872,7 @@ public class CharacterAnnotatorChunked {
 		this.addScopeConstraints(cs, character);
 		return modifiers;
 		
-	}
+	}*/
 
 	/**
 	 * 
@@ -1677,14 +1880,19 @@ public class CharacterAnnotatorChunked {
 	 * @return: large
 	 */
 	private String getFirstCharacter(String character) {
-		String[] tokens = character.trim().split("\\s+");
+		character = character.trim();
+		if(character.length() ==0) return null;
+		String[] tokens = character.split("\\s+");
 		String result = "";
 		for(int i = 0; i<tokens.length; i++){
 			if(Utilities.lookupCharacter(tokens[i], conn, ChunkedSentence.characterhash, glosstable, tableprefix)!=null){
 				 result += tokens[i]+" ";
+			}else if (result.length()>0){
+				return result.trim();
 			}
 		}
-		return result.trim();
+		result = result.trim();
+		return result.length()==0? null : result;
 	}
 
 	/**
@@ -2269,6 +2477,7 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private void addAttribute(Element e, String attribute, String value) {
+		if(value.trim().length()==0) return;
 		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+")\\b", "").trim();
