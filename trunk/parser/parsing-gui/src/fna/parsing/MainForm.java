@@ -321,6 +321,7 @@ public class MainForm {
 	protected UUID lastSavedIdS = UUID.randomUUID();
 	protected UUID lastSavedIdC = UUID.randomUUID();
 	protected UUID lastSavedIdO = UUID.randomUUID();
+	private static boolean markupstarted = false;
 	private static Group grpTermSets;
 	
 	/*the set of threads that would run off the mainform*/
@@ -3152,6 +3153,14 @@ public class MainForm {
 		tab5_others_loadFromLastTimeButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {	
+				//popup a message if Perl thread is still alive
+				if(!MainForm.markupstarted || MainForm.vd.isAlive()){
+					ApplicationUtilities.showPopUpWindow(
+						ApplicationUtilities.getProperty("popup.wait"), 
+						ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
+					return;
+				}
+						
 				ArrayList<String> words = null;
 				if(type.compareTo("others")==0){
 					words = fetchContentTerms(contextText);
@@ -3871,6 +3880,7 @@ public class MainForm {
 	
 	private void startMarkup() {
 		if(vd == null || !vd.isAlive()){
+			MainForm.markupstarted  = true;
 			mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
 			mainDb.createNonEQTable();
 			mainDb.createTyposTable();
@@ -3885,6 +3895,7 @@ public class MainForm {
 					databasename, shell.getDisplay(), markUpPerlLog, 
 					dataPrefixCombo.getText().replaceAll("-", "_").trim(), /*findDescriptorTable,*/ this);
 			vd.start();
+			
 		}
 	}
 	
@@ -5046,7 +5057,7 @@ public class MainForm {
 				if(word.length()==0) continue;
 				if(word.startsWith("[") && word.endsWith("]")) continue;
 				//before structure terms are set, partOfPrepPhrases can not be reliability determined
-				if(Utilities.mustBeVerb(word, this.conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
+				if(Utilities.mustBeVerb(word, MainForm.conn, prefix) || Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 					//if(Utilities.mustBeAdv(word) /*|| Utilities.partOfPrepPhrase(word, this.conn, prefix)*/){
 						noneqwords.add(word);
 						contextText.append(word+" is excluded\n");
