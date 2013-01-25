@@ -1019,7 +1019,9 @@ public class MainFormDbAccessor {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
 			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
+			word = word.replaceAll("_", "-");
+			String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]'";
+			//String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			context.cut();
@@ -1033,16 +1035,19 @@ public class MainFormDbAccessor {
 				//System.out.println(src+"::"+sentence+" \r\n");
 				//context.append(src+"::"+sentence+" \r\n");
 			}	
-			if(text.length()==0) {text="the word "+word + " is a system reserved word, please categorize it as 'neither'.";}
+			text = text.toLowerCase();
+			if(text.length()==0) {text="No context avaialable for "+word + ". Please categorize it as 'neither'.";}
+			
 			//format sentences
 			ArrayList<StyleRange> srs = new ArrayList<StyleRange>();
 			String[] tokens = text.split("\\s");
 			int currentindex = 0;
+			//String newtext = "";
 			for(String token: tokens){
-				if(token.contains(word)){
+				if(token.matches(".*?\\b"+word+"\\b.*")){
 					StyleRange sr = new StyleRange();
 					sr.start = currentindex;
-					sr.length = word.length();
+					sr.length = token.length();
 					sr.fontStyle = SWT.BOLD;
 					srs.add(sr);
 				}else if(token.matches("^\\[.*?\\]$")){
@@ -1052,6 +1057,7 @@ public class MainFormDbAccessor {
 					sr.foreground = MainForm.grey;
 					srs.add(sr);
 				}
+				//newtext+=token+" ";
 				currentindex +=token.length() + 1;				
 			}
 			context.append(text);
