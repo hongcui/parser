@@ -78,6 +78,29 @@ public class VolumeTransformer extends Thread {
 	private boolean debugref = false;
 	private boolean debugkey = true;
 	
+	
+	static XPath discussion;
+	static XPath placeInPub;
+	static XPath synPath;
+	static XPath acceptPath;
+	static XPath namePath;
+	static XPath authorPath;
+	static{
+		try{
+			discussion = XPath.newInstance(".//discussion");
+			placeInPub = XPath.newInstance(".//place_in_publication");
+			synPath = XPath.newInstance(".//TaxonIdentification[@Status=\"SYNONYM\"]"); //TaxonIdentification Status="SYNONYM"
+			acceptPath =  XPath.newInstance(".//TaxonIdentification[@Status=\"ACCEPTED\"]");
+			namePath = XPath.newInstance(".//*[contains(name(),'_name')]");
+			authorPath = XPath.newInstance(".//*[contains(name(),'_authority')]");
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}		
+	}
+
+	
+	
+	
 	public VolumeTransformer(ProcessListener listener, String dataPrefix, String glosstable, Display display) throws ParsingException {
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
@@ -155,6 +178,7 @@ public class VolumeTransformer extends Thread {
 		listener.progress(1);
 		try {
 			for (int count = 1; count <= total; count++) {
+			//for (int count = 1010; count <= total; count++) {
 
 				File file = new File(source, count + ".xml");
 				// logger.info("Start to process: " + file.getName());
@@ -191,118 +215,15 @@ public class VolumeTransformer extends Thread {
 						}
 					}else {
 						String sm = styleMappings.getProperty(style);
+						if(sm.matches("author_of.*")){ //change author_of_XXXXX to author according to JSTOR standards
+							sm = "author";
+						}
 						Element e = new Element(sm);
-						e.setText(text);
+						if(text.trim().length()!=0)
+						e.setText(text.trim());
+						if(e.getContentSize()!=0)//to prevent empty tags
 						treatment.addContent(e);
-						/*
-						text=text.replaceFirst("SELECTED REFERENCES?", "").trim();
-						//end text format change++++++++++++++++++++++++++++++++++++++++++++++
-						Matcher refM=Pattern.compile("([A-Z]\\w*?,? [A-Z]\\.)+(.*?)\\.(?=\\s[A-Z]\\w*?,? [A-Z]\\.(,|\\s?\\d{4}|\\s?[A-Z]\\.)|$)").matcher(text);
-						while(refM.find()){
-							addElement("reference",refM.group(1),e);
-						}
-						//e.setText(text);
-						//Start text format change++++++++++++++++++++++++++++++++++++++++++++++++++
-						
-						//keys
-						
-						Element initial = new Element("initial_state");
-						Element states = new Element("state");
-						Element nextsteps = new Element("next_step");
-						
-						
-						if(sm.equalsIgnoreCase("run_in_sidehead")){
-							e2 = new Element("key");
-							e2.setAttribute(new Attribute("name", text));
-							treatment.addContent(e2);
-							idlist.clear();
-						}
-						else if(sm.equals("key")){
-							Element e1 = new Element("couplet");
-							if (text.contains(" v. ") && text.contains(" p. ")
-									&& !text.contains("Group ")) {
-								split = text.split("[0-9]+[a-z]?\\. ");
-								split1 = split[0].split("\\.");
-								preid = split1[0];
-								state = split[0].replace(preid + ".", "");
-								nextstep = text.replace(split[0], "");
-								idstorage = preid;
-								Iterator iditerator = idlist.iterator();
-								iteratorcount = 0;
-								while(iditerator.hasNext()){
-									String itemid = (String)iditerator.next();
-									if(itemid.equalsIgnoreCase(preid)){
-										iteratorcount++;
-									}
-								}
-								id = preid + latin[iteratorcount];
-								idlist.add(preid);
-								nextsteps.setText(nextstep);
-								// System.out.println(nextstep);
-							} else if (text.contains(" v. ")
-									&& text.contains(" p. ")
-									&& text.contains("Group ")) {
-								split = text.split("Group [0-9]");
-								split1 = split[0].split("\\.");
-								preid = split1[0];
-								state = split[0].replace(preid + ".", "");
-								nextstep = text.replace(split[0], "");
-								idstorage = preid;
-								Iterator iditerator = idlist.iterator();
-								iteratorcount = 0;
-								while(iditerator.hasNext()){
-									String itemid = (String)iditerator.next();
-									if(itemid.equalsIgnoreCase(preid)){
-										iteratorcount++;
-									}
-								}
-								id = preid + latin[iteratorcount];
-								idlist.add(preid);
-								nextsteps.setText(nextstep);
-								// System.out.println(nextstep);
-							} else if (!text.contains("Shifted to left margin.")&&text.contains("")) {
-								split1 = text.split("\\.");
-								preid = split1[0];
-								state = text.replace(preid + ".", "");
-								try{
-								nextstepid = Integer.parseInt(idstorage) + 1;
-								}catch(Exception excep){
-									continue;
-								}
-								nextstep = nextstepid + "a";
-								idstorage = preid;
-								Iterator iditerator = idlist.iterator();
-								iteratorcount = 0;
-								while(iditerator.hasNext()){
-									String itemid = (String)iditerator.next();
-									if(itemid.equalsIgnoreCase(preid)){
-										iteratorcount++;
-									}
-								}
-								id = preid + latin[iteratorcount];
-								idlist.add(preid);
-								nextsteps.setAttribute(new Attribute("id", nextstep));
-								//nextstep = nextid + "a";
-								 //System.out.println(preid + "   " + state + "   " + nextstep);
-							}
-							
-							initial.setAttribute(new Attribute("id", id));
-							states.setText(state);
-							
-							e1.addContent(initial);
-							e1.addContent(states);
-							e1.addContent(nextsteps);
-							e2.addContent(e1);
-						}
-						else{
-							e.setName(sm);
-							e.setText(text);
-							treatment.addContent(e);
-						}
-							
-
-						*/
-						
+												
 	
 					}
 				}
@@ -316,12 +237,14 @@ public class VolumeTransformer extends Thread {
 				}
 				
 				//further mark up keys <run_in_sidehead>
+				//elements = XPath.selectNodes(treatment, "./key|./couplet");
 				elements = XPath.selectNodes(treatment, "./key|./couplet");
 				if(elements.size()>0){//contains key
 					furtherMarkupKeys(treatment);
 				}
 				
-				
+				//fixSynonymRank(treatment);
+				System.out.println(count + ".xml"); //Just to check what file is outputted
 				// output the treatment to transformed
 				File xml = new File(Registry.TargetDirectory,
 						ApplicationUtilities.getProperty("TRANSFORMED") + "/" + count + ".xml");
@@ -498,6 +421,7 @@ public class VolumeTransformer extends Thread {
 				if(stateclone.getName().compareTo("run_in_sidehead")==0){
 					stateclone.setName("key_head");
 				}
+				
 				allstatements.add(stateclone);//"discussion" remains
 			}
 		}
@@ -530,12 +454,13 @@ public class VolumeTransformer extends Thread {
 		boolean foundkey = false;
 		for(int i = 0; i < elements.length; i++){
 			Element e = elements[i];
-			if(e.getName().compareTo("run_in_sidehead")==0 && (e.getTextTrim().startsWith("Key to ") || e.getTextTrim().matches("Group \\d+.*"))){
+			if(e.getName().compareTo("run_in_sidehead")==0 && ((e.getTextTrim().startsWith("Key to ")||(e.getTextTrim().startsWith("Key Based "))) || e.getTextTrim().matches("Group \\d+.*"))){
 				foundkey = true;
 				if(key!=null){
 					treatment.addContent((Element)key.clone());	
 				}
 				key = new Element("TaxonKey");
+				
 			}
 			if(!foundkey && (e.getName().compareTo("key")==0 || e.getName().compareTo("couplet")==0)){
 				foundkey = true;	
@@ -567,7 +492,8 @@ public class VolumeTransformer extends Thread {
 	 */
 	private void furtherMarkupReference(Element ref) {
 		//Element marked = new Element("references");
-		String text = ref.getText();
+		//String text = ref.getText();
+		String text = ref.getText().replaceAll("^(\\s*SELECTED\\s*REFERENCE(S)?\\s*)", ""); //To remove selected references from the sentence.
 		ref.setText("");
 		if(this.debugref) System.out.println("\nReferences text:"+text);
 		Pattern p = Pattern.compile("(.*?\\d+–\\d+\\.\\]?)(\\s+[A-Z]\\w+,.*)");
@@ -582,7 +508,8 @@ public class VolumeTransformer extends Thread {
 			m = p.matcher(text);
 		}
 		Element refitem = new Element("reference");
-		refitem.setText("item:"+text);
+		//refitem.setText("item:"+text);
+		refitem.setText(text);//item not required
 		ref.addContent(refitem);
 		if(this.debugref) System.out.println("a ref:"+text);
 		//ref.getParentElement().addContent(marked);
@@ -658,7 +585,8 @@ public class VolumeTransformer extends Thread {
 			if(m.group(3) != null){
 					//addElement("general_distribution", m.group(3), treatment);
 					//further markkup distribution
-					DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "general_distribution");
+					//DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "general_distribution");
+					DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "global_distribution");  //general_distribution -> global_distribution
 					treatment = dp.parse(); 
 					//System.out.println("general_distribution:"+m.group(3));
 			}	
@@ -669,12 +597,17 @@ public class VolumeTransformer extends Thread {
 				if(mh.group(1) != null){
 					//addElement("flowering_time",mh.group(1), treatment);
 					//further markkup distribution
-					FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, mh.group(1), "flowering_time");
+					//FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, mh.group(1), "flowering_time");
+					FloweringTimeParser4FNA dp = new FloweringTimeParser4FNA(treatment, mh.group(1), "phenology"); //flowering_time ---> phenology according to JSTOR
 					treatment = dp.parse(); 
 					//System.out.println("flowering_time:"+mh.group(1));
 				}
 				if(mh.group(2)!= null){
-					addElement("habitat",mh.group(2), treatment);
+					String[] habitatchunk = mh.group(2).trim().replaceAll(";$", "").split(",");
+					for(int l=0;l<habitatchunk.length;l++){
+						addElement("habitat",habitatchunk[l].trim(), treatment);
+					}
+					
 					//System.out.println("habitat:"+mh.group(2));
 				}
 				if(mh.group(3)!= null){
@@ -720,23 +653,7 @@ public class VolumeTransformer extends Thread {
 		}
 	}
 	
-	private void parseSynTag(String tag, String text, Element treatment){
-		Element e = treatment.getChild("variety_name");
-		if(e != null){
-			tag = "synonym_of_variety_name";
-		}else if((e = treatment.getChild("subspecies_name"))!=null){
-			tag = "synonym_of_subspecies_name";
-		}else if((e = treatment.getChild("species_name"))!=null){
-			tag = "synonym_of_species_name";
-		}else if((e = treatment.getChild("tribe_name"))!=null){
-			tag = "synonym_of_tribe_name";
-		}else if((e = treatment.getChild("genus_name"))!=null){
-			tag = "synonym_of_genus_name";
-		}
-		
-		addElement(tag, text, treatment);
-		//System.out.println(tag+":"+text);
-	}
+	
 	
 	private String parseNameTag(int index, String namerank, String line,
 			Element treatment) {
@@ -774,6 +691,13 @@ public class VolumeTransformer extends Thread {
 		text = VolumeVerifier.fixBrokenNames(text);
 		text = text.replaceFirst("^.*?(?=[A-Z])", "").trim();;
 		
+		
+		//Code to add name to taxon ID mohan 1/18/2013
+		Element taxonid = new Element("TaxonIdentification");
+		taxonid.setAttribute("Status","ACCEPTED");
+		
+		//End code
+		
 		//namerank and name
 		//(subfam|var|subgen|subg|subsp|ser|tribe|subsect)
 		if(namerank.indexOf("species_subspecies_variety_name")>=0){
@@ -792,9 +716,15 @@ public class VolumeTransformer extends Thread {
 			}
 		}
 		if(debug) System.out.println("namerank:"+namerank);
+		System.out.println("namerank:"+namerank);
 		String[] nameinfo = getNameAuthority(name);
 		if(nameinfo[0]!=null && nameinfo[1]!=null){
-		addElement(namerank, nameinfo[0], treatment);
+		//addElement(namerank, nameinfo[0], treatment);
+			//addElement(namerank, nameinfo[0], taxonid); //add to taxonid
+			
+			
+			
+			
 		try {
 			vtDbA.add2TaxonTable(number, name, namerank, index+1);
 		} catch (ParsingException e) {
@@ -808,7 +738,10 @@ public class VolumeTransformer extends Thread {
 		}
 		if(debug) System.out.println("name:"+nameinfo[0]);
 		if(nameinfo[1].length()>0){
-			addElement("authority", nameinfo[1], treatment);
+			//addElement("authority", nameinfo[1], treatment);
+			//addElement("authority", nameinfo[1], taxonid);
+			
+			
 			try {
 				vtDbA.add2AuthorTable(nameinfo[1]);
 			} catch (ParsingException e) {
@@ -822,6 +755,21 @@ public class VolumeTransformer extends Thread {
 			}
 			if(debug) System.out.println("authority:"+nameinfo[1]);
 		}
+		
+		
+		
+		parseName(name, namerank, taxonid);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
 		}
 		//authority
@@ -856,14 +804,20 @@ public class VolumeTransformer extends Thread {
 			text = text.substring(0, pos+1);
 		}*/
 		
-		//derivation: deal with this first to remove [] and avoid pub-year match in []
-		Pattern p = Pattern.compile("(.*?)(\\[.*?\\]$)");
+		
+		
+		
+		//derivation: deal with this first to remove [] and avoid pub-year match in [] but added to treatment after name
+		//Pattern p = Pattern.compile("(.*?)(\\[.*?\\]$)");//was matching the outer most paranthesis but we want to match only the last pair
+		Pattern p = Pattern.compile("(.*?)(\\[([^\\]]+)\\]$)");
 		Matcher m = p.matcher(text);
+		String etymology="";
 		if(m.matches()){
-			if(m.group(2).trim().compareTo("")!= 0){
+			/*if(m.group(2).trim().compareTo("")!= 0){
 				addElement("etymology", m.group(2).trim(), treatment);
 				if(debug) System.out.println("etymology:"+m.group(2).trim());
-			}
+			}*/
+			etymology = m.group(2).trim();
 			text = m.group(1).trim();
 		}
 		
@@ -873,10 +827,18 @@ public class VolumeTransformer extends Thread {
 		m = p.matcher(text);
 		if(m.matches()){
 			String pp = m.group(1).replaceFirst("^\\s*[,\\.]", "").trim();			
-			extractPublicationPlace(treatment, pp); //pp may be "Sp. Pl. 1: 480.  1753; Gen. Pl. ed. 5, 215.  1754"
+			//extractPublicationPlace(treatment, pp); //pp may be "Sp. Pl. 1: 480.  1753; Gen. Pl. ed. 5, 215.  1754"
+			extractPublicationPlace(taxonid, pp); //pp may be "Sp. Pl. 1: 480.  1753; Gen. Pl. ed. 5, 215.  1754"
 			text = m.group(3).trim();
 		}
 
+		treatment.addContent(taxonid);
+		//Adding the etymology
+		if(etymology.compareTo("")!= 0){
+			addElement("etymology", etymology, treatment);
+			if(debug) System.out.println("etymology:"+etymology);
+		}
+		
 		// conserved
 		String conserved="name conserved";
 		int	pos = text.indexOf(conserved);
@@ -892,7 +854,8 @@ public class VolumeTransformer extends Thread {
 			//String conserved = text.substring(pos).trim();
 			text = text.replace(conserved, "").trim();
 			//conserved = conserved.replaceFirst("^\\s*[,;\\.]", "");
-			addElement("conserved", conserved, treatment);
+			//addElement("conserved", conserved, treatment);
+			addElement("conserved_name", conserved, treatment);//conserved --> conserved_name according to JSTOR schema
 			if(debug) System.out.println("conserved:"+conserved);
 			
 			// trim the text
@@ -954,7 +917,8 @@ public class VolumeTransformer extends Thread {
 
 		if(text.trim().matches(".*?\\w+.*")){
 			if(debug) System.out.println((index+1)+"unparsed: "+text);
-			addElement("unparsed", text, treatment);
+			//addElement("unparsed", text, treatment);
+			addElement("other_info", text, treatment);//unparsed -->other_info according to schema for JSTOR
 			File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
 			//listener.info("unparsed: "+text, xml.getPath());
@@ -1063,6 +1027,1645 @@ public class VolumeTransformer extends Thread {
 		}
 	}
 	
+	private void parseName(String name, String namerank, Element taxid){
+		String text = name;
+		if(namerank.equals("subgenus_name")&&name.contains("sect.")){ //section wrongly marked as subgenus
+			namerank = "section_name";
+		}
+		
+		if(namerank.equals("family_name")) 
+		{
+			String newtext= text;
+			String famauth="";
+			String[] Chunks = text.split("-");
+			text = Chunks[0];
+			String[] family= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(family[0]);
+			taxid.addContent(newele);
+			for(int k=1;k<family.length;k++)
+			{
+				famauth+=family[k]+" ";
+			}
+			famauth=famauth.trim();
+			if(famauth.length()!=0)
+			{
+				Element famat= new Element("family_authority");
+				famat.setText(famauth);
+				taxid.addContent(famat);
+			}
+			
+		}
+		
+		else if(namerank.equals("subfamily_name"))// SUBFAMILY
+		{	
+			int k;
+			String newtext= text;
+			String famauth="";
+			String subfamauth="";
+			String[] family= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(family[0]);
+			taxid.addContent(newele);
+			for(k=1;k<family.length;k++)
+			{
+				if(family[k].contains("subfam."))
+				{
+					break;
+				}
+				else
+				{
+					famauth+=family[k]+" ";
+				}
+			}
+			famauth=famauth.trim();
+			if(famauth.length()!=0)
+			{
+			Element famat= new Element("family_authority");
+			famat.setText(famauth);
+			taxid.addContent(famat);
+			}
+			k++;
+			Element subfm= new Element("subfamily_name");
+			subfm.setText(family[k]);
+			taxid.addContent(subfm);
+			k++;
+			while(k<family.length)
+			{
+				subfamauth+=family[k]+" ";
+				k++;
+			}
+			subfamauth=subfamauth.trim();
+			if(subfamauth.length()!=0)
+			{
+			Element subfamat= new Element("subfamily_authority");
+			subfamat.setText(subfamauth);
+			taxid.addContent(subfamat);	
+			}
+		}else if(namerank.equals("genus_name")){
+			int k;
+			int unrank=0;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(!var[k].matches("\\[unranked\\]"))
+					spauth+=var[k]+" ";
+				else
+				{
+					unrank=1;
+					System.out.println("Unranked element in name");
+					break;
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			if(unrank==1)
+			{
+				k++;
+				Element urname= new Element("unranked_epithet_name");
+				urname.setText(var[k]);
+				taxid.addContent(urname);
+				String unauth="";
+				k++;
+				while(k<var.length)
+				{
+					unauth=unauth+var[k]+" ";
+					k++;
+				}
+				unauth=unauth.trim();
+				if(unauth.length()!=0)
+				{
+				Element unat= new Element("unranked_epithet_authority");
+				unat.setText(unauth);
+				taxid.addContent(unat);
+				}
+				
+			}
 
+		}else if(namerank.equals("subgenus_name")){
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			k++;
+			Element sect= new Element("subgenus_name");
+			sect.setText(var[k].replaceFirst("(\\W)$", ""));
+			taxid.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+			Element subat= new Element("subgenus_authority");
+			subat.setText(sectauth);
+			taxid.addContent(subat);		
+			}
+		}else if(namerank.equals("section_name")){
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg.")||var[k].contains("sect."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			if(var[k].contains("subg."))
+			{
+			k++;
+			Element subfm= new Element("subgenus_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			taxid.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("sect.")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("subgenus_authority");
+				subauth.setText(subgauth);
+				taxid.addContent(subauth);
+			}
+			if(var[k].contains("sect."))
+			{
+				k++;
+				Element sect= new Element("section_name");
+				sect.setText(var[k]);
+				taxid.addContent(sect);
+				k++;
+				while(k<var.length)
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				taxid.addContent(subat);
+				}
+			}
+			else
+			{
+				System.out.println("Problem in section");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("section_name");
+			sect.setText(var[k]);
+			taxid.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				taxid.addContent(subat);
+			}
+			}
+		}else if(namerank.equals("subsection_name")){
+			int k;
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subsect."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("subsection_name");
+			subfm.setText(var[k]);
+			taxid.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("subsection_authority");
+			subfamat.setText(varauth);
+			taxid.addContent(subfamat);	
+			}
+		}else if(namerank.equals("series_name")){ //after "," is publication where ser. may appear.
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg.")||var[k].contains("sect.")||var[k].contains("ser."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			if(var[k].contains("subg."))
+			{
+			k++;
+			Element subfm= new Element("subgenus_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			taxid.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("sect.")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			subgauth=subgauth.replaceFirst("(\\W)$", "");
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("subgenus_authority");
+				subauth.setText(subgauth);
+				taxid.addContent(subauth);
+			}
+			if(var[k].contains("sect."))
+			{
+				k++;
+				Element sect= new Element("section_name");
+				sect.setText(var[k]);
+				taxid.addContent(sect);
+				k++;
+				while(k<var.length&&!(var[k].contains("ser.")))
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				sectauth=sectauth.replaceFirst("(\\W)$", "");
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				taxid.addContent(subat);
+				}
+				if(var[k].contains("ser."))
+				{
+					k++;
+					Element ser= new Element("series_name");
+					ser.setText(var[k]);
+					taxid.addContent(ser);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					sectauth=sectauth.replaceFirst("(\\W)$", "");
+					if(sectauth.length()!=0)
+					{
+					Element subat= new Element("series_authority");
+					subat.setText(sectauth);
+					taxid.addContent(subat);
+					}
+				}
+			}
+			else
+			{
+				System.out.println("Problem in section");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("series_name");
+			sect.setText(var[k]);
+			taxid.addContent(sect);
+			k++;
+			while((k<var.length))
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("series_authority");
+				subat.setText(sectauth);
+				taxid.addContent(subat);
+			}
+			}
+		}else if(namerank.equals("species_name")){
+			int k;
+			String newtext= text;
+			String spauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			Element spele= new Element("species_name");
+			spele.setText(var[1]);
+			taxid.addContent(spele);
+			for(k=2;k<var.length;k++)
+			{
+					spauth+=var[k]+" ";
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("species_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+		}else if(namerank.equals("subspecies_name")){
+			int k;
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			Element spele= new Element("species_name");
+			spele.setText(var[1]);
+			taxid.addContent(spele);
+			for(k=2;k<var.length;k++)
+			{
+				if(var[k].contains("subsp."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("species_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("subspecies_name");
+			subfm.setText(var[k]);
+			taxid.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("subspecies_authority");
+			subfamat.setText(varauth);
+			taxid.addContent(subfamat);	
+			}
+		}
+		
+
+		else if(namerank.equals("variety_name")){
+			int k;
+			//hong
+			text = text.replaceFirst("(?<=^[A-Z])\\.", ". "); //to insert a space after C.leptosepala 
+			//
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s+");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			taxid.addContent(newele);
+			//if(!var[1].contains("var."))
+			//{
+			Element spele= new Element("species_name");
+			spele.setText(var[1]);
+			taxid.addContent(spele);
+			//}
+			for(k=2;k<var.length;k++)
+			{
+				if(var[k].contains("var."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("species_authority");
+			spat.setText(spauth);
+			taxid.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("variety_name");
+			subfm.setText(var[k]);
+			taxid.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("variety_authority");
+			subfamat.setText(varauth);
+			taxid.addContent(subfamat);	
+			}
+		}
+		
+	}
+	
+	
+	
+	private String cleantext(String namepart){
+		String result="";
+		String[] chunks=namepart.split("\\s");
+		for(int j=0;j<chunks.length;j++)
+		{
+			if(chunks[j].matches("\\."))
+			{
+				result=result+chunks[j];
+			}
+			else
+			{
+				result=result+" "+chunks[j];
+			}	
+		}
+		result=result.trim();
+		String inter="";
+		String[] newchunks=result.split("\\s");
+		for(int m=0;m<newchunks.length;m++)
+		{
+			if(m==0&&newchunks[m].matches("\\w"))
+			{
+				inter=inter+newchunks[m];
+				m++;
+				inter=inter+newchunks[m];
+			}
+			else if(newchunks[m].matches("\\w|\\)"))
+			{
+				inter=inter+newchunks[m];
+			}
+			else if(newchunks[m].matches("×"))
+			{
+				inter=inter+" "+newchunks[m];
+				m++;
+				inter=inter+newchunks[m];
+			}
+			else if(newchunks[m].matches("§"))
+			{
+				System.out.println("Could be a Problem in cleantext");
+				inter=inter+" "+newchunks[m];
+			}
+			else
+			{
+				inter=inter+" "+newchunks[m];
+			}
+		}
+		result=inter.trim();
+		return result;
+	}
+	
+	private Element synprocess(String namepart){
+		
+		Element syn=new Element("synonym");
+		String text=cleantext(namepart);
+		if(text.contains("subtribe"))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].matches("\\s*\\(tribe\\s*")||var[k].contains("subtribe"))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("family_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			if(var[k].matches("\\s*\\(tribe\\s*"))
+			{
+			k++;
+			Element subfm= new Element("tribe_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			syn.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("subtribe")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("tribe_authority");
+				subauth.setText(subgauth);
+				syn.addContent(subauth);
+			}
+			if(var[k].contains("subtribe"))
+			{
+				k++;
+				Element sect= new Element("subtribe_name");
+				sect.setText(var[k]);
+				syn.addContent(sect);
+				k++;
+				while(k<var.length)
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("subtribe_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+				}
+			}
+			else
+			{
+				System.out.println("Problem in subtribe");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("section_name");
+			sect.setText(var[k]);
+			syn.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+			}
+			}
+		}
+		else if(text.contains("tribe"))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subfam.")||var[k].contains("tribe"))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("family_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			if(var[k].contains("subfam."))
+			{
+			k++;
+			Element subfm= new Element("subfamily_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			syn.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("tribe")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("subfamily_authority");
+				subauth.setText(subgauth);
+				syn.addContent(subauth);
+			}
+			if(var[k].contains("tribe"))
+			{
+				k++;
+				Element sect= new Element("tribe_name");
+				sect.setText(var[k]);
+				syn.addContent(sect);
+				k++;
+				while(k<var.length)
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("tribe_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+				}
+			}
+			else
+			{
+				System.out.println("Problem in subtribe");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("section_name");
+			sect.setText(var[k]);
+			syn.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+			}
+			}
+		}
+		else if(text.contains("subfam."))// SUBFAMILY
+		{	
+			int k;
+			String newtext= text;
+			String famauth="";
+			String subfamauth="";
+			String[] family= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(family[0]);
+			syn.addContent(newele);
+			for(k=1;k<family.length;k++)
+			{
+				if(family[k].contains("subfam."))
+				{
+					break;
+				}
+				else
+				{
+					famauth+=family[k]+" ";
+				}
+			}
+			famauth=famauth.trim();
+			if(famauth.length()!=0)
+			{
+			Element famat= new Element("family_authority");
+			famat.setText(famauth);
+			syn.addContent(famat);
+			}
+			k++;
+			Element subfm= new Element("subfamily_name");
+			subfm.setText(family[k]);
+			syn.addContent(subfm);
+			k++;
+			while(k<family.length)
+			{
+				subfamauth+=family[k]+" ";
+				k++;
+			}
+			subfamauth=subfamauth.trim();
+			if(subfamauth.length()!=0)
+			{
+			Element subfamat= new Element("subfamily_authority");
+			subfamat.setText(subfamauth);
+			syn.addContent(subfamat);	
+			}
+		}
+
+		else if(text.contains("var."))
+		{
+			int k;
+			//hong
+			text = text.replaceFirst("(?<=^[A-Z])\\.", ". "); //to insert a space after C.leptosepala 
+			//
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s+");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			//if(!var[1].contains("var."))
+			//{
+			Element spele= new Element("species_name");
+			spele.setText(var[1]);
+			syn.addContent(spele);
+			//}
+			for(k=2;k<var.length;k++)
+			{
+				if(var[k].contains("var."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("species_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("variety_name");
+			subfm.setText(var[k]);
+			syn.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("variety_authority");
+			subfamat.setText(varauth);
+			syn.addContent(subfamat);	
+			}
+		}
+		else if(text.contains("subsp."))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			Element spele= new Element("species_name");
+			spele.setText(var[1]);
+			syn.addContent(spele);
+			for(k=2;k<var.length;k++)
+			{
+				if(var[k].contains("subsp."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("species_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("subspecies_name");
+			subfm.setText(var[k]);
+			syn.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("subspecies_authority");
+			subfamat.setText(varauth);
+			syn.addContent(subfamat);	
+			}
+		}
+		
+		else if(text.contains("ser."))//SERIES NAME
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg.")||var[k].contains("sect.")||var[k].contains("ser."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			if(var[k].contains("subg."))
+			{
+			k++;
+			Element subfm= new Element("subgenus_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			syn.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("sect.")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			subgauth=subgauth.replaceFirst("(\\W)$", "");
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("subgenus_authority");
+				subauth.setText(subgauth);
+				syn.addContent(subauth);
+			}
+			if(var[k].contains("sect."))
+			{
+				k++;
+				Element sect= new Element("section_name");
+				sect.setText(var[k]);
+				syn.addContent(sect);
+				k++;
+				while(k<var.length&&!(var[k].contains("ser.")))
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				sectauth=sectauth.replaceFirst("(\\W)$", "");
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+				}
+				if(var[k].contains("ser."))
+				{
+					k++;
+					Element ser= new Element("series_name");
+					ser.setText(var[k]);
+					syn.addContent(ser);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					sectauth=sectauth.replaceFirst("(\\W)$", "");
+					if(sectauth.length()!=0)
+					{
+					Element subat= new Element("series_authority");
+					subat.setText(sectauth);
+					syn.addContent(subat);
+					}
+				}
+			}
+			else
+			{
+				System.out.println("Problem in section");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("series_name");
+			sect.setText(var[k]);
+			syn.addContent(sect);
+			k++;
+			while((k<var.length))
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("series_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+			}
+			}
+			
+		}
+		else if(text.contains("subsect."))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String varauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subsect."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			k++;
+			Element subfm= new Element("subsection_name");
+			subfm.setText(var[k]);
+			syn.addContent(subfm);
+			k++;
+			while(k<var.length)
+			{
+				varauth+=var[k]+" ";
+				k++;
+			}
+			varauth=varauth.trim();
+			if(varauth.length()!=0)
+			{
+			Element subfamat= new Element("subsection_authority");
+			subfamat.setText(varauth);
+			syn.addContent(subfamat);	
+			}
+		}
+		else if(text.contains("sect."))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg.")||var[k].contains("sect."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			if(var[k].contains("subg."))
+			{
+			k++;
+			Element subfm= new Element("subgenus_name");
+			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+			syn.addContent(subfm);
+			k++;
+			while((k<var.length)&&!(var[k].contains("sect.")))
+			{
+				subgauth=subgauth+var[k]+" ";
+				k++;
+			}
+			subgauth=subgauth.trim();
+			if(subgauth.length()!=0)
+			{
+				Element subauth= new Element("subgenus_authority");
+				subauth.setText(subgauth);
+				syn.addContent(subauth);
+			}
+			if(var[k].contains("sect."))
+			{
+				k++;
+				Element sect= new Element("section_name");
+				sect.setText(var[k]);
+				syn.addContent(sect);
+				k++;
+				while(k<var.length)
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+				}
+			}
+			else
+			{
+				System.out.println("Problem in section");
+			}
+			}
+			else
+			{
+			k++;
+			Element sect= new Element("section_name");
+			sect.setText(var[k]);
+			syn.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("section_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+			}
+			}
+		}
+		else if(text.contains("subg."))
+		{
+			int k;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String[] var= text.split("\\s");
+			Element newele= new Element("genus_name");
+			newele.setText(var[0]);
+			syn.addContent(newele);
+			for(k=1;k<var.length;k++)
+			{
+				if(var[k].contains("subg."))
+				{
+					break;
+				}
+				else
+				{
+					spauth+=var[k]+" ";
+				}
+			}
+			spauth=spauth.trim();
+			if(spauth.length()!=0)
+			{
+			Element spat= new Element("genus_authority");
+			spat.setText(spauth);
+			syn.addContent(spat);
+			}
+			k++;
+			Element sect= new Element("subgenus_name");
+			sect.setText(var[k].replaceFirst("(\\W)$", ""));
+			syn.addContent(sect);
+			k++;
+			while(k<var.length)
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+			Element subat= new Element("subgenus_authority");
+			subat.setText(sectauth);
+			syn.addContent(subat);		
+			}
+		}
+		
+		else
+		{
+			//if(text.matches("(^[A-Z](\\w|\\.|ï)+\\s+){1}(([a-z]|×)(\\w|-)+\\s*){1}.*"))//species name
+			if(text.matches("(^[A-Z](\\S)+\\s+){1}(([a-z]|×)(\\S)+\\s*){1}.*"))//species name
+			{
+				int k;
+				String newtext= text;
+				String spauth="";
+				String[] var= text.split("\\s");
+				Element newele= new Element("genus_name");
+				newele.setText(var[0]);
+				syn.addContent(newele);
+				Element spele= new Element("species_name");
+				spele.setText(var[1]);
+				syn.addContent(spele);
+				for(k=2;k<var.length;k++)
+				{
+						spauth+=var[k]+" ";
+				}
+				spauth=spauth.trim();
+				if(spauth.length()!=0)
+				{
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
+				}
+			}
+
+			//else if(text.matches("(^[A-Z](\\w|\\.|ï)+\\s+){1}((\\[.*\\])|(\\(.*\\)))?\\s*([A-Z](\\w|\\.)+).*"))//genus name
+			//else if(text.matches("(^[A-Z](\\S)+\\s+){1}((\\[.*\\])|(\\(.*\\)))?\\s*([A-Z](\\S)+).*"))//genus name
+			else if(text.matches("(^[A-Z](\\S)+\\s+){1}((\\[.*\\])|(\\(.*\\)))?\\s*(([A-Z]|Ö|Á)(\\S)+).*"))//genus name
+			{
+				int k;
+				int unrank=0;
+				String newtext= text;
+				String spauth="";
+				String sectauth="";
+				String[] var= text.split("\\s");
+				Element newele= new Element("genus_name");
+				newele.setText(var[0]);
+				syn.addContent(newele);
+				for(k=1;k<var.length;k++)
+				{
+					if(!var[k].matches("\\[unranked\\]"))
+						spauth+=var[k]+" ";
+					else
+					{
+						unrank=1;
+						System.out.println("Unranked element in synonym");
+						break;
+					}
+				}
+				spauth=spauth.trim();
+				if(spauth.length()!=0)
+				{
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
+				}
+				if(unrank==1)
+				{
+					k++;
+					Element urname= new Element("unranked_epithet_name");
+					urname.setText(var[k]);
+					syn.addContent(urname);
+					String unauth="";
+					k++;
+					while(k<var.length)
+					{
+						unauth=unauth+var[k]+" ";
+						k++;
+					}
+					unauth=unauth.trim();
+					if(unauth.length()!=0)
+					{
+					Element unat= new Element("unranked_epithet_authority");
+					unat.setText(unauth);
+					syn.addContent(unat);
+					}
+					
+				}
+			}
+			else  // if it is a genus name
+			{
+				
+				String newtext= text;
+				String famauth="";
+				String[] Chunks = text.split("-");
+				text = Chunks[0];
+				String[] family= text.split("\\s");
+				Element newele= new Element("family_name");
+				newele.setText(family[0]);
+				syn.addContent(newele);
+				for(int k=1;k<family.length;k++)
+				{
+					famauth+=family[k]+" ";
+				}
+				famauth=famauth.trim();
+				if(famauth.length()!=0)
+				{
+					Element famat= new Element("family_authority");
+					famat.setText(famauth);
+					syn.addContent(famat);
+				}
+
+				
+			}
+
+			
+			
+		}
+	
+		return syn;
+	}
+
+
+	//private void parseSynTag(String tag, String text, Element treatment){
+		/*Element e = treatment.getChild("variety_name");
+		if(e != null){
+			tag = "synonym_of_variety_name";
+		}else if((e = treatment.getChild("subspecies_name"))!=null){
+			tag = "synonym_of_subspecies_name";
+		}else if((e = treatment.getChild("species_name"))!=null){
+			tag = "synonym_of_species_name";
+		}else if((e = treatment.getChild("tribe_name"))!=null){
+			tag = "synonym_of_tribe_name";
+		}else if((e = treatment.getChild("genus_name"))!=null){
+			tag = "synonym_of_genus_name";
+		}
+		
+		addElement(tag, text, treatment);*/
+		//System.out.println(tag+":"+text);
+		
+		
+		
+		//Mohan's Code
+		private void parseSynTag(String tag, String text, Element treatment){
+			String namepart="";
+			String pubpart="";
+			String indsyntext="";
+			//String syntext = text; //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
+			String syntext = VolumeVerifier.fixBrokenNames(text); //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
+			String[] indsyn = syntext.split(";"); //; separate N syns or N pubs of a syn
+			
+			/**/
+			Element prvtaxid = null; //remember the last taxid element to be used with additional pubs
+			for(int s=0; s<indsyn.length; s++)// for every synonym
+			{
+				Element pubname = new Element("place_of_publication");
+				Element taxid= new Element("TaxonIdentification");
+				taxid.setAttribute("Status","SYNONYM");
+				indsyntext=indsyn[s];
+				if(s!=0 && !indsyntext.matches("\\D*?,\\D*?,\\s*\\d.*") && indsyntext.matches(".*?\\d.*?") && !indsyntext.matches("\\D*?[a-z]\\s+\\d{4,4}\\W.*")){//this is the 2nd pub, e.g. Mant. Pl., 108. 1767
+					if(indsyntext.trim().matches("^\\d.*")) { //this is the second place_in_publication, attach it to the last place_in_pub element
+						taxid = prvtaxid;
+						pubname = add2pubname(indsyntext,treatment);
+					}else{
+						taxid = prvtaxid;
+						publicationMarkuper(pubpart, indsyntext, pubname);
+					}
+				}else{
+					namepart="";
+					pubpart="";
+					int commaindex=-1;
+					int genindex=100000;
+					
+					int ci_in=indsyntext.indexOf(" in ");
+					int ci_based=indsyntext.indexOf(" based ");
+					int ci_comma=indsyntext.indexOf(",");
+					if(ci_in>=0&&ci_in<genindex)
+					{
+						genindex=ci_in;
+					}
+					if(ci_based>=0&&ci_based<genindex)
+					{
+						genindex=ci_based;
+					}
+					if(ci_comma>=0&&ci_comma<genindex)
+					{
+						genindex=ci_comma;
+					}
+					
+					if(genindex!=100000)
+					{
+					commaindex=genindex;
+					}
+					
+					/*int commaindex=indsyntext.indexOf(" in ");
+					int inorcomma=0;
+					if(commaindex==-1)
+					{
+						commaindex=indsyntext.indexOf(",");
+						inorcomma=1;
+					}*/
+					
+					
+					if(commaindex!=-1)
+					{
+						namepart=(namepart+indsyntext.substring(0, commaindex)).trim();
+						String publication=indsyntext.substring(commaindex+1, indsyntext.length());
+						publicationMarkuper(pubpart, publication, pubname); //populate pubname element
+					}
+					else
+					{
+						namepart=indsyntext.trim();
+					}
+					
+					Element syn=synprocess(namepart);
+					List synlist=syn.getChildren();
+					for(int m=0;m<synlist.size();m++)
+					{
+						Element synte = (Element) synlist.get(m);
+						Element newsynte=(Element) synte.clone();
+						taxid.addContent(newsynte);
+					}
+					prvtaxid = taxid;
+				/*Iterator synit=synlist.iterator();
+					while(synit.hasNext())
+					{
+						Element synpe = (Element)synit.next();
+						taxid.addContent(synpe.detach());
+					}*/
+					//taxid.addContent(synlist);						
+				}
+				if(pubname.getContentSize()!=0 && pubname.getParentElement()==null) //to check if the publication has children.
+				{
+					taxid.addContent(pubname);
+					//System.out.println();
+				}
+				if(taxid.getParentElement()==null) treatment.addContent(taxid); //don't add taxid when the taxid is only updated by adding a pub
+			
+			/*Element disc=(Element) te.clone();
+			treatment.addContent(disc);*/
+		}
+			
+			fixSynonymRank(treatment);	
+	}
+
+	
+	private Element add2pubname(String placeinpubtext, Element treatment) {
+		try{
+			List<Element> placeinpub = placeInPub.selectNodes(treatment);
+			int size = placeinpub.size();
+			for(int i = size-1; i>=0; i--){
+				if(placeinpub.get(i).getTextTrim().length() > 0){
+					String newtext = placeinpub.get(i).getTextTrim()+"; "+placeinpubtext;
+					placeinpub.get(i).setText(newtext);
+					return placeinpub.get(i).getParentElement();
+				}
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		return null;
+	}
+	
+	
+	private void publicationMarkuper(String pubpart, String publication,
+			Element pubname) {
+		String other="";
+		//Code to process other_info
+		//String publication=indsyntext.substring(commaindex+1, indsyntext.length()).trim();
+		
+		int n_commaindex=-1;
+		int n_genindex=100000;
+		
+		int n_ci_in=publication.indexOf(" not ");
+		int n_ci_based=publication.indexOf(" based ");
+		if(n_ci_in>=0&&n_ci_in<n_genindex)
+		{
+			n_genindex=n_ci_in;
+		}
+		if(n_ci_based>=0&&n_ci_based<n_genindex)
+		{
+			n_genindex=n_ci_based;
+		}
+									
+		if(n_genindex!=100000)
+		{
+		n_commaindex=n_genindex;
+		}
+		if(n_commaindex!=-1)
+		{
+			pubpart=(pubpart+publication.substring(0, n_commaindex)).trim();
+			other=(other+publication.substring(n_commaindex+1, publication.length())).trim();
+		}
+		else
+		{
+			pubpart=(pubpart+publication).trim();
+		}
+		//End of Code to process other_info
+		
+		//process the publication part
+
+		//pubpart=(pubpart+indsyntext.substring(commaindex+1, indsyntext.length())).trim();
+		String[] titlechunks = new String[1];
+		titlechunks=pubpart.split("[\\d].*");
+		
+		
+		String publtitl=titlechunks[0];
+		/*int inlength=titlechunks[0].length();
+		
+		if(inlength<pubpart.length())
+		{
+			Element publ_title = new Element("publication_title");
+			publ_title.setText(publtitl);
+			pubname.addContent(publ_title);
+			String inpubl=pubpart.substring(inlength, pubpart.length()-1);
+			Element in_publication = new Element("place_in_publication");
+			in_publication.setText(inpubl);
+			pubname.addContent(in_publication);
+		}
+		else
+		{
+			namepart=indsyntext.trim();
+		}*/
+		if(publtitl.length()!=0)
+		{
+		Element publ_title = new Element("publication_title");
+		publ_title.setText(publtitl);
+		pubname.addContent(publ_title);
+		}
+		int inlength=titlechunks[0].length();
+		if(inlength<pubpart.length())
+		{
+			//String inpubl=pubpart.substring(inlength, pubpart.length()-1);
+			String inpubl=pubpart.substring(inlength, pubpart.length());
+			Element in_publication = new Element("place_in_publication");
+			in_publication.setText(inpubl);
+			pubname.addContent(in_publication);
+		}
+		if(other.length()!=0)
+		{
+			Element other_info = new Element("other_info");
+			other_info.setText(other);
+			pubname.addContent(other_info);
+		}
+		/*	else
+		{
+			System.out.println("only one element in publication");
+		}*/
+		
+		//finished processing the publication.
+	}
+	
+	
+	
+	
+	/**
+	 * deal with two categories:
+	 * 1. synonyms with at least genus and species(and any lower rank) need not fix
+	 * 		1.1 if has citation, Status = "basionym"
+	 *      1.2 else, Status = "synonym"
+	 * 2. synonyms consisting one name need be checked:
+	 * 		2.1 if has citation, Status = "basionym"
+	 *      2.2 else, Status = "synonym" and rank = the lowest rank in "Accepted" name
+	 */
+	@SuppressWarnings("unchecked")
+	private void fixSynonymRank(Element treatment) {
+		try{
+			List <Element> synonyms = synPath.selectNodes(treatment);
+			for(Element synonym: synonyms){
+				//test for basionym
+				List<Element> citations = synonym.getChildren("place_of_publication");
+				if(citations.size()>0){
+					synonym.setAttribute("Status", "BASIONYM");
+				}
+				
+				//test for single name
+				List<Element> names = namePath.selectNodes(synonym);
+				if(names.size()==1){
+					//find the lowest rank in accepted name
+					Element accepted = (Element) acceptPath.selectSingleNode(treatment);
+					List<Element> anames = namePath.selectNodes(accepted);
+					String rank = anames.get(anames.size()-1).getName().replaceFirst("_name", "");
+					//replace the rank for name
+					String oldname = names.get(0).getName();					
+					names.get(0).setName(oldname.replaceFirst("^[^_]*", rank));
+					//replace the rank for authority
+					Element authority = (Element) authorPath.selectSingleNode(synonym);
+					String oldauthname = authority.getName();					
+					authority.setName(oldauthname.replaceFirst("^[^_]*", rank));
+					System.out.println("rank replaced from "+oldname +" to "+rank);
+				}				
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		
+	}
 
 }
