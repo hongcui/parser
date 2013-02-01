@@ -911,12 +911,13 @@ public class POSTagger4StanfordParser {
 			list = segByWord(listcopy, end);
 			mt = charalistpattern.matcher(list);
 			
-			connector = l.replaceAll("[^`@]", "").charAt(0)+"";
+
 			//6/29/12
 			//for(int i = base; i<start; i++){
 			//	result += this.chunkedtokens.get(i)+" ";
 			//}
 			if(end>start){ //if it is a list
+				connector = l.replaceAll("[^`@]", "").charAt(0)+"";
 				//triage: "not a, b, or c" is fine; "not a, b to c" is not
 				if(connector.trim().equals("`")){//if connector is "to", then "not"-modified state should be removed.
 					//check if l starts with "not"
