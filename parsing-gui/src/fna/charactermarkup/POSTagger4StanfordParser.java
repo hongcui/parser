@@ -885,7 +885,7 @@ public class POSTagger4StanfordParser {
 			while(m.matches()){ //all following states
 				String another = m.group(1);
 				l += m.group(1);
-				connector = m.group(5).matches(".*?[@`].*")? m.group(5) : connector; //the last non-punct connector
+				//connector = m.group(5).matches(".*?[@`].*")? m.group(5) : connector; //the last non-punct connector
 				list = m.group(6);
 				m = charalistpattern2.matcher(list);
 			}
@@ -911,6 +911,7 @@ public class POSTagger4StanfordParser {
 			list = segByWord(listcopy, end);
 			mt = charalistpattern.matcher(list);
 			
+			connector = l.replaceAll("[^`@]", "").charAt(0)+"";
 			//6/29/12
 			//for(int i = base; i<start; i++){
 			//	result += this.chunkedtokens.get(i)+" ";
@@ -920,6 +921,7 @@ public class POSTagger4StanfordParser {
 				if(connector.trim().equals("`")){//if connector is "to", then "not"-modified state should be removed.
 					//check if l starts with "not"
 					while(l.matches("(not|never)\\b.*")){//remove negated states from the begaining of l one by one
+						if(l.indexOf(",")<0) break;
 						String notstate = l.substring(0, l.indexOf(",")+1);
 						l = l.substring(l.indexOf(",")+1).trim();
 						start = start + (notstate.trim()+" b").trim().split("\\s+").length - 1;
