@@ -1055,6 +1055,11 @@ sub containsuffix{
 
 	$base =~ s#_##g; #cup_shaped
 	$wnoutputword = `wn $word -over`;
+	if($wnoutputword =~ /not recognized/){
+		print stdout "$wnoutputword:\n";
+		print stdout "Please make sure WordNet is properly installed and try again\n".
+		exit(1);
+	}
   	if ($wnoutputword !~/\w/){#word not in WN
 		$wordinwn = 0;
   	}else{ 	#found $word in WN:
@@ -5723,6 +5728,11 @@ sub checkWN{
 
   #otherwise, call wn
   my $result = `wn $word -over`;
+  if($result =~ /not recognized/){
+		print stdout "$result:\n";
+		print stdout "Please make sure WordNet is properly installed and try again\n".
+		exit(1);
+  }
   if ($result !~/\w/){#word not in WN
   	$WNPOSRECORDS{$word} = ""; #5/10/09
   	#return $mode eq "singular"? $word : ""; #not in WN, return ""
