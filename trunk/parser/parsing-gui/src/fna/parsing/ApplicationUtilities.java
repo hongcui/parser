@@ -30,8 +30,10 @@ public class ApplicationUtilities {
 	private static Shell shell;
 	private static final Logger LOGGER = Logger.getLogger(ApplicationUtilities.class);
 	private static Properties properties = null;
+	private static Properties notepadproperties = null;
 	//private static FileInputStream fstream = null;
 	private static InputStream fstream = null; 
+	private static InputStream notepadstream = null;
 	
 	static {
 		try {
@@ -40,6 +42,7 @@ public class ApplicationUtilities {
 					+"\\application.properties");*/
 					
 		fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
+		notepadstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("notepad.properties");
 			
 		} //catch (FileNotFoundException e) {
 		catch (Exception e) {
@@ -103,9 +106,10 @@ public class ApplicationUtilities {
 	
 		if(properties == null) {
 			properties = new Properties();
+			notepadproperties = new Properties();
 			try {
 				
-				//properties.load(fstream);
+				notepadproperties.load(notepadstream);
 				properties.load(fstream);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -113,6 +117,7 @@ public class ApplicationUtilities {
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			} 
 		}
+		if(key.compareTo("notepad")==0) return notepadproperties.getProperty("notepad");
 		return properties.getProperty(key);
 	}
 	
