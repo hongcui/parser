@@ -147,7 +147,7 @@ use DBI;
 
 
 
-print stdout "Ha ha: Initialized:\n";
+print stdout "Initialized:\n";
 ###########################################################################################
 #########################                                     #############################
 #########################set up global variables              #############################
@@ -232,17 +232,24 @@ if($haskb){
 #read sentences in from disk
 print stdout "Reading sentences:\n";
 populatesents();
-
+#print stdout "Read sentences:\n";
 
 addheuristicsnouns();
+#print stdout "Reading sentences 1:\n";
 addstopwords();
+#print stdout "Reading sentences 2:\n";
 addcharacters();#3/24/09
+#print stdout "Reading sentences 3:\n";
 addnumbers(); #4/11/09
+#print stdout "Reading sentences 4:\n";
 addclusterstrings(); #4/11/09
+#print stdout "Reading sentences 5:\n";
 addpropernouns(); #6/2/09
-
+#print stdout "Reading sentences: 6\n";
 posbysuffix();
+#print stdout "Reading sentences 7:\n";
 resetcounts();
+#print stdout "Reading sentences 8:\n";
 ###############################################################################
 # bootstrap between %NOUNS and %BDRY on plain text description
 # B: a boundary word, N: a noun or noun *phrase* ?: a unknown word
@@ -308,10 +315,8 @@ resetcounts();
 #       Markup the remaining sentences with default tags
 #       Dump marked sentences to disk
 ###############################################################################
-
-
 markupbypattern(); #chromosome
-
+#print stdout "Reading sentences 9:\n";
 markupignore();#similar to , differs from etc.3/21/09
 
 print stdout "Learning rules with high certainty:\n";
@@ -750,7 +755,7 @@ sub addNouns{
 	}
 }
 
-###lateral/laterals terminal/terminals: blades of mid cauline spatulate or oblong to obovate or lanceolate , 6  35 × 1  15 cm , bases auriculate , auricles deltate to lanceolate , ± straight , acute , margins usually pinnately lobed , lobes ± deltate to lanceolate , not constricted at bases , terminals usually larger than laterals , entire or dentate .
+###lateral/laterals terminal/terminals: blades of mid cauline spatulate or oblong to obovate or lanceolate , 6 Â– 35 Ã— 1 Â– 15 cm , bases auriculate , auricles deltate to lanceolate , Â± straight , acute , margins usually pinnately lobed , lobes Â± deltate to lanceolate , not constricted at bases , terminals usually larger than laterals , entire or dentate .
 sub addheuristicsnouns{
 	my @nouns = NounHeuristics::heurnouns($dir, "");
 	#EOL:@nouns = ("angle[s]", "angles[p]", "base[s]", "bases[p]", "cell[s]", "cells[p]", "depression[s]", "depressions[p]", "ellipsoid[s]", "ellipsoids[p]", "eyespot[s]", "eyespots[p]", "face[s]", "faces[p]", "flagellum[s]", "flagella[p]", "flange[s]", "flanges[p]", "globule[s]", "globules[p]", "groove[s]", "grooves[p]", "line[s]", "lines[p]", "lobe[s]", "lobes[p]", "margin[s]", "margins[p]", "membrane[s]", "membranes[p]", "notch[s]", "notches[p]", "plastid[s]", "plastids[p]", "pore[s]", "pores[p]", "pyrenoid[s]", "pyrenoids[p]", "quarter[s]", "quarters[p]", "ridge[s]", "ridges[p]", "rod[s]", "rods[p]", "row[s]", "rows[p]", "sample[s]", "samples[p]", "sediment[s]", "sediments[p]", "side[s]", "sides[p]", "vacuole[s]", "vacuoles[p]", "valve[s]", "valves[p]");
@@ -1754,13 +1759,13 @@ sub getpartsfromparenttag{
 ############################################################################################
 #deal with "herbs or lianas" cases
 #examples:
-#<cypsela_or_palea_unit> cypsela / palea unit ± obovate, 2 . 5  4 mm</cypsela_or_palea_unit>
-#<biennial_or_short_lived_perennial> biennials or short_lived , usually monocarpic perennials , 10  100 cm ; cf:
-#<biennial_or_monocarpic_perennial> biennials or monocarpic perennials , 100  220 cm ;
-#<(leaf) blade_or_lobe> leaf blades or lobes orbiculate to linear , 1  5 × 1  5 mm .
+#<cypsela_or_palea_unit> cypsela / palea unit Â± obovate, 2 . 5 Â– 4 mm</cypsela_or_palea_unit>
+#<biennial_or_short_lived_perennial> biennials or short_lived , usually monocarpic perennials , 10 Â– 100 cm ; cf:
+#<biennial_or_monocarpic_perennial> biennials or monocarpic perennials , 100 Â– 220 cm ;
+#<(leaf) blade_or_lobe> leaf blades or lobes orbiculate to linear , 1 Â– 5 Ã— 1 Â– 5 mm .
 #<(outer)floret> and (3) outer florets pistillate, ???
-#staminate or bisexual paleae readily falling , ( 1  ) 3  5 , erect to apically somewhat spreading or incurved in fruit , slightly surpassing pistillate paleae ;
-#annuals , biennials , or short_lived perennials , 20  100 cm .
+#staminate or bisexual paleae readily falling , ( 1 Â– ) 3 Â– 5 , erect to apically somewhat spreading or incurved in fruit , slightly surpassing pistillate paleae ;
+#annuals , biennials , or short_lived perennials , 20 Â– 100 cm .
 #deep_seated woody tap_roots and caudices .
 
 #patterns: b: boundary; n:structures; m:modifier; &:and/or//; u:unknown words
@@ -2465,12 +2470,12 @@ sub ditto{
 	#before 3/24/09
 	#my ($sth, $sentid, $sentence, $bptn, $wptn, $ptn, $conj, $sth2);
 
-	##$conj = "(?:[^a-z0-9<_]|\\b(?\:and|or|/|to)\\b)"; #± <b>distalmost</b> <b>reduced</b> , ± <b>bractlike</b> .
+	##$conj = "(?:[^a-z0-9<_]|\\b(?\:and|or|/|to)\\b)"; #Â± <b>distalmost</b> <b>reduced</b> , Â± <b>bractlike</b> .
 	##$bptn = "\\s*(?:</?B>)\\s*";  #boundary pattern
 	##$wptn = "(?:.*?)"; #text pattern
 	##$ptn = "^".$conj."?".$bptn.$wptn.$bptn.$conj."+"; #sentence starts with at least 3 boundary words
 
-	#$conj = "(?:\\b(?\:and|or|/|to)\\b)"; #± <B>distalmost</B> <B>reduced</B> <B>,</B> <B>±</B> <b>bractlike</b> <B>.</B>
+	#$conj = "(?:\\b(?\:and|or|/|to)\\b)"; #Â± <B>distalmost</B> <B>reduced</B> <B>,</B> <B>Â±</B> <b>bractlike</b> <B>.</B>
 	#$bptn = "\\s*(?:</?B>)\\s*";  #boundary pattern
 	#$wptn = "(?:.*?)"; #text pattern
 	#$ptn = "^".$conj."?".$bptn.$wptn.$bptn.$conj."*"; #sentence starts with at least 3 boundary words
@@ -2556,22 +2561,22 @@ sub phraseclause{
 ############################################################################################
 
 #dealing with x of y cases:
-#1.	sub-structure of structure pattern: sub-structure string = "part|parts|area|areas|portion|portions"
+#1.	Â“sub-structure of structureÂ” pattern: sub-structure string = "part|parts|area|areas|portion|portions"
 #Example: blades of undivided cauline leaves oblong , ovate.
-#Example: <(sterile [floret] corolla) lobe>corolla lobes of sterile 10  15 mm , spreading ;
+#Example: <(sterile [floret] corolla) lobe>corolla lobes of sterile 10 Â– 15 mm , spreading ;
 #Example: <(bisexual floret) [corolla]> of bisexual florets pinkish. </(bisexual floret) [corolla]>
 
-#2.	 structure of sub-structure pattern:
+#2.	 Â“structure of sub-structureÂ” pattern:
 #Example: <calyculus>Calyculi of appressed bractlets.
 
-#3.	structure of count pattern:
+#3.	Â“structure of countÂ” pattern:
 #Example: <calyculus>Calyculi of ca . 18 , reflexed to recurved
 # <floret>Florets of 1 , 2 , or 3 + kinds in a head :</floret>
 
-#4.	clusters of structure pattern
+#4.	Â“clusters of structureÂ” pattern
 #Example: <root> clusters of fibrous root.</root>
 #outer series of bristlelike scales , inner of plumose bristles . (made up of, case 2)
-#Note: other cluster terms include arrays (as in arrays of heads. Cf: heads in corymbiform arrays.), series, etc.
+#Note: other Â“clusterÂ” terms include Â“arraysÂ” (as in Â“arrays of headsÂ”. Cf: Â”heads in corymbiform arrays.Â”), Â“seriesÂ”, etc.
 
 #in order to distinct case 1 and 2, need knowledge about the hierarchy of structures.
 #need records of adjectivesubjects (e.g. inner) to deal with cases such as  "apices of inner": modifiers table istypemodifier=1
@@ -2816,8 +2821,8 @@ sub choosesubstructure{
 	}
 
 	#check evidence 2: struct with substruct: blades <b>with</b> [bm?] margin
-	#e.g. <n>phyllaries</n> <b>many</b> <b>in</b>  <b>4  6 </b> series , unequal , <m>outer</m> and <m>mid </m><b>with</b> appressed <n>bases</n> and <b>spreading</b> , <b>lanceolate</b> to <b>ovate</b> , spiny_fringed , <n>terminal</n> appendages , <b>at</b> least <m>mid </m>spine_tipped , <m><b>innermost</b></m> <b>with</b> <b>erect</b> , <b>flat</b> , <b>entire</b> , <b>spineless</b> <n>apices</n> .
-	#<n>pappi</n> <b>fuscous</b> to <b>purplish</b> , <m>outer</m> scales  <b>25  30 , <</b> b> <b>0</</b> b> .  <b>2  <</b> b> <b>1</</b> b> mm , contrasting <b>with</b>  <b>35  40 + , 5  7 + </b> mm <m>inner</m> <b>bristles</b> .
+	#e.g. <n>phyllaries</n> <b>many</b> <b>in</b>  <b>4 Â– 6 </b> series , unequal , <m>outer</m> and <m>mid </m><b>with</b> appressed <n>bases</n> and <b>spreading</b> , <b>lanceolate</b> to <b>ovate</b> , spiny_fringed , <n>terminal</n> appendages , <b>at</b> least <m>mid </m>spine_tipped , <m><b>innermost</b></m> <b>with</b> <b>erect</b> , <b>flat</b> , <b>entire</b> , <b>spineless</b> <n>apices</n> .
+	#<n>pappi</n> <b>fuscous</b> to <b>purplish</b> , <m>outer</m> scales  <b>25 Â– 30 , <</b> b> <b>0</</b> b> .  <b>2 Â– <</b> b> <b>1</</b> b> mm , contrasting <b>with</b>  <b>35 Â– 40 + , 5 Â– 7 + </b> mm <m>inner</m> <b>bristles</b> .
 	#
 	my $ptn = "(<[A-Z]>)*".$struct1."(</[A-Z]>)* <B>with</B> .* ?(<[A-Z]>)*".$struct2."(</[A-Z]>)*";
 	$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where  (tag != 'ignore' or isnull(tag)) and  sentence rlike '$ptn' ");
@@ -3137,7 +3142,7 @@ sub pronouncharactersubject{
 	#	tagsentwmt($sentid, $sentence, $modifier, $tag, "pronouncharactersubject[pronoun subject]");
 	#}
 
-	#errous noun cases : ligules surpassing phyllaries by 15  20 mm
+	#errous noun cases : ligules surpassing phyllaries by 15 Â– 20 mm
 
 	$sth = $dbh->prepare("select sentid, sentence, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and tag not rlike ' (and|nor|or) ' and tag not like '%[%' and sentence collate utf8_bin not rlike concat('^[^N]*<N>',tag) ");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
@@ -5504,6 +5509,7 @@ sub getnumber{
   my $word = shift;
   #$word = lc $word;
   my $number = checkWN($word, "number");
+  #print STDOUT "$SENTID 3 done\n";
   return $number if $number =~/[sp]/;
   return "" if $number=~/x/;
   if($word =~/i$/) {return "p";} #1.	Calyculi  => 1.	Calyculus, pappi => pappus
@@ -5725,31 +5731,39 @@ sub checkWN{
     return "" if $mode eq "number";
     return "r" if $mode eq "pos";
   }
-
+#print STDOUT "$SENTID 3.1\n";
   #otherwise, call wn
   my $result = `wn $word -over`;
-  if($result =~ /not recognized/){
-		print stdout "$result:\n";
-		print stdout "Please make sure WordNet is properly installed and try again\n".
+#print STDOUT "$SENTID 3.2 $word: *$result*\n";  
+  if($result =~ /not recognized/){	
+		print STDOUT "$result:\n";
+		print STDOUT "Please make sure WordNet is properly installed and try again\n".
 		exit(1);
   }
+#print STDOUT "$SENTID 3.3\n";
   if ($result !~/\w/){#word not in WN
+#print STDOUT "$SENTID 3.4: *$word*\n";
   	$WNPOSRECORDS{$word} = ""; #5/10/09
+#print STDOUT "$SENTID 3.5\n";
   	#return $mode eq "singular"? $word : ""; #not in WN, return ""
   	#remove any prefix and try again 3/12/09
   	my $wordcopy = $word;
+#print STDOUT "$SENTID 3.5.5\n";
   	$word =~ s#ed$##;
+#print STDOUT "$SENTID 3.5.6 *$word*\n";
   	if($word ne $wordcopy){ #$word not end with "ed"
   		$result = `wn $word -over`;
+#print STDOUT "$SENTID 3.5.7 *$result*\n";
   		if($result =~ /\w/){ #$word end with "ed", what remains after removes "ed" is still a word
   			return $word if $mode eq "singular";
   			return "" if $mode eq "number";
   			return "a" if $mode eq "pos";
   		}
-
+#print STDOUT "$SENTID 3.6\n";
   	}
   	$word = $wordcopy;
   	$word =~ s#^($PREFIX)+##;
+#print STDOUT "$SENTID 3.7\n";  	
   	if($word eq $wordcopy){
   		return $mode eq "singular"? $word : ""; #not in WN, return ""
   	}else{
@@ -5758,6 +5772,7 @@ sub checkWN{
   		$word = $wordcopy;
   		return $mode eq "singular"? $word : "" if ($result !~/\w/);
   	}
+#print STDOUT "$SENTID 3.8\n";
   }
 
   #found $word in WN:
@@ -5851,7 +5866,7 @@ sub plural{
       $plural = $word."es";
     }elsif($word =~ /(.*?)([^aeiouy])y$/){
       $plural = $1.$2."ies";
-    }elsif($word =~ /(.*?)(?:([^f])feï¿œ([oaelr])f)$/){
+    }elsif($word =~ /(.*?)(?:([^f])feÃ¯Â¿Å“([oaelr])f)$/){
       $plural = $1.$2.$3."ves";
     }elsif($word =~ /(.*?)(x|s)is$/){
       $plural = $1.$2."es";
@@ -6025,6 +6040,7 @@ while(defined ($file=readdir(IN))){
 		#my $oline = getOriginal($line, $original, $file);
 
     	my $line = $sentences[$_];
+#print STDOUT "$SENTID 1\n";
     	my $oline = $sentcopy[$_];
     	$oline =~ s#(\d)\s*\[\s*DOT\s*\]\s*(\d)#$1.$2#g;
     	$oline =~ s#\[\s*DOT\s*\]#.#g; #a space may have been introduced
@@ -6034,14 +6050,16 @@ while(defined ($file=readdir(IN))){
 		$oline =~ s#\[\s*EXM\s*\]#!#g;
     	$line =~ s#'# #g; #remove all ' to avoid escape problems
     	$oline =~ s#'# #g;
+#print STDOUT "$SENTID 2\n";
     	@words = getfirstnwords($line, $N); # "w1 w2 w3"
-
+#print STDOUT "$SENTID 3\n";
     	$status = "";
 		if(getnumber($words[0]) eq "p"){
 		     $status = "start";
 		}else{
 		     $status = "normal";
 		}
+#print STDOUT "$SENTID 4\n";		
 		$lead = "@words";
 		$lead =~ s#\s+$##;
 		$lead =~ s#^\s*##;
@@ -6051,17 +6069,19 @@ while(defined ($file=readdir(IN))){
 
     	#s#\(#\\(#g;
     	#s#\)#\\)#g;
+#print STDOUT "$SENTID 5\n";
     	my $source = $file."-".$count++;
     	if(length($oline) >=2000 ){#EOL
     		$oline = $line;
     	}
+#print STDOUT "$SENTID 6\n";
     	#checked in DeHyenAFolder.java
 		#if(hasUnmatchedBrackets($oline)){
 		#	print STDOUT "Warning: sentence [id = $SENTID] has unmatched brackets\n";
 		#}
     	$stmt = "insert into ".$prefix."_sentence(sentid, source, sentence, originalsent, lead, status) values($SENTID,'$source' ,'$line','$oline','$lead', '$status')";
 		$sth = $dbh->prepare($stmt);
-    	$sth->execute() or die $sth->errstr."\n SQL Statement: ".$stmt."\n";
+    	$sth->execute() or print STDOUT $sth->errstr.": SQL Statement: ".$stmt."\n";
 		#print "Sentence: $line\n" if $debug;
 		#print "Leading words: @words\n\n" if $debug;
 		$SENTID++;
@@ -6072,7 +6092,7 @@ while(defined ($file=readdir(IN))){
 	$query->execute() or print STDOUT $query->errstr."\n";
 }
 	#chop($PROPERNOUNS);
-print "Total sentences = $SENTID\n";
+print stdout "Total sentences = $SENTID\n";
 populateunknownwordstable();
 }
 
@@ -6133,7 +6153,7 @@ sub populateunknownwordstable{
 		}
 		$count++;
 	}
-	print "Total words = $count\n";
+	print stdout "Total words = $count\n";
 }
 
 sub insertintounknown{
@@ -6159,9 +6179,9 @@ sub getfirstnwords{
 }
 
 #extract the segment matching $line from $original, mainly to get original case and parentheses
-#$line: pappi , 20 ï¿œ 40 mm , usually noticeably shorter than corolla .
-#$orginal:... Pappi (white or tawny), 20ï¿œ40mm, usually noticeably shorter than corolla. ...
-#Pollen 70100% 3-porate, mean 25 µm
+#$line: pappi , 20 Ã¯Â¿Å“ 40 mm , usually noticeably shorter than corolla .
+#$orginal:... Pappi (white or tawny), 20Ã¯Â¿Å“40mm, usually noticeably shorter than corolla. ...
+#Pollen 70Â–100% 3-porate, mean 25 Âµm
 sub getOriginal{
 	my ($line, $original, $file) = @_;
 
