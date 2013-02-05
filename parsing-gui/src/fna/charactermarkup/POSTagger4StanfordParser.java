@@ -59,7 +59,7 @@ public class POSTagger4StanfordParser {
 	private static Pattern hyphenedtoorpattern = Pattern.compile("(.*?)((\\d-,\\s*)+ (to|or) \\d-\\{)(.*)");
 	private static Pattern bulletpattern  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
 	private static Pattern distributePrepPattern = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
-	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ \\{?[cmd]?m\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
+	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
 	//private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
 	private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+[& ]*([`@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
 	//private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
@@ -599,7 +599,7 @@ public class POSTagger4StanfordParser {
 
 	/**
 	 * 
-	 * @param text
+	 * @param text: {oblanceolate} , 15-70×30-150+ cm , {flat} 
 	 * @return two strings: one contains all text from text with rearranged spaces, the other contains numbers as the place holder of the area expressions
 	 */	
 	private String[] normalizeArea(String text){
@@ -613,8 +613,8 @@ public class POSTagger4StanfordParser {
 				text2 = m.group(1)+m.group(2).replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "")+ m.group(4);
 				m = areapattern.matcher(text);
 			}
-			result[0] = text;
-			result[1] = text2;
+			result[0] = text;//{oblanceolate} , 15-70×30-150+cm , {flat}  
+			result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
 			return result;
 	}
 	
