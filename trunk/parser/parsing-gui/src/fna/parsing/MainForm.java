@@ -5308,8 +5308,7 @@ public class MainForm {
 					});
 					
 					final Button button_1 = new Button(termRoleGroup, SWT.RADIO);
-					button_1.setBounds(325, (count-1)*y+m, 90, y-2*m);
-					if(type.compareToIgnoreCase("characters")==0) button_1.setSelection(true);//for use cases where the person who runs charaparser needs another person to review the terms. Here mark all terms as "descriptor" by default so they will all be loaded to OTO for review
+					button_1.setBounds(325, (count-1)*y+m, 90, y-2*m);			
 					//if(type.compareToIgnoreCase("structures")==0) button_1.setSelection(true);
 					if(count%2 == 0) button_1.setBackground(grey);
 					tabList.add(button_1);
@@ -5326,7 +5325,8 @@ public class MainForm {
 					
 					final Button button_2 = new Button(termRoleGroup, SWT.RADIO);
 					button_2.setBounds(425, (count-1)*y+m, 90, y-2*m);
-					if(type.compareToIgnoreCase("characters")==0) button_2.setSelection(true);
+					button_2.setSelection(true);//for use cases where the person who runs charaparser needs another person to review the terms. Here mark all terms as "descriptor" by default so they will all be loaded to OTO for review
+					//if(type.compareToIgnoreCase("characters")==0) button_2.setSelection(true);
 					if(count%2 == 0) button_2.setBackground(grey);
 					tabList.add(button_2);
 					button_2.addListener(SWT.Selection, new Listener() {
@@ -5342,7 +5342,6 @@ public class MainForm {
 					
 					final Button button_3 = new Button(termRoleGroup, SWT.RADIO);
 					button_3.setBounds(525, (count-1)*y+m, 90, y-2*m);
-					if(type.compareToIgnoreCase("characters")==0) button_3.setSelection(true);//for use cases where the person who runs charaparser needs another person to review the terms. Here mark all terms as "descriptor" by default so they will all be loaded to OTO for review
 					//if(type.compareToIgnoreCase("others")==0) button_3.setSelection(true);
 					if(count%2 == 0) button_3.setBackground(grey);
 					tabList.add(button_3);
