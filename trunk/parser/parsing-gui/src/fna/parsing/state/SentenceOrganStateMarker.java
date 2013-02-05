@@ -32,6 +32,9 @@ import fna.parsing.ApplicationUtilities;
  * @author hongcui
  * last stable version: 653
  * this version: try to find additional nouns from unknown words, and mark them with <>. 
+ * This is called in step 5, learning cooccurrence, before categorizing character terms to their specific categories in step 6.
+ * Uses glossary table, tagged sentences, and semanticroles table.
+ * The prefix_term_category table does not exist when the first time this class is called.
  */
 
 @SuppressWarnings("unchecked")
@@ -671,13 +674,6 @@ public class SentenceOrganStateMarker {
 	protected void organNameFromGloss(StringBuffer tags, Statement stmt)
 			throws SQLException {
 		ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure')");
-		while(rs.next()){
-			String term = rs.getString("term").trim();
-			if(term == null){continue;}
-			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
-			tags.append(term+"|");
-		}
-		rs = stmt.executeQuery("select distinct term from "+this.tableprefix+"_termcategory where category in ('STRUCTURE', 'structure')");
 		while(rs.next()){
 			String term = rs.getString("term").trim();
 			if(term == null){continue;}
