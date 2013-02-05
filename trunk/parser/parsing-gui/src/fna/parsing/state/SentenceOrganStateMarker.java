@@ -677,6 +677,13 @@ public class SentenceOrganStateMarker {
 			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
 			tags.append(term+"|");
 		}
+		rs = stmt.executeQuery("select distinct term from "+this.tableprefix+"_termcategory where category in ('STRUCTURE', 'structure')");
+		while(rs.next()){
+			String term = rs.getString("term").trim();
+			if(term == null){continue;}
+			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+			tags.append(term+"|");
+		}
 	}
 	
 	protected String colorsFromGloss()
