@@ -35,7 +35,7 @@ public class ExtractOntoFromAnno {
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				conn = DriverManager.getConnection(URL);
 				Statement stmt = conn.createStatement();
 				stmt.execute("create table if not exists "+ontoname+" (id int NOT NULL auto_increment, term varchar(150), category varchar(150), remark varchar(150), primary key(id))");

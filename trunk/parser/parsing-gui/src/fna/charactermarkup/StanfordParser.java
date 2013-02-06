@@ -66,7 +66,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
@@ -93,7 +93,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword";
+			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
@@ -432,6 +432,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	}
 
 	public static String normalizeSpacesRoundNumbers(String sent) {
+		sent = sent.replaceAll("-+", "-");// 2--4 => 2-4
+		sent = sent.replaceAll("(- )+", "- ");// 2 - - 4 => 2 - 4
 		sent = ratio2number(sent);//bhl
 		sent = sent.replaceAll("(?<=\\d)\\s*/\\s*(?=\\d)", "/");
 		sent = sent.replaceAll("(?<=\\d)\\s+(?=\\d)", "-"); //bhl: two numbers connected by a space
@@ -741,11 +743,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 
 
-		String database = "markedupdatasets";
+		/*String database = "markedupdatasets";
 		String posedfile = "E:\\Data\\Diatom\\target\\donat_test_posedsentences.txt";
 		String parsedfile = "E:\\Data\\Diatom\\target\\donat_test_parsedsentences.txt";
 		String transformedir = "E:\\Data\\Diatom\\transformed";
-		String prefix = "diatom_test";
+		String prefix = "diatom_test";*/
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\transformed";
@@ -789,14 +791,18 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		*/
 		
 
-
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\transformed";
+		String prefix = "fnav2debug";
+		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

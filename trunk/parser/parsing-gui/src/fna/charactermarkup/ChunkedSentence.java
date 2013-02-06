@@ -55,15 +55,15 @@ public class ChunkedSentence {
 	private String tableprefix = null;
 	private Hashtable<String, String> thantype = new Hashtable<String, String>();
 	public static final String locationpp="near|from";
-	public static final String units= "cm|mm|dm|m|meter|meters|microns|micron|unes|µm|um";
+	public static final String units= "cm|mm|dm|m|meters|meter|microns|micron|unes|µm|um";
 	public static final String percentage="%|percent";
-	public static final String degree="°|degree|degrees";
+	public static final String degree="°|degrees|degree";
 	public static final String times = "times|folds|lengths|widths";
 	public static final String per = "per";
 	public static final String more="greater|more|less|fewer";
 	public static final String counts="few|several|many|none|numerous|single|couple";
 	public static final String basecounts="each|every|per";
-	public static final String clusters="cluster|clusters|involucre|involucres|rosette|rosettes|pair|pairs|series|ornament|ornamentation|array|arrays";
+	public static final String clusters="clusters|cluster|involucres|involucre|rosettes|rosette|pairs|pair|series|ornamentation|ornament|arrays|array"; //pl before singular.
 	public static final String allsimplepreps = "aboard|about|above|across|after|against|along|alongside|amid|amidst|among|amongst|anti|around|as|astride|at|atop|bar|barring|before|behind|below|beneath|beside|besides|between|beyond|but|by|circa|concerning|considering|counting|cum|despite|down|during|except|excepting|excluding|following|for|from|given|gone|in|including|inside|into|less|like|minus|near|notwithstanding|of|off|on|onto|opposite|outside|over|past|pending|per|plus|pro|re|regarding|respecting|round|save|saving|since|than|through|throughout|till|to|touching|toward|towards|under|underneath|unlike|until|up|upon|versus|via|with|within|without|worth";
 	public static final String prepositions = "above|across|after|along|among|amongst|around|as|at|before|behind|below|beneath|between|beyond|by|during|for|from|in|into|near|of|off|on|onto|out|outside|over|per|than|through|throughout|to|toward|towards|up|upward|with|without|"+POSTagger4StanfordParser.comprepstring;
 	public static final String stop = "a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
@@ -93,12 +93,12 @@ public class ChunkedSentence {
 	static protected String password = "root";
 	static protected String database = "fnav19_benchmark";*/
 	
-	private boolean printNorm = true;
-	private boolean printNormThan = true;
-	private boolean printNormTo = true;
-	private boolean printExp = true;
-	private boolean printRecover = true;
-	private boolean printParentheses = true;
+	private boolean printNorm = false;
+	private boolean printNormThan = false;
+	private boolean printNormTo = false;
+	private boolean printExp = false;
+	private boolean printRecover = false;
+	private boolean printParentheses = false;
 	private String clauseModifierConstraint;
 	private String clauseModifierContraintId;
 	private ArrayList<Attribute> scopeattributes = new ArrayList<Attribute>();
@@ -1716,7 +1716,7 @@ public class ChunkedSentence {
 				c++;
 			}
 			if(isArea && c>=2){
-				token = token.replaceAll("×[^0-9]*", " × ").replaceAll("(?<=[^a-z])(?=[a-z])", " ").replaceAll("(?<=[a-z])(?=[^a-z])", " ").replaceAll("\\s+", " ").trim();
+				token = token.replaceAll("×[^0-9(\\[]*", " × ").replaceAll("(?<=[^a-z])(?=[a-z])", " ").replaceAll("(?<=[a-z])(?=[^a-z])", " ").replaceAll("\\s+", " ").trim();
 				chunk = new ChunkArea(token);
 				pointer++;
 				return chunk;
@@ -2278,6 +2278,12 @@ public class ChunkedSentence {
 				}
 				return new ChunkValue(numerics);
 			}
+			if(t.matches("^[{<(]*("+ChunkedSentence.clusters+")\\b.*?")){
+				numerics += t+ " ";
+				pointer++;
+				numerics = numerics.replaceAll("[{(<>)}]", "").trim();
+				return new ChunkCount(numerics);
+			}
 			if(t.matches("^[{<(]*("+ChunkedSentence.times+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
@@ -2290,6 +2296,7 @@ public class ChunkedSentence {
 					return new ChunkComparativeValue(numerics);//1-2 times a[shape[divided]]???; 1-2 times shape[{shape~list~pinnately~lobed~or~dissected}];many 2-4[-6+] times a[size[widths]];[0.5-]1.5-4.5 times u[o[(leaves)]];0.4-0.5 times u[o[(diams)]]
 				}
 			}
+			
 			/*if(found && this.chunkedtokens.get(i).matches("^("+this.per+")\\b.*?")){
 				numerics += this.chunkedtokens.get(i)+ " ";
 				pointer = i+1;
@@ -2507,6 +2514,8 @@ parallelism scope: q[other chunks]
 			String chara = "";
 			if(!charword.matches("\\{?("+ChunkedSentence.more+")\\}?")){
 				charainfo = Utilities.lookupCharacter(charword, this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
+				if(charainfo==null && charword.endsWith("er"))
+					charainfo = Utilities.lookupCharacter(charword.replaceFirst("er$", ""), this.conn, ChunkedSentence.characterhash, glosstable, tableprefix);
 			}
 			String afterthan = token.substring(token.indexOf(" than ")+6);
 			//Case B
@@ -2555,10 +2564,21 @@ parallelism scope: q[other chunks]
 					charainfo="".split("\\s");
 				}*/
 				//End mohan case
-				token = "n["+token.replaceFirst("n\\[", charainfo[0]+"[")+"]";
-				this.chunkedtokens.set(id, token);
-				thantype.put(token, "ChunkTHANC");
-				return "ChunkTHANC"; //character
+
+				if(charainfo!=null){
+					token = "n["+token.replaceFirst("n\\[", charainfo[0]+"[")+"]";
+					this.chunkedtokens.set(id, token);
+					thantype.put(token, "ChunkTHANC");
+					return "ChunkTHANC"; //character
+				}else{
+					//parsing failure
+					//charainfo = null cases:
+					//{distance} r[p[between] o[1st and 2d (pinnae)]] not or slightly n[more than] r[p[between] o[l[2d and 3d]]] pairs (many occurrence in fnav2)
+					//z[(hairs)] more {numerous} n[abaxially than adaxially] : fna v2
+					//n[less than their {width} {apart}] (many occurrence fnav2)
+					//1/3 n[less than those] r[p[on] o[{upright} (stems)]] :fnav2
+					return null;
+				}
 			}
 		}
 		if(token.startsWith("w[")){//w[{proximal} to the (florets)] ; or w[to (midvine)]

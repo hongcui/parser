@@ -111,6 +111,7 @@ public class NumericalHandler  {
 			System.out.println(">>>>>>>>>>>>>"+numberexp);
 		}
 		ArrayList<Element> innertagstate = new ArrayList<Element>();
+		String original = numberexp;
 		try{
 			int i,j;
 			numberexp = numberexp.replaceAll("\\([\\s]?|\\[[\\s]?", "[");
@@ -576,6 +577,8 @@ public class NumericalHandler  {
         	
         	
         	//int countct = 0;
+        	String text = "";
+        	boolean iscount = false;
         	Pattern pattern15 = Pattern.compile("([\\[]?[±]?[\\d]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d]+[+]?[\\]]?|[\\[]?[±]?[\\d]+[+]?[\\]]?[\\s]?)[\\–\\–\\-]+[a-zA-Z]+");
         	matcher2 = pattern15.matcher(numberexp);
         	numberexp = matcher2.replaceAll("#");
@@ -584,15 +587,18 @@ public class NumericalHandler  {
         	//Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./%]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?)*|[±]?[\\d\\./%]+[+]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµ]?m))");
         	Pattern pattern16 = Pattern.compile("(?<!([/][\\s]?))([\\[]?[±]?[\\d\\./%]+[\\]]?[\\s]?[\\[]?[\\–\\-][\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?[\\s]?([\\[]?[\\–\\-]?[\\]]?[\\s]?[\\[]?[\\d\\./%]+[+]?[\\]]?)*|\\[?[±]?[\\d\\./%]+[+]?\\]?)(?!([\\s]?[n/]|[\\s]?[\\–\\-]?% of [\\w]+ length|[\\s]?[\\–\\-]?height of [\\w]+|[\\s]?[\\–\\-]?times|[\\s]?[\\–\\-]?total length|[\\s]?[\\–\\-]?their length|[\\s]?[\\–\\-]?(times)?[\\s]?length of|[\\s]?[dcmµu]?m))");
         	matcher2 = pattern16.matcher(numberexp);
-        	while ( matcher2.find()){
+        	String unit = "";
+        	while (matcher2.find()){
+        		iscount = true;
         		i=matcher2.start();
         		j=matcher2.end();
         		String extreme = numberexp.substring(i,j);
+        		text = original.replace(extreme, "").trim();
     			i = 0;
     			j = extreme.length();
         		Pattern pattern20 = Pattern.compile("\\[[±\\d\\.\\s\\+]+[\\–\\-]{1}[±\\d\\.\\s\\+\\–\\-]*\\]");
             	Matcher matcher1 = pattern20.matcher(extreme);
-            	if ( matcher1.find()){
+            	if (matcher1.find()){
             		int p = matcher1.start();
             		int q = matcher1.end();
             		if(extreme.charAt(q-2)=='–' | extreme.charAt(q-2)=='-'){
@@ -826,7 +832,16 @@ public class NumericalHandler  {
 				innertagstate=sb1.toString();
 				matcher1.reset();*/
         	}
-        	matcher2.reset();   
+        	matcher2.reset(); 
+        	if(iscount && text.length()>0){
+        		//add units to all counts
+        		Iterator<Element> it = innertagstate.iterator();
+        		while(it.hasNext()){
+        			Element chara = it.next();
+        			Attribute unittext = new Attribute("unit", text);
+        			chara.setAttribute(unittext);
+        		}
+        	}
  		}
 		catch (Exception e)
         {
@@ -1106,10 +1121,12 @@ public class NumericalHandler  {
 		//String str1 = "[0]3-5[-12+]";
 		//String str1 = "80[72]";
 		//String str1 = "(2-)2.5-3.5(-4) × (1.5-)2-3(-4) cm";
-		String str1 = "(4–)5–6 × 1.5–2";
-		String str2 = "area";	
-		
-		System.out.println(NumericalHandler.parseNumericals(str1, str2));
+		//String str1 = "(4–)5–6 × 1.5–2";
+		//String str2 = "area";	
+		String str1 = "[30-]80-250[-450+] pairs";
+		String str2 = "count";
+		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
+		System.out.println(e);
 	}
 
 }

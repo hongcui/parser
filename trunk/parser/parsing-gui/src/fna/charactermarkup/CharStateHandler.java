@@ -35,7 +35,8 @@ public class CharStateHandler {
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				//String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 		}

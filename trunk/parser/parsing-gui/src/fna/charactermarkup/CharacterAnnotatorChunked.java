@@ -709,10 +709,11 @@ public class CharacterAnnotatorChunked {
 				modifier1 = text.replaceFirst("\\[?\\d.*$", "");
 				String rest = text.replace(modifier1, "");
 				modifier1 =modifier1.replaceAll("(\\w\\[|\\]|\\{|\\})", "").trim();
-				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|%|\\s|"+ChunkedSentence.units+")+\\s?(?=[a-z]|$)", "");//4-5[+]
+				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|%|\\s|"+ChunkedSentence.units+"|"+ChunkedSentence.clusters+")+\\s?(?=[a-z]|$)", "");//4-5[+]
 				String content = rest.replace(modifier2, "").replaceAll("(\\{|\\})", "").trim();
 				modifier2 = modifier2.replaceAll("(\\w+\\[|\\]|\\{|\\})", "").trim();
 				String character = null;
+				if(ck instanceof ChunkCount) character = "count";
 				if(this.unassignedcharacter != null){
 					character = this.unassignedcharacter;
 					this.unassignedcharacter = null;
@@ -1701,7 +1702,7 @@ public class CharacterAnnotatorChunked {
 		String tovalue = getFirstCharacter(to);
 		
 		if(fromvalue == null || tovalue ==null) {
-			throw new Exception("from or to value is null");
+			throw new Exception("'from' or 'to' value is null");
 		}
 		String tomodifier = to.replace(tovalue, "").trim();
 		if(tomodifier.length() == 0) tomodifier = frommodifier;
@@ -1713,13 +1714,14 @@ public class CharacterAnnotatorChunked {
 		Iterator<Element> it = parents.iterator();
 		while(it.hasNext()){
 			Element e = it.next();
-			//rangecharacter = (Element)rangecharacter.clone();
+			Element arangecharacter = (Element)rangecharacter.clone();
+			arangecharacter.detach();
 			if(frontmodifier.trim().length() >0){
 				addAttribute(rangecharacter, "modifier", frommodifier.trim()); //may not have modifier
 				usedm = true;
 			}
-			results.add(rangecharacter); //add to results
-			e.addContent(rangecharacter);//add to e
+			results.add(arangecharacter); //add to results
+			e.addContent(arangecharacter);//add to e
 		}
 		if(usedm){
 			frontmodifier = "";
@@ -1878,7 +1880,7 @@ public class CharacterAnnotatorChunked {
 	}*/
 
 	/**
-	 * 
+	 * find the first character in a character of a list of character
 	 * @param tokens: usually large
 	 * @return: large
 	 */
@@ -1890,7 +1892,10 @@ public class CharacterAnnotatorChunked {
 		for(int i = 0; i<tokens.length; i++){
 			if(Utilities.lookupCharacter(tokens[i], conn, ChunkedSentence.characterhash, glosstable, tableprefix)!=null){
 				 result += tokens[i]+" ";
-			}else if (result.length()>0){
+			}else if(tokens[i].matches("\\d+") || tokens[i].matches("more")){ // 1 or more
+				 result += tokens[i]+" ";
+			}
+			if (result.length()>0){
 				return result.trim();
 			}
 		}
@@ -2176,7 +2181,7 @@ public class CharacterAnnotatorChunked {
 	private boolean characterPrep(String ckstring, ChunkedSentence cs) {
 		boolean done =false;
 		if(ckstring.indexOf(" ") < 0) return done;
-		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\]+", "").trim();
+		String lastword = ckstring.substring(ckstring.lastIndexOf(" ")).replaceAll("\\]", "").trim();
 		if(lastword.matches("("+StanfordParser.characters+")")){//r[p[in] o[outline]]
 			Element lastelement = this.latestelements.get(this.latestelements.size()-1);
 			if(lastelement.getName().compareTo("character")==0){//shell oval in outline
@@ -2198,7 +2203,11 @@ public class CharacterAnnotatorChunked {
 				}
 				done = true;
 			}
-		}else if(lastword.matches("("+ChunkedSentence.units+")") || (lastword.matches(".*?\\d+[^a-z]*") && !lastword.matches(".*?\\d/\\d.*") && !lastword.matches("\\(1\\d\\d\\d\\)"))) {//r[p[with] o[a {diameter} 15-65 um]], do not match (1976) [reference], do not match 2/3 - 3/4
+		}else if(lastword.matches("("+ChunkedSentence.units+")") || (lastword.matches(".*?\\d+[^a-z]*") &&
+				!lastword.matches(".*?\\d/\\d.*") && //do not match 2/3 - 3/4
+				!lastword.matches("\\(1\\d\\d\\d\\)") && //do not match (1976)
+				!lastword.startsWith("o[") && //do not match o[2-3]: no character mentioned
+				!lastword.contains("~"))) {// do not match character~list~1.
 			//get the values
 			String value = "";
 			String character = "";
