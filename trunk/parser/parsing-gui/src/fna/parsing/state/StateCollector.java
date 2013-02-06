@@ -511,6 +511,11 @@ public class StateCollector  {
 		}
 		//StateCollector sc = new StateCollector(conn, "fnav19", "fnaglossaryfixed");
 		//sc.collect();
+		try{
+			conn.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 }

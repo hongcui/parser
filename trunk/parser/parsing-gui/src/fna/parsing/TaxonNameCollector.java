@@ -117,20 +117,26 @@ public class TaxonNameCollector {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		try{
 		Connection conn = null;
-		if(conn == null){
-			Class.forName("com.mysql.jdbc.Driver");
-		    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
-			conn = DriverManager.getConnection(URL);
-		}
-		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\v19_hong_reviewed_final";
-		String outputtablename = "fnav19_"+ApplicationUtilities.getProperty("TAXONNAMES");
-		String volume = "fnav19";
-		TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, outputtablename, volume);
-		tnc.collect();
+		try{
+			if(conn == null){
+				Class.forName("com.mysql.jdbc.Driver");
+			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
+				conn = DriverManager.getConnection(URL);
+			}
+			String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\CompleteReviewed\\v19_hong_reviewed_final";
+			String outputtablename = "fnav19_"+ApplicationUtilities.getProperty("TAXONNAMES");
+			String volume = "fnav19";
+			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, outputtablename, volume);
+			tnc.collect();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				conn.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 
 	}
