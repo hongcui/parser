@@ -1,5 +1,6 @@
 package fna.parsing;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,8 +43,8 @@ public class ApplicationUtilities {
 					+"\\application.properties");*/
 					
 		fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
-		notepadstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("notepad.properties");
-			
+		//notepadstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("notepad.properties");
+		notepadstream = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+"\\notepad.properties"));	
 		} //catch (FileNotFoundException e) {
 		catch (Exception e) {
 			LOGGER.error("couldn't open file in ApplicationUtilities:getProperties", e);
