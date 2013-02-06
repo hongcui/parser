@@ -1585,6 +1585,7 @@ public class CharacterAnnotatorChunked {
 		
 		//main logic
 		String characterlist = cvalue;
+		if(characterlist.length()==0) return results;
 		String pattern = characterlist.replaceAll(" or ", "@").replaceAll(" to ", "`").replaceAll("[^@`]", "");
 		if(pattern.equals("@")){// rarely A or B ; A or rarely B: one "or", may have punct as well
 			String[] orstates = characterlist.split(" (punct or|or|punct) ");

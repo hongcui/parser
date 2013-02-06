@@ -730,7 +730,7 @@ public class SentenceOrganStateMarker {
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password;
+				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
@@ -752,6 +752,11 @@ public class SentenceOrganStateMarker {
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "plazi_ants_clause_rn", "antglossary");
 		//SentenceOrganStateMarker sosm = new SentenceOrganStateMarker(conn, "bhl_clean", "fnabhlglossaryfixed");
 		sosm.markSentences();
+		try{
+			conn.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 
 	}
 

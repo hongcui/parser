@@ -136,8 +136,9 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		Connection conn = null;
 		try{
-			Connection conn = null;
+
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
 			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
@@ -150,7 +151,14 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 			tnc.collect4TaxonX();
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}finally{
+				try{
+					conn.close();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 			}
+
 
 		
 

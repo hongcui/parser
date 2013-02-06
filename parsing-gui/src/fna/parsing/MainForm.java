@@ -386,6 +386,11 @@ public class MainForm {
 		if(shell.isDisposed()) {
 			shell.dispose();
 			if(VolumeMarkup.p != null)	VolumeMarkup.p.destroy(); //kill perl too.
+			try{
+				if(this.conn!=null) this.conn.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 			System.exit(0);
 		}
 	}

@@ -261,6 +261,11 @@ public class StateCollectorTest extends StateCollector {
 		sct.collect();
 		sct.saveStates();
 		sct.grouping4GraphML();
+		try{
+			conn.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 }
