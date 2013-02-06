@@ -23,7 +23,8 @@ public class UploadTerms2OTO{
 	private static String dataprefix;
 
 	
-	public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+	//public static DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+	public static DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss"); //Changed time to include seconds.
     public static Calendar cal = Calendar.getInstance();
     
     private boolean standalone = false;
