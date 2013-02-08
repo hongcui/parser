@@ -57,7 +57,7 @@ public class VolumeFinalizer extends Thread {
     private static boolean standalone = false;
     //standalone set to true if running from the stanfordparser.java. Also have to set the standalonefolder to the current folder that is processed.
     //standalone set to false when running from the interface.
-	private static String standalonefolder = "E:\\Data\\Diatom";
+	private static String standalonefolder = "E:/Data/Diatom";
 
     //private static String standalonefolder = "C:\\temp\\DEMO\\demo-folders\\FNA-v19-excerpt";
     //private static String standalonefolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source";
@@ -93,12 +93,12 @@ public class VolumeFinalizer extends Thread {
         File finalFileList= null;
         File transformedFileList = null;
         if(!standalone){
-        	finalFileList = new File(Registry.TargetDirectory+"\\final\\");
-        	transformedFileList = new File(Registry.TargetDirectory+"\\transformed\\");
+        	finalFileList = new File(Registry.TargetDirectory+"/final/");
+        	transformedFileList = new File(Registry.TargetDirectory+"/transformed/");
         }
         if(standalone){
-        	finalFileList = new File(this.standalonefolder+"\\final\\");
-        	transformedFileList = new File(this.standalonefolder+"\\transformed\\");
+        	finalFileList = new File(this.standalonefolder+"/final/");
+        	transformedFileList = new File(this.standalonefolder+"/transformed/");
         }
         if(finalFileList.list().length == 0)
         {
@@ -116,7 +116,7 @@ public class VolumeFinalizer extends Thread {
         {
        		if(!standalone){
        			this.showOutputMessage("System is done with annotating files.");
-       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final\\");
+       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final/");
        		}
         }
     }
@@ -161,11 +161,11 @@ public class VolumeFinalizer extends Thread {
     	StringBuffer sb = new StringBuffer();
     	sb.append("jaxb.annotation.directory = /bin/annotationSchema/jaxb"+System.getProperty("line.separator"));
     	sb.append("input.path = ");
-    	sb.append((Registry.TargetDirectory+"final/").replaceAll("\\", "/")+System.getProperty("line.separator"));
+    	sb.append((Registry.TargetDirectory+"final/")+System.getProperty("line.separator"));
     	try{
     		//C:\Documents and Settings\Hong Updates\workspace\parsing-gui
     		//C:\Documents and Settings\Hong Updates\workspace\SDD\src\dao\database.properties
-     		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD\\src\\conversion\\description.properties";   		
+     		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD/src/conversion/description.properties";   		
     		FileWriter fstream = new FileWriter(outputfile);
     		BufferedWriter out = new BufferedWriter(fstream);
     		out.write(sb.toString());
@@ -210,7 +210,7 @@ public class VolumeFinalizer extends Thread {
     		
     		//C:\Documents and Settings\Hong Updates\workspace\parsing-gui
     		//C:\Documents and Settings\Hong Updates\workspace\SDD\src\dao\database.properties
-    		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD\\src\\dao\\database.properties";   		
+    		String outputfile = System.getProperty("user.dir").replaceFirst("parsing-gui$", "")+"SDD/src/dao/database.properties";   		
    		  	FileWriter fstream = new FileWriter(outputfile);
    		  	BufferedWriter out = new BufferedWriter(fstream);
    		  	out.write(sb.toString());
@@ -349,7 +349,7 @@ public class VolumeFinalizer extends Thread {
 		String glosstable = this.glossaryPrefix;
 		
 
-		String transformeddir = Registry.TargetDirectory+"\\transformed\\";
+		String transformeddir = Registry.TargetDirectory+"/transformed/";
 
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");
@@ -417,7 +417,7 @@ public class VolumeFinalizer extends Thread {
 	public static Element getBaseRoot(String fileindex, int order){
 		File source = null;
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));	
-		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
+		if(standalone)  source = new File(standalonefolder+"/target/transformed"); 
 		int total = source.listFiles().length;
 		try {
 			SAXBuilder builder = new SAXBuilder();
@@ -447,12 +447,13 @@ public class VolumeFinalizer extends Thread {
 	public static void outputFinalXML(Element root, String fileindex, String targetstring) {
 		File target = null;
 		if(!standalone) target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		if(standalone) target = new File(standalonefolder+"\\target\\final");
+		if(standalone) target = new File(standalonefolder+"/target/final");
 		File result = new File(target, fileindex + ".xml");
 		Comment comment = new Comment("produced by "+VolumeFinalizer.version+System.getProperty("line.separator"));
 		//Comment comment = null;
 		ParsingUtil.outputXML(root, result, comment);
-		if(!standalone) listener.info("" + fileindex, result.getPath(), "");
+		//if(!standalone) listener.info("" + fileindex, result.getPath(), "");
+		if(!standalone) listener.info("" + fileindex, result.getName(), "");
 	}
 
 	public ArrayList<String> replaceWithAnnotated(Learn2Parse cl, String xpath, String targetstring, boolean flatten) {
@@ -460,10 +461,10 @@ public class VolumeFinalizer extends Thread {
 		File target = null;
 		ArrayList<String> parsed = new ArrayList<String>();
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
-		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
+		if(standalone)  source = new File(standalonefolder+"/target/transformed"); 
 		int total = source.listFiles().length;
 		if(!standalone)  target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty(targetstring));
-		if(standalone)  target = new File(standalonefolder+"\\target\\final");
+		if(standalone)  target = new File(standalonefolder+"/target/final");
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			for (int count = 1; count <= total; count++) {
@@ -504,9 +505,11 @@ public class VolumeFinalizer extends Thread {
 				ParsingUtil.outputXML(root, result, null);
 
 				if(!standalone){
-					listener.info("" + count, result.getPath(), "");
+					//listener.info("" + count, result.getPath(), "");
+					listener.info("" + count, result.getName(), "");
 				}
-				parsed.add(result.getPath());
+				//parsed.add(result.getPath());
+				parsed.add(result.getName());
 			}
         } catch (Exception e) {
             StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -524,11 +527,11 @@ public class VolumeFinalizer extends Thread {
 		File target = null;
 		File description = null;
 		if(!standalone)  source = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("TRANSFORMED"));
-		if(standalone)  source = new File(standalonefolder+"\\target\\transformed"); 
+		if(standalone)  source = new File(standalonefolder+"/target/transformed"); 
 		if(!standalone)  target = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("FINAL"));
-		if(standalone)  target = new File(standalonefolder+"\\target\\final");
+		if(standalone)  target = new File(standalonefolder+"/target/final");
 		if(!standalone)  description = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("DESCRIPTIONS"));
-		if(standalone)  description = new File(standalonefolder+"\\target\\descriptions");
+		if(standalone)  description = new File(standalonefolder+"/target/descriptions");
 		//find in description files have a size of zero
 		ArrayList<String> files4copy = new ArrayList<String>();
 		File[] des = description.listFiles();

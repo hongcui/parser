@@ -64,17 +64,16 @@ public class VolumeMarkup {
 		String savefoldername = ApplicationUtilities.getProperty("MARKEDUP");
 		String databasenameprefix = ApplicationUtilities.getProperty("database.name");
 
-//		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED") +workdir
-//		+ " " + todofoldername + " " + savefoldername
-//		+ " seednouns.txt learntnouns.txt graphml.xml "
-//		+ databasenameprefix;
 		
-		String com = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED")+" " +"\""+workdir
-		+ todofoldername + "\" "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable;
 		
+		String comstring = "perl " + ApplicationUtilities.getProperty("UNSUPERVISED")+" " +workdir
+		+ todofoldername + "/ "+ databasenameprefix+" "+this.markupMode +" "+dataPrefix.trim() + " "+glossarytable;
+		
+		String[] com =  new String[]{"perl",  ApplicationUtilities.getProperty("UNSUPERVISED"), workdir
+		+ todofoldername + "/", databasenameprefix, this.markupMode, dataPrefix.trim() , glossarytable};
 		//this command will not output marked-up descriptions to the file system. it only holds the results in mySQL database
-		System.out.println("Run command: " + com);
-		showPerlMessage("Run command: " + com + "\n");
+		System.out.println("Run command: " + comstring);
+		showPerlMessage("Run command: " + comstring + "\n");
 		try {
 			 runCommand(com);
 		} catch (Exception e) {
@@ -107,10 +106,10 @@ public class VolumeMarkup {
 		}
 	}*/
 	//Perl would hang on any MySQL warnings or errors
-	protected void runCommand(String com) throws IOException,
+	protected void runCommand(String[] com) throws IOException,
 			InterruptedException {
 		long time = System.currentTimeMillis();
-
+		
 		p = Runtime.getRuntime().exec(com);
 				
 		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p

@@ -418,7 +418,7 @@ public class MainFormDbAccessor {
 		try {
 			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
-			rset = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='markedupdatasets' and table_name like '%glossaryfixed'");
+			rset = stmt.executeQuery("SELECT table_name FROM information_schema.tables where table_schema ='"+ApplicationUtilities.getProperty("database.name")+"' and table_name like '%glossaryfixed'");
 			while (rset.next()) {
 				datasetPrefixes.add(rset.getString("table_name"));
 			}

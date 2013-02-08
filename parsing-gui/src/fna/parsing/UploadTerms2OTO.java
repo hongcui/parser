@@ -35,7 +35,7 @@ public class UploadTerms2OTO{
 	public UploadTerms2OTO(String thedataprefix){
 		dataprefix = thedataprefix;
 		if(standalone)
-			dumpfolder = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\FNAv7Limnanthaceae\\target\\"; //must have the trailing \\ !
+			dumpfolder = "/Users/hongcui/Downloads/SampleDataSets/FNAv5Caryophyllaceae_Type2/target/"; //must have the trailing \\ !
 		else 
 			dumpfolder = Registry.TargetDirectory;
 	}
@@ -44,6 +44,7 @@ public class UploadTerms2OTO{
      */
 
 	public boolean upload() {
+		
 		boolean success = dumpFiles(dataprefix);
 		if(!success) return false;
 		
@@ -62,12 +63,12 @@ public class UploadTerms2OTO{
 		success = scpTo(tsentence);
 		if(!success) return false;
 		
-	    String backup = "mysqldump --lock-tables=false -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+	    String backup = "mysqldump --lock-tables=false -u "+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" "+ApplicationUtilities.getProperty("database.name")+" > "+ApplicationUtilities.getProperty("database.name")+"_bak_"+dateFormat.format(cal.getTime())+".sql";
 		ArrayList<String> result = execute(backup);
 		if(result.size()>1 || result.get(result.size()-1).equals("-1")) return false;
 		
 		//String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile;//write output to log file
+		String excom = "mysql -u "+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" < "+textfile;//write output to log file
 		result = execute(excom);
 		if(result.size()>1|| result.get(result.size()-1).equals("-1")) return false;
 		//need check _sqllog.txt for error messages
@@ -77,8 +78,12 @@ public class UploadTerms2OTO{
     public static boolean dumpFiles(String dataprefix) {
       try {
     	  Runtime rt = Runtime.getRuntime();
-    	  String term_category_command = "mysqldump --lock-tables=false -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_term_category -r \""+dumpfolder+dataprefix+"_term_category_dump.sql\"";
-    	  String sentence_command = "mysqldump --lock-tables=false -u termsuser -ptermspassword  markedupdatasets "+dataprefix+"_sentence -r \""+dumpfolder+dataprefix+"_sentence_dump.sql\"";
+    	  String[] term_category_command = new String[]{"/usr/local/bin/mysqldump",  "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"), 
+    			  "-p"+ApplicationUtilities.getProperty("database.password"),  ApplicationUtilities.getProperty("database.name"), dataprefix+"_term_category",
+    			  "-r", dumpfolder+dataprefix+"_term_category_dump.sql"};
+    	  String[] sentence_command = new String[]{"/usr/local/bin/mysqldump", "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"),
+    			  "-p"+ApplicationUtilities.getProperty("database.password"), ApplicationUtilities.getProperty("database.name"), dataprefix+"_sentence",
+    			  "-r", dumpfolder+dataprefix+"_sentence_dump.sql"};
     	  
     	  rt.exec(term_category_command);
     	  rt.exec(sentence_command);
@@ -126,7 +131,7 @@ public class UploadTerms2OTO{
     			commands[4] = "source ~/"+dataprefix+"_sentence_dump.sql;";
     			commands[5] = "use markedupdatasets;";*/
     			
-    			commands[0] = "use markedupdatasets;";
+    			commands[0] = "use "+ApplicationUtilities.getProperty("database.name")+";";
     			commands[1] = "";
     			commands[2] = "";
     			commands[3] = "source ~/"+dataprefix+"_term_category_dump.sql;";
@@ -605,7 +610,7 @@ static int checkAck(InputStream in) throws IOException{
 	}
 
 	public static void main(String[] args) {	
-		String dataprefix = "fnav7_test";
+		String dataprefix = "test";
 		UploadTerms2OTO uto = new UploadTerms2OTO(dataprefix);
 		uto.upload();
 		

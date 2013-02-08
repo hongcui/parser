@@ -1124,13 +1124,14 @@ public class MainForm {
 			/*Hyperlinking the files */
 			extractionTable.addMouseListener(new MouseListener () {
 				public void mouseDoubleClick(MouseEvent event) {
-					String filePath = Registry.TargetDirectory + "\\"+ 
-					ApplicationUtilities.getProperty("EXTRACTED")+"\\"+
+					String filePath = Registry.TargetDirectory + 
+					ApplicationUtilities.getProperty("EXTRACTED")+"/"+
 					extractionTable.getSelection()[0].getText(1).trim();
 					
 					try {
-						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-								+ " \"" + filePath + "\"");
+						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+						//		+ " \"" + filePath + "\"");
+						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -1213,12 +1214,13 @@ public class MainForm {
 			verificationTable.addMouseListener(new MouseListener () {
 				public void mouseDoubleClick(MouseEvent event) {
 					String filePath = Registry.TargetDirectory + 
-					ApplicationUtilities.getProperty("EXTRACTED")+ "\\" +
+					ApplicationUtilities.getProperty("EXTRACTED")+ "/" +
 					verificationTable.getSelection()[0].getText(1).trim();
 					if (filePath.indexOf("xml") != -1) {
 						try {
-							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-									+ " \"" + filePath + "\"");
+							//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+							//		+ " \"" + filePath + "\"");
+							Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
 						} catch (Exception e){
 							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 									ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -1304,12 +1306,13 @@ public class MainForm {
 		transformationTable.addMouseListener(new MouseListener () {
 			public void mouseDoubleClick(MouseEvent event) {
 				String filePath = Registry.TargetDirectory + 
-				ApplicationUtilities.getProperty("TRANSFORMED")+ "\\" +
+				ApplicationUtilities.getProperty("TRANSFORMED")+ "/" +
 				transformationTable.getSelection()[0].getText(1).trim();
 				if (filePath.indexOf("xml") != -1) {
 					try {
-						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-								+ " \"" + filePath + "\"");
+						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+						//		+ " \"" + filePath + "\"");
+						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2234,14 +2237,15 @@ public class MainForm {
 			public void mouseDoubleClick(MouseEvent event) {
 				try {
 					String filePath = Registry.TargetDirectory + 
-					ApplicationUtilities.getProperty("DEHYPHENED")+ "\\";
+					ApplicationUtilities.getProperty("DEHYPHENED")+ "/";
 					String fileName = contextTable.getSelection()[0].getText(0).trim();
 					fileName = fileName.substring(0, fileName.indexOf("-"));
 					filePath += fileName;
 					if (filePath.indexOf("txt") != -1) {
 						try {
-							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-									+ " \"" + filePath + "\"");
+							//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+							//		+ " \"" + filePath + "\"");
+							Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
 						} catch (Exception e){
 							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 									ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2684,7 +2688,7 @@ public class MainForm {
 				if(groupsCombo.getItemCount()>0 && groupsCombo.getText().trim()!="")
 				{
 				CoOccurrenceGraph.viewGraph(Registry.TargetDirectory+
-				ApplicationUtilities.getProperty("CHARACTER-STATES") + "\\" + groupsCombo.getText()+".xml", groupsCombo.getText());
+				ApplicationUtilities.getProperty("CHARACTER-STATES") + "/" + groupsCombo.getText()+".xml", groupsCombo.getText());
 				}
 				else
 				{
@@ -2714,13 +2718,14 @@ public class MainForm {
 		finalizerTable.addMouseListener(new MouseListener () {
 			public void mouseDoubleClick(MouseEvent event) {
 				String filePath = Registry.TargetDirectory + 
-				ApplicationUtilities.getProperty("FINAL")+ "\\" +
+				ApplicationUtilities.getProperty("FINAL")+ "/" +
 				finalizerTable.getSelection()[0].getText(1).trim();				
 				
 				if (filePath.indexOf("xml") != -1) {
 					try {
-						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-								+ " \"" + filePath + "\"");
+						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+						//		+ " \"" + filePath + "\"");
+						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2762,7 +2767,7 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
 					//if(completed){
-					/*File fileList= new File(Registry.TargetDirectory+"\\final\\");
+					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
 					{
 						//show error popup
@@ -2801,7 +2806,7 @@ public class MainForm {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
 					statusOfMarkUp[6] = true;
 					//check if finalized final contains files--this should be done after finalize step is completed.
-					/*File fileList= new File(Registry.TargetDirectory+"\\final\\");
+					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
 					{
 						//show error popup
@@ -3014,7 +3019,7 @@ public class MainForm {
 
 				}
 				//create new version of term_category table
-				String mysqlrestore = "mysql -utermsuser -ptermspassword markedupdatasets < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_download_sqllog.txt\"";//write output to log file
+				String mysqlrestore = "mysql -u"+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" "+ApplicationUtilities.getProperty("database.name")+" < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_download_sqllog.txt\"";//write output to log file
 				//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
 				System.out.println(mysqlrestore);
 				String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <
@@ -3718,9 +3723,9 @@ public class MainForm {
         sourceText.setText(srcFldr.getAbsolutePath());
         targetText.setText(targetFldr.getAbsolutePath());
           
-        Registry.ConfigurationDirectory = confFldr.getAbsolutePath()+"\\";
-        Registry.SourceDirectory=srcFldr.getAbsolutePath()+"\\";
-        Registry.TargetDirectory=targetFldr.getAbsolutePath()+"\\";
+        Registry.ConfigurationDirectory = confFldr.getAbsolutePath()+"/";
+        Registry.SourceDirectory=srcFldr.getAbsolutePath()+"/";
+        Registry.TargetDirectory=targetFldr.getAbsolutePath()+"/";
 	}
 
 	private void startExtraction() throws Exception {
@@ -3843,32 +3848,32 @@ public class MainForm {
 
 		StringBuffer sb = new StringBuffer();
 		this.dataPrefixCombo.setText(this.dataPrefixCombo.getText().toLowerCase());
-		sb.append(configurationText.getText()).append("\\\n");
-		sb.append(sourceText.getText()).append("\\\n");
+		sb.append(configurationText.getText()).append("/\n");
+		sb.append(sourceText.getText()).append("/\n");
 		sb.append(targetText.getText());
 		//save the main directory also
-		sb.append("\\\n").append(projectDirectory.getText());
+		sb.append("/\n").append(projectDirectory.getText());
 		
 		File project =null;
 		try{
 			System.out.println(type.equalsIgnoreCase(""));
 			if(type.trim().equals(""))//that means fna is selected.. so save it to fnaproject.conf
-				project = new File(System.getProperty("user.dir")+"\\fnaproject.conf");
+				project = new File(System.getProperty("user.dir")+"/fnaproject.conf");
 				else
 					if(type.trim().equals("type2"))
-						project = new File(System.getProperty("user.dir")+"\\treatiseproject.conf");
+						project = new File(System.getProperty("user.dir")+"/treatiseproject.conf");
 						
 				else
 					if(type.trim().equals("type3"))
 						
-						project = new File(System.getProperty("user.dir")+"\\bhlproject.conf");
+						project = new File(System.getProperty("user.dir")+"/bhlproject.conf");
 				else 
 					if(type.trim().equals("type4"))
-						project = new File(System.getProperty("user.dir")+"\\taxonproject.conf");
+						project = new File(System.getProperty("user.dir")+"/taxonproject.conf");
 						
 				
 				
-				//project = new File(System.getProperty("user.dir")+"\\project.conf");
+				//project = new File(System.getProperty("user.dir")+"/project.conf");
 			
 			if(!project.exists()){
 				project.createNewFile();
@@ -4232,7 +4237,7 @@ public class MainForm {
 	 * This function will prepare the character tab for display of co-occured terms
 	 */
 	private void setCharactertabGroups() {
-		File directory = new File(Registry.TargetDirectory+"\\"+
+		File directory = new File(Registry.TargetDirectory+"/"+
 				ApplicationUtilities.getProperty("CHARACTER-STATES"));
 		File [] files = directory.listFiles();
 		/**Update the global variable with number of groups**/
@@ -4583,7 +4588,7 @@ public class MainForm {
 					if(nodes[0] != null && !nodes[0].equals("") && nodes[1] != null && !nodes[1].equals("") ) {
 						ManipulateGraphML.insertEdge(new GraphNode(nodes[0]), new GraphNode(nodes[1]), 
 								Registry.TargetDirectory+
-									ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"+ group + ".xml");
+									ApplicationUtilities.getProperty("CHARACTER-STATES")+ "/"+ group + ".xml");
 					}
 
 				}
