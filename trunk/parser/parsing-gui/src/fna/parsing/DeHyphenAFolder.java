@@ -142,8 +142,9 @@ public class DeHyphenAFolder {
 	                	has = true;
 	                	vd.showPerlMessage((++problemcount)+": "+flist[i].getAbsolutePath()+" contains unmatched brackets in \""+text+"\"\n");
 						//automatically open the file in a text editor for corrections
-	                	Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-								+ " \"" + flist[i].getAbsolutePath() + "\"");
+	                	//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+						//		+ " \"" + flist[i].getAbsolutePath() + "\"");
+	                	Runtime.getRuntime().exec(new String[]{"open", "-t", flist[i].getAbsolutePath()});
 	                }
 	                //check for missing spaces between text and numbers: 
 	                if(text.matches(".*[a-zA-Z]\\d.*") || text.matches(".*\\d[a-zA-Z].*")){
@@ -155,8 +156,9 @@ public class DeHyphenAFolder {
 	                	has =true;
 	                 	vd.showPerlMessage((++problemcount)+": "+flist[i].getAbsolutePath()+" contains expression (?) in \""+text+"\"\n");  
 	                 	vd.showPerlMessage("Change (?) to an text expression such as (not certain)");
-	                	Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-								+ " \"" + flist[i].getAbsolutePath() + "\"");
+	                	//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+						//		+ " \"" + flist[i].getAbsolutePath() + "\"");
+	                 	Runtime.getRuntime().exec(new String[]{"open", "-t", flist[i].getAbsolutePath()});
 	                }
 	            }
 	        }catch(Exception e){

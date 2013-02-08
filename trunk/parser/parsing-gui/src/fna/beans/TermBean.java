@@ -99,7 +99,7 @@ public class TermBean {
 						String term2 = cbean.getTerm2().getTermText().getText();
 						if (termText.equals(cbean.getTerm1().getTermText()) || termText.equals(cbean.getTerm2().getTermText())) {
 							String groupPath = Registry.TargetDirectory+
-							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "/"
 							+ characterBean.getGroupName() + ".xml";
 							ManipulateGraphML.removeEdge(new GraphNode(term1), new GraphNode(term2), groupPath, characterBean.getGroupName());
 							if(!canDelete) {
@@ -166,7 +166,7 @@ public class TermBean {
 						/* Need to check if the two terms are in the same parent group before restoring a link between them*/
 						if (isCooccurredTermPresent()) {
 							String groupName = Registry.TargetDirectory+
-							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "\\"
+							ApplicationUtilities.getProperty("CHARACTER-STATES")+ "/"
 							+ characterBean.getGroupName() + ".xml";
 							ManipulateGraphML.insertEdge(new GraphNode(term1), new GraphNode(term2), groupName);
 						}

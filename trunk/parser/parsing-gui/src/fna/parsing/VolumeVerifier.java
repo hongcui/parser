@@ -60,7 +60,7 @@ public class VolumeVerifier extends Thread {
 		target = Registry.TargetDirectory;
 		conf = Registry.ConfigurationDirectory;
 
-		path = target + "extracted\\";
+		path = target + "extracted/";
 	}
 
 	public void run () {

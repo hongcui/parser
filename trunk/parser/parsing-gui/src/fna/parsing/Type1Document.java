@@ -247,10 +247,10 @@ public class Type1Document {
 	}
 	
 	private String getStyleMappingFile() throws IOException {
-		File project = new File(System.getProperty("user.dir")+"\\fnaproject.conf");
+		File project = new File(System.getProperty("user.dir")+"/fnaproject.conf");
 		BufferedReader in = new BufferedReader(new FileReader(project));
 		String conf = in.readLine();
-		conf = conf == null ? "C:\\" : conf;		
+		conf = conf == null ? "C:/" : conf;		
 		String pathName = conf + ApplicationUtilities.getProperty("style.mapping"); 
 		return pathName;
 	}

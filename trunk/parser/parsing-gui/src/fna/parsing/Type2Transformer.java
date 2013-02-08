@@ -87,8 +87,8 @@ public class Type2Transformer extends Thread {
 			
 			for(int i = 0; i<total; i++){
 				File f = files[i];		
-				String tgt = target.getAbsolutePath()+"\\transformed";
-				File newFile = new File(tgt+"\\"+f.getName());
+				String tgt = target.getAbsolutePath()+"/transformed";
+				File newFile = new File(tgt, f.getName());
 				if(!newFile.exists())
 					newFile.createNewFile();
 				FileChannel inputChannel = new FileInputStream(f).getChannel();
@@ -99,7 +99,7 @@ public class Type2Transformer extends Thread {
 				Document doc = builder.build(f);
 				Element root = doc.getRootElement();
 				
-				Element descrp = (Element)XPath.selectSingleNode(root, "//treatment/description");
+				Element descrp = (Element)XPath.selectSingleNode(root, "/treatment/description");
 				if(descrp != null) {
 					String text = descrp.getTextNormalize();
 					writeDescription2Descriptions(text,f.getName().replaceAll("xml$", "txt") ); //record the position for each paragraph.
@@ -111,7 +111,7 @@ public class Type2Transformer extends Thread {
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 			}
-			String transformeddir = Registry.TargetDirectory+"transformed\\";
+			String transformeddir = Registry.TargetDirectory+"transformed/";
 			TaxonNameCollector tnc = new TaxonNameCollector(MainForm.conn, transformeddir, this.dataprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), this.dataprefix);
 			tnc.collect();
 		}catch(Exception e){

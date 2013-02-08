@@ -315,10 +315,10 @@ public class Utilities {
 	
 	///////////////////////////////////////////////////////////////////////
 
-	public static String checkWN(String cmdtext){
+	public static String checkWN(String[] strings){
 		try{
 	 	  		Runtime r = Runtime.getRuntime();	
-		  		Process proc = r.exec(cmdtext);
+		  		Process proc = r.exec(strings);
 			    ArrayList<String> errors = new ArrayList<String>();
 		  	    ArrayList<String> outputs = new ArrayList<String>();
 		  
@@ -359,7 +359,7 @@ public class Utilities {
 	 */
 	public static String checkWN4Singular(String word){
 		
-		String result = checkWN("wn "+word+" -over");
+		String result = checkWN(new String[]{"/usr/local/bin/wn", word, "-over"});
 		if (result.length()==0){//word not in WN
 			return null;
 		}

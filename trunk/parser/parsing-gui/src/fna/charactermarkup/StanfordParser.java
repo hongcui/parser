@@ -93,8 +93,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
-				//String URL = ApplicationUtilities.getProperty("database.url");
+			    //String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 			Statement stmt = conn.createStatement();
@@ -180,14 +180,16 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
  	  		//String cmdtext = "cmd /c stanfordparser.bat";	
  	  		//String parserJarfilePath = ApplicationUtilities.getProperty("stanford.parser.jar"); 
 	  		//String englishPCFGpath = ApplicationUtilities.getProperty("englishPCFG");
-	  		String parserJarfilePath="lib\\stanford-parser.jar";
-	  		String englishPCFGpath ="lib\\englishPCFG.ser.gz";
+	  		String parserJarfilePath="lib/stanford-parser.jar";
+	  		String englishPCFGpath ="lib/englishPCFG.ser.gz";
  	  		String cmdtext = "java -mx900m -cp "+parserJarfilePath+" edu.stanford.nlp.parser.lexparser.LexicalizedParser " +
-	  				"-sentences newline -tokenized -tagSeparator / "+englishPCFGpath+" \""+
-	  				this.posedfile+"\"";
+	  				"-sentences newline -tokenized -tagSeparator / "+englishPCFGpath+" "+
+	  				this.posedfile+"";
+ 	  		String[] cmd = new String[]{"java", "-mx900m",  "-cp", parserJarfilePath, "edu.stanford.nlp.parser.lexparser.LexicalizedParser", 
+	  				"-sentences", "newline", "-tokenized",  "-tagSeparator /", englishPCFGpath, this.posedfile.getAbsolutePath()};
  	  		System.out.println("parser path::"+cmdtext);
  	  		
-	  		Process proc = r.exec(cmdtext);
+	  		Process proc = r.exec(cmd);
           
 		    ArrayList<String> headings = new ArrayList<String>();
 	  	    ArrayList<String> trees = new ArrayList<String>();

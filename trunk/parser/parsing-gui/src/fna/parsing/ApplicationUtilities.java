@@ -44,7 +44,7 @@ public class ApplicationUtilities {
 					
 		fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("application.properties");
 		//notepadstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream("notepad.properties");
-		notepadstream = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+"\\notepad.properties"));	
+		notepadstream = new BufferedInputStream(new FileInputStream(System.getProperty("user.dir")+"/notepad.properties"));	
 		} //catch (FileNotFoundException e) {
 		catch (Exception e) {
 			LOGGER.error("couldn't open file in ApplicationUtilities:getProperties", e);
@@ -63,7 +63,7 @@ public class ApplicationUtilities {
 		try {
 			//System.out.println("hello"+getProperty("LOG.FILE.LOCATION"));
 			//String logProperties = System.getProperty("user.dir")+ getProperty("LOG.FILE.LOCATION");
-			String logProperties = getProperty("LOG.FILE.LOCATION").replace("\\", "");
+			String logProperties = getProperty("LOG.FILE.LOCATION").replace("/", "");
 			//fstream = new FileInputStream(logProperties);
 			fstream = ApplicationUtilities.class.getClassLoader().getResourceAsStream(logProperties);
 			Properties properties = new Properties();
@@ -77,7 +77,7 @@ public class ApplicationUtilities {
 		        logFilePath = getProperty("LOG.APPENDER") + System.getProperty("user.dir") 
 		        	+ getProperty("LOG");
 		        logFilePath = logFilePath.trim();
-		        logFilePath = logFilePath.replaceAll("\\\\", "\\\\\\\\");
+		        //logFilePath = logFilePath.replaceAll("\\\\", "\\\\\\\\");
 		        out.write(logFilePath);
 				/* Show log path setting message */
 				showPopUpWindow(getProperty("popup.info.logpath") + 

@@ -336,7 +336,7 @@ public class VolumeExtractor extends Thread {
 	private void output() throws ParsingException {
 		try {
 
-			String file = target + "extracted\\" + count + ".xml";
+			String file = target + "extracted/" + count + ".xml";
 			Document doc = new Document(treatment);
 			BufferedOutputStream out = new BufferedOutputStream(
 					new FileOutputStream(file));
@@ -344,7 +344,8 @@ public class VolumeExtractor extends Thread {
 			outputter.output(doc, out);
 
 			/* Consumer */
-			listener.info(count + "", file);
+			//listener.info(count + "", file);
+			listener.info(count + "", count+".xml");
 
 		} catch (IOException e) {
 			//LOGGER.error("Exception in VolumeExtractor : output", e);
