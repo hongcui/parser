@@ -1698,7 +1698,7 @@ public class ChunkedSentence {
 		//all tokens: 
 		//number:
 		//if(token.matches(".*?\\d+$")){ //ends with a number
-		if(NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("l\\s*\\W\\s*w")){//l-w or l/w
+		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("l\\s*\\W\\s*w")) && !token.matches(".*?[nx]=[\\[(\\d].*")){//l-w or l/w
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
 					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
@@ -1724,7 +1724,7 @@ public class ChunkedSentence {
 		}
 
 		if(token.indexOf("=")>0){//chromosome count 2n=, FNA specific, also seen in Diatom descriptions
-			if(token.matches(".?\\b\\d?[xn]=\\s*\\d.*")){
+			if(token.matches(".?\\b\\d?[xn]=\\s*[\\[(]?\\d.*")){
 				String l = "";
 				String t= this.chunkedtokens.get(pointer++);
 				while(t.indexOf("SG")<0 && this.chunkedtokens.size()>pointer-1){

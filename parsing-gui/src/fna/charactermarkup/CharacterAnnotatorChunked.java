@@ -140,6 +140,7 @@ public class CharacterAnnotatorChunked {
 		//because sentence tags are not as reliable as chunkedsentence
 		//no longer get subject text from cs
 		//instead, annotate chunk by chunk
+		String test="";
 		Chunk ck = cs.nextChunk();
 		if(ck instanceof ChunkOrgan){//start with a subject
 			String content = ck.toString().replaceFirst("^z\\[", "").replaceFirst("\\]$", "");
