@@ -707,10 +707,10 @@ public class CharacterAnnotatorChunked {
 				}
 				String modifier1 = "";//m[mostly] [4-]8–12[-19] mm m[distally]; m[usually] 1.5-2 times n[size[{longer} than {wide}]]:consider a constraint
 				String modifier2 = "";
-				modifier1 = text.replaceFirst("\\[?\\d.*$", "");
+				modifier1 = text.replaceFirst("\\[?\\(?\\d.*$", "");
 				String rest = text.replace(modifier1, "");
 				modifier1 =modifier1.replaceAll("(\\w\\[|\\]|\\{|\\})", "").trim();
-				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|%|\\s|"+ChunkedSentence.units+"|"+ChunkedSentence.clusters+")+\\s?(?=[a-z]|$)", "");//4-5[+]
+				modifier2 = rest.replaceFirst(".*?(\\d|\\[|\\+|\\-|\\]|\\)|\\(|%|\\s|"+ChunkedSentence.units+"|"+ChunkedSentence.clusters+")+\\s?(?=[a-z]|$)", "");//4-5[+]
 				String content = rest.replace(modifier2, "").replaceAll("(\\{|\\})", "").trim();
 				modifier2 = modifier2.replaceAll("(\\w+\\[|\\]|\\{|\\})", "").trim();
 				String character = null;

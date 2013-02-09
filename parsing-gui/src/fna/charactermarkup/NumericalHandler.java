@@ -88,7 +88,7 @@ public class NumericalHandler  {
 	 * @return true if token represents an expression of a discrete numerical value, not a range which is represented by this.numberpattern
 	 */
 	public static boolean isNumerical(String token){
-		if(token.matches(".*?\\d+\\+?%?\\??\\]?$")){
+		if(token.matches(".*?\\d+\\+?%?\\??\\]?\\)?$")){
 			return true;
 		}
 		//if(token.matches(".*?\\d+.*-RRB-/-RRB-$")){
@@ -111,11 +111,12 @@ public class NumericalHandler  {
 			System.out.println(">>>>>>>>>>>>>"+numberexp);
 		}
 		ArrayList<Element> innertagstate = new ArrayList<Element>();
-		String original = numberexp;
+
 		try{
 			int i,j;
-			numberexp = numberexp.replaceAll("\\([\\s]?|\\[[\\s]?", "[");
+			numberexp = numberexp.replaceAll("\\([\\s]?|\\[[\\s]?", "[");//turn ( and [ to [
 			numberexp = numberexp.replaceAll("[\\s]?\\)|[\\s]?\\]", "]").trim();
+			String original = numberexp;
 			
 			//4-5[+] => 4-5[-5+]
 			Pattern p1 = Pattern.compile("(.*?\\b(\\d+))\\s*\\[\\+\\](.*)");
@@ -1123,8 +1124,8 @@ public class NumericalHandler  {
 		//String str1 = "(2-)2.5-3.5(-4) × (1.5-)2-3(-4) cm";
 		//String str1 = "(4–)5–6 × 1.5–2";
 		//String str2 = "area";	
-		String str1 = "[30-]80-250[-450+] pairs";
-		String str2 = "count";
+		String str1 = "40–80(–150+) cm ";
+		String str2 = "size";
 		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
 		System.out.println(e);
 	}

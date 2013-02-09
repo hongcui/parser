@@ -1695,9 +1695,8 @@ public class ChunkedSentence {
 			pointer++;
 			return new ChunkComma(",");
 		}
-		//all tokens: 
-		//number:
-		//if(token.matches(".*?\\d+$")){ //ends with a number
+		
+		//String test = "";
 		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("l\\s*\\W\\s*w")) && !token.matches(".*?[nx]=[\\[(\\d].*")){//l-w or l/w
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
@@ -2255,24 +2254,24 @@ public class ChunkedSentence {
 			numerics += t+ " ";
 			pointer++;
 			if(pointer==this.chunkedtokens.size()){
-				return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
+				return new ChunkCount(numerics.replaceAll("[{}]", "").trim());
 			}
 			t = this.chunkedtokens.get(this.pointer);//read next token
 			/*if(t.matches("^[{<(]*("+ChunkedSentence.percentage+").*")){
 				numerics += t+ " ";
 				pointer++;
-				return new ChunkValuePercentage(numerics.replaceAll("[{(<>)}]", "").trim());
+				return new ChunkValuePercentage(numerics.replaceAll("[{<>}]", "").trim());
 			}
 			if(t.matches("^[{<(]*("+ChunkedSentence.degree+")\\b.*")){
 				numerics += t+ " ";
 				pointer++;
-				return new ChunkValueDegree(numerics.replaceAll("[{(<>)}]", "").trim());
+				return new ChunkValueDegree(numerics.replaceAll("[{<>}]", "").trim());
 			}*/
 			if(t.matches("^[{<(]*("+ChunkedSentence.units+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
 				adjustPointer4Dot(pointer);//in bhl, 10 cm . long, should skip the ". long" after the unit
-				numerics = numerics.replaceAll("[{(<>)}]", "").trim();
+				numerics = numerics.replaceAll("[{<>}]", "").trim();
 				if(numerics.contains("×")){
 					return new ChunkArea(numerics);
 				}
@@ -2281,13 +2280,13 @@ public class ChunkedSentence {
 			if(t.matches("^[{<(]*("+ChunkedSentence.clusters+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
-				numerics = numerics.replaceAll("[{(<>)}]", "").trim();
+				numerics = numerics.replaceAll("[{<>}]", "").trim();
 				return new ChunkCount(numerics);
 			}
 			if(t.matches("^[{<(]*("+ChunkedSentence.times+")\\b.*?")){
 				numerics += t+ " ";
 				pointer++;
-				numerics = numerics.replaceAll("[{(<>)}]", "");
+				numerics = numerics.replaceAll("[{<>}]", "");
 				Chunk c = nextChunk();
 				numerics +=c.toString();
 				if(c instanceof ChunkTHANC){
@@ -2302,7 +2301,7 @@ public class ChunkedSentence {
 				pointer = i+1;
 				return new ChunkBasedCount(numerics.replaceAll("[<>]", "").trim());
 			}*/
-			return new ChunkCount(numerics.replaceAll("[{()}]", "").trim());
+			return new ChunkCount(numerics.replaceAll("[{}]", "").trim());
 		}
 		
 		if(t.matches("l\\s*\\W\\s*w")){
