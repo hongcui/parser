@@ -186,7 +186,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	  				"-sentences newline -tokenized -tagSeparator / "+englishPCFGpath+" "+
 	  				this.posedfile+"";
  	  		String[] cmd = new String[]{"java", "-mx900m",  "-cp", parserJarfilePath, "edu.stanford.nlp.parser.lexparser.LexicalizedParser", 
-	  				"-sentences", "newline", "-tokenized",  "-tagSeparator /", englishPCFGpath, this.posedfile.getAbsolutePath()};
+	  				"-sentences", "newline", "-tokenized",  "-tagSeparator", "/", englishPCFGpath, this.posedfile.getAbsolutePath()};
  	  		System.out.println("parser path::"+cmdtext);
  	  		
 	  		Process proc = r.exec(cmd);
@@ -297,6 +297,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
 							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
 
+							String test = "";
 							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable/*, SentenceOrganStateMarker.taxonnamepattern1, SentenceOrganStateMarker.taxonnamepattern2*/);
 
 							cs = ex.chunkIt();
@@ -505,6 +506,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//mohan code 11/9/2011 to replace (?) by nothing
 		sent = sent.replaceAll("\\(\\s*\\?\\s*\\)","");
 		//end mohan code
+		sent = sent.replaceAll("(?<=[xn]=)\\s+(?=[\\d\\[(])", "");//2n= 44 => 2n=44
 	
 		//make sure brackets that are not part of a numerical expression are separated from the expression by a space
 		if(sent.contains("(") || sent.contains(")")) sent = normalizeBrackets(sent, '(');

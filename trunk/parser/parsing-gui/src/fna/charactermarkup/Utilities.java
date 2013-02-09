@@ -359,7 +359,7 @@ public class Utilities {
 	 */
 	public static String checkWN4Singular(String word){
 		
-		String result = checkWN(new String[]{"/usr/local/bin/wn", word, "-over"});
+		String result = checkWN(new String[]{"wn", word, "-over"});
 		if (result.length()==0){//word not in WN
 			return null;
 		}
