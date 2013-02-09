@@ -10,5 +10,7 @@ log4j.appender.ROOT.layout.ConversionPattern=[%d] %t %c %-5p - %m%n
 
 #Optionally override log level of individual packages or classes
 #log4j.logger.com.webage.ejbs=INFO
+
+
 log4j.appender.ROOT.File=.\\Logs\\markup.log
 
