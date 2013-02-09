@@ -19,7 +19,7 @@ public class WordNetWrapper {
 	public boolean formchange = false;
 	
 	public WordNetWrapper(String word){
-		String[] command = new String[]{"/usr/local/bin/wn",  word, "-over"};
+		String[] command = new String[]{"wn",  word, "-over"};
 	//	String output = "";
 		String s = null;
 		String ptnpos = "Overview of (\\w+) (\\w+)";
