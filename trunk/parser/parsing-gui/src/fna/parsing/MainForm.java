@@ -1129,9 +1129,9 @@ public class MainForm {
 					extractionTable.getSelection()[0].getText(1).trim();
 					
 					try {
-						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-						//		+ " \"" + filePath + "\"");
-						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
+						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+								+ " \"" + filePath + "\"");
+
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -1218,9 +1218,8 @@ public class MainForm {
 					verificationTable.getSelection()[0].getText(1).trim();
 					if (filePath.indexOf("xml") != -1) {
 						try {
-							//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-							//		+ " \"" + filePath + "\"");
-							Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
+							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+									+ " \"" + filePath + "\"");
 						} catch (Exception e){
 							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 									ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -1310,9 +1309,8 @@ public class MainForm {
 				transformationTable.getSelection()[0].getText(1).trim();
 				if (filePath.indexOf("xml") != -1) {
 					try {
-						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-						//		+ " \"" + filePath + "\"");
-						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
+						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+								+ " \"" + filePath + "\"");
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2243,9 +2241,8 @@ public class MainForm {
 					filePath += fileName;
 					if (filePath.indexOf("txt") != -1) {
 						try {
-							//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-							//		+ " \"" + filePath + "\"");
-							Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
+							Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+									+ " \"" + filePath + "\"");
 						} catch (Exception e){
 							ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 									ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2723,9 +2720,8 @@ public class MainForm {
 				
 				if (filePath.indexOf("xml") != -1) {
 					try {
-						//Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
-						//		+ " \"" + filePath + "\"");
-						Runtime.getRuntime().exec(new String[]{"open", "-t", filePath});
+						Runtime.getRuntime().exec(ApplicationUtilities.getProperty("notepad") 
+								+ " \"" + filePath + "\"");
 					} catch (Exception e){
 						ApplicationUtilities.showPopUpWindow(ApplicationUtilities.getProperty("popup.error.msg") +
 								ApplicationUtilities.getProperty("popup.editor.msg"),
@@ -2943,7 +2939,7 @@ public class MainForm {
 		boolean downloadable = false;
 		ArrayList<String> result = UploadTerms2OTO.execute(
 				"ls "+ApplicationUtilities.getProperty("OTO.dowloadable.dir")+ 
-				" | grep "+dataprefix+"_groupterms.*sql$");
+				" | grep "+dataprefix+"_.*_groupterms.*sql$");
 		if(result.size()> 1) downloadable = true;
 		//final boolean ddble = downloadable;
 		if(!downloadable){
@@ -2991,7 +2987,7 @@ public class MainForm {
 	}
 
 	private void downloadTermSet(String dataprefix, String file, /*Boolean success, boolean downloadable,*/ int position) {
-		
+		String timestamp = file.replaceFirst(dataprefix+"_", "").replaceFirst("_groupterms.*", "");
 		if(file.equals("no selection")){
 			Label text = new Label(MainForm.grpTermSets, SWT.NONE);
 			text.setText("You chose not to use any "+dataprefix +" term set(s) that is(are) available. Please proceed to the next step. ");
@@ -3016,7 +3012,6 @@ public class MainForm {
 					//ignore the error _term_category not exist
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
 					e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-
 				}
 				//create new version of term_category table
 				String mysqlrestore = "mysql -u"+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" "+ApplicationUtilities.getProperty("database.name")+" < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_download_sqllog.txt\"";//write output to log file
@@ -3045,6 +3040,14 @@ public class MainForm {
 					trouble = true;
 				}
 				if(!trouble){
+					try{
+						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_term_category RENAME TO "+dataprefix+"_term_category");
+						stmt.execute("alter table "+dataprefix+"_"+timestamp+"_syns RENAME TO "+dataprefix+"_syns");
+					}catch(Exception e1){
+						//ignore the error _term_category not exist
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+						e1.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					}
 					//add "structure" terms from term_category_local to term_category
 					stmt.execute("insert into "+dataprefix+"_term_category (term, category) " +
 						"select term, category from "+dataprefix+"_term_category_local where category in ('structure', 'character')");	
@@ -3723,9 +3726,9 @@ public class MainForm {
         sourceText.setText(srcFldr.getAbsolutePath());
         targetText.setText(targetFldr.getAbsolutePath());
           
-        Registry.ConfigurationDirectory = confFldr.getAbsolutePath()+"/";
-        Registry.SourceDirectory=srcFldr.getAbsolutePath()+"/";
-        Registry.TargetDirectory=targetFldr.getAbsolutePath()+"/";
+        Registry.ConfigurationDirectory = confFldr.getAbsolutePath()+System.getProperty("file.separator");
+        Registry.SourceDirectory=srcFldr.getAbsolutePath()+System.getProperty("file.separator");
+        Registry.TargetDirectory=targetFldr.getAbsolutePath()+System.getProperty("file.separator");
 	}
 
 	private void startExtraction() throws Exception {

@@ -78,10 +78,10 @@ public class UploadTerms2OTO{
     public static boolean dumpFiles(String dataprefix) {
       try {
     	  Runtime rt = Runtime.getRuntime();
-    	  String[] term_category_command = new String[]{"/usr/local/bin/mysqldump",  "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"), 
+    	  String[] term_category_command = new String[]{"mysqldump",  "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"), 
     			  "-p"+ApplicationUtilities.getProperty("database.password"),  ApplicationUtilities.getProperty("database.name"), dataprefix+"_term_category",
     			  "-r", dumpfolder+dataprefix+"_term_category_dump.sql"};
-    	  String[] sentence_command = new String[]{"/usr/local/bin/mysqldump", "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"),
+    	  String[] sentence_command = new String[]{"mysqldump", "--lock-tables=false", "-u"+ApplicationUtilities.getProperty("database.username"),
     			  "-p"+ApplicationUtilities.getProperty("database.password"), ApplicationUtilities.getProperty("database.name"), dataprefix+"_sentence",
     			  "-r", dumpfolder+dataprefix+"_sentence_dump.sql"};
     	  
