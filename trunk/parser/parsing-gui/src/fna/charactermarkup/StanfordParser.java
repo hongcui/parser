@@ -53,7 +53,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static private int discoveredchunks = 0;
 	//private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
 	private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d]?[()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
-	private static boolean printNormalizeBrackets = false;
+	private static boolean printNormalizeBrackets = true;
 
 	private File posedfile = null;
 	private File parsedfile = null;
@@ -71,7 +71,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 
 	//private boolean debug = true;
 	private boolean printSent = true;
-	private boolean printProgress = false;
+	private boolean printProgress = true;
 	private boolean evaluation = false;
 	public static String newline = System.getProperty("line.separator");
 	String output = Registry.TargetDirectory+"HumanReadable.txt";
@@ -142,7 +142,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("232.txt-0")!=0) continue;
+				//if(src.compareTo("101.txt-11")!=0) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -336,7 +336,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								}
 							}
 							//if(statement!=null) description.addContent(statement);
-							statement = cac.annotate(src, src, cs); //src: 100.txt-18
+  							statement = cac.annotate(src, src, cs); //src: 100.txt-18
 
 							//print a human readable file 
 							//String newline = System.getProperty("line.separator");
@@ -745,13 +745,21 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
 		
-
-
+			
+		String database = "markedupdatasets";
+		String posedfile = "Z:\\Australia\\V19\\target\\fnav5_test_posedsentences.txt";
+		String parsedfile = "Z:\\Australia\\V19\\target\\fnav5_test_parsedsentences.txt";
+		String transformedir = "Z:\\Australia\\V19\\target\\transformed";
+		String prefix = "fnav19_area";
+			
 		/*String database = "markedupdatasets";
-		String posedfile = "E:\\Data\\Diatom\\target\\donat_test_posedsentences.txt";
-		String parsedfile = "E:\\Data\\Diatom\\target\\donat_test_parsedsentences.txt";
-		String transformedir = "E:\\Data\\Diatom\\transformed";
-		String prefix = "diatom_test";*/
+		String posedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_posedsentences.txt";
+		String parsedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_parsedsentences.txt";
+		String transformedir = "E:\\Data\\Perelleschus-Example\\transformed";
+		String prefix = "weevil_test";*/
+
+
+		
 		/*String posedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_posedsentences.txt";
 		String parsedfile = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\target\\donat_test_parsedsentences.txt";
 		String transformedir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\DonatAnts\\transformed";
@@ -795,13 +803,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		*/
 		
 
-		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_posedsentences.txt";
-		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_parsedsentences.txt";
-		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\transformed";
-		String prefix = "fnav2debug";
+		//String database = "markedupdatasets";
+		//String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_posedsentences.txt";
+		//String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_parsedsentences.txt";
+		//String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\transformed";
+		//String prefix = "fnav2debug";
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
