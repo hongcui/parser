@@ -47,17 +47,17 @@ public class FileName2TaxonFNA extends FileName2Taxon {
     static XPath descriptionpath;
 	static{
 		try{
-			familypath = XPath.newInstance("//family_name");
-			subfamilypath = XPath.newInstance("//subfamily_name");
-			tribepath = XPath.newInstance("//tribe_name");
-			subtribepath = XPath.newInstance("//subtribe_name");
-			genuspath = XPath.newInstance("//genus_name");
-			subgenuspath = XPath.newInstance("//subgenus_name");
-			sectionpath = XPath.newInstance("//seciton_name");
-			subsectionpath = XPath.newInstance("//subsection_name");
-			speciespath = XPath.newInstance("//species_name");
-			subspeciespath = XPath.newInstance("//subspecies_name");
-			varietypath = XPath.newInstance("//variety_name");
+			familypath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/family_name");
+			subfamilypath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subfamily_name");
+			tribepath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/tribe_name");
+			subtribepath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subtribe_name");
+			genuspath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/genus_name");
+			subgenuspath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subgenus_name");
+			sectionpath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/seciton_name");
+			subsectionpath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subsection_name");
+			speciespath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/species_name");
+			subspeciespath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subspecies_name");
+			varietypath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/variety_name");
 			descriptionpath = XPath.newInstance("//description");
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();
@@ -99,36 +99,112 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 			}
 			values.put("filename", xml.getName());
 			Element family = (Element)familypath.selectSingleNode(root);
-			if (family!=null) familystr = family.getTextNormalize().toLowerCase();
+			if (family!=null){
+				familystr = family.getTextNormalize().toLowerCase();
+				 subfamilystr="";
+				 tribestr="";
+				 subtribestr="";
+				 genusstr="";
+				 subgenusstr="";
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("family",familystr);
+			
 			Element subfamily = (Element)subfamilypath.selectSingleNode(root);
-			if (subfamily!=null) subfamilystr = subfamily.getTextNormalize().toLowerCase();
+			if (subfamily!=null){
+				subfamilystr = subfamily.getTextNormalize().toLowerCase();
+				 tribestr="";
+				 subtribestr="";
+				 genusstr="";
+				 subgenusstr="";
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("subfamily",subfamilystr);
 			Element tribe = (Element)tribepath.selectSingleNode(root);
-			if (tribe!=null) tribestr = tribe.getTextNormalize().toLowerCase();
+			if (tribe!=null){
+				tribestr = tribe.getTextNormalize().toLowerCase();
+				 subtribestr="";
+				 genusstr="";
+				 subgenusstr="";
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("tribe",tribestr);
 			Element subtribe = (Element)subtribepath.selectSingleNode(root);
-			if (subtribe!=null) subtribestr = subtribe.getTextNormalize().toLowerCase();
+			if (subtribe!=null){
+				subtribestr = subtribe.getTextNormalize().toLowerCase();
+				 genusstr="";
+				 subgenusstr="";
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("subtribe", subtribestr);
 			Element genus = (Element)genuspath.selectSingleNode(root);
-			if (genus!=null) genusstr = genus.getTextNormalize().toLowerCase();
+			if (genus!=null){
+				genusstr = genus.getTextNormalize().toLowerCase();
+				 subgenusstr="";
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("genus", genusstr);
 			Element subgenus = (Element)subgenuspath.selectSingleNode(root);
-			if (subgenus!=null) subgenusstr = subgenus.getTextNormalize().toLowerCase();
+			if (subgenus!=null){
+				subgenusstr = subgenus.getTextNormalize().toLowerCase();
+				 sectionstr="";
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("subgenus",subgenusstr);
 			Element section = (Element)sectionpath.selectSingleNode(root);
-			if (section!=null) sectionstr = section.getTextNormalize().toLowerCase();
+			if (section!=null){
+				sectionstr = section.getTextNormalize().toLowerCase();
+				 subsectionstr="";
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("section", sectionstr);
 			Element subsection = (Element)subsectionpath.selectSingleNode(root);
-			if(subsection!=null) subsectionstr =  subsection.getTextNormalize().toLowerCase();
+			if(subsection!=null){
+				subsectionstr =  subsection.getTextNormalize().toLowerCase();
+				 speciesstr="";
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("subsection", subsectionstr);
 			Element species = (Element)speciespath.selectSingleNode(root);
-			if (species!=null) speciesstr = species.getTextNormalize().toLowerCase();
+			if (species!=null){
+				speciesstr = species.getTextNormalize().toLowerCase();
+				 subspeciesstr="";
+				 varietystr="";
+			}
 			values.put("species", speciesstr);
 			Element subspecies = (Element)subspeciespath.selectSingleNode(root);
-			if (subspecies!=null) subspeciesstr = subspecies.getTextNormalize().toLowerCase();
+			if (subspecies!=null){
+				subspeciesstr = subspecies.getTextNormalize().toLowerCase();
+				varietystr="";
+			}
 			values.put("subspecies", subspeciesstr);
-			Element variety = ((Element)varietypath.selectSingleNode(root));
+			Element variety = (Element)varietypath.selectSingleNode(root);
 			if (variety!=null) varietystr = variety.getTextNormalize().toLowerCase();
 			values.put("variety", varietystr);
 			insertIntoFilename2TaxonTable();
@@ -145,13 +221,12 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String filepath = "C:\\Documents and Settings\\Hong Updates\\Desktop\\CharaParserWorkshop2012\\FNAv8\\source";
+		String filepath = "C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv5Caryophyllaceae/source";
 		String database = "markedupdatasets";
-		String prefix = "fnav8";
+		String prefix = "test";
 		FileName2TaxonFNA fntf = new FileName2TaxonFNA(filepath, database, prefix);
 		fntf.createFilename2taxonTable();
 		fntf.populateFilename2TaxonTable();
-
 	}
 
 	
