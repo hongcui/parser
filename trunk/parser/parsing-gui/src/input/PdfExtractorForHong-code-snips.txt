@@ -1,0 +1,64 @@
+//    get working directory
+File pdfDataPath = new File("<your PDF extraction working directory>");
+
+//    create data provider for page image storage facility (abstracts from file system in inside-GoldenGATE deployment)
+final AnalyzerDataProvider dataProvider = new AnalyzerDataProviderFileBased(pdfDataPath);
+
+//    create storage facility for page images
+PageImageStore pis = new AbstractPageImageStore() {
+    public boolean isPageImageAvailable(String name) {
+        if (!name.endsWith(IMAGE_FORMAT))
+            name += ("." + IMAGE_FORMAT);
+        return dataProvider.isDataAvailable(name);
+    }
+    public PageImageInputStream getPageImageAsStream(String name) throws IOException {
+        if (!name.endsWith(IMAGE_FORMAT))
+            name += ("." + IMAGE_FORMAT);
+        if (!dataProvider.isDataAvailable(name))
+            return null;
+        return new PageImageInputStream(dataProvider.getInputStream(name), this);
+    }
+    public void storePageImage(String name, PageImage pageImage) throws IOException {
+        if (!name.endsWith(IMAGE_FORMAT))
+            name += ("." + IMAGE_FORMAT);
+        try {
+            OutputStream imageOut = dataProvider.getOutputStream(name);
+            pageImage.write(imageOut);
+            imageOut.close();
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace(System.out);
+        }
+    }
+};
+
+//    register page image storage facility
+PageImage.addPageImageSource(pis);
+
+//    create PDF content extractor
+PdfExtractor pdfExtractor = new PdfExtractor(pdfDataPath, pis);
+
+//    load PDF file into byte array
+File pdfFile = new File("<path to your PDF file>");
+FileInputStream pdfIn = new FileInputStream(pdfFile);
+BufferedInputStream bis = new BufferedInputStream(pdfIn);
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+byte[] buffer = new byte[1024];
+int read;
+while ((read = bis.read(buffer, 0, buffer.length)) != -1)
+    baos.write(buffer, 0, read);
+bis.close();
+byte[] pdfBytes = baos.toByteArray();
+
+//    prepare GAMTA document
+doc = Gamta.newDocument(Gamta.INNER_PUNCTUATION_TOKENIZER);
+doc.setAnnotationNestingOrder(PAGE_TYPE + " " + BLOCK_ANNOTATION_TYPE + " " + LINE_ANNOTATION_TYPE + " " + WORD_ANNOTATION_TYPE);
+doc.setAttribute(DOCUMENT_ID_ATTRIBUTE, pdfName);
+doc.setDocumentProperty(DOCUMENT_ID_ATTRIBUTE, pdfName);
+
+//    create IcePDF document
+Document pdfDoc = new Document();
+pdfDoc.setInputStream(new ByteArrayInputStream(pdfBytes), "");
+
+//    load PDF content into GAMTA document
+doc = pdfExtractor.loadTextPdf(doc, pdfDoc, pdfBytes, null);
