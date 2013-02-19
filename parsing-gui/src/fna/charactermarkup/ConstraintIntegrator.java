@@ -59,9 +59,9 @@ import fna.parsing.ApplicationUtilities;
 public class ConstraintIntegrator {
 	private static final Logger LOGGER = Logger.getLogger(ConstraintIntegrator.class);
 	private Connection conn;
-	private String outputfolder;
+	private File outputfolder;
 	private Hashtable<String, String> inputnprefix;
-	private ArrayList<String> dataprefixes = new ArrayList<String> ();
+	private Collection<String> dataprefixes;
 	private static final String filename2taxon = "filename2taxon";
 	private static int id = 0;
 	private SAXBuilder builder = new SAXBuilder();
@@ -73,6 +73,8 @@ public class ConstraintIntegrator {
 	private static XPath taxonconstraint;
 	private static XPath provenanceattribute;
 	private static XPath inbracketsattribute;
+	
+	private boolean debug = true;
 
 	static{
 		try{
@@ -119,8 +121,9 @@ public class ConstraintIntegrator {
 	 */
 	public ConstraintIntegrator(Hashtable<String, String> sourcenprefix, String targetfolder, String database) {
 		this.inputnprefix = sourcenprefix;
-		this.outputfolder = targetfolder;	
-		this.dataprefixes = (ArrayList<String>) sourcenprefix.values();
+		this.outputfolder = new File(targetfolder);	
+		if(!this.outputfolder.exists()) outputfolder.mkdir();
+		this.dataprefixes = sourcenprefix.values();
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
@@ -144,6 +147,7 @@ public class ConstraintIntegrator {
 		
 			for(File inputfile: inputfiles){				
 				try{
+					System.out.println("working on file "+inputfile.getName());
 					boolean changed = false;
 					Document doc = builder.build(inputfile);
 					Element root = doc.getRootElement();
@@ -159,7 +163,7 @@ public class ConstraintIntegrator {
 					
 					targets = this.taxonconstraint.selectNodes(root);
 					if(targets.size()>0) changed = true;
-					integrateTaxonConstraint(targets, root); //other affected files are saved in this method
+					integrateTaxonConstraint(targets, root, new File(inputdir)); //other affected files are saved in this method
 					
 					
 					targets = this.provenanceattribute.selectNodes(root);
@@ -199,6 +203,7 @@ public class ConstraintIntegrator {
 			Element root, File inputfile) {
 		if(targets.size()==0) return;
 		for(Element target: targets){
+			if(debug) System.out.println("integrating in_brackets");
 			target.removeAttribute("in_brackets");
 		}		
 	}
@@ -217,6 +222,7 @@ public class ConstraintIntegrator {
 		if(targets.size()==0) return;
 		
 		for(Element target: targets){
+			if(debug) System.out.println("integrating provenance");
 			String prov = target.getAttributeValue("provenance");
 			String uuid = UUID.randomUUID().toString();
 			//save to the hash
@@ -243,7 +249,7 @@ public class ConstraintIntegrator {
 	 *    move affected character elements to all subtaxa but the mentioned ones, if not already included there
 	 * 3. for example: (cue phrases: e.g., see)
 	 *    do nothing   
-	 * For all cases, keep character elements for the current description, but remove taxon_constraint attribute.    [assume the "reality" scenario]
+	 * For all cases, remove character elements with taxon-constraints from the current description. 
 	 *
 	 * For example: leaves alternate (opposite in S. nathorstii, S. oppositifolia). 
 	 * current description[Saxifraga]: leaves alternate or opposite
@@ -251,25 +257,28 @@ public class ConstraintIntegrator {
 	 * 
 	 * 
 	 * @param elementsWithConstraint
+	 * @param inputfile 
 	 * @param root: root element of the file holding the elementsWithConstraint
 	 * @param dataprefix: used to select the taxon2filename table for this collection
 	 */
-	private void integrateTaxonConstraint(List<Element> elementsWithConstraint, Element root) {
+	private void integrateTaxonConstraint(List<Element> elementsWithConstraint, Element root, File inputfile) {
 		if(elementsWithConstraint.size()==0) return;
+		if(debug) System.out.println("integrating taxon_constraint");
 		Hashtable<File, Element> affectedroots = new Hashtable<File, Element>();
-		ArrayList<String> includedfiles = new ArrayList<String>();
-		ArrayList<String> excludedfiles = new ArrayList<String>();
+		ArrayList<File> includedfiles = new ArrayList<File>();
+		ArrayList<File> excludedfiles = new ArrayList<File>();
 		for(Element elementWithConstraint: elementsWithConstraint){
 			String taxonconstraint = elementWithConstraint.getAttributeValue("taxon_constraint").trim();
 			if(taxonconstraint.startsWith("not in ") || taxonconstraint.startsWith("except in ") | taxonconstraint.startsWith("except ")){
 				String[] excludes = taxonconstraint.replaceFirst("^(not in|except in|except)\\b", "").split("\\s*(,|and)\\s*");
-				groupingFiles(root, excludes, includedfiles, excludedfiles, "E");
+				groupingFiles(root, excludes, includedfiles, excludedfiles, "E", inputfile);
 			}else if (taxonconstraint.startsWith("in ") || taxonconstraint.startsWith("as ") || taxonconstraint.startsWith("under ")){
-				String[] includes = taxonconstraint.replaceFirst("^(in|as|under)\\b", "").split("\\s*(,|and)\\s*");
-				groupingFiles(root, includes, includedfiles, excludedfiles, "I");
+				String[] includes = taxonconstraint.replaceFirst("^(in|as|under)\\s+", "").split("\\s*(,|and)\\s*");
+				groupingFiles(root, includes, includedfiles, excludedfiles, "I", inputfile);
 			}
 			checkFiles(elementWithConstraint, includedfiles, excludedfiles, affectedroots);  
-			elementWithConstraint.removeAttribute("taxon_constraint");			
+			elementWithConstraint.detach(); //remove polymorphylism, enable inheritance by lower taxa (allow exception in lower taxa).
+			//elementWithConstraint.removeAttribute("taxon_constraint");			//keep polymorphylism in the higher rank 
 		}
 		//output affected files. The originating file is saved in the main method.
 		Enumeration<File> en = affectedroots.keys();
@@ -299,7 +308,7 @@ public class ConstraintIntegrator {
 	 * @param excludedfiles
 	 * @param affectedroots: to be populated by the root element of files that are changed by this method.
 	 */
-	private void checkFiles(Element elementWithConstraint, ArrayList<String> includedfiles, ArrayList<String> excludedfiles, Hashtable<File, Element> affectedroots) {
+	private void checkFiles(Element elementWithConstraint, ArrayList<File> includedfiles, ArrayList<File> excludedfiles, Hashtable<File, Element> affectedroots) {
 		String type =  elementWithConstraint.getName();
 		if(type.compareTo("character")==0){
 			checkCharactersInFiles(elementWithConstraint, includedfiles,
@@ -312,17 +321,17 @@ public class ConstraintIntegrator {
 				String attname = att.getName();
 				String attvalue= att.getValue();
 				if(!attname.matches("(.*?_constraint|in_brackets|provenance|from|to")){
-					relationstring += attname+"='"+attvalue+"'&";
+					relationstring += attname+"='"+attvalue+"' and ";
 				}
 			}
-			relationstring = relationstring.replaceFirst("&$", "");
+			relationstring = relationstring.replaceFirst(" and $", "");
 			Hashtable<String, String> structureinfo = new Hashtable<String, String> ();
 			String relationname = elementWithConstraint.getAttributeValue("name");
 			//collect information about from and to structures the relation is associated with
 			getAssociatedStructureInfo(elementWithConstraint, structureinfo);
 
 			//check includedfile one by one: search for relation and search for relational characters
-			for(String includedfile: includedfiles){
+			for(File includedfile: includedfiles){
 				try{
 					Document doc = builder.build(includedfile);
 					Element root = doc.getRootElement();
@@ -344,7 +353,7 @@ public class ConstraintIntegrator {
 					boolean findrelationalcharacter = false;
 					//if not, try to find relational characters with constraints. The relational character should has a value that overlaps with the relation name (which would have an extra prep). The subject of the character and its constraining structure should match the from and to structure of the relation
 					if(!findrelation){
-						List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? "&@constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
+						List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? " and @constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
 						for(Element structure: structures){
 							List<Element> characters = structure.getChildren("character");
 							for(Element character: characters){
@@ -383,7 +392,7 @@ public class ConstraintIntegrator {
 						//add the relation to this file: need to add both structures and relation
 						//add structures if needed
 						//from structures
-						List<Element> fromstructures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? "&@constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
+						List<Element> fromstructures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? " and @constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
 						ArrayList<String> fromids = new ArrayList<String> ();
 						if(fromstructures.size()>0){
 							for(Element fromstructure: fromstructures){
@@ -400,7 +409,7 @@ public class ConstraintIntegrator {
 							root.addContent(struct);
 						}
 						//to structures
-						List<Element> tostructures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("tostructname")+"'"+(structureinfo.get("tostructconstraint").length() >0? "&@constraint='"+structureinfo.get("tostructconstraint")+"']":"]"));
+						List<Element> tostructures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("tostructname")+"'"+(structureinfo.get("tostructconstraint").length() >0? " and @constraint='"+structureinfo.get("tostructconstraint")+"']":"]"));
 						ArrayList<String> toids = new ArrayList<String> ();
 						if(tostructures.size()>0){
 							for(Element tostructure: tostructures){
@@ -422,7 +431,7 @@ public class ConstraintIntegrator {
 								Element relation = new Element("relation");
 								relation.setAttribute("from", fromid);
 								relation.setAttribute("to", toid);
-								String[] attributes = relationstring.replace("'", "").split("&");
+								String[] attributes = relationstring.replace("'", "").split(" and ");
 								for(String attribute : attributes){
 									String[] info = attribute.split("=");
 									relation.setAttribute(info[0], info[1]);
@@ -437,7 +446,7 @@ public class ConstraintIntegrator {
 			}
 			
 			//check excludedfile one by one search for relation and search for relational characters
-			for(String excludedfile: excludedfiles){
+			for(File excludedfile: excludedfiles){
 				try{
 					Document doc = builder.build(excludedfile);
 					Element root = doc.getRootElement();
@@ -462,7 +471,7 @@ public class ConstraintIntegrator {
 					boolean findrelationalcharacter = false;
 					//if not, try to find relational characters with constraints. The relational character should has a value that overlaps with the relation name (which would have an extra prep). The subject of the character and its constraining structure should match the from and to structure of the relation
 					if(!findrelation){
-						List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? "&@constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
+						List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structureinfo.get("fromstructname")+"'"+(structureinfo.get("fromstructconstraint").length() >0? " and @constraint='"+structureinfo.get("fromstructconstraint")+"']":"]"));
 						for(Element structure: structures){
 							List<Element> characters = structure.getChildren("character");
 							for(Element character: characters){
@@ -531,7 +540,7 @@ public class ConstraintIntegrator {
 	}
 
 	private void checkCharactersInFiles(Element elementWithConstraint,
-			ArrayList<String> includedfiles, ArrayList<String> excludedfiles,
+			ArrayList<File> includedfiles, ArrayList<File> excludedfiles,
 			Hashtable<File, Element> affectedroots) {
 		//deal with a character element:
 		//collect character information
@@ -540,11 +549,11 @@ public class ConstraintIntegrator {
 		for(Attribute att: atts){
 			String attname = att.getName();
 			String attvalue= att.getValue();
-			if(!attname.matches("(.*?_constraint|in_brackets|provenance")){
-				characterstring += attname+"='"+attvalue+"'&";
+			if(!attname.matches("(.*?_constraint|in_brackets|provenance)")){
+				characterstring += "@"+attname+"='"+attvalue+"' and ";
 			}
 		}
-		characterstring = characterstring.replaceFirst("&$", "");
+		characterstring = characterstring.replaceFirst(" and $", "");
 		
 		//collect information of the structure the character is associated with
 		Element structure = elementWithConstraint.getParentElement();
@@ -552,11 +561,11 @@ public class ConstraintIntegrator {
 		String constraint = structure.getAttribute("constraint") == null? null : structure.getAttributeValue("constraint");
 		
 		//construct the XPath to select affected structures
-		String xpath = "//structure[@name='"+structurename+"'"+(constraint!=null? "&@constraint='"+constraint+"']":"]")+
+		String xpath = "//structure[@name='"+structurename+"'"+(constraint!=null? " and @constraint='"+constraint+"']":"]")+
 				"/character["+characterstring+"]";
 		
 		//checking includedfile one by one
-		for(String includedfile : includedfiles){
+		for(File includedfile : includedfiles){
 			try{
 				Document doc = builder.build(includedfile);
 				Element root = doc.getRootElement();
@@ -566,7 +575,7 @@ public class ConstraintIntegrator {
 					LOGGER.info("Character ["+characterstring+"] of structure ["+constraint+" "+structure+"] was not found in "+includedfile +" where it should be. It is added.");
 					//add character to its structure(s), if the structure does not exist, create the structure element
 					//find the structure in root
-					List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structurename+"'"+(constraint!=null? "&@constraint='"+constraint+"']":"]"));
+					List<Element> structures = XPath.selectNodes(root,  "//structure[@name='"+structurename+"'"+(constraint!=null? " and @constraint='"+constraint+"']":"]"));
 					if(structures.size() == 0){
 						//create structure element
 						Element struct = new Element("structure");
@@ -579,7 +588,7 @@ public class ConstraintIntegrator {
 					}
 					//create character element
 					Element character = new Element("character");
-					String[] characters = characterstring.replace("'", "").split("&");
+					String[] characters = characterstring.replace("'", "").split(" and ");
 					for(String acharacter : characters){
 						String[] info = acharacter.split("=");
 						character.setAttribute(info[0], info[1]);
@@ -588,7 +597,7 @@ public class ConstraintIntegrator {
 						astructure.addContent(character);
 					}
 					//put the file to the updated list
-					affectedroots.put(new File(includedfile), root);
+					affectedroots.put(includedfile, root);
 				}
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());							
@@ -596,23 +605,19 @@ public class ConstraintIntegrator {
 		}
 		
 		//checking excludedfile one by one
-		for(String excludedfile : excludedfiles){
+		for(File excludedfile : excludedfiles){
 			try{
 				Document doc = builder.build(excludedfile);
 				Element root = doc.getRootElement();
 				List<Element> matches = (List<Element>) XPath.selectNodes(root, xpath);
-				if(matches != null){
+				if(matches != null && matches.size()>0){
 					//should not have the character, but had
 					LOGGER.info("Character ["+characterstring+"] of structure ["+constraint+" "+structure+"] was found in "+excludedfile +" where it should not be. It is removed.");
 					for(Element amatch: matches){
 						//remove the characters
-						//amatch.detach();
-						List<Element> characters = XPath.selectNodes(amatch, ".//character["+characterstring+"]");
-						for(Element character: characters){
-							character.detach();
-						}
+						amatch.detach();						
 					}
-					affectedroots.put(new File(excludedfile), root);
+					affectedroots.put(excludedfile, root);
 				}
 								
 			}catch(Exception e){
@@ -621,7 +626,7 @@ public class ConstraintIntegrator {
 		}
 	}
 
-	private void groupingFiles(Element root, String[] taxonnames, ArrayList<String> includedfiles, ArrayList<String> excludedfiles, String flag) {
+	private void groupingFiles(Element root, String[] taxonnames, ArrayList<File> includedfiles, ArrayList<File> excludedfiles, String flag, File inputfile) {
 		
 		//name parts of current root
 		Hashtable<String, Element> names = getTaxonNamesFrom(root);
@@ -632,8 +637,8 @@ public class ConstraintIntegrator {
 		Enumeration<String> en = names.keys();
 		while(en.hasMoreElements()){
 			String rank = en.nextElement();
-			String name = names.get(rank).getTextNormalize();
-			query += rank+"="+name+",";
+			String name = names.get(rank).getTextNormalize().toLowerCase();
+			query += rank+"='"+name+"',";
 			int rankindex =  ranks.indexOf(rank);
 			if(lowest < rankindex) lowest = rankindex;
 		}
@@ -662,7 +667,7 @@ public class ConstraintIntegrator {
 			while(rs.next()){
 				String filename = rs.getString("filename");
 				for(String listedname: taxonnames){
-					listedname = listedname.replaceFirst(".*?\\.", "");
+					listedname = listedname.replaceFirst(".*?\\.", "").trim();
 					boolean match = false;
 					for(String lowerrank: lowerrankarray){
 						String name = rs.getString(lowerrank);
@@ -670,13 +675,13 @@ public class ConstraintIntegrator {
 							matches++;
 							match = true;
 							matched +=name+",";
-							if(flag.compareTo("E")==0) excludedfiles.add(filename);
-							else if(flag.compareTo("I")==0) includedfiles.add(filename);
+							if(flag.compareTo("E")==0) excludedfiles.add(new File(inputfile, filename));
+							else if(flag.compareTo("I")==0) includedfiles.add(new File(inputfile, filename));
 						}
 					}
 					if(!match){
-						if(flag.compareTo("E")==0) includedfiles.add(filename);
-						else if(flag.compareTo("I")==0) excludedfiles.add(filename);
+						if(flag.compareTo("E")==0) includedfiles.add(new File(inputfile, filename));
+						else if(flag.compareTo("I")==0) excludedfiles.add(new File(inputfile, filename));
 					}
 				}			
 			}
@@ -720,6 +725,7 @@ public class ConstraintIntegrator {
 		if(targets.size()==0) return;
 		
 		for(Element target: targets){
+			if(debug) System.out.println("integrating geographical_constraint");
 			String geo = target.getAttributeValue("geographical_constraint");
 			Attribute constraint = target.getAttribute("constraint");
 			if(constraint==null){
@@ -747,6 +753,7 @@ public class ConstraintIntegrator {
 			Element root, File inputfile) {
 		if(targets.size()==0) return;
 		for(Element target: targets){
+			if(debug) System.out.println("integrate parallelism_constraint");
 			target.removeAttribute("parallelism_constraint");
 		}
 	}
@@ -767,8 +774,12 @@ public class ConstraintIntegrator {
 	public static void main(String[] args) {
 		Hashtable<String, String> inputnprefix = new Hashtable<String, String>();
 		//inputprefix should include all volumns that belong to one family or the taxon in question
-		inputnprefix.put("", "fnav19");
-		inputnprefix.put("", "fnav20");
+		inputnprefix.put("C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv5Caryophyllaceae/target/final", "test");
+		//inputnprefix.put("", "fnav20");
+		String target = "C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv5Caryophyllaceae/target/final-np/"; //np = no parenthetical attributes
+		String database = "markedupdatasets";
+		ConstraintIntegrator ci = new ConstraintIntegrator(inputnprefix, target, database);
+		ci.integrateConstraints();
 		
 
 	}
