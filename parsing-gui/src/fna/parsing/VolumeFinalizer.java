@@ -105,6 +105,8 @@ public class VolumeFinalizer extends Thread {
             //this.popupMessage("No file is output");
     		if(!standalone) this.showOutputMessage("System terminates with errors. No files has been annotated.");
         }
+    	VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
+    	
         if(finalFileList.list().length != transformedFileList.list().length)
         {
             //this.popupMessage("No file is output");
@@ -116,7 +118,7 @@ public class VolumeFinalizer extends Thread {
         {
        		if(!standalone){
        			this.showOutputMessage("System is done with annotating files.");
-       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final/");
+       			this.showOutputMessage("The annotated files are saved in "+Registry.TargetDirectory+"final");
        		}
         }
     }
@@ -432,9 +434,8 @@ public class VolumeFinalizer extends Thread {
 			return root;
 		}catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			//LOGGER.error("VolumeFinalizer : Failed to output the final result.", e);
-			throw new ParsingException("Failed to output the final result.", e);
 		}
+		return null;
 	}
 
 
@@ -533,17 +534,21 @@ public class VolumeFinalizer extends Thread {
 		if(!standalone)  description = new File(Registry.TargetDirectory, ApplicationUtilities.getProperty("DESCRIPTIONS"));
 		if(standalone)  description = new File(standalonefolder+"/target/descriptions");
 		//find in description files have a size of zero
-		ArrayList<String> files4copy = new ArrayList<String>();
-		File[] des = description.listFiles();
-		for(File df: des){
-			if(df.length()==0){
-				files4copy.add(df.getName());
-			}
-		}
-		//for each file in files4copy, copy from transformed to final
+		ArrayList<String> files2copy = new ArrayList<String>();
+		File[] des = source.listFiles();
+		SAXBuilder builder = new SAXBuilder();
 		try{
-			SAXBuilder builder = new SAXBuilder();
-			for(String f: files4copy){
+			for(File df: des){
+				Document trans = builder.build(df);
+				Element root = trans.getRootElement();
+				Element descript = (Element)XPath.selectSingleNode(root, ".//description");
+				if(descript == null){
+					files2copy.add(df.getName());
+				}
+			}
+		    //for each file in files4copy, copy from transformed to final
+			
+			for(String f: files2copy){
 				f = f.replaceFirst("txt$", "xml");
 				Document trans = builder.build(new File(source, f));
 				Element root = trans.getRootElement();

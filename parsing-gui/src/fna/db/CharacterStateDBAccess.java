@@ -407,6 +407,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 	 */
 	public boolean saveTermCategory(String groupID, String term, String decision) {
 		//Connection conn = null;
+		if(decision == null || decision.trim().length() <=0) return false;
 		PreparedStatement pstmt = null;
 		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_term_category where term=?" ;
 		try {
@@ -425,12 +426,12 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 			/*savedecision for groupID*/
 			this.saveDecision(Integer.parseInt(groupID), "done");
-			
+			return true;
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTermCategory", exe);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} 
-		return true;
+		return false;
 		
 	}
 

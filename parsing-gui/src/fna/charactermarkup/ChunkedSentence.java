@@ -493,7 +493,7 @@ public class ChunkedSentence {
 				ptn +="N"; //taxon name
 			}else if(token.length()==2 && token.endsWith(".")){
 				ptn +="N"; //taxon name
-			}else if(token.startsWith("{") || token.endsWith("}") || token.contains("[{")){ //-{discoid}
+			}else if(token.startsWith("{") || token.endsWith("}") || token.contains("[{") || token.matches(".*\\d.*")){ //-{discoid}
 				ptn +="C"; //character
 			}else if(token.startsWith("(") || token.endsWith(")") ||token.contains("o[") ||token.contains("u[")||token.contains("z[")){
 				ptn +="C"; //organ
@@ -811,7 +811,7 @@ public class ChunkedSentence {
 		}
 		//if(i==0) subjecto = true;
 		//reformat this.chunkedtokens
-		if(subjecto || i==-1+0){ 
+		if(subjecto || i==-1){ 
 			chunk = "z["+chunk.trim().replaceAll("<", "(").replaceAll(">", ")")+"]";
 		}else{
 			chunk = "u["+chunk.trim().replaceFirst("[<(]", "o[(").replaceFirst("[)>]$", ")]").replaceAll("<", "(").replaceAll(">", ")").replaceAll("[{}]", "")+"]";//<leaf><blade> => u[o[(leaf)(blade)]]
@@ -2205,7 +2205,7 @@ public class ChunkedSentence {
 	private String format(String scs) {
 		String first = scs.substring(0, scs.indexOf("v["));
 		String rest = scs.replace(first, "");
-		String v = rest.substring(0, rest.indexOf(']')+1+0);
+		String v = rest.substring(0, rest.indexOf(']')+1);
 		String o = rest.replace(v, "").trim(); //m[a] architecture[surrounding] o[(involucre)]
 		String newo = "o[";
 		do{
@@ -2665,10 +2665,8 @@ parallelism scope: q[other chunks]
 			this.text = rs.getString(1);
 		}
 		return this.text;
-		//	public String getOriginalText(){
-		//		return this.originaltext;
-
 	}
+	
 	
 	public String getSubjectText(){
 		return this.subjecttext;

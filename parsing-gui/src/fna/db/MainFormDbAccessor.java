@@ -580,61 +580,58 @@ public class MainFormDbAccessor {
 	
 	public void savePrefixData(String prefix, String glossaryName, int optionChosen) 
 	throws ParsingException, SQLException{
-	
-	//Connection conn = null;
-	PreparedStatement stmt = null;
-	ResultSet rset = null;
-	
-	try {
-		if (!prefix.equals("")) {
-			//conn = DriverManager.getConnection(url);		
-			/*stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
-					prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 0,'"+glossaryName+"','"+optionChosen+"')");*/
-			stmt = conn.prepareStatement("select prefix from datasetprefix where prefix='"+prefix+"'");
-			rset=stmt.executeQuery();
-			if(rset.next()){
-				stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp, tab_general = 1,tab_segm=1," +
-						"tab_verf =1,tab_trans =1,tab_struct =1,tab_unknown =1,tab_finalm =1,tab_gloss =1,glossary= '" +glossaryName+"',option_chosen='"+optionChosen+"' where prefix='"+prefix+"'");
+		//Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rset = null;
+		
+		try {
+			if (!prefix.equals("")) {
+				stmt = conn.prepareStatement("select prefix from datasetprefix where prefix='"+prefix+"'");
+				rset=stmt.executeQuery();
+				if(rset.next()){
+					//stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp, tab_general = 1,tab_segm=1," +
+					//		"tab_verf =1,tab_trans =1,tab_struct =1,tab_unknown =1,tab_finalm =1,tab_gloss =1,glossary= '" +glossaryName+"',option_chosen='"+optionChosen+"' where prefix='"+prefix+"'");
+					stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp where prefix='"+prefix+"'"); //keep the status of markup from a previous run
+					stmt.executeUpdate();
+				}
+				else
+				{
+					//stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
+					//		prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 1,'"+glossaryName+"','"+optionChosen+"')");
+					stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
+							prefix + "', current_timestamp, 1, 0, 0 ,0, 0, 0, 0, 0,'"+glossaryName+"','"+optionChosen+"')");
+					//changed insert from 0 to 1 by Prasad, since the remaining code is taking 1 as unprocessed 
+					stmt.executeUpdate();
+				}
+			}
+		}catch (SQLException exe) {
+			
+			if (exe.getMessage().contains("key 'PRIMARY'")) {
+				stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp" +
+						" where prefix = '" + prefix + "'" ); 
 				stmt.executeUpdate();
 			}
-			else
-			{
-				stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
-						prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 1,'"+glossaryName+"','"+optionChosen+"')");
-				//changed insert from 0 to 1 by Prasad, since the remaining code is taking 1 as unprocessed 
-				stmt.executeUpdate();
+			if (!exe.getMessage().contains("key 'PRIMARY'")) {
+				LOGGER.error("Couldn't execute db query in MainFormDbAccessor:savePrefixdata", exe);
+				throw new ParsingException("Failed to execute the statement.", exe);
 			}
+			
+		} finally {
+			if (rset != null) {
+				rset.close();
+			}
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+			
+			//if (conn != null) {
+			//	conn.close();
+			//}
 		}
-	}catch (SQLException exe) {
-		
-		if (exe.getMessage().contains("key 'PRIMARY'")) {
-			stmt = conn.prepareStatement("update datasetprefix set time_last_accessed = current_timestamp" +
-					" where prefix = '" + prefix + "'" ); 
-			stmt.executeUpdate();
-		}
-		if (!exe.getMessage().contains("key 'PRIMARY'")) {
-			LOGGER.error("Couldn't execute db query in MainFormDbAccessor:savePrefixdata", exe);
-			throw new ParsingException("Failed to execute the statement.", exe);
-		}
-		
-	} finally {
-		if (rset != null) {
-			rset.close();
-		}
-		
-		if (stmt != null) {
-			stmt.close();
-		}
-		
-		//if (conn != null) {
-		//	conn.close();
-		//}
-		
-		
-					
 	}
-
- }
+	
+	
 	public void loadStatusOfMarkUp(boolean [] markUpStatus, String dataPrefix) 
 		throws 	ParsingException, SQLException {
 		
@@ -750,13 +747,14 @@ public class MainFormDbAccessor {
 			if (tab.equals(ApplicationUtilities.getProperty("tab.seven.name"))) {
 				tab = "tab_finalm";
 			}
-			if (tab.equals(ApplicationUtilities.getProperty("tab.eight.name"))) {
+			if (tab.equals(ApplicationUtilities.getProperty("tab.character"))) {
 				tab = "tab_gloss";
 			}
 		}
 		
 		 if (status == true) {
-			 tabStatus = 0;//changed to 0 by Prasad. if status is 0 that means processed and can be loaded
+			 tabStatus = 1;
+			 //tabStatus = 0;//changed to 0 by Prasad. if status is 0 that means processed and can be loaded
 			 //status of 1 means yet to be loaded
 		 } 
 		

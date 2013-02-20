@@ -120,17 +120,14 @@ public class CharacterAnnotatorChunked {
 	 * @return
 	 * @throws Exception
 	 */
-	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs) throws Exception{
-		this.statement = new Element("statement");
-		this.statement.setAttribute("id", sentindex);
-		// 7-12-02 this.cs = cs;
-		//this.text = cs.getOriginalText();
-		this.text = cs.getText();
+	public Element annotate(String sentindex, String sentsrc, ChunkedSentence cs, Element statement) throws Exception{
+		this.statement = statement;
 		this.sentsrc = sentsrc;
 		if(sentsrc.endsWith("-0")) reset();
-		Element text = new Element("text");//make <text> the first element in statement
-		text.addContent(this.text);
-		if(!this.evaluation) this.statement.addContent(text);
+		//if(this.text.matches(".*?([A-Z]{2,})\\s*\\d+.*")){ //this.text must be originalsent where capitalization is preserved.
+		//	this.annotatedMeasurements(this.text, cs); //this will not work on "Scape short to moderate, SI 59 - 83"
+		//}
+		this.text = cs.getText();
 		if(this.text.startsWith("Characters of ") && this.text.replaceAll("[^,;\\.:]", "").length()<=1){
 			return this.statement; //characters of abc. one sentence.
 		}
@@ -739,7 +736,7 @@ public class CharacterAnnotatorChunked {
 				parents.add(structure); //create chromosome element
 				
 				//String content = ck.toString().replaceAll("[^\\d()\\[\\],+ -]", "").trim();
-				String content = ck.toString();
+				String content = ck.toString(); 
 				boolean inbracket = false;
 				String note = null;
 				if(content.matches("^[xgq]\\[.*")){ //the entire statement is in brackets
@@ -749,6 +746,9 @@ public class CharacterAnnotatorChunked {
 					content = twoparts[0];
 					if(twoparts.length > 1) note = twoparts[1].replaceAll("(\\w\\[|\\]|\\{|\\}|\\(|\\))", "").replaceAll("\\s+", " ").trim();
 				}
+				
+				//TODO:  [7,8?]10,11
+				//split on [,?] only when they are not in brackets
 				String[] segs = content.split("\\s*[,?]\\s*"); //23 -LRB-/-LRB- japan -RRB-/-RRB-, 30 (china)
 				ArrayList<Element> precharas = null;
 				for(String seg : segs){
@@ -757,7 +757,7 @@ public class CharacterAnnotatorChunked {
 					String count = seg.replace(bracketed, "").trim();
 					ArrayList<Element> charas = null;
 					if(count.matches(".*?\\d+.*")){ //bracketed="", count=seg as for content="26 x[(russia , as s. glomerata)]"
-						charas = this.annotateNumericals(count, "count", "", parents, false, cs); //added cs, establish a new count
+						charas = this.annotateNumericals(count.replaceAll("[\\[\\]()]", ""), "count", "", parents, false, cs); //added cs, establish a new count
 						precharas = charas;
 					}else if(precharas !=null){
 						charas = precharas;
@@ -1048,7 +1048,7 @@ public class CharacterAnnotatorChunked {
 		String taxon = content.substring(content.lastIndexOf("(")).trim();
 		content = content.substring(0, content.lastIndexOf("(")).trim();
 		//content: r[p[except] o[r[p[in] 
-		if(!content.contains("{") && !content.contains("(")){
+		if(!content.contains("{") && !content.contains("(") && !content.matches(".*\\d.*")){
 			taxon = "("+content.replaceAll("(\\w\\[|\\])", "").trim()+" "+taxon.replaceFirst("\\(", "");
 			content = "";
 		}	
@@ -2494,7 +2494,7 @@ public class CharacterAnnotatorChunked {
 		if(value.trim().length()==0) return;
 		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
-		value = value.replaceAll("\\b("+this.notInModifier+")\\b", "").trim();
+		value = value.replaceAll("\\b("+this.notInModifier+") ", "").trim(); //not match a in "a. livermorensis" (taxon name)
 		if(this.evaluation && attribute.startsWith("constraint_")) attribute="constraint"; 
 		if(value.length()>0){
 			if(value.indexOf("moreorless")>=0){
@@ -3124,7 +3124,7 @@ public class CharacterAnnotatorChunked {
 			//q:
 			boolean followcomma = false;
 			int p = cs.getPointer();
-			while(!cs.getTokenAt(--p).replaceAll("(\\w+\\[|\\]|.*~list~)","").replaceAll("~", " ").contains(text)){}
+			while(p>=1 && !cs.getTokenAt(--p).replaceAll("(\\w+\\[|\\]|.*~list~)","").replaceAll("~", " ").contains(text)){}
 			if(cs.getTokenAt(p).replaceAll("(\\w+\\[|\\]|.*~list~)","").replaceAll("~", " ").contains(text)){
 				if(cs.getTokenAt(p).matches(".*?[.,]\\W*"+text.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\{", "\\\\{").replaceAll("\\}", "\\\\}").replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]"))){
 					followcomma = true;
@@ -3270,11 +3270,11 @@ public class CharacterAnnotatorChunked {
 	 * 
 	 * @param measurements: CI 72 - 75 (74 ), SI 99 - 108 (102 ), PeNI 73 - 83 (73 ), LPeI 46 - 53 (46 ), DPeI 135 - 155 (145 ). 
 	 */	
-	private void annotatedMeasurements(String measurements, ChunkedSentence cs) {//added cs
+	private Element annotatedMeasurements(String measurements, ChunkedSentence cs) {//added cs
 		measurements = measurements.replaceAll("([Ff]igure|[Ff]igs?\\.)[^A-Z]*", "");
 		measurements = measurements.replaceAll("–", "-");
 		Element whole  = new Element("whole_organism");
-		this.statement.addContent(whole);
+		//this.statement.addContent(whole);
 		ArrayList<Element> parent = new ArrayList<Element>();
 		parent.add(whole);
 		//select delimitor
@@ -3296,6 +3296,7 @@ public class CharacterAnnotatorChunked {
 			vlu = vlu.replaceAll("(?<=\\d)\\s*\\.\\s*(?=\\d)", ".");
 			this.annotateNumericals(vlu.trim(), chara.trim(), modifier, parent, false, cs); //added cs
 		}
+		return whole;
 	}
 
 	/**
