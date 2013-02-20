@@ -335,8 +335,21 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 									}								
 								}
 							}
-							//if(statement!=null) description.addContent(statement);
-  							statement = cac.annotate(src, src, cs); //src: 100.txt-18
+
+							try{
+								//if(statement!=null) description.addContent(statement);
+								statement = new Element("statement");
+								statement.setAttribute("id", src);
+								Element txt = new Element("text");//make <text> the first element in statement, the statement will at least have a text element
+								txt.addContent(cs.getText());
+								if(!this.evaluation) statement.addContent(txt);
+								statement = cac.annotate(src, src, cs, statement); //src: 100.txt-18
+							}catch(Exception e){
+								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+								LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+										System.getProperty("line.separator")+ "source:"+ src + System.getProperty("line.separator")+
+										sw.toString());
+							}
 
 							//print a human readable file 
 							//String newline = System.getProperty("line.separator");

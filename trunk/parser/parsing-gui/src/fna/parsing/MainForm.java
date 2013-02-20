@@ -334,7 +334,14 @@ public class MainForm {
 	static VolumeDehyphenizer vd = null;
 	static VolumeFinalizer vf = null;
 	
-	
+	/*the set of flag to control step 4*/
+	private boolean runperl = false;
+	private boolean fourdotoneload = false;
+	private boolean fourdottwoload = false;
+	private boolean fourdotthreeload = false; 
+	private boolean fourdotonesave = false;
+	private boolean fourdottwosave = false;
+	private boolean fourdotthreesave = false;
 	//////////////////methods///////////////////////
 	
 	/////////////////display application window/////
@@ -454,7 +461,7 @@ public class MainForm {
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
 				 }
-				/* Check if the Type of document selected is Type 3 or Type 4*/
+				/* type="" means type 1, which has segmentation and verification steps*/
 				if (type.equals("")){
 					//segmentation
 					if (!statusOfMarkUp[1]) {
@@ -488,7 +495,7 @@ public class MainForm {
 
 					}
 				}
-
+                /*the following applies for all types*/
 				//Transformation
 				if (!statusOfMarkUp[3]) {
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
@@ -520,8 +527,7 @@ public class MainForm {
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.five.name")
-								.substring(0, ApplicationUtilities.getProperty("tab.five.name").indexOf(" ")), 
+								ApplicationUtilities.getProperty("tab.five.name"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
 						if (type.equals("")){
@@ -560,7 +566,7 @@ public class MainForm {
 					}
 
 				}
-				//Finalizer
+				//Finalizer//character
 				if (!statusOfMarkUp[6]) {
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
@@ -568,67 +574,70 @@ public class MainForm {
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.six.name"))
-							&& !tabName.equals(ApplicationUtilities.getProperty("tab.seven.name"))
+							/*&& !tabName.equals(ApplicationUtilities.getProperty("tab.seven.name"))*/
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.character"))
 					) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.seven.name"), 
+								ApplicationUtilities.getProperty("tab.character"), 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
 						if (type.equals("")){
 							tabFolder.setSelection(6);
 						} else {
 							tabFolder.setSelection(4);
+							loadCharacterTab();
 						}
 						tabFolder.setFocus();
 						return;
 					}
 
-				}	
-				//changed from 6 to 5
-				if (statusOfMarkUp[5]) {//passed tab 6 (step5),landed on tab 7 (step6)
-					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))){
-						charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossaryPrefixCombo.getText().trim());
-						// set the decisions combo
-						categories = setCharacterTabDecisions();
-						if(categories.length>0){
-							comboDecision.setItems(categories);
-							comboDecision.setText(categories[0]);
-						}else{//Use ant glossary to populate the table in step 6.
-							categories = setDefaultCharacterTabDecisions();
-							comboDecision.setItems(categories);
-							comboDecision.setText(categories.length==0? "" : categories[0]);
-							//the fixed string[]
-						}
-						//reset the table to clear previous grouping decisions
-						try{
-							if(conn == null){
-								Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
-								conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
-							}
-							Statement stmt = conn.createStatement();
-							stmt.execute("drop table if exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions");
-							stmt.execute("create table if not exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
-						}catch (Exception e){
-							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
-							e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-						}
-						
-						processedGroups.clear();
-						// set the groups list
-						setCharactertabGroups();
-						// show the terms that co-occured in the first group
-						loadTerms();
-						//Clear context table;
-						contextTable.removeAll();
-						//load processed groups table;
-						loadProcessedGroups();
-						
-						//createRemainingTermsGroup();
-					}
 				}
 
+     			//changed from 6 to 5
+				if (statusOfMarkUp[5]) {//passed tab 6 (step5),landed on tab 7 (step6)
+					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))) loadCharacterTab();
+				}
+
+			}
+			
+			private void loadCharacterTab() {
+					charDb = new CharacterStateDBAccess(dataPrefixCombo.getText().replaceAll("-", "_").trim(), glossaryPrefixCombo.getText().trim());
+					// set the decisions combo
+					categories = setCharacterTabDecisions();
+					if(categories.length>0){
+						comboDecision.setItems(categories);
+						comboDecision.setText(categories[0]);
+					}else{//Use ant glossary to populate the table in step 6.
+						categories = setDefaultCharacterTabDecisions();
+						comboDecision.setItems(categories);
+						comboDecision.setText(categories.length==0? "" : categories[0]);
+						//the fixed string[]
+					}
+					//reset the table to clear previous grouping decisions
+					try{
+						if(conn == null){
+							Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
+							conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
+						}
+						Statement stmt = conn.createStatement();
+						stmt.execute("drop table if exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions");
+						stmt.execute("create table if not exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
+					}catch (Exception e){
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					}
+					
+					processedGroups.clear();
+					// set the groups list
+					setCharactertabGroups();
+					// show the terms that co-occured in the first group
+					loadTerms();
+					//Clear context table;
+					contextTable.removeAll();
+					//load processed groups table;
+					loadProcessedGroups();
+					//createRemainingTermsGroup();
 			}
 			
 		});
@@ -1109,9 +1118,10 @@ public class MainForm {
 					}
 					 
 					// Saving the status of markup
-					statusOfMarkUp[1] = true;
+					
 					try {
 						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), true);
+						statusOfMarkUp[1] = true;
 					} catch (Exception exe) {
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
@@ -1165,13 +1175,13 @@ public class MainForm {
 					statusOfMarkUp[1] = false;
 					try {
 						startExtraction();
-						statusOfMarkUp[1] = true;
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 					try {
-					//	mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.two.name"), combo.getText(), false);
+						statusOfMarkUp[1] = true;
 					} catch (Exception exe) {
 						StringWriter sw = new StringWriter();
 						PrintWriter pw = new PrintWriter(sw);
@@ -1243,9 +1253,10 @@ public class MainForm {
 					System.out.println("Starting!!");
 					verificationTable.removeAll();
 					startVerification(); // start the verification process
-					statusOfMarkUp[2] = true;
+
 					try {
 						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), true);
+						statusOfMarkUp[2] = true;
 					} catch (Exception exe) {
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
@@ -1258,13 +1269,11 @@ public class MainForm {
 			clearVerificationButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					clearVerification();
-					//statusOfMarkUp[2] = false;
-					
+					//statusOfMarkUp[2] = false;					
 					try {
-						startVerification(); // start the verification process
+						startVerification(); // start the verification process						
+						mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
 						statusOfMarkUp[2] = true;
-						
-						//mainDb.saveStatus(ApplicationUtilities.getProperty("tab.three.name"), combo.getText(), false);
 					} catch (Exception exe) {
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					}
@@ -1482,8 +1491,15 @@ public class MainForm {
 				}
 				startMarkup();
 				try {
-					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
-					statusOfMarkUp[4] = true;
+
+					runperl = true;
+					fourdotoneload = false;
+					fourdottwoload = false;
+					fourdotthreeload = false; 
+					fourdotonesave = false; 
+					fourdottwosave = false; 
+					fourdotthreesave = false;
+
 					/*forward to "review structure" subtab
 					markupNReviewTabFolder.setSelection(1);
 					//auto load structure terms
@@ -2195,6 +2211,14 @@ public class MainForm {
 				}
 				//saveTag(tabFolder);
 				loadTagTable(tabFolder);
+				
+				try {
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
+					statusOfMarkUp[5] = true;
+				} catch (Exception exe) {
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}
+				
 			}
 		});
 
@@ -2491,8 +2515,13 @@ public class MainForm {
 					}
 					
 				}
+				try {
+					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.character"), combo.getText(), true);
+					statusOfMarkUp[6] = true;
+				} catch (Exception exe) {
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}
 			}
-
 		});
 	//	}
 		
@@ -2761,7 +2790,8 @@ public class MainForm {
 				boolean completed = startFinalize(finalLog);
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					statusOfMarkUp[6] = true;
+					//statusOfMarkUp[6] = true; //wrong index
+					statusOfMarkUp[7] = true;
 					//if(completed){
 					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
@@ -2800,7 +2830,8 @@ public class MainForm {
 				startFinalize(finalLog);
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					statusOfMarkUp[6] = true;
+					//statusOfMarkUp[6] = true; //wrong index
+					statusOfMarkUp[7] = true;
 					//check if finalized final contains files--this should be done after finalize step is completed.
 					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
@@ -3099,7 +3130,7 @@ public class MainForm {
 		//final Composite composite_1 = new Composite(markupNReviewTabFolder, SWT.NONE);
 		
 		tbtmCategorizeOthers.setControl(composite_1);
-
+	
 		//subtab instruction
 		Text text_1 = new Text(composite_1, SWT.READ_ONLY | SWT.WRAP);
 		text_1.setToolTipText(ApplicationUtilities.getProperty(subtabInstruction));
@@ -3167,12 +3198,18 @@ public class MainForm {
 			@Override
 			public void widgetSelected(SelectionEvent e) {	
 				//popup a message if Perl thread is still alive
-				if(!MainForm.markupstarted || MainForm.vd.isAlive()){
+				if(MainForm.markupstarted && MainForm.vd.isAlive()){
 					ApplicationUtilities.showPopUpWindow(
 						ApplicationUtilities.getProperty("popup.wait"), 
 						ApplicationUtilities.getProperty("popup.header.info"), SWT.ICON_INFORMATION);
 					return;
 				}
+				
+				//set access flags
+				int subtabindex = markupNReviewTabFolder.getSelectionIndex(); //0: perl 1: 4.1 2: 4.2 3:4.3				
+				if(subtabindex == 1) fourdotoneload = true;
+				if(subtabindex == 2) fourdottwoload = true;
+				if(subtabindex == 3) fourdotthreeload = true;
 						
 				ArrayList<String> words = null;
 				if(type.compareTo("others")==0){
@@ -3213,6 +3250,20 @@ public class MainForm {
 				//	 "After the terms are saved, you will not be able to redo this step. Do you want to save now?", 
 				//		ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
 				//if(choice == SWT.YES) {
+					int subtabindex = markupNReviewTabFolder.getSelectionIndex(); //0: perl 1: 4.1 2: 4.2 3:4.3
+				
+					if(subtabindex == 1) fourdotonesave = true;
+					if(subtabindex == 2) fourdottwosave = true;
+					if(subtabindex == 3) fourdotthreesave = true;
+				
+					if(runperl && fourdotoneload && fourdottwoload && fourdotthreeload && fourdotonesave && fourdottwosave && fourdotthreesave){						
+						try {
+							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
+							statusOfMarkUp[4] = true;
+						} catch (Exception exe) {
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
+					}
 					recordTermReviewResults(termRoleMatrix);
 					contextText.setText("terms saved!");
 				//}else{

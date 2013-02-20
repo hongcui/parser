@@ -23,7 +23,7 @@ import org.jdom.output.XMLOutputter;
 public class ParsingUtil {
 	
 	private static final Logger LOGGER = Logger.getLogger(ParsingUtil.class);
-	public static void outputXML(Element treatment, File file, Comment comment) throws ParsingException {
+	public static void outputXML(Element treatment, File file, Comment comment) {
 		try {
 			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 			Document doc = new Document(treatment);

@@ -1124,8 +1124,10 @@ public class NumericalHandler  {
 		//String str1 = "(2-)2.5-3.5(-4) × (1.5-)2-3(-4) cm";
 		//String str1 = "(4–)5–6 × 1.5–2";
 		//String str2 = "area";	
-		String str1 = "40–80(–150+) cm ";
-		String str2 = "size";
+		//String str1 = "40–80(–150+) cm ";
+		//String str2 = "size";
+		String str1 = "[7,8]10,11";//not dealt with by this class
+		String str2 = "count";
 		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
 		System.out.println(e);
 	}
