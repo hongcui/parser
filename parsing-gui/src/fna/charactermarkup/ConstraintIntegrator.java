@@ -174,7 +174,7 @@ public class ConstraintIntegrator {
 					if(targets.size()>0) changed = true;
 					integrateInbracketsAttribute(targets, root, inputfile);
 					
-					if(changed) outputXML(root, inputfile);	
+					outputXML(root, inputfile);	
 				}catch(Exception e){
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());				
 				}
