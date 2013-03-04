@@ -1080,7 +1080,8 @@ public class CharacterAnnotatorChunked {
 		Element type = new Element("character");
 		laste.addContent(type);
 		//if(this.inbrackets) this.addAttribute(type, "in_bracket", "true");
-		this.addAttribute(type, "type", o);
+		this.addAttribute(type, "name", "type");
+		this.addAttribute(type, "value", o);
 		if(m.length()>0) this.addAttribute(type, "modifier", m);
 
 	}
