@@ -93,13 +93,15 @@ public class SentenceOrganStateMarker {
 				String taxonnames = "";
 				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
 				while(rs.next()){
-					if(taxonnames == null){taxonnames="";}
-					else{
-						taxonnames += rs.getString("name")+"|";
+					String tn = rs.getString("name").trim();
+					if(tn.length()>0){
+						tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
+						tn = tn.substring(tn.indexOf(".")+1).trim(); //A.glutinosa =>glutinosa
+						taxonnames += tn+"|";
 					}
 				}
 				if(taxonnames!=null && taxonnames.length()!=0){
-					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceFirst("\\|$", "").trim();
+					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceAll("(^\\||\\|$)", "").trim();
 					SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
 					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
 					SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
@@ -253,7 +255,7 @@ public class SentenceOrganStateMarker {
 			String name = (m.group(1)==null? "" : m.group(1))+m.group(2);
 			int end = m.end(2);
 			remain = remain.substring(end);
-			String formated = name.replaceAll("\\s+.\\s+", "-taxonname-");
+			String formated = name.replaceAll("\\s+\\.\\s+", "-taxonname-");
 			if(!formated.contains("-taxonname-")) formated = "taxonname-"+formated; //the taxon name doesn't have . in it: chamissoi => name~chamissoi
 			text = text.replaceAll(name, formated);
 			m = SentenceOrganStateMarker.taxonnamepattern2.matcher(remain);
