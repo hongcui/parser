@@ -789,6 +789,7 @@ public class POSTagger4StanfordParser {
 		normalizeCharacterLists(outlist); //chunkedtokens updated
 
 		if(hasbrackets){
+			String temp="";
 			inlist = inlist.trim()+" "; //need to have a trailing space
 			//inlist = inlist.replaceAll("(?<=(^|)not)\\s+", "");
 			normalizeCharacterLists(inlist); //chunkedtokens updated
@@ -809,7 +810,7 @@ public class POSTagger4StanfordParser {
 					}
 				}
 				orphanedto = getIndexOfOrphanedTo(inlist, ++orphanedto); 
-			}
+			}			
 		}
 		
 		String result = "";
@@ -932,7 +933,14 @@ public class POSTagger4StanfordParser {
 				
 				//adjust this.chunkedtokens.
 				String t= "{"+ch+"~list~";
-				for(int i = start; i<end; i++){
+				int leftsquare = 0;
+				int leftround = 0;
+				int i;
+				for(i = start; i<end; i++){
+					if(this.chunkedtokens.get(i).compareTo("[")==0) leftsquare++;//make sure the brackets in the chunk are all matched up.
+					if(this.chunkedtokens.get(i).compareTo("(")==0) leftround++;
+					if(this.chunkedtokens.get(i).compareTo("]")==0) leftsquare--;
+					if(this.chunkedtokens.get(i).compareTo(")")==0) leftround--;
 					if(this.chunkedtokens.get(i).length()>0){
 						t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
 					}else if(i == end-1){
@@ -942,6 +950,26 @@ public class POSTagger4StanfordParser {
 						t+=this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
 					}
 					this.chunkedtokens.set(i, "");
+				}
+				
+					for(; i<chunkedtokens.size(); i++){
+					  if(leftsquare!=0 || leftround!=0){
+						if(this.chunkedtokens.get(i).compareTo("[")==0) leftsquare++;
+						if(this.chunkedtokens.get(i).compareTo("(")==0) leftround++;
+						if(this.chunkedtokens.get(i).compareTo("]")==0) leftsquare--;
+						if(this.chunkedtokens.get(i).compareTo(")")==0) leftround--;
+						if(this.chunkedtokens.get(i).length()>0){
+							t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+						}else if(i == end-1){
+							while(this.chunkedtokens.get(i).length()==0){
+								i++;
+							}
+							t+=this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
+						}
+						this.chunkedtokens.set(i, "");
+					}else{
+						break;
+					}
 				}
 				t = t.replaceFirst("~$", "}")+" ";
 				if(t.indexOf("ttt~list")>=0) t = t.replaceAll("~color.*?ttt~list", "");
