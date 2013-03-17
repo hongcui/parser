@@ -594,7 +594,7 @@ public class MainForm {
 
 				}
 
-     			//changed from 6 to 5
+     			//changed from '6' to '5'
 				if (statusOfMarkUp[5]) {//passed tab 6 (step5),landed on tab 7 (step6)
 					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))) loadCharacterTab();
 				}

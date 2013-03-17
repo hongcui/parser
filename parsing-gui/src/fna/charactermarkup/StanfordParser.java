@@ -53,7 +53,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	static private int discoveredchunks = 0;
 	//private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+°²½/¼\\*/%\\?]*?[½/¼\\d][()\\[\\]\\-\\–\\d\\.,?×x\\+°²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
 	private static Pattern numbergroup = Pattern.compile("(.*?)([()\\[\\]\\-\\–\\d\\.×x\\+²½/¼\\*/%\\?]*?[½/¼\\d]?[()\\[\\]\\-\\–\\d\\.,?×x\\+²½/¼\\*/%\\?]{1,}(?![a-z{}]))(.*)"); //added , and ? for chromosome counts, used {1, } to include single digit expressions such as [rarely 0]
-	private static boolean printNormalizeBrackets = true;
+	private static boolean printNormalizeBrackets = false;
 
 	private File posedfile = null;
 	private File parsedfile = null;
@@ -142,7 +142,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("101.txt-11")!=0) continue;
+				//if(src.compareTo("674.txt-5")!=0) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -760,10 +760,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 			
 		String database = "markedupdatasets";
-		String posedfile = "Z:\\Australia\\V19\\target\\fnav5_test_posedsentences.txt";
-		String parsedfile = "Z:\\Australia\\V19\\target\\fnav5_test_parsedsentences.txt";
-		String transformedir = "Z:\\Australia\\V19\\target\\transformed";
-		String prefix = "fnav19_area";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\fna2_v21_jing_posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\fna2_v21_jing_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\transformed";
+		String prefix = "fna2_v21_jing";
 			
 		/*String database = "markedupdatasets";
 		String posedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_posedsentences.txt";

@@ -60,10 +60,16 @@ public class POSTagger4StanfordParser {
 	private static Pattern bulletpattern  = Pattern.compile("^(and )?([(\\[]\\s*\\d+\\s*[)\\]]|\\d+.)\\s+(.*)"); //( 1 ), [ 2 ], 12.
 	private static Pattern distributePrepPattern = Pattern.compile("(^.*~list~)(.*?~with~)(.*?~or~)(.*)");
 	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
-	//private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
+	//private static Pattern charalistpattern-old = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+([@,;\\.] )+\\s*)(([_a-z-]+ )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//
 	private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )+[& ]*([`@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
-	//private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
+	//\\4 should match a single character (i.e. a single word, to avoid results like {shape~list~outer~lanceolate~to~lance-ovate~(~often~herbaceous~punct~glandular-hirtellous~punct~equaling~or~surpassing~inner~punct~<apices>~acute~to~long-attenuate~)~punct~inner~lanceolate~to~lance-linear}. UPdate: the issue is solved by converting those position terms to structure in lookupcharacters, not by changing the patterns.  
+	//private static Pattern charalistpattern = Pattern.compile("(.*?(?:^| ))(([0-9a-z–\\[\\]\\+-]+ly )*([_a-z-]+ )[& ]*([`@,;\\.] )+\\s*)(([_a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\4)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//
+
+	//private static Pattern charalistpattern2-old = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*([@,;\\.] )+\\s*)(([a-z-]+ )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[@,;\\.%\\[\\]\\(\\)#].*)");//merely shape, @ shape
 	private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )+([0-9a-z–\\[\\]\\+-]+ly )*[& ]*([`@,;\\.] )+\\s*)(([a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//merely shape, @ shape
+	//\\3 should match a single character (i.e. a single word, to avoid results like {shape~list~outer~lanceolate~to~lance-ovate~(~often~herbaceous~punct~glandular-hirtellous~punct~equaling~or~surpassing~inner~punct~<apices>~acute~to~long-attenuate~)~punct~inner~lanceolate~to~lance-linear}, UPdate: the issue is solved by converting those position terms to structure in lookupcharacters, not by changing the patterns.  
+	//private static Pattern charalistpattern2 = Pattern.compile("(([a-z-]+ )*([a-z-]+ )([0-9a-z–\\[\\]\\+-]+ly )*[& ]*([`@,;\\.] )+\\s*)(([a-z-]+ |[0-9a-z–\\[\\]\\+-]+ly )*(\\3)+([0-9a-z–\\[\\]\\+-]+ly )*[`@,;\\.%\\[\\]\\(\\)&#a-z].*)");//merely shape, @ shape
+
 	//mohan declaration of roman numbers
 	public static final String roman="i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv|xvi|xvii|xviii|xix|xx|I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX";
 	//private Pattern romanptn = Pattern.compile("\\b"+roman+"\\b|\\{?"+roman+"\\}");
@@ -618,6 +624,13 @@ public class POSTagger4StanfordParser {
 			return result;
 	}
 	
+	/**
+	 * populate charactertokensReversed with a character representation of the str, in reversed token order.
+	 * str: <blades> {lance-ovate} to {narrowly} {lanceolate} . 
+	 * return: . shape narrowly ` shape #
+	 * @param str
+	 * @param markadv
+	 */
 	private void lookupCharacters(String str, boolean markadv) {
 		if(str.trim().length() ==0){
 			return;
@@ -628,7 +641,7 @@ public class POSTagger4StanfordParser {
 		ArrayList<String> saved = new ArrayList<String>();
 		
 		ArrayList<String> amb = new ArrayList<String>();
-		for(int i = this.chunkedtokens.size()-1; i>=0+0; i--){
+		for(int i = this.chunkedtokens.size()-1; i>=0; i--){
 			String word = this.chunkedtokens.get(i);
 			if(word.indexOf("~list~")>0){
 				String ch = word.substring(0, word.indexOf("~list~")).replaceAll("\\W", "").replaceFirst("ttt$", "");
@@ -638,6 +651,18 @@ public class POSTagger4StanfordParser {
 				if(charainfo==null){
 					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
 				}else{
+					//deal with cases where a position is used as a structure: {outer} {lance-ovate} to {narrowly} {lanceolate} 
+					if(charainfo[0].compareTo("position")==0){//word = {outer}
+						String character = this.charactertokensReversed.get(this.charactertokensReversed.size()-1); //character of the phrase following word in the str.
+						if(character.matches("\\w+") && !hasModifiedStructure() ){//not #, %, `,@
+							//change {outer} to <outer>
+							word = word.replaceFirst("\\{", "<").replaceFirst("\\}", ">");
+							this.chunkedtokens.set(i, word);
+							this.charactertokensReversed.add("#");
+							save = true;
+							continue;
+						}
+					}
 					this.charactertokensReversed.add(charainfo[0]); //color
 					if(save){
 						save(saved, this.chunkedtokens.size()-1-i, charainfo[0]); 
@@ -647,6 +672,7 @@ public class POSTagger4StanfordParser {
 						}
 					}
 					save = false;
+					
 				}
 			}else if (word.indexOf('<')>=0){
 				this.charactertokensReversed.add("#");
@@ -660,18 +686,18 @@ public class POSTagger4StanfordParser {
 			}else if(word.compareTo("±")==0){//±
 				this.charactertokensReversed.add("moreorlessly"); //,;. add -ly so it will be treated as an adv.
 				save = true;
-			}else if(word.matches("\\W")){
+			}else if(word.matches("\\W")){//punctuation marks
 				if(word.matches("[()\\[\\]]")) save(saved, this.chunkedtokens.size()-1-i, word); 
 				this.charactertokensReversed.add(word); //,;.
 				save = true;
-			}else if(markadv && word.endsWith("ly")){
+			}else if(markadv && word.endsWith("ly")){//adverb
 				this.charactertokensReversed.add(word);
 				save = true;
-			}else if(word.matches("("+this.negations+")")){
+			}else if(word.matches("("+this.negations+")")){//not
 				this.charactertokensReversed.add(word);
 				save = true;
 			}else{
-				this.charactertokensReversed.add("%");
+				this.charactertokensReversed.add("%");//all others, including stopwords, prepositions, etc
 				save = true;
 			}
 		}
@@ -698,6 +724,24 @@ public class POSTagger4StanfordParser {
 			}
 		}
 	}
+	
+	/**
+	 * a test used to see if a postion term should be converted to a structure term
+	 * if the position term hasModifiedStructure, then it should not be converted 
+	 * Scan through charactertokensReversed from back to front
+	 * @param charactertokensReversed2 "# color position"
+	 * @return true: e.g., "with {medial} {red} <bloth>": {medial} should stay as position 
+	 *         false: "or {outer} smaller ," {outer} should be converted to <outer>
+	 */
+	private boolean hasModifiedStructure() {
+		boolean has = true;
+		for(int i = this.charactertokensReversed.size()-1; i >=0; i--){
+			if(this.charactertokensReversed.get(i).compareTo("#")==0) return true; 
+			if(this.charactertokensReversed.get(i).matches("[^a-z0-9_`@-]+")) return false; 
+		}
+		return has;
+	}
+
 	/**
 	 * lookback
 	 * @param saved
@@ -870,7 +914,7 @@ public class POSTagger4StanfordParser {
 		//	list+=this.charactertokensReversed.get(i)+" ";
 		//}
 		//list = list.trim()+" "; //need to have a trailing space
-		
+		ArrayList<String> copy = (ArrayList<String>) this.chunkedtokens.clone();
 		//pattern match: collect state one by one
 		String listcopy = list;
 		int base = 0;
@@ -942,6 +986,13 @@ public class POSTagger4StanfordParser {
 					if(this.chunkedtokens.get(i).compareTo("]")==0) leftsquare--;
 					if(this.chunkedtokens.get(i).compareTo(")")==0) leftround--;
 					if(this.chunkedtokens.get(i).length()>0){
+						if(t.indexOf("<")>0){
+							//case: {shape~list~ovate~to~lance-ovate~(~glabrous~or~sparsely~glandular-pubescent~punct~<apices>~acute~to~acuminate~)} 
+							//this is caused by adding more tokens to t to complete a open bracket
+							//solution: abort normalization
+							this.chunkedtokens = copy;
+							return;								
+						}
 						t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
 					}else if(i == end-1){
 						while(this.chunkedtokens.get(i).length()==0){
@@ -952,13 +1003,20 @@ public class POSTagger4StanfordParser {
 					this.chunkedtokens.set(i, "");
 				}
 				
-					for(; i<chunkedtokens.size(); i++){
+				for(; i<chunkedtokens.size(); i++){
 					  if(leftsquare!=0 || leftround!=0){
 						if(this.chunkedtokens.get(i).compareTo("[")==0) leftsquare++;
 						if(this.chunkedtokens.get(i).compareTo("(")==0) leftround++;
 						if(this.chunkedtokens.get(i).compareTo("]")==0) leftsquare--;
 						if(this.chunkedtokens.get(i).compareTo(")")==0) leftround--;
 						if(this.chunkedtokens.get(i).length()>0){
+							if(t.indexOf("<")>0){
+								//case: {shape~list~ovate~to~lance-ovate~(~glabrous~or~sparsely~glandular-pubescent~punct~<apices>~acute~to~acuminate~)} 
+								//this is caused by adding more tokens to t to complete a open bracket
+								//solution: abort normalization
+								this.chunkedtokens = copy;
+								return;								
+							}
 							t += this.chunkedtokens.get(i).trim().replaceAll("[{}]", "").replaceAll("[,;\\.]", "punct")+"~";
 						}else if(i == end-1){
 							while(this.chunkedtokens.get(i).length()==0){
