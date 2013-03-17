@@ -5866,7 +5866,7 @@ sub plural{
       $plural = $word."es";
     }elsif($word =~ /(.*?)([^aeiouy])y$/){
       $plural = $1.$2."ies";
-    }elsif($word =~ /(.*?)(?:([^f])feÃ¯Â¿Å“([oaelr])f)$/){
+    }elsif($word =~ /(.*?)(?:([^f])fe|([oaelr])f)$/){
       $plural = $1.$2.$3."ves";
     }elsif($word =~ /(.*?)(x|s)is$/){
       $plural = $1.$2."es";
