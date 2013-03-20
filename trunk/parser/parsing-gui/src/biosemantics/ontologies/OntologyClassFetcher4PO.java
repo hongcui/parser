@@ -91,22 +91,6 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 
 	}
 	
-	public ArrayList<String> getSynonymLabels(OWLClass c) {
-		ArrayList<String> labels = new ArrayList<String>();
-		Set<OWLAnnotation> anns = c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasExactSynonym")));
-		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym"))));
-		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym"))));
-		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasNarrowSynonym"))));
-		
-		Iterator<OWLAnnotation> it = anns.iterator();
-		while (it.hasNext()) {
-			//String label = this.getRefinedOutput(it.next().toString());
-			String label = ((OWLLiteral)it.next().getValue()).getLiteral();
-			labels.add(label);
-		}
-		return labels;
-	}
-	
 	private void recordHeadNouns() {
 		Statement stmt = null;
 		PreparedStatement pstmt = null;
