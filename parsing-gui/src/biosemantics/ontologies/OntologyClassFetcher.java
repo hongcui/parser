@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -26,6 +27,7 @@ import fna.parsing.state.SentenceOrganStateMarker;
 public abstract class OntologyClassFetcher {
 	protected static final Logger LOGGER = Logger.getLogger(SentenceOrganStateMarker.class);
 	protected Set<OWLClass> allclasses=new HashSet<OWLClass>();
+	protected Set<OWLOntology> onts=new HashSet<OWLOntology>();
 	protected OWLOntology ontology;
 	protected OWLDataFactory df;
 	protected Connection conn;
@@ -48,7 +50,7 @@ public abstract class OntologyClassFetcher {
 		try {
 			//fetch all classes
 			ontology = manager.loadOntologyFromOntologyDocument(ontofile);
-			Set<OWLOntology> onts = ontology.getImportsClosure();
+			onts = ontology.getImportsClosure();
 			for (OWLOntology ont:onts){
 				allclasses.addAll((Collection<? extends OWLClass>) ont.getClassesInSignature(true));
 			}	
@@ -62,6 +64,22 @@ public abstract class OntologyClassFetcher {
 	 * populate the arraylists selectedClassLabels and selectedClassCategories
 	 */
 	public abstract void selectClasses();
+	
+	public ArrayList<String> getSynonymLabels(OWLClass c) {
+		ArrayList<String> labels = new ArrayList<String>();
+		Set<OWLAnnotation> anns = c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasExactSynonym")));
+		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym"))));
+		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasBroadSynonym"))));
+		anns.addAll(c.getAnnotations(ontology, df.getOWLAnnotationProperty(IRI.create("http://www.geneontology.org/formats/oboInOwl#hasNarrowSynonym"))));
+		
+		Iterator<OWLAnnotation> it = anns.iterator();
+		while (it.hasNext()) {
+			//String label = this.getRefinedOutput(it.next().toString());
+			String label = ((OWLLiteral)it.next().getValue()).getLiteral();
+			labels.add(label);
+		}
+		return labels;
+	}
 	
 	public void saveSelectedClass(){
 		try{
