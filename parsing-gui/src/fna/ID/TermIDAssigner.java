@@ -33,7 +33,7 @@ public class TermIDAssigner {
 		this.schemaname = schemaname;
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
-			String url = "jdbc:mysql://localhost/"+schemaname+"?user=termsuser&password=termspassword";
+			String url =ApplicationUtilities.getProperty("database.url");
 			this.conn = DriverManager.getConnection(url);
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());

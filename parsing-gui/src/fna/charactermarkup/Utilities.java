@@ -1008,7 +1008,7 @@ public class Utilities {
 		Connection conn = null;
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
-		    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
+		    String URL = ApplicationUtilities.getProperty("database.url");
 			//String URL = ApplicationUtilities.getProperty("database.url");
 			conn = DriverManager.getConnection(URL);
 		}catch(Exception e){

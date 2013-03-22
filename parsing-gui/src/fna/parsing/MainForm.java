@@ -3046,7 +3046,6 @@ public class MainForm {
 				}
 				//create new version of term_category table
 				String mysqlrestore = "mysql -u"+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" "+ApplicationUtilities.getProperty("database.name")+" < \""+Registry.TargetDirectory+file+"\""+" 2> \""+Registry.TargetDirectory+dataprefix+"_download_sqllog.txt\"";//write output to log file
-				//String mysqlrestore = "cmd /c start mysqldump -utermsuser -ptermspassword markedupdatasets -r \""+Registry.TargetDirectory+dataprefix+"_groupterms.sql\"";		
 				System.out.println(mysqlrestore);
 				String[] cmd = new String [] {"cmd", "/C", mysqlrestore}; //to hid redirect <
 				Process p = Runtime.getRuntime().exec(cmd);

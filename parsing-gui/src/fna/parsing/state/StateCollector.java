@@ -77,8 +77,8 @@ public class StateCollector  {
 	protected static final Logger LOGGER = Logger.getLogger(StateCollector.class);
 	static protected Connection conn = null;
 	//static protected String database = null;
-	//static protected String username = "termsuser";
-	//static protected String password = "termspassword";
+	//static protected String username =ApplicationUtilities.getProperty("database.username");
+	//static protected String password = ApplicationUtilities.getProperty("database.termspassword");
 	static protected String word = "(?:[\\w_]+\\s)";
 	static public String stop ="a|about|above|across|after|along|also|although|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|for|from|had|has|have|hence|here|how|if|in|into|inside|inward|is|it|its|may|might|more|most|near|no|not|of|off|on|onto|or|out|outside|outward|over|should|so|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|was|were|what|when|where|which|why|with|within|without|would";
 	//static public String stop ="a|above|above|across|after|along|also|amp|an|and|are|as|at|be|because|become|becomes|becoming|been|before|being|beneath|between|beyond|but|by|ca|can|could|did|do|does|doing|done|each|even|few|frequently|from|had|has|have|here|how|if|in|into|is|it|its|less|may|might|more|most|much|near|not|occasionally|of|off|often|on|onto|or|over|rarely|should|so|some|sometimes|somewhat|soon|than|that|the|then|there|these|this|those|throughout|to|toward|towards|up|upward|very|was|well|were|what|when|where|which|why|with|without|would";

@@ -17,8 +17,8 @@ import fna.parsing.ApplicationUtilities;
 public class Segmentation {
 	static protected Connection conn = null;
 	static protected String database = null;
-	static protected String username = "termsuser";
-	static protected String password = "termspassword";
+	static protected String username =ApplicationUtilities.getProperty("database.username");
+	static protected String password = ApplicationUtilities.getProperty("database.termspassword");
 	private static final Logger LOGGER = Logger.getLogger(Segmentation.class);
 
 	public Segmentation(String database) {

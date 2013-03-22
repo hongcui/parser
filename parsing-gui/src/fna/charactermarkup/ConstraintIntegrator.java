@@ -127,7 +127,7 @@ public class ConstraintIntegrator {
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+			    String URL = "jdbc:mysql://localhost/"+database+"?user="+ApplicationUtilities.getProperty("database.username")+"&password="+ ApplicationUtilities.getProperty("database.userpassword")+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);						
 			}

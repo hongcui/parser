@@ -67,7 +67,7 @@ public class UploadTerms2OTO{
 		ArrayList<String> result = execute(backup);
 		if(result.size()>1 || result.get(result.size()-1).equals("-1")) return false;
 		
-		//String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
+		//String excom = "mysql -u ApplicationUtilities.getProperty("database.username") -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
 		String excom = "mysql -u "+ApplicationUtilities.getProperty("database.username")+" -p"+ApplicationUtilities.getProperty("database.password")+" < "+textfile;//write output to log file
 		result = execute(excom);
 		if(result.size()>1|| result.get(result.size()-1).equals("-1")) return false;
@@ -218,8 +218,8 @@ public class UploadTerms2OTO{
     		    FileOutputStream fos=null;
     		    try{
     		    	//hongcui@:
-    		      String user="hongcui";
-    		      String host="biosemantics.arizona.edu";
+    		      String user=ApplicationUtilities.getProperty("server.username");
+    		      String host=ApplicationUtilities.getProperty("server.name");
     		      
 
     		      String prefix=null;
@@ -232,7 +232,7 @@ public class UploadTerms2OTO{
         	      java.util.Properties config = new java.util.Properties(); 
         	      config.put("StrictHostKeyChecking", "no");
         	      session.setConfig(config);
-    		      session.setPassword("2t2gPTfz");
+    		      session.setPassword(ApplicationUtilities.getProperty("server.password"));
         	      session.connect();
 
     		      // exec 'scp -f rfile' remotely
@@ -511,8 +511,8 @@ static int checkAck(InputStream in) throws IOException{
 		try{
 		      JSch jsch=new JSch();  
 		      String host ="biosemantics.arizona.edu";
-		      String user="hongcui";
-		      String pass ="2t2gPTfz";
+		      String user=ApplicationUtilities.getProperty("server.username");
+		      String pass =ApplicationUtilities.getProperty("server.password");
 
 		      Session session=jsch.getSession(user, host, 22);
 		      
@@ -625,10 +625,10 @@ static int checkAck(InputStream in) throws IOException{
 		scpTo(tsentence);
 		
 		
-		String backup = "mysqldump -u termsuser -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
+		String backup = "mysqldump -u ApplicationUtilities.getProperty("database.username") -ptermspassword markedupdatasets > markedupdatasets_bak_"+dateFormat.format(cal.getTime())+".sql";
 		execute(backup);
 		
-		String excom = "mysql -u termsuser -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
+		String excom = "mysql -u ApplicationUtilities.getProperty("database.username") -ptermspassword < "+textfile+" 2> "+dataprefix+"_sqllog.txt";//write output to log file
 		execute(excom);*/
 	}
 }

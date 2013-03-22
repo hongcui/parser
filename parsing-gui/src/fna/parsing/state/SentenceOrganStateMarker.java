@@ -727,12 +727,10 @@ public class SentenceOrganStateMarker {
 		//String database="annotationevaluation";
 		//String database ="phenoscape";
 		String database="markedupdatasets";
-		String username="termsuser";
-		String password="termspassword";
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 		}catch(Exception e){
