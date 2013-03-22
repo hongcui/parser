@@ -24,8 +24,8 @@ import org.jdom.output.XMLOutputter;
 public class V22_Transformer {
 	private static final Logger LOGGER = Logger.getLogger(V22_Transformer.class);
 	static protected Connection con = null;
-	static protected String username = "termsuser";
-	static protected String password = "termspassword";
+	static protected String username =ApplicationUtilities.getProperty("database.username");
+	static protected String password = ApplicationUtilities.getProperty("database.termspassword");
 	static Element treatment = new Element("treatment");
 	static protected String connectionUrl = null;
 	static ResultSet rs = null;

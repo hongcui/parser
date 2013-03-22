@@ -39,7 +39,7 @@ public abstract class FileName2Taxon {
 		if(conn == null){
 			try{
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+			    String URL = ApplicationUtilities.getProperty("database.url");
 				//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}catch(Exception e){

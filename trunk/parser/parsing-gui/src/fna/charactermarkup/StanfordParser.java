@@ -66,7 +66,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = true;
+	private boolean finalize = false;
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
@@ -93,7 +93,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    //String URL = "jdbc:mysql://localhost/"+database+"?user=termsuser&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
+			    //String URL = "jdbc:mysql://localhost/"+database+"?user=ApplicationUtilities.getProperty("database.username")&password=termspassword&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
@@ -760,10 +760,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		
 			
 		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\fna2_v21_jing_posedsentences.txt";
-		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\fna2_v21_jing_parsedsentences.txt";
-		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV21\\target\\transformed";
-		String prefix = "fna2_v21_jing";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\fna2_v22_jing_posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\fna2_v22_jing_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\transformed";
+		String prefix = "fna2_v22_jing";
 			
 		/*String database = "markedupdatasets";
 		String posedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_posedsentences.txt";
@@ -827,8 +827,8 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
 
-		//sp.POSTagging();
-		//sp.parsing();
+		sp.POSTagging();
+		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);

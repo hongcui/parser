@@ -19,8 +19,8 @@ public class connectURL {
 
       // Create a variable for the connection string.
      /* String connectionUrl = "jdbc:sqlserver://localhost\\MSSQLSERVER:1433;" +
-    		  "databaseName=EFlora;user=termsuser;password=termspassword";*/
-	 String connectionUrl = "jdbc:sqlserver://localhost:1433;Instance=MSSQLSERVER;user=termsuser;password=termspassword";
+    		  "databaseName=EFlora;user=ApplicationUtilities.getProperty("database.username");password=termspassword";*/
+	 String connectionUrl = ApplicationUtilities.getProperty("database.url");
 	   
       // Declare the JDBC objects.
       Connection con = null;

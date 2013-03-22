@@ -35,7 +35,6 @@ public class StateCollectorTest extends StateCollector {
 		
 	public StateCollectorTest(Connection conn, String tableprefix, boolean filtered, String glosstable, Display display, StyledText charLog) {
 		super(conn, tableprefix, glosstable, display, charLog);
-		//statematrix.save2MySQL(database, "termsuser", "termspassword");
 		this.filtered = filtered;
 		
 	}
@@ -48,7 +47,7 @@ public class StateCollectorTest extends StateCollector {
 
 	public void saveStates(){
 		this.showOutputMessage("System is saving character state terms to database ...");
-		statematrix.save2MySQL(this.conn, this.tableprefix, "termsuser", "termspassword");
+		statematrix.save2MySQL(this.conn, this.tableprefix,ApplicationUtilities.getProperty("database.username"), ApplicationUtilities.getProperty("database.termspassword"));
 	}
 	
 	public int grouping4GraphML(){

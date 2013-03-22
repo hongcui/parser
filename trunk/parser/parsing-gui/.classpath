@@ -48,5 +48,6 @@
 	<classpathentry kind="lib" path="lib/baseline.jar"/>
 	<classpathentry kind="lib" path="lib/formattedtext-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/swt-grouplayout.jar"/>
+	<classpathentry kind="lib" path="lib/owlapi-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

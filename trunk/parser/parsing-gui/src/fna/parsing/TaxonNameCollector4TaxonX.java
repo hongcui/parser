@@ -141,7 +141,7 @@ public class TaxonNameCollector4TaxonX extends TaxonNameCollector {
 
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
-			    String URL = "jdbc:mysql://localhost/markedupdatasets?user=termsuser&password=termspassword";
+			    String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}
 			String transformeddir = "C:\\Users\\mohankrishna89\\Desktop\\remarkup\\Plazi_8538_pyr_mad_tx1\\target\\transformed";

@@ -127,9 +127,9 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 		String ontoURL = "C:/Users/updates/CharaParserTest/Ontologies/plant_ontology.owl";
 		Connection conn = null;
 		String table = "ontology_po_structures";
-		String database="markedupdatasets";
-		String username="termsuser";
-		String password="termspassword";
+		String database=ApplicationUtilities.getProperty("database.name");
+		String username=ApplicationUtilities.getProperty("database.username");
+		String password=ApplicationUtilities.getProperty("database.password");
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
