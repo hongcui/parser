@@ -25,6 +25,10 @@ server.name=biosemantics.arizona.edu
 #charaparser version
 CharaParser.version=prerelease
 
+#charaparser running mode
+charaparser.finalize=true
+charaparser.standalone=false
+
 # Data individual to mark up
 style.mapping=style-mapping.properties
 MARKEDUP=markedup

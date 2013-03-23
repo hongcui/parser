@@ -3856,16 +3856,16 @@ public class MainForm {
 		File project = null;
 		try{
 			if(type.trim().equals(""))
-				project= new File("fnaproject.conf");
+				project= new File("type1project.conf");//fna/foc doc 
 			else
 				if(type.trim().equals("type2"))
-					project= new File("treatiseproject.conf");
+					project= new File("type2project.conf"); //treatise and paragraph-level fna
 				else
 			if(type.trim().equals("type3"))
-				project= new File("bhlproject.conf");
+				project= new File("type3project.conf"); //bhl
 				else 
 			if(type.trim().equals("type4"))
-				project= new File("taxonproject.conf");
+				project= new File("type4project.conf");//taxonX and phenoscape
 			
 			//	 project= new File("project.conf");			
 		BufferedReader in = new BufferedReader(new FileReader(project));
@@ -3911,18 +3911,18 @@ public class MainForm {
 		try{
 			System.out.println(type.equalsIgnoreCase(""));
 			if(type.trim().equals(""))//that means fna is selected.. so save it to fnaproject.conf
-				project = new File(System.getProperty("user.dir")+"/fnaproject.conf");
+				project = new File(System.getProperty("user.dir")+"/type1project.conf");
 				else
 					if(type.trim().equals("type2"))
-						project = new File(System.getProperty("user.dir")+"/treatiseproject.conf");
+						project = new File(System.getProperty("user.dir")+"/type2project.conf");
 						
 				else
 					if(type.trim().equals("type3"))
 						
-						project = new File(System.getProperty("user.dir")+"/bhlproject.conf");
+						project = new File(System.getProperty("user.dir")+"/type3project.conf");
 				else 
 					if(type.trim().equals("type4"))
-						project = new File(System.getProperty("user.dir")+"/taxonproject.conf");
+						project = new File(System.getProperty("user.dir")+"/type4project.conf");
 						
 				
 				

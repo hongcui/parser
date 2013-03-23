@@ -66,7 +66,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	//private SentenceOrganStateMarker sosm = null;
 	//private Hashtable sentmapping = new Hashtable();
 
-	private boolean finalize = false;
+	private boolean finalize = Boolean.valueOf(ApplicationUtilities.getProperty("charaparser.finalize"));
 	//private boolean finalize = true;//set true when running config else set false.
 
 	//private boolean debug = true;
