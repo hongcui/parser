@@ -120,6 +120,7 @@ public class Type1Document {
 
 				if(flag) {
 					VolumeExtractor.setStart(".*?(" + startUpString + ").*");
+					MainForm.setStartUpString(startUpString);
 					shell.dispose();
 				} 
 

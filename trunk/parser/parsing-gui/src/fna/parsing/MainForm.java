@@ -342,6 +342,9 @@ public class MainForm {
 	private boolean fourdotonesave = false;
 	private boolean fourdottwosave = false;
 	private boolean fourdotthreesave = false;
+	
+	/*variable to select a transformer for type1 doc*/
+	private static String startupstring = null;
 	//////////////////methods///////////////////////
 	
 	/////////////////display application window/////
@@ -3807,8 +3810,11 @@ public class MainForm {
 	private void startTransformation() {
 		if(vt==null || !vt.isAlive()){
 			ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
-			//vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
-			vt = new VolumeTransformerFoC(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			if(MainForm.startupstring.contains("Heading")){
+				vt = new VolumeTransformerFoC(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			}else{
+				vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			}
 			vt.start();
 		}
 	}
@@ -5448,7 +5454,7 @@ public class MainForm {
 	
 	/**loading structure/descriptor terms for curation**/
 
-	/*protected void loadTermCurationTabs(){
+	 /*protected void loadTermCurationTabs(){
 		//loadFindStructureTable();
 		//loadFindDescriptorTable();
 		//loadFindMoreStructureTable();
@@ -5545,6 +5551,10 @@ public class MainForm {
 		}
 		return count;
 	}*/
+	
+	static void setStartUpString(String string){
+		MainForm.startupstring = string;
+	}
 	
 	private void setType4XML(String schema){
 		this.type4xml = schema;
