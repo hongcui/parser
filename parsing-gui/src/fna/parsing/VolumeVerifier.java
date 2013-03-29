@@ -387,9 +387,9 @@ public class VolumeVerifier extends Thread {
 			text = text.replaceFirst("^.*?(?=[A-Z])", "").trim();
 			text = text.replaceAll(" ", " ").replaceAll("\\s+", " ").trim(); //there are some whitespaces that are not really a space, don't know what they are. 
 			//fix broken names: T HYRSOSTACHYS;  va r. subhispida
-			text = fixBrokenNames(text);
+			text = fixBrokenNames(text); //for a few case. Another more sophisticated methods is used in VolumeTransformer after all name strings have been collected by this class.
 			text = chunkPlaceOfPub(text, filename); //after this, text should only hold name information
-			if(text.length() == 0){return "";} //TODO: shouldn't happen, except for 295.xml
+			if(text.length() == 0){return "";} //TODO: shouldn't happen, except for fna v? 295.xml
 	
 			// hong 6/26/08: make 1.Pterostegia drymarioides
 			// and 1. Pterostegia drymarioides Fischer ... match.
@@ -712,7 +712,7 @@ public class VolumeVerifier extends Thread {
 				Element root = doc.getRootElement();
 				Element pe = (Element) XPath.selectSingleNode(root,
 						"/treatment/paragraph"); //get the first paragraph, which is the name paragraph
-				String taxonname = extractName(pe, i + ".xml");
+				String taxonname = extractName(pe, i + ".xml");//name info with authority, without pub info
 				ti.addName(taxonname);//add one by one in sequence
 				System.out.println("add name :"+taxonname+ " for file "+i+".xml");
 			}
