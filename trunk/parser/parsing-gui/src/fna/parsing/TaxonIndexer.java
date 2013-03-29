@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 
@@ -41,6 +42,7 @@ public class TaxonIndexer implements Serializable {
 	//private String[] names;
 	private ArrayList<String> numberList = new ArrayList<String>();
 	private ArrayList<String> nameList = new ArrayList<String>();
+	private Hashtable<String, String> allnametokens = new Hashtable<String, String> ();
 	/*if TXT_FILE is available, build TaxonIndex. Otherwise create an empty TaxonIndex to be populated by VolumeVerifier*/
 
 	public static void saveUpdated(String path, TaxonIndexer ti) throws ParsingException {
@@ -124,7 +126,44 @@ public class TaxonIndexer implements Serializable {
 	}
 
 	public void addName(String name) {
+		name = name.trim();
 		nameList.add(name);
+		//add to allnametoken hash
+		String[] tokens = getTokensFromName(name);
+		for(String t: tokens){
+			String count = this.allnametokens.get(t);
+			if(count==null) this.allnametokens.put(t, "1");
+			else this.allnametokens.put(t, ""+(Integer.parseInt(count)+1));
+		}
+		
+	}
+	
+	private String[] getTokensFromName(String name) {
+		String ncp = name;
+		if(!name.matches(".*?(var|subsp|sect|subg)\\..*")){
+			name = name.replaceFirst("(?<= [a-z]{3,20} )\\(?[A-Z].*", "").trim(); //remove authority, the first Cap after a lower case word
+			if(name.length() == ncp.length()){ //authority not removed, e.g. family/tribe/genus name: ABCDE Smith
+				name =name.replaceFirst("(?<=[A-Z]{3,20} )[A-Z].*", "");
+			}
+		}else{
+			String[] parts = name.split("(var|subsp|sect|subg)\\."); //authority may appear in part1 and/or part2
+			name = "";
+			for(String part: parts){
+				String cpart = part;
+				part = part.replaceFirst("(?<= [a-z]{3,20} )\\(?[A-Z].*", "").trim(); //remove authority, the first Cap after a lower case word
+				if(part.length() == cpart.length()){ //authority not removed, e.g. family/tribe/genus name: ABCDE Smith
+					part = part.replaceFirst("(?<=[A-Z]{3,20} )[A-Z].*", "");
+				}
+				name +=part + " ";
+			}
+		}
+		String[] tokens = name.toLowerCase().split("\\s+");
+		if(name.length()!=ncp.length()) System.out.println("authority removed:"+ncp.replace(name, ""));
+		return tokens;
+	}
+
+	public Hashtable<String, String> getAllNameTokens(){
+		return this.allnametokens;
 	}
 
 	public String getNumber(int index) {

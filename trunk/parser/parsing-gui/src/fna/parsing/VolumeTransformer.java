@@ -50,6 +50,9 @@ public class VolumeTransformer extends Thread {
 	private static String organnamep ="achenes|anthers|awns|axes|blades|bracteoles|bracts|branches|buds|bumps|calyces|capsules|clusters|crescents|crowns|cusps|cymes|cymules|ends|escences|fascicles|filaments|flowers|fruits|heads|herbs|hoods|inflores|inflorescences|internodes|involucres|leaves|lengths|limbs|lobes|margins|midribs|midveins|nectaries|nodes|ocreae|ocreolae|ovules|pairs|papillae|pedicels|pedicles|peduncles|perennials|perianths|petals|petioles|pistils|plants|prickles|pules|rescences|rhizomes|rhi_zomes|roots|rows|scapes|seeds|sepals|shoots|spikelets|stamens|staminodes|stems|stigmas|stipules|sti_pules|structures|styles|subshrubs|taproots|tap_roots|teeth|tendrils|tepals|trees|tubercles|tubercules|tubes|tufts|twigs|utricles|veins|vines|wings";
 	private static String usstates ="Ala\\.|Alabama|Alaska|Ariz\\.|Arizona|Ark\\.|Arkansas|Calif\\.|California|Colo\\.|Colorado|Conn\\.|Connecticut|Del\\.|Delaware|D\\.C\\.|District of Columbia|Fla\\.|Florida|Ga\\.|Georgia|Idaho|Ill\\.|Illinois|Ind\\.|Indiana|Iowa|Kans\\.|Kansas|Ky\\.|Kentucky|La\\.|Louisiana|Maine|Maryland|Md\\.|Massachusetts|Mass\\.|Michigan|Mich\\.|Minnesota|Minn\\.|Mississippi|Miss\\.|Missouri|Mo\\.|Montana|Mont\\.|Nebraska|Nebr\\.|Nevada|Nev\\.|New Hampshire|N\\.H\\.|New Jersey|N\\.J\\.|New Mexico|N\\.Mex\\.|New York|N\\.Y\\.|North Carolina|N\\.C\\.|North Dakota|N\\.Dak\\.|Ohio|Oklahoma|Okla\\.|Oregon|Oreg\\.|Pennsylvania|Pa\\.|Rhode Island|R\\.I\\.|South Carolina|S\\.C\\.|South Dakota|S\\.Dak\\.|Tennessee|Tenn\\.|Texas|Tex\\.|Utah|Vermont|Vt\\.|Virginia|Va\\.|Washington|Wash\\.|West Virginia|W\\.Va\\.|Wisconsin|Wis\\.|Wyoming|Wyo\\.";	
 	private static String caprovinces="Alta\\.|Alberta|B\\.C\\.|British Columbia|Manitoba|Man\\.|New Brunswick|N\\.B\\.|Newfoundland and Labrador|Nfld\\. and Labr|Northwest Territories|N\\.W\\.T\\.|Nova Scotia|N\\.S\\.|Nunavut|Ontario|Ont\\.|Prince Edward Island|P\\.E\\.I\\.|Quebec|Que\\.|Saskatchewan|Sask\\.|Yukon";
+	//private static Pattern p = Pattern.compile("(.*?\\d+–\\d+[\\.;]\\]?)(\\s+[A-Z]\\w+,.*)"); //splitting between a page range and first author name. Assuming references are separated by [;.]
+	private static Pattern p = Pattern.compile("(.*?\\d+–\\d+[\\.;]\\]?)(\\s+[A-Z]\\w+.*)"); //splitting between a page range and first author name. Assuming references are separated by [;.]. Removed "," after author first name (chinese author name in Foc: Wu Te-lin,
+
 	private Properties styleMappings;
 	private TaxonIndexer ti;
 	private ProcessListener listener;
@@ -57,7 +60,7 @@ public class VolumeTransformer extends Thread {
 	//TODO: put the following in a conf file. same for those in volumeExtractor.java
 	//private String start = "^Heading.*"; //starts a treatment
 	private String start = VolumeExtractor.getStart(); //starts a treatment
-	private String names = ".*?(Syn|Name).*"; //other interesting names worth parsing
+	private String names = ".*?(Syn|Name|syn|name).*"; //other interesting names worth parsing
 	private String conservednamestatement ="(name conserved|nom. cons.)";
 	private static final Logger LOGGER = Logger.getLogger(VolumeTransformer.class);
 	private VolumeTransformerDbAccess vtDbA = null;	
@@ -77,6 +80,7 @@ public class VolumeTransformer extends Thread {
 	private boolean debug = false;
 	private boolean debugref = false;
 	private boolean debugkey = true;
+	protected Hashtable<String, String> allNameTokens;
 	
 	
 	static XPath discussion;
@@ -113,6 +117,7 @@ public class VolumeTransformer extends Thread {
 		vtDbA = new VolumeTransformerDbAccess(dataPrefix);
 		
 		ti = TaxonIndexer.loadUpdated(Registry.ConfigurationDirectory);
+		this.allNameTokens = ti.getAllNameTokens();
 		if(ti.emptyNumbers() || ti.emptyNames()) ti = null;
 		
 		// load style mapping
@@ -215,8 +220,15 @@ public class VolumeTransformer extends Thread {
 						}
 					}else {
 						String sm = styleMappings.getProperty(style);
-						if(sm.matches("author_of.*")){ //change author_of_XXXXX to author according to JSTOR standards
+						if(sm.contains("author")){ //change "author_of_XXXXX" or "authors" to author according to JSTOR standards
 							sm = "author";
+						}
+						if(sm.contains("discussion")){//may be "references" as in FoC
+							int tokencount = text.replaceAll("[a-z ]", "").length(); //count of capital letters, numbers, and punct marks
+							int wordcount = text.split("\\s+").length;
+							if(tokencount * 2 > wordcount && text.matches("^[A-Z]\\S*\\s+[A-Z].*")){ //first two words are capitalized. To avoid treating as references: "In general, the tribes recognized here and their delimitations follow Lewis, G. P. et al. (eds.). 2005.Legumes of the World. Richmond, U.K.: Royal Botanic Gardens, Kew."
+								sm = "references";
+							}
 						}
 						Element e = new Element(sm);
 						if(text.trim().length()!=0)
@@ -496,7 +508,6 @@ public class VolumeTransformer extends Thread {
 		String text = ref.getText().replaceAll("^(\\s*SELECTED\\s*REFERENCE(S)?\\s*)", ""); //To remove selected references from the sentence.
 		ref.setText("");
 		if(this.debugref) System.out.println("\nReferences text:"+text);
-		Pattern p = Pattern.compile("(.*?\\d+–\\d+\\.\\]?)(\\s+[A-Z]\\w+,.*)");
 		Matcher m = p.matcher(text);
 		while(m.matches()){
 			String refstring = m.group(1);
@@ -697,53 +708,17 @@ public class VolumeTransformer extends Thread {
 		taxonid.setAttribute("Status","ACCEPTED");
 		
 		//End code
-		
-		//namerank and name
-		//(subfam|var|subgen|subg|subsp|ser|tribe|subsect)
-		if(namerank.indexOf("species_subspecies_variety_name")>=0){
-			if(text.indexOf("var.") >=0){
-				namerank = "variety_name";
-			}else if(text.indexOf("subsp.") >=0){
-				namerank = "subspecies_name";
-			}else if(text.indexOf("ser.") >=0 && text.indexOf(",") > text.indexOf("ser.")){ //after "," is publication where ser. may appear.
-				namerank = "series_name";
-			}else if(text.indexOf("sect.") >=0){
-				namerank = "section_name";
-			}else if(text.indexOf("subsect.") >=0){
-				namerank = "subsection_name";
-			}else {
-				namerank = "species_name";
-			}
-		}
+		//specificNameRank may need be adjusted depending on the style used in the orginal doc
+		namerank = specificNameRank(namerank, text);	
+		name = fixBrokenName(text, namerank);
 		if(debug) System.out.println("namerank:"+namerank);
 		System.out.println("namerank:"+namerank);
-		String[] nameinfo = getNameAuthority(name);
+		String[] nameinfo = getNameAuthority(name);//genus and above: authority parsed by getNameAuthority: 0: name 1:authority
 		if(nameinfo[0]!=null && nameinfo[1]!=null){
-		//addElement(namerank, nameinfo[0], treatment);
+			//addElement(namerank, nameinfo[0], treatment);
 			//addElement(namerank, nameinfo[0], taxonid); //add to taxonid
-			
-			
-			
-			
-		try {
-			vtDbA.add2TaxonTable(number, name, namerank, index+1);
-		} catch (ParsingException e) {
-			// TODO Auto-generated catch block
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
-		}
-		if(debug) System.out.println("name:"+nameinfo[0]);
-		if(nameinfo[1].length()>0){
-			//addElement("authority", nameinfo[1], treatment);
-			//addElement("authority", nameinfo[1], taxonid);
-			
-			
 			try {
-				vtDbA.add2AuthorTable(nameinfo[1]);
+				vtDbA.add2TaxonTable(number, name, namerank, index+1);
 			} catch (ParsingException e) {
 				// TODO Auto-generated catch block
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -753,24 +728,25 @@ public class VolumeTransformer extends Thread {
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
 			}
-			if(debug) System.out.println("authority:"+nameinfo[1]);
-		}
-		
-		
-		
-		parseName(name, namerank, taxonid);
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
+			if(debug) System.out.println("name:"+nameinfo[0]);
+			if(nameinfo[1].length()>0){
+				//addElement("authority", nameinfo[1], treatment);
+				//addElement("authority", nameinfo[1], taxonid);
+				try {
+					vtDbA.add2AuthorTable(nameinfo[1]);
+				} catch (ParsingException e) {
+					// TODO Auto-generated catch block
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					LOGGER.error("Couldn't perform parsing in VolumeTransformer:parseNameTag", e);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					LOGGER.error("Database access error in VolumeTransformer:parseNameTag", e);
+				}
+				if(debug) System.out.println("authority:"+nameinfo[1]);
+			}
+			parseName(name, namerank, taxonid);
+			text = text.replaceFirst("^\\s*.{"+name.length()+"}","").trim();
 		}
 		//authority
 		/*Pattern p = Pattern.compile("(.*?)((?: in|,|Â·|\\?).*)");
@@ -927,6 +903,59 @@ public class VolumeTransformer extends Thread {
 		return namerank.replace("_name", "");
 	}
 
+	
+
+
+	protected String fixBrokenName(String text, String namerank) {
+		// TODO Auto-generated method stub
+		return text;
+	}
+
+
+	/**
+	 * family, genus, and species names seem to have seperate style, 
+	 * others often have shared style, 
+	 * use rank abbr. in the text to get the specific rank for a name
+	 * 
+	 * @param namerank
+	 * @param text
+	 * @return
+	 */
+	private String specificNameRank(String namerank, String text) {
+		//namerank and name
+		//(subfam|var|subgen|subg|subsp|ser|tribe|subsect)
+		if(namerank.contains("species_subspecies_variety_name") || namerank.contains("infraspecific_name")){ //fna || foc
+			if(text.indexOf("var.") >=0){
+				namerank = "variety_name";
+			}else if(text.indexOf("subsp.") >=0){
+				namerank = "subspecies_name";
+			}else if(text.indexOf("ser.") >=0 && text.indexOf(",") > text.indexOf("ser.")){ //after "," is publication where ser. may appear.
+				namerank = "series_name";
+			}else if(text.indexOf("sect.") >=0){
+				namerank = "section_name";
+			}else if(text.indexOf("subsect.") >=0){
+				namerank = "subsection_name";
+			}else {
+				namerank = "species_name";
+			}
+		}
+		if(namerank.indexOf("subfamily_tribe_name")>=0){ //foc
+			if(text.toLowerCase().indexOf("tribe") >=0){
+				namerank = "tribe_name";
+			}else if(text.toLowerCase().indexOf("subfam") >=0){
+				namerank = "subfamily_name";
+			}
+		}	
+		if(namerank.indexOf("section_subgenus_name")>=0){//foc
+			if(text.toLowerCase().indexOf("sect.") >=0){
+				namerank = "section_name";
+			}else if(text.toLowerCase().indexOf("subg.") >=0){
+				namerank = "subgenus_name";
+			}
+		}
+		return namerank;
+	}
+
 
 	/**
 	 * family, genus, species has authority
@@ -934,11 +963,11 @@ public class VolumeTransformer extends Thread {
 	 * 
 	 * Cactaceae Jussieu subfam. O puntioideae Burnett
 	 * @param name
-	 * @return
+	 * @return array of two elements: 0: name 1:authority
 	 */
 	private String[] getNameAuthority(String name) {
 		String[] nameinfo = new String[2];
-		if(name.matches(".*?\\b(subfam|var|subgen|subg|subsp|ser|tribe|sect|subsect)\\b.*")){
+		if(name.toLowerCase().matches(".*?\\b(subfam|var|subgen|subg|subsp|ser|tribe|sect|subsect)\\b.*")){
 			nameinfo[0] = name;
 			nameinfo[1] = "";
 			return nameinfo;
@@ -947,8 +976,16 @@ public class VolumeTransformer extends Thread {
 		Pattern p = Pattern.compile("^([a-z]*?ceae)(\\b.*)", Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(name);
 		if(m.matches()){
-			nameinfo[0] = m.group(1).replaceAll("\\s", "").trim(); //in case an extra space is there
-			nameinfo[1] = m.group(2).trim();
+			String nm = m.group(1).replaceAll("\\s", "").trim(); //in case an extra space is there
+			String auth = m.group(2).trim();
+			if(auth.startsWith("(") && auth.endsWith(")")){
+				nm +=" "+ auth;
+				auth = "";
+			}
+			//nameinfo[0] = m.group(1).replaceAll("\\s", "").trim(); //in case an extra space is there
+			//nameinfo[1] = m.group(2).trim();
+			nameinfo[0] = nm;
+			nameinfo[1] = auth;
 			return nameinfo;
 		}
 		//genus
@@ -967,8 +1004,6 @@ public class VolumeTransformer extends Thread {
 			nameinfo[1] = m.group(2).trim();
 			return nameinfo;
 		}
-		
-		
 		return nameinfo;
 	}
 
@@ -1027,7 +1062,7 @@ public class VolumeTransformer extends Thread {
 		}
 	}
 	
-	private void parseName(String name, String namerank, Element taxid){
+	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
 		if(namerank.equals("subgenus_name")&&name.contains("sect.")){ //section wrongly marked as subgenus
 			namerank = "section_name";
@@ -1058,6 +1093,51 @@ public class VolumeTransformer extends Thread {
 		}
 		
 		else if(namerank.equals("subfamily_name"))// SUBFAMILY
+		{	
+			int k;
+			String newtext= text;
+			String famauth="";
+			String subfamauth="";
+			String[] family= text.split("\\s");
+			Element newele= new Element("family_name");
+			newele.setText(family[0]);
+			taxid.addContent(newele);
+			for(k=1;k<family.length;k++)
+			{
+				if(family[k].contains("subfam."))
+				{
+					break;
+				}
+				else
+				{
+					famauth+=family[k]+" ";
+				}
+			}
+			famauth=famauth.trim();
+			if(famauth.length()!=0)
+			{
+			Element famat= new Element("family_authority");
+			famat.setText(famauth);
+			taxid.addContent(famat);
+			}
+			k++;
+			Element subfm= new Element("subfamily_name");
+			subfm.setText(family[k]);
+			taxid.addContent(subfm);
+			k++;
+			while(k<family.length)
+			{
+				subfamauth+=family[k]+" ";
+				k++;
+			}
+			subfamauth=subfamauth.trim();
+			if(subfamauth.length()!=0)
+			{
+			Element subfamat= new Element("subfamily_authority");
+			subfamat.setText(subfamauth);
+			taxid.addContent(subfamat);	
+			}
+		}else if(namerank.equals("tribe_name"))// tribe for FoC, differs from FNA, tribe names do not have a family name prefixing them
 		{	
 			int k;
 			String newtext= text;
@@ -1632,7 +1712,11 @@ public class VolumeTransformer extends Thread {
 		
 		Element syn=new Element("synonym");
 		String text=cleantext(namepart);
-		if(text.contains("subtribe"))
+		if(text.matches("[\\x{4e00}-\\x{9fa5}].*?")){
+			Element newele= new Element("family_name");
+			newele.setText(text);
+			syn.addContent(newele);
+		}else if(text.contains("subtribe"))
 		{
 			int k;
 			String newtext= text;
@@ -2359,7 +2443,8 @@ public class VolumeTransformer extends Thread {
 					
 				}
 			}
-			else  // if it is a genus name
+
+			else  //lump it in fam, and correct it later in synrank
 			{
 				
 				String newtext= text;
@@ -2653,13 +2738,15 @@ public class VolumeTransformer extends Thread {
 					List<Element> anames = namePath.selectNodes(accepted);
 					String rank = anames.get(anames.size()-1).getName().replaceFirst("_name", "");
 					//replace the rank for name
-					String oldname = names.get(0).getName();					
-					names.get(0).setName(oldname.replaceFirst("^[^_]*", rank));
-					//replace the rank for authority
-					Element authority = (Element) authorPath.selectSingleNode(synonym);
-					String oldauthname = authority.getName();					
-					authority.setName(oldauthname.replaceFirst("^[^_]*", rank));
-					System.out.println("rank replaced from "+oldname +" to "+rank);
+					String oldname = names.get(0).getName();	
+					if(!oldname.contains(rank)){
+						names.get(0).setName(oldname.replaceFirst("^[^_]*", rank));
+						//replace the rank for authority
+						Element authority = (Element) authorPath.selectSingleNode(synonym);
+						String oldauthname = authority.getName();					
+						authority.setName(oldauthname.replaceFirst("^[^_]*", rank));
+						System.out.println("rank replaced from "+oldname +" to "+rank);
+					}
 				}				
 			}
 		}catch(Exception e){

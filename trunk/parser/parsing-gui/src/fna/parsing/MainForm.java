@@ -1104,8 +1104,9 @@ public class MainForm {
 					ApplicationUtilities.getProperty("file"));
 
 			extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
-			extractionProgressBar.setVisible(false);
-			extractionProgressBar.setBounds(10, 340, 551, 17);
+			extractionProgressBar.setVisible(true);
+			extractionProgressBar.setBounds(10, 443, 400, 17);
+			
 			
 			final Button startExtractionButton = new Button(composite_1, SWT.NONE);
 			startExtractionButton.addSelectionListener(new SelectionAdapter() {
@@ -3806,7 +3807,8 @@ public class MainForm {
 	private void startTransformation() {
 		if(vt==null || !vt.isAlive()){
 			ProcessListener listener = new ProcessListener(transformationTable, transformationProgressBar, shell.getDisplay());
-			vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			//vt = new VolumeTransformer(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
+			vt = new VolumeTransformerFoC(listener, dataPrefixCombo.getText().replaceAll("-", "_").trim(), this.glossaryPrefixCombo.getText().replaceAll("-", "_").trim(), shell.getDisplay());
 			vt.start();
 		}
 	}
@@ -3852,7 +3854,7 @@ public class MainForm {
 		transformationTable.removeAll();
 	}
 	
-	private void loadProject() {
+	/*private void loadProject() {
 		File project = null;
 		try{
 			if(type.trim().equals(""))
@@ -3896,7 +3898,7 @@ public class MainForm {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
-	
+	*/
 	private void saveProject() {
 
 		StringBuffer sb = new StringBuffer();
@@ -3910,7 +3912,7 @@ public class MainForm {
 		File project =null;
 		try{
 			System.out.println(type.equalsIgnoreCase(""));
-			if(type.trim().equals(""))//that means fna is selected.. so save it to fnaproject.conf
+			if(type.trim().equals(""))//that means fna is selected.. so save it to type1project.conf
 				project = new File(System.getProperty("user.dir")+"/type1project.conf");
 				else
 					if(type.trim().equals("type2"))

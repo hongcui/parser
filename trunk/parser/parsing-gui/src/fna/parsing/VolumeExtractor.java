@@ -70,7 +70,7 @@ public class VolumeExtractor extends Thread {
 	protected static String start = ".*?(Heading|Name).*"; // starts a treatment
 	// public static String start = ""; //starts a treatment
 	protected String names = ".*?(Syn|Name).*"; // other interesting names worth parsing
-	protected String key = ".*?-Key.*";											
+	protected String key = ".*?(-Key|key).*";											
 	public String tribegennamestyle = "caps";
 	protected static String ignorednames = "incertae sedis";
 	private boolean debug = false;
