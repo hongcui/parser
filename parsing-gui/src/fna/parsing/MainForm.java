@@ -1104,7 +1104,7 @@ public class MainForm {
 					ApplicationUtilities.getProperty("file"));
 
 			extractionProgressBar = new ProgressBar(composite_1, SWT.NONE);
-			extractionProgressBar.setVisible(true);
+			extractionProgressBar.setVisible(false);
 			extractionProgressBar.setBounds(10, 443, 400, 17);
 			
 			
