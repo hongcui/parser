@@ -781,7 +781,10 @@ public class Utilities {
 	public static String threeingSentence(String str) {
 		//hide the numbers in count list: {count~list~9~or~less~} <fin> <rays>
 		ArrayList<String> lists = new ArrayList<String>();
-		str = hideLists(str, lists);		
+		boolean hidden = false;		
+		String strcp = str;
+		str = hideLists(str, lists);
+		if(strcp.length() != str.length()) hidden = true;
 		//threeing
 		str = str.replaceAll("(?<=\\d)-(?=\\{)", " - "); //this is need to keep "-" in 5-{merous} after 3ed (3-{merous} and not 3 {merous}) 
 		//Pattern pattern3 = Pattern.compile("[\\d]+[\\-\\–]+[\\d]+");
@@ -831,7 +834,9 @@ public class Utilities {
          str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{]\\b(?=3-(to|or)-3\\S+\\})", " {");
 		
          //unhide count list
-         str = unCountLists(str, lists);
+         if(hidden){
+        	 str = unCountLists(str, lists);
+         }
          return str;
 	}
 	
@@ -943,8 +948,14 @@ public class Utilities {
 		}
 	}
 
+	/**
+	 *          //unhide count list
+	 * @param str
+	 * @param lists
+	 * @return
+	 */
 	private static String unCountLists(String str, ArrayList<String> lists) {
-		if(str.contains("#")){
+		if(str.contains("#") && lists.size()!=0){
 			String newstr = "";
 			String[] tokens = str.split("\\s+");
 			int count = 0;
