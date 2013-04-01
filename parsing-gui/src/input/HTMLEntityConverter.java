@@ -25,7 +25,7 @@ public class HTMLEntityConverter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println((new HTMLEntityConverter()).convert2UTF8("leaves &#217;-shaped"));
+		System.out.println((new HTMLEntityConverter()).convert2UTF8("leaves &#217;-shaped"));//leaves Ù-shaped
 
 	}
 
