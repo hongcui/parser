@@ -3,6 +3,12 @@
  */
 package biosemantics.ontologies;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.PreparedStatement;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -17,6 +23,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import fna.parsing.ApplicationUtilities;
+import fna.parsing.ParsingException;
 import fna.parsing.state.SentenceOrganStateMarker;
 
 /**
@@ -36,8 +44,9 @@ public abstract class OntologyClassFetcher {
 	protected ArrayList<String> selectedClassLabels = new ArrayList<String>();
 	protected ArrayList<String> selectedClassCategories = new ArrayList<String>();
 	protected ArrayList<String> selectedClassIds = new ArrayList<String>();
+	protected ArrayList<String> terms = new ArrayList<String>();
 	/**
-	 * table: must have at least three fields: ontoid, term, category, 
+	 * table: must have at least three fields: ontoid, term, category, underscored. 
 	 */
 	public OntologyClassFetcher(String ontopath, Connection conn, String table) {
 		this.table = table;
@@ -81,19 +90,47 @@ public abstract class OntologyClassFetcher {
 		return labels;
 	}
 	
-	public void saveSelectedClass(){
+	/**
+	 * 
+	 * @param condition to determine whether a term be saved in the arraylist or now
+	 */
+	public void saveSelectedClass(String condition){
 		try{
 			//table: must have at least three fields: ontoid, term, category, 
-			PreparedStatement stmt = conn.prepareStatement("insert into "+table+"(ontoid, term, category) values (?, ?, ?)");
+			PreparedStatement stmt = conn.prepareStatement("insert into "+table+"(ontoid, term, category, underscored) values (?, ?, ?, ?)");
 			for(int i = 0; i < this.selectedClassIds.size(); i++){
-				stmt.setString(1, this.selectedClassIds.get(i));
-				stmt.setString(2, this.selectedClassLabels.get(i));
-				stmt.setString(3, this.selectedClassCategories.get(i));
-				stmt.execute();
+				String label = this.selectedClassLabels.get(i).trim();
+				//remove () from label if () is not in the middle of the term. If it is, ignore the term. 
+				if(!label.matches(".*?\\).+")){
+					if(label.indexOf("(")>0){
+						label = label.substring(0, label.indexOf("(")).trim();
+					}
+					if(label.length()>0){
+						stmt.setString(1, this.selectedClassIds.get(i));
+						stmt.setString(2, label);
+						stmt.setString(3, this.selectedClassCategories.get(i));
+						stmt.setString(4, label.replaceAll("\\s+", "_")); //underscored: anal fin => anal_fin
+						stmt.execute();
+						if(this.selectedClassIds.get(i).contains(condition))
+							terms.add(label);
+						}
+				}
 			}
 			
 		}catch (Exception e){
 			e.printStackTrace();
+		}
+	}
+	
+	public void serializeTermArrayList(String filepath){
+		try {
+			File file = new File(filepath);
+			ObjectOutput out = new ObjectOutputStream(
+					new FileOutputStream(file));
+			out.writeObject(this.terms);
+			out.close();
+		} catch (IOException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 	
