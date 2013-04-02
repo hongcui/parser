@@ -23,6 +23,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 	private boolean debug = true;
+
 	/**
 	 * @param ontopath
 	 * @param conn
@@ -35,7 +36,8 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 			//create table if not exist
 			Statement stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+table);
-			stmt.execute("create table if not exists "+table+"(id MEDIUMINT NOT NULL AUTO_INCREMENT Primary Key, ontoid varchar(200), term varchar(200), category varchar(100), head_noun varchar(50), remark text)");		
+			//underscored terms (e.g, anal_fin) are added to glossaryfixed as "structure".
+			stmt.execute("create table if not exists "+table+"(id MEDIUMINT NOT NULL AUTO_INCREMENT Primary Key, ontoid varchar(200), term varchar(200), category varchar(100), head_noun varchar(50), underscored varchar(200), remark text)");		
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -100,12 +102,12 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 		PreparedStatement pstmt = null;
 		try{
 			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select ontoid, term from "+table);
+			ResultSet rs = stmt.executeQuery("select id, term from "+table);
 			while(rs.next()){
-				String id = rs.getString("ontoid");
+				String id = rs.getString("id");
 				String term = rs.getString("term");
 				String headnoun = term.indexOf(" ") > 0? term.substring(term.lastIndexOf(" ")).trim() : term;
-				pstmt = conn.prepareStatement("update "+table+" set head_noun= ? where ontoid= ? ");
+				pstmt = conn.prepareStatement("update "+table+" set head_noun= ? where id= ? ");
 				pstmt.setString(1, headnoun);
 				pstmt.setString(2,  id);
 				pstmt.executeUpdate();
@@ -128,6 +130,7 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 	 */
 	public static void main(String[] args) {
 		String ontoURL = "C:/Users/updates/CharaParserTest/Ontologies/ext.owl";
+		String termsobject = "C:/Users/updates/CharaParserTest/Ontologies/ext_terms.bin";
 		Connection conn = null;
 		String table = "uberon_structures";
 		String database="biocreative2012";
@@ -145,8 +148,9 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 		}
 		OntologyClassFetcher4UBERON ocf = new OntologyClassFetcher4UBERON(ontoURL, conn, table);
 		ocf.selectClasses();
-		ocf.saveSelectedClass();
+		ocf.saveSelectedClass("UBERON");
 		ocf.recordHeadNouns();
+		ocf.serializeTermArrayList(termsobject);
 	}
 
 }

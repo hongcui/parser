@@ -43,7 +43,7 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 			//create table if not exist
 			Statement stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+table);
-			stmt.execute("create table if not exists "+table+"(ontoid varchar(50) NOT NULL Primary Key, term varchar(100), category varchar(100), head_noun varchar(50), remark text)");		
+			stmt.execute("create table if not exists "+table+"(ontoid varchar(50) NOT NULL Primary Key, term varchar(100), category varchar(100), head_noun varchar(50), underscored varchar(100), remark text)");		
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -125,6 +125,7 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 	 */
 	public static void main(String[] args) {
 		String ontoURL = "C:/Users/updates/CharaParserTest/Ontologies/plant_ontology.owl";
+		String termsobject = "C:/Users/updates/CharaParserTest/Ontologies/po_terms.bin";
 		Connection conn = null;
 		String table = "ontology_po_structures";
 		String database=ApplicationUtilities.getProperty("database.name");
@@ -142,8 +143,9 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 		}
 		OntologyClassFetcher4PO ocf4po = new OntologyClassFetcher4PO(ontoURL, conn, table);
 		ocf4po.selectClasses();
-		ocf4po.saveSelectedClass();
+		ocf4po.saveSelectedClass("PO");
 		ocf4po.recordHeadNouns();
+		ocf4po.serializeTermArrayList(termsobject);
 	}
 
 
