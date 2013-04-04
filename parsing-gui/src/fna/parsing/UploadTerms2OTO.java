@@ -349,7 +349,7 @@ public class UploadTerms2OTO{
     		FileInputStream fis=null;
     	    try{
 
-    	    	String pass ="2t2gPTfz";
+    	    	String pass =ApplicationUtilities.getProperty("server.password");
     	      /*String lfile=arg[0];
     	      String user=arg[1].substring(0, arg[1].indexOf('@'));
     	      arg[1]=arg[1].substring(arg[1].indexOf('@')+1);
