@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.*;
@@ -227,6 +228,12 @@ public class CharacterAnnotatorChunked {
 			annotateByChunk(cs, false);
 		}*/
 		
+		/*XMLOutputter xo1 = new XMLOutputter(Format.getPrettyFormat());
+		if(printAnnotation){
+			System.out.println();
+			System.out.println(xo1.outputString(this.statement));
+		}*/
+		
 		lifeStyle();
 		if(!this.evaluation) mayBeSameRelation(cs);// 7-12-02 add cs
 		if(this.partofinference){
@@ -333,18 +340,32 @@ public class CharacterAnnotatorChunked {
 
 	/**
 	 * re-annotate "trees" from structure to character lifestyle
+	 * only when lifestyle terms appear at the beginning of a statement and do not serve as a to-organ in a relation with other structures.
 	 */
 	private void lifeStyle() {
 		try{			
+			
 			//find life_style structures
-			List<Element> structures = XPath.selectNodes(this.statement, ".//structure");
+			//List<Element> structures = XPath.selectNodes(this.statement, ".//structure");
+			List<Element> structures = this.statement.getChildren();
 			Iterator<Element> it = structures.iterator();
-			//Element structure = null;
+			boolean seenstructure = false;
 			while(it.hasNext()){
 				Element structure = it.next();
-				String name = structure.getAttributeValue("name").trim();
+				String name = structure.getName();
+				
 				if(name.length()<=0) continue;
-				if(StanfordParser.lifestyle.matches(".*\\b"+name+"\\b.*")){
+				//enforce the location requirement of a lifestyle structure
+				if(name.compareTo("structure")==0) seenstructure = true;
+				if(!seenstructure && name.compareTo("structure")!=0) continue; //pass "text" element
+			    name = structure.getAttributeValue("name").trim();
+			    boolean islifestyle = StanfordParser.lifestyle.matches(".*\\b"+name+"\\b.*");
+				if(seenstructure && (! islifestyle || istoorgan(structure))) return; 
+				//1 or more lifestyle structures at the beginning of the statement will reach this point
+
+				if(islifestyle){
+					if(structure.getAttribute("constraint") !=null)
+						name = structure.getAttributeValue("constraint")+" "+name;
 					if(structure.getAttribute("constraint_type") !=null)
 						name = structure.getAttributeValue("constraint_type")+" "+name;
 					if(structure.getAttribute("constraint_parent_organ") !=null)
@@ -383,6 +404,17 @@ public class CharacterAnnotatorChunked {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		
+	}
+	
+	private boolean istoorgan(Element structure){
+		String id = structure.getAttributeValue("id");
+		try {
+			Element rel = (Element) XPath.selectSingleNode(this.statement, ".//relation[@to='"+id+"']");
+			if(rel != null) return true;
+		} catch (JDOMException e) {
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		return false;
 	}
 
 	/**
