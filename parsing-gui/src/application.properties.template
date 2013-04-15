@@ -183,7 +183,7 @@ englishPCFG=lib\\englishPCFG.ser.gz
 OTO.dowloadable.dir=/home/sirls/hongcui/WebFilesForTomcat/OTO/downloadFiles/
 
 #labels
-labelSelectProject=Select an empty folder for the project :
+labelSelectProject=Select the folder for the project :
 datasetprefix=Choose data set prefix and select a glossary (the prefix should be in lower case, should not include "." or "-", and cannot end with "_"):
 stepsComplete= All steps are completed.
 stepsTobeCompletedLbl=Steps to be completed :
