@@ -32,4 +32,5 @@ public class Chunk {
 	public ArrayList<String> getChunkedTokens(){
 		return this.chunkedTokens ;
 	}
+
 }

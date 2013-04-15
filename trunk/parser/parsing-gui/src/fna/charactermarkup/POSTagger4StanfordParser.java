@@ -40,11 +40,12 @@ public class POSTagger4StanfordParser {
 	private ArrayList<String> charactertokensReversed = null;
 	//public static Hashtable<String, String> characterhash = new Hashtable<String, String>();
 	private boolean printCharacterList = true;
-	private boolean printColorList = false;
+	private boolean printColorList = true;
+	private boolean printArea = true;
 	private String tableprefix = null;
 	private String glosstable = null;
 	private String src;
-	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
+	public static String comprepstring = "according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to|as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|except-in|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to";
 	private static Pattern compreppattern = Pattern.compile("\\{?(according-to|ahead-of|along-with|apart-from|as-for|aside-from|as-per|as-to-as-well-as|away-from|because-of|but-for|by-means-of|close-to|contrary-to|depending-on|due-to|except-for|forward-of|further-to|in-addition-to|in-between|in-case-of|in-face-of|in-favour-of|in-front-of|in-lieu-of|in-spite-of|instead-of|in-view-of|near-to|next-to|on-account-of|on-behalf-of|on-board|on-to|on-top-of|opposite-to|other-than|out-of|outside-of|owing-to|preparatory-to|prior-to|regardless-of|save-for|thanks-to|together-with|up-against|up-to|up-until|vis-a-vis|with-reference-to|with-regard-to)\\}?");
 	private static Pattern colorpattern = Pattern.compile("(.*?)((coloration|color)\\s+%\\s+(?:(?:coloration|color|@|%) )*(?:coloration|color))\\s((?![^,;()\\[\\]]*[#]).*)");
 	//private Pattern viewptn = Pattern.compile( "(.*?\\b)(in\\s+[a-z_<>{} -]+\\s+[<{]*view[}>]*)(\\s.*)"); to match in dorsal view
@@ -204,7 +205,8 @@ public class POSTagger4StanfordParser {
 					containsArea = true;
 					String[] area = normalizeArea(str);
 					str = area[0]; //with complete info
-					strnum = area[1]; //like str but with numerical expression normalized
+					strnum = area[1]; //removed units
+					if(printArea) System.out.println("Area:" +str);
 				}
 
 				//str = handleBrackets(str);
@@ -215,11 +217,6 @@ public class POSTagger4StanfordParser {
 				
 				if(containsArea){
 					str = strnum;
-
-					//str = handleBrackets(str);
-
-					//str = Utilities.handleBrackets(str);
-
 				}
 				str = Utilities.threeingSentence(str);
 				if(Utilities.hasUnmatchedBrackets(str)){
@@ -284,7 +281,8 @@ public class POSTagger4StanfordParser {
 	        	   }else if(word.matches("("+ChunkedSentence.units+")")){
 	       			   sb.append(word+"/NNS ");
 	       		   }else if(word.matches("as-\\S+")){ //as-wide-as
-	       		   	   sb.append(word+"/RB ");
+	       		   	   //sb.append(word+"/RB ");
+	       			   sb.append(word+"/IN ");
 	       		   }else if(p.contains("op")){ //<inner> larger.
 	       				//System.out.println(rs1.getString(2));
 	       			   sb.append(word+"/NNS ");
@@ -609,20 +607,37 @@ public class POSTagger4StanfordParser {
 	 * @return two strings: one contains all text from text with rearranged spaces, the other contains numbers as the place holder of the area expressions
 	 */	
 	private String[] normalizeArea(String text){
-			String[] result = new String[2];
-			String text2= text;
-			Matcher m = areapattern.matcher(text);
-			while(m.matches()){
+		String[] result = new String[2];
+		String text2= text;
+		Matcher m = areapattern.matcher(text);
+		while(m.matches()){
+			if(m.group(2).matches("[(\\[\\d].*")){
 				text = m.group(1)+m.group(2).replaceAll("[ \\{\\}]", "")+ m.group(4);
-				m = areapattern.matcher(text2);
+				m = areapattern.matcher(text2); //match on text2 to keep the unit-free segment
 				m.matches();
 				text2 = m.group(1)+m.group(2).replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "")+ m.group(4);
 				m = areapattern.matcher(text);
+			}else {//{pistillate} 9-47 ( -55 in <fruit> ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ; m.group(2)= ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ;
+				String left = "";
+				if(m.group(2).startsWith(")")) left = "(";
+				if(m.group(2).startsWith("]")) left = "[";
+				if(left.length()>0){
+				    //m.group(1) = {pistillate} 9-47 ( -55 in <fruit> 
+					//find the starting brackets in temp and remove the braketed content
+					//if(temp.matches(".*?\\d$")){
+					text = m.group(1).substring(0, m.group(1).lastIndexOf(left)).trim() +  m.group(2).replaceFirst("^[)\\]]", "").replaceAll("[ \\{\\}]", "") + m.group(4);
+					m = areapattern.matcher(text2);
+					m.matches();
+					text2 = m.group(1).substring(0, m.group(1).lastIndexOf(left)).trim() +  m.group(2).replaceFirst("^[)\\]]", "").replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "") + m.group(4);
+					m = areapattern.matcher(text);
+					//}
+				}
 			}
-			result[0] = text;//{oblanceolate} , 15-70×30-150+cm , {flat}  
-			result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
-			return result;
-	}
+		}
+		result[0] = text;//{oblanceolate} , 15-70×30-150+cm , {flat}  
+		result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
+		return result;
+}
 	
 	/**
 	 * populate charactertokensReversed with a character representation of the str, in reversed token order.
@@ -649,7 +664,7 @@ public class POSTagger4StanfordParser {
 			}else if(word.indexOf('{')>=0 && word.indexOf('<')<0){
 				String[] charainfo = Utilities.lookupCharacter(word, conn, ChunkedSentence.characterhash, glosstable, tableprefix); //remember the char for this word (this word is a word before (to|or|\\W)
 				if(charainfo==null){
-					this.charactertokensReversed.add(word.replaceAll("[{}]", "")); //
+					this.charactertokensReversed.add(getToken(word.replaceAll("[{}]", ""))); //"densely" 
 				}else{
 					//deal with cases where a position is used as a structure: {outer} {lance-ovate} to {narrowly} {lanceolate} 
 					if(charainfo[0].compareTo("position")==0){//word = {outer}
@@ -671,8 +686,7 @@ public class POSTagger4StanfordParser {
 							amb.add(this.chunkedtokens.size()-1-i+"");
 						}
 					}
-					save = false;
-					
+					save = false;	
 				}
 			}else if (word.indexOf('<')>=0){
 				this.charactertokensReversed.add("#");
@@ -725,6 +739,23 @@ public class POSTagger4StanfordParser {
 		}
 	}
 	
+	private String getToken(String word){
+		if (word.indexOf('<')>=0){
+			return "#";
+		}else if(word.matches("(or|and-or|and/or|and_or)") || word.matches("\\S+ly~(or|and-or|and/or|and_or)~\\S+ly")){//loosely~to~densely 
+			return "@"; //or
+		}else if(word.equals("to") || word.matches("\\S+ly~to~\\S+ly")){//loosely~to~densely 
+			return"`"; //to
+		}else if(word.compareTo("±")==0){//±
+			return"moreorlessly"; //,;. add -ly so it will be treated as an adv.
+		}else if(word.endsWith("ly")){//adverb
+			return word;
+		}else if(word.matches("("+this.negations+")")){//not
+			return word;
+		}else{
+			return"%";//all others, including stopwords, prepositions, etc			
+		}
+	}
 	/**
 	 * a test used to see if a postion term should be converted to a structure term
 	 * if the position term hasModifiedStructure, then it should not be converted 

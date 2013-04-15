@@ -1168,7 +1168,8 @@ public class ChunkedSentence {
 					
 						for(i=i+1; i<this.chunkedtokens.size(); i++){
 							String w = this.chunkedtokens.get(i).replaceAll("(\\<|\\>|\\{|\\}|\\w+\\[|\\])", "");
-							if(w.equals("-LRB-/-LRB-")){ 
+							if(w.matches("-L[SR]B-/-L[SR]B-")){ 
+								String left = w;
 								//case 1: the previous word is an organ, the than-chuck should end there. 
 								if(i-1>=0 && (np.endsWith(">") || np.endsWith(" ones "))){
 									np = np.replace(" ones ", " (ones) ");
@@ -1183,7 +1184,9 @@ public class ChunkedSentence {
 									boolean findRRB = false;
 									do{
 										w = this.chunkedtokens.get(i);
-										if(w.equals("-RRB-/-RRB-")) findRRB = true;
+										String right = left.replaceAll("-L", "-R");
+										if(w.compareTo(right)==0) findRRB = true;
+										//if(w.equals("-RRB-/-RRB-")) findRRB = true;
 										if(w.length()>0){
 											//np += w+" ";
 											np += this.chunkedtokens.get(i)+" ";
@@ -1194,7 +1197,7 @@ public class ChunkedSentence {
 								}
 							}
 							//if(w.matches("\\b("+preps+"|and|or|that|which|but)\\b") || w.matches("\\W")){
-							if(w.matches("\\b("+preps+"|and|that|which|but)\\b.*") || w.matches("\\p{Punct}") || w.equals("-RRB-/-RRB-")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
+							if(w.matches("\\b("+preps+"|and|that|which|but)\\b.*") || w.matches("\\p{Punct}") || w.matches("-R[SR]B-/-R[SR]B-")){ //should allow ±, n[{shorter} than] ± {campanulate} <throats>
 								np = np.replaceAll("<", "(").replaceAll(">", ")").trim();
 								//this.chunkedtokens.set(thani, "n["+np+"]");
 								this.chunkedtokens.set(i-1, "n["+np+"]");
@@ -1354,6 +1357,7 @@ public class ChunkedSentence {
 		//boolean startn = false;
 		int count = 0;
 		String preps = ChunkedSentence.prepositions.replaceFirst("\\bthan\\|", "").replaceFirst("\\bto\\|", "");
+		//preps += "|as-\\w+-as";
 		for(int i = 0; i<this.chunkedtokens.size(); i++){
 			String token = this.chunkedtokens.get(i);
 			
@@ -1695,9 +1699,8 @@ public class ChunkedSentence {
 			pointer++;
 			return new ChunkComma(",");
 		}
-		
-		//String test = "";
-		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("l\\s*\\W\\s*w")) && !token.matches(".*?[nx]=[\\[(\\d].*")){//l-w or l/w
+
+		if((NumericalHandler.isNumerical(token) ||token.matches("^to~\\d.*")|| token.matches("[wl]\\s*\\W\\s*[wl]")) && !token.matches(".*?[nx]=[\\[(\\d].*")){//l-w or l/w
 				chunk = getNextNumerics();//pointer++;
 				if(this.unassignedmodifier != null){
 					chunk.setText(this.unassignedmodifier+ " "+chunk.toString());
@@ -2304,12 +2307,15 @@ public class ChunkedSentence {
 			return new ChunkCount(numerics.replaceAll("[{}]", "").trim());
 		}
 		
-		if(t.matches("l\\s*\\W\\s*w")){
+		if(t.matches("[wl]\\s*\\W\\s*[wl]")){
+			String name = t;
 			while(!t.matches(".*?\\d.*")){
 				t = this.chunkedtokens.get(++this.pointer);
 			}
 			this.pointer++;
-			return new ChunkRatio(NumericalHandler.originalNumForm(t).trim());
+			ChunkRatio r = new ChunkRatio(NumericalHandler.originalNumForm(t).trim());
+			r.setName(name);
+			return r;
 		}
 		return null;
 	}

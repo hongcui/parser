@@ -9,13 +9,22 @@ package fna.charactermarkup;
  *
  */
 public class ChunkRatio extends Chunk {
-
+	String name;
 	/**
 	 * @param text
 	 */
 	public ChunkRatio(String text) {
 		super(text);
-		// TODO Auto-generated constructor stub
+
+	}
+	
+	public void setName(String name){
+		this.name = name;
 	}
 
+
+	public String getName() {
+
+		return name;
+	}
 }
