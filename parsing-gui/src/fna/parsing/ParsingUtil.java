@@ -22,13 +22,16 @@ import org.jdom.output.XMLOutputter;
  */
 public class ParsingUtil {
 	
+	static XMLOutputter outputter;
+	static Document doc;
+	static BufferedOutputStream out;
 	private static final Logger LOGGER = Logger.getLogger(ParsingUtil.class);
 	public static void outputXML(Element treatment, File file, Comment comment) {
 		try {
-			XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-			Document doc = new Document(treatment);
+			outputter = new XMLOutputter(Format.getPrettyFormat());
+			doc = new Document(treatment);
 			// File file = new File(path, dest + "/" + count + ".xml");
-			BufferedOutputStream out = new BufferedOutputStream(
+			out = new BufferedOutputStream(
 					new FileOutputStream(file));
 			
 			outputter.output(doc, out);
