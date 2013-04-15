@@ -541,9 +541,21 @@ public class VolumeFinalizer extends Thread {
 			for(File df: des){
 				Document trans = builder.build(df);
 				Element root = trans.getRootElement();
-				Element descript = (Element)XPath.selectSingleNode(root, ".//description");
-				if(descript == null){
-					files2copy.add(df.getName());
+				List<Element> descript = null;
+				if(root.getName().contains("tax:taxonx")){
+					descript = (List<Element>)XPath.selectNodes(root, ".//tax:div[@type='description']");
+				}else{
+					descript = (List<Element>)XPath.selectNodes(root, ".//description");
+				}
+				if(descript==null) files2copy.add(df.getName());
+				else{
+					boolean hasDescription = false;
+					for(Element de: descript){
+						if(de.getChildren().size() !=0 && de.getTextTrim().length()!=0){//non-empty description element
+							hasDescription = true;
+						}
+					}
+					if(!hasDescription) files2copy.add(df.getName());
 				}
 			}
 		    //for each file in files4copy, copy from transformed to final
