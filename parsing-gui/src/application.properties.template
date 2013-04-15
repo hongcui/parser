@@ -78,6 +78,9 @@ LOG=\\Logs\\markup.log
 LOG.APPENDER=log4j.appender.ROOT.File=
 LOG.FILE.LOCATION=\\log4j.properties
 
+#place holders
+GenusName.PlaceHolder=last_genus_name
+
 #Pop Up Information
 popup.header.error=Error!
 popup.header.info=Information

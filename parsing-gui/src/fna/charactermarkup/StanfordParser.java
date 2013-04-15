@@ -845,7 +845,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\transformed";
 		String prefix = "fna2_v7_jing";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
-
+		
 
 		/*String database = "markedupdatasets";
 		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_posedsentences.txt";
@@ -853,8 +853,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\transformed";
 		String prefix = "foc_v10_jing";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);*/
-		sp.POSTagging();
-		sp.parsing();
+		
+		//sp.POSTagging();
+		//sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
