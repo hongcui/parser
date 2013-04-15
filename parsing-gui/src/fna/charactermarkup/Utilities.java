@@ -831,7 +831,7 @@ public class Utilities {
          str = str.replaceAll("0\\s*-\\s*", "0-").replaceAll("0(?!~[a-z])", "3").replaceAll("3\\s*[–-]\\{", "{3-").replaceAll("±(?!~[a-z])","{moreorless}").replaceAll("±","moreorless"); //stanford parser gives different results on 0 and other numbers.
          
          //2-or-{3-lobed} => {2-or-3-lobed}
-         str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{]\\b(?=3-(to|or)-3\\S+\\})", " {");
+         str = str.replaceAll("(?<=-(to|or)-)\\{", "").replaceAll("[^\\{~]\\b(?=3-(to|or)-3\\S+\\})", " {"); //don't break {shape~list~lyrate~or~3-or-3-pinnatisect} to {shape~list~lyrate~or~ {3-or-3-pinnatisect}
 		
          //unhide count list
          if(hidden){

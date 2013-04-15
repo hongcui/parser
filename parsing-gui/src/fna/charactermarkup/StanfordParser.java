@@ -77,6 +77,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	String output = Registry.TargetDirectory+"HumanReadable.txt";
 	//String output = "C:\\Documents and Settings\\Hong Updates\\Desktop\\2012BiosemanticsWorkshopTest\\TreatisePartO\\target\\HumanReadable.txt";
 	private File outfile = new File(output);
+	
+	static StringWriter sw;
+	static PrintWriter pw;
 
 	/**
 	 * 
@@ -120,7 +123,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			stmt.close();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 		tagger = new POSTagger4StanfordParser(conn, this.tableprefix, glosstable);
 	}
@@ -142,7 +145,9 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				String src = rs.getString(1);
 				String str = rs.getString(2);
 				//TODO: may need to fix "_"
-				//if(src.compareTo("674.txt-5")!=0) continue;
+				//if(src.compareTo("642.txt-6")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
+				//if(src.compareTo("1152.txt-6")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
+				//if(src.compareTo("106.txt-3")!=0 /*&& src.compareTo("Rhapidophyllum.txt-6")!=0*/) continue;
 				try{
 					str = tagger.POSTag(str, src);
 				}catch(Exception e){
@@ -160,7 +165,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			rs.close();
 			out.close();
 		}catch(Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			sw = new StringWriter();pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
 		}
 	}
@@ -221,12 +226,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
             	sb.append(headings.get(i)+System.getProperty("line.separator"));
             	sb.append(trees.get(i)+System.getProperty("line.separator"));
             }
-            PrintWriter pw = new PrintWriter(new FileOutputStream(this.parsedfile));
+            pw = new PrintWriter(new FileOutputStream(this.parsedfile));
             pw.print(sb.toString());
             pw.flush();
             pw.close();			
 	  	}catch(Exception e){
-	  		StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+	  		sw = new StringWriter();pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 	  		//throw e;
 	  	}
 	  	//out.close();
@@ -242,9 +247,10 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			int i = 0;
 			Statement stmt = conn.createStatement();
 
-			ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
-			//ResultSet rs = stmt.executeQuery("select source, sentence from "+this.tableprefix+"_sentence order by sentid");//(source+0)"); //+0 so sort as numbers
-
+			ResultSet rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
+			//ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
+			
+			
 			Pattern ptn = Pattern.compile("^Parsing \\[sent\\. (\\d+) len\\. \\d+\\]:(.*)");
 			Matcher m = null;
 			Tree2XML t2x = null;
@@ -259,6 +265,15 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			String pfileindex = "";
 			Element baseroot = null;
 			Element description = new Element("description");
+			//reuse objects
+			String sent ="";
+			String thisdescID ="";
+			String src ="";
+			String thisfileindex="";
+			Element txt;
+			String sentid = "";
+			Statement stmt1;
+			//String humanreadable = "";
 			while ((line = stdInput.readLine())!=null){
 				if(line.startsWith("Loading") || line.startsWith("X:") || line.startsWith("Parsing file")|| line.startsWith("Parsed") ){continue;}
 				if(line.trim().length()>1){
@@ -275,21 +290,28 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 					t2x = new Tree2XML(text);
 					doc = t2x.xml();
 					//Document doccp = (Document)doc.clone();
-					String src = "";
+					//String src = "";
 					if(rs.relative(i)){
 						try{ //if exception is thrown at any of the following steps, move on the next sentence.
-						String sent = rs.getString(2);
-						src = rs.getString(1);
-						String thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
-						//int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
-						String thisfileindex = src.replaceFirst("\\.txt.*$", "");
-						if(finalize){
-							if(baseroot ==null){
-								order++;
-								baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
+							sentid = rs.getString(1);
+							stmt1 = conn.createStatement();
+							ResultSet rs1 = stmt1.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence where sentid='"+sentid+"'");//(source+0)"); //+0 so sort as numbers
+							rs1.next();
+							sent = rs1.getString(2);
+							src = rs1.getString(1);
+							rs1.close();
+							stmt1.close();
+							
+							thisdescID = src.replaceFirst("-\\d+$", "");//1.txtp436_1.txt-0's descriptionID is 1.txtp436_1.txt
+							//int thisfileindex = Integer.parseInt(src.replaceFirst("\\.txt.*$", ""));
+						    thisfileindex = src.replaceFirst("\\.txt.*$", "");
+							if(finalize){
+								if(baseroot ==null){
+									order++;
+									baseroot = VolumeFinalizer.getBaseRoot(thisfileindex, order);
+								}
 							}
-						}
-						//sent = this.normalizeSpacesRoundNumbers(sent);
+							//sent = this.normalizeSpacesRoundNumbers(sent);
 							if(!sent.matches(".*? [;\\.]\\s*$")){//at 30x. => at 30x. .
 								sent = sent+" .";
 							}
@@ -297,7 +319,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							sent = sent.replaceAll("<\\{?diam\\}?>", "diam");
 							sent = sent.replaceAll("<\\{?diams\\}?>", "diams");
 
-							String test = "";
+							//String test = "";
 							ex = new SentenceChunker4StanfordParser(i, doc, sent, src, this.tableprefix, conn, glosstable/*, SentenceOrganStateMarker.taxonnamepattern1, SentenceOrganStateMarker.taxonnamepattern2*/);
 
 							cs = ex.chunkIt();
@@ -340,12 +362,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								//if(statement!=null) description.addContent(statement);
 								statement = new Element("statement");
 								statement.setAttribute("id", src);
-								Element txt = new Element("text");//make <text> the first element in statement, the statement will at least have a text element
+								txt = new Element("text");//make <text> the first element in statement, the statement will at least have a text element
 								txt.addContent(cs.getText());
 								if(!this.evaluation) statement.addContent(txt);
 								statement = cac.annotate(src, src, cs, statement); //src: 100.txt-18
 							}catch(Exception e){
-								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+								sw = new StringWriter();pw = new PrintWriter(sw);e.printStackTrace(pw);
 								LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
 										System.getProperty("line.separator")+ "source:"+ src + System.getProperty("line.separator")+
 										sw.toString());
@@ -354,7 +376,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 							//print a human readable file 
 							//String newline = System.getProperty("line.separator");
 							//String humanreadable = i+"["+src+"]: "+cs.toString()+newline;
-							String humanreadable = getHumanReadableText(statement)+newline+newline;
+							/*humanreadable = getHumanReadableText(statement)+newline+newline;
 							  try{
 								  // Create file 
 								  FileWriter fstream = new FileWriter(outfile, true);
@@ -364,14 +386,14 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 								  out.close();
 							}catch (Exception e){//Catch exception if any
 								StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-							}
+							}*/
 
 							if(statement!=null) description.addContent(statement);
 
 							pdescID = thisdescID;
 							pfileindex = thisfileindex;
 						}catch(Exception e){
-							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+							sw = new StringWriter();pw = new PrintWriter(sw);e.printStackTrace(pw);
 							LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
 									System.getProperty("line.separator")+ "source:"+ src + System.getProperty("line.separator")+
 									sw.toString());
@@ -389,7 +411,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			}
 			rs.close();
     	}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
         }
     	//if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
@@ -722,6 +744,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String text="<pappi> {persistent} , of {many} <scales> in {several} <series> , {distinct} , {narrow} [ rarely 0 ] .";
 		//String text = "<blades> {obovate} to {oblanceolate} or {spatulate} , ( 1 – ) 2 ( – 3 ) -{pinnately} [ -subpalmately ] {lobed} ( {primary} <lobes> often pectinately {divided} ) , {ultimate} <margins> {serrate} or {entire} , <faces> ± {villous} to {sericeous} [ {glabrescent} , {glabrate} ] .";
 		//String text = " with ( 1 or ) 2 or more <teeth> , <apex> {acute} or {acutish} , or sometimes {rounded} , <faces> not {appendaged} , only <apex> {foliaceous} .";
+		//String text ="{pistillate} 9 – 47 ( – 55 in <fruit> ) × 5 . 5 – 19 mm , {flowering} <branchlet> 0 – 4 mm ;";
 		//System.out.println(StanfordParser.normalizeSpacesRoundNumbers(text));
 		
 		
@@ -757,14 +780,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\plaziantfirst\\target\\plazi_ant_first_parsedsentences.txt";
 		//String posedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_posedsentences.txt";
 		//String parsedfile="C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\phenoscape-fish-source\\target\\pheno_fish_parsedsentences.txt";
-		
-			
-		String database = "markedupdatasets";
-		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\fna2_v22_jing_posedsentences.txt";
-		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\fna2_v22_jing_parsedsentences.txt";
-		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV22\\target\\transformed";
-		String prefix = "fna2_v22_jing";
-			
+					
 		/*String database = "markedupdatasets";
 		String posedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_posedsentences.txt";
 		String parsedfile = "E:\\Data\\Perelleschus-Example\\target\\weevil_test_parsedsentences.txt";
@@ -815,25 +831,35 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		String transformeddir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\Australia\\V4\\target\\transformed";
 		*/
 		
-
 		//String database = "markedupdatasets";
 		//String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_posedsentences.txt";
 		//String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\fnav2debug_parsedsentences.txt";
 		//String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV2Debug\\target\\transformed";
 		//String prefix = "fnav2debug";
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
+			
+			
+		String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\fna2_v7_jing_posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\fna2_v7_jing_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\transformed";
+		String prefix = "fna2_v7_jing";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 
-		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "antglossaryfixed", false);
 
-
+		/*String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\transformed";
+		String prefix = "foc_v10_jing";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);*/
 		sp.POSTagging();
 		sp.parsing();
 		sp.extracting();
 		//System.out.println("total chunks: "+StanfordParser.allchunks);
 		//System.out.println("discovered chunks: "+StanfordParser.discoveredchunks);
 		}catch (Exception e){
-			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
 	}
 }

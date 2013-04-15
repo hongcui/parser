@@ -176,7 +176,7 @@ public class SentenceChunker4StanfordParser {
 						}
 					}
 					extractFromlPPINs(lPPINs);
-				}while (PPINs.size() > 0+0);	
+				}while (PPINs.size() > 0);	
 				
 				//get remaining VBs
 				List<Element> VBs = Vpath.selectNodes(root);
@@ -1123,7 +1123,8 @@ end procedure
 		}
 		chunk = chunk.trim().replaceAll("\\s*\\w\\[\\]\\s*", "").replaceAll("\\s+", " ").trim(); //remove o[]
 		//String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*\\\\b").replaceAll("\\]", "\\\\b(\\\\])*");
-		String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*").replaceAll("\\]", "(\\\\])*");
+		//String pattern = chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*").replaceAll("\\]", "(\\\\])*"); //matched "at" in relATively
+		String pattern = "\\b"+chunk.trim().replaceAll("\\w\\[", "(\\\\w\\\\[)*").replaceAll("\\]", "\\\\b(\\\\])*");
 		
 		// collapsed text is saved to e
 		// keeping other children of e as e's children
@@ -1150,7 +1151,7 @@ end procedure
 						text+=t+" ";
 						t = t.replaceAll("(\\w\\[|\\])", "");
 						chunktext = chunktext.replaceFirst("^"+t, "").trim();
-						t = t.replaceFirst("^"+chunktext, "").trim();
+						t = t.replaceFirst("^"+chunktext, "").trim();//reported "Illegal character range" but can't recreate the exception.
 						tobedeleted.add((Element)c);//mark to-be-deleted elements						
 						if(chunktext.length()==0 || t.length()==0){
 							//thechild = (Element)c;

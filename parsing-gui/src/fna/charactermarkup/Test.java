@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings({ "unused" })
 public class Test {
 	Connection conn = null;
+	private static Pattern areapattern = Pattern.compile("(.*?)([\\d\\.()+-]+ ?\\{?[cmd]?m?\\}?×\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?×?(\\S*\\s*[\\d\\.()+-]+ \\{?[cmd]?m\\}?)?)(.*)");
+
 	/**
 	 * 
 	 */
@@ -160,7 +162,44 @@ public class Test {
 		}
 		result +=str;
 		return result;
+		
+		
 	}
+	
+	private String[] normalizeArea(String text){
+		String[] result = new String[2];
+		String text2= text;
+		Matcher m = areapattern.matcher(text);
+		while(m.matches()){
+			if(m.group(2).matches("\\d.*")){
+				text = m.group(1)+m.group(2).replaceAll("[ \\{\\}]", "")+ m.group(4);
+				//m = areapattern.matcher(text2);
+				//m.matches();
+				text2 = m.group(1)+m.group(2).replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "")+ m.group(4);
+				m = areapattern.matcher(text);
+			}else {//{pistillate} 9-47 ( -55 in <fruit> ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ; m.group(2)= ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ;
+				String left = "";
+				if(m.group(2).startsWith(")")) left = "(";
+				if(m.group(2).startsWith("]")) left = "[";
+				if(left.length()>0){
+					String temp = m.group(1); //m.group(1) = {pistillate} 9-47 ( -55 in <fruit> 
+					//find the starting brackets in temp and remove the braketed content
+					temp = temp.substring(0, temp.lastIndexOf(left)).trim();
+					String group2 = m.group(2).replaceFirst("^[)\\]]", "").replaceAll("[ \\{\\}]", "");
+					if(temp.matches(".*?\\d$")){
+						text = temp+ group2 + m.group(4);
+						//m = areapattern.matcher(text2);
+						//m.matches();
+						text2 = temp+group2.replaceAll("[cmd]?m", "").replaceAll("[ \\{\\}]", "")+ m.group(4);
+						m = areapattern.matcher(text);
+					}
+				}
+			}
+		}
+		result[0] = text;//{oblanceolate} , 15-70×30-150+cm , {flat}  
+		result[1] = text2;//{oblanceolate} , 15-70×30-150+ , {flat} 
+		return result;
+}
 	/**
 	 * @param args
 	 */
@@ -170,8 +209,10 @@ public class Test {
 		System.out.println(
 		//t.addSentmod("{distal} (face)", "distal [basal leaf]")
 		//t.combineModifiers("<character name=\"n\" modifier=\"a\" value=\"c\"/>")
-		t.normalizemodifier("leaves shallowly to deeply pinnatifid, weekly to strongly angled")		
-		);
+		//t.normalizemodifier("leaves shallowly to deeply pinnatifid, weekly to strongly angled")
+		t.normalizeArea("{pistillate} 9-47 ( -55 in <fruit> ) ×5.5-19 mm , {flowering} <branchlet> 0-4 mm ;")[1]		
+				);
+		//{pistillate} 9-47 ( -55 in <fruit> )×5.5-19mm , {flowering} <branchlet> 0-4 mm ;
 		//String text = "that often do not overtop the heads";
 		//t.breakText(text);
 	}

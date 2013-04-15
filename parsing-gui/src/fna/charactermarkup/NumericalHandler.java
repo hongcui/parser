@@ -1014,15 +1014,15 @@ public class NumericalHandler  {
 		    	}
 		    	extract = matcher3.replaceAll("#");
 		    	matcher3.reset();
-		    	String from = extract.substring(0, extract.indexOf('-')).trim();
-		    	String to = extract.substring(extract.indexOf('-')+1,extract.indexOf('#')).trim();
+		    	String from = extract.substring(0, extract.indexOf('-')).trim(); //[1]2-3 cm, from: #2
+		    	String to = extract.substring(extract.indexOf('-')+1,extract.lastIndexOf('#')).replaceAll("#", "").trim();//changed from indexOf('#') to lastIndexOf('#')
 		    	boolean upperrestricted = ! to.endsWith("+");
 		    	to = to.replaceFirst("\\+$", "").trim();
 		    	
 		    	Element character = new Element("character");
 				character.setAttribute("char_type", "range_value");
 				character.setAttribute("name", chara);
-				character.setAttribute("from", from);
+				character.setAttribute("from", from.replaceAll("#", ""));
 				character.setAttribute("from_unit", unit.trim());
 				character.setAttribute("to", to);
 				character.setAttribute("to_unit", unit.trim());
@@ -1030,8 +1030,8 @@ public class NumericalHandler  {
 					character.setAttribute("upper_restricted", upperrestricted+"");
 				innertagstate.add(character);
 		    	//innertagstate = innertagstate.concat("<character char_type=\"range_value\" name=\"size\" from=\""+from+"\" from_unit=\""+unit.trim()+"\" to=\""+to+"\" to_unit=\""+unit.trim()+"\" upper_restricted=\""+upperrestricted+"\"/>");
-				toval = extract.substring(0, extract.indexOf('-'));
-				fromval = extract.substring(extract.indexOf('-')+1,extract.indexOf('#'));
+				toval = extract.substring(0, extract.indexOf('-')).replaceAll("#", ""); //if there is a range before this character, the from value for this range may be the toval for the previous range
+				fromval = extract.substring(extract.indexOf('-')+1,extract.lastIndexOf('#')).replaceAll("#", "");//if there is a range after this character, the to value for this range may be the fromval for the next range
 		    	//sizect+=1;
 			}
 			else{
@@ -1067,8 +1067,8 @@ public class NumericalHandler  {
 					e.setAttribute("to", toval.trim());
 					e.setAttribute("to_inclusive", "false");
 				}
-				if(e.getAttribute("from") != null && e.getAttributeValue("from").compareTo("")==0){
-					e.setAttribute("from", fromval.trim());
+				if(e.getAttribute("from") != null && e.getAttributeValue("from").compareTo("")==0){//4-6(-8)×4-6mm ; 
+					e.setAttribute("from", fromval.trim()); //fromval = 6
 					e.setAttribute("from_inclusive", "false");
 				}
 			}
@@ -1126,10 +1126,9 @@ public class NumericalHandler  {
 		//String str2 = "area";	
 		//String str1 = "40–80(–150+) cm ";
 		//String str2 = "size";
-		String str1 = "[7,8]10,11";//not dealt with by this class
-		String str2 = "count";
+		String str1 = "[1]2-3 cm";//not dealt with by this class
+		String str2 = "size";
 		ArrayList<Element> e = NumericalHandler.parseNumericals(str1, str2);
 		System.out.println(e);
 	}
-
 }
