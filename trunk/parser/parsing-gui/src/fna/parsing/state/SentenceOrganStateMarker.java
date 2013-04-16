@@ -86,33 +86,33 @@ public class SentenceOrganStateMarker {
 		//preparing...
 		this.adjnounsent = new Hashtable(); //source ->adjnoun (e.g. inner)
 		ArrayList<String> adjnouns = new ArrayList<String>();//all adjnouns
-	
-			try{
-				//collect all taxonnames to be used in processParentheses in ChunkedSentence
-				Statement stmt = conn.createStatement();
-				String taxonnames = "";
-				ResultSet rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
-				while(rs.next()){
-					String tn = rs.getString("name").trim();
-					if(tn.length()>0){
-						tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
-						tn = tn.substring(tn.indexOf(".")+1).trim(); //A.glutinosa =>glutinosa
-						taxonnames += tn+"|";
-					}
-				}
-				if(taxonnames!=null && taxonnames.length()!=0){
-					taxonnames = taxonnames.replaceAll("\\|+", "|").replaceAll("(^\\||\\|$)", "").trim();
-					SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
-					//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
-					SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
-	
-				}
-			}catch(Exception e){
-				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			}
-
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-				Statement stmt = conn.createStatement();
+			//collect all taxonnames to be used in processParentheses in ChunkedSentence
+			stmt = conn.createStatement();
+			String taxonnames = "";
+			rs = stmt.executeQuery("select name from "+tableprefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"));
+			while(rs.next()){
+				String tn = rs.getString("name").trim();
+				if(tn.length()>0){
+					tn = tn.replaceFirst("\\(.*?\\)", "").trim(); //(a) glutinosa => glutinosa
+					tn = tn.substring(tn.indexOf(".")+1).trim(); //A.glutinosa =>glutinosa
+					taxonnames += tn+"|";
+				}
+			}
+			if(taxonnames!=null && taxonnames.length()!=0){
+				taxonnames = taxonnames.replaceAll("\\|+", "|").replaceAll("(^\\||\\|$)", "").trim();
+				SentenceOrganStateMarker.taxonnamepattern1 = Pattern.compile(".*?\\bin\\s+([A-Z]\\.\\s+)?(?<!\\{)("+taxonnames+")(?!\\})\\b.*");
+				//this.taxonnamepattern2 = Pattern.compile(".*?\\b([A-Z]\\.[ ~])?(?<!\\{)("+taxonnames+")(?!\\})\\b.*", Pattern.CASE_INSENSITIVE);
+				SentenceOrganStateMarker.taxonnamepattern2 = Pattern.compile(".*?\\b([a-z] \\. )?("+taxonnames+")\\b.*");
+
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}
+		try{
+				stmt = conn.createStatement();
 				stmt.execute("drop table if exists "+this.tableprefix+"_markedsentence");
 				stmt.execute("create table if not exists "+this.tableprefix+"_markedsentence (sentid int(11)NOT NULL Primary Key, source varchar(100) , markedsent text, rmarkedsent text)");
 				//stmt.execute("update "+this.tableprefix+"_sentence set charsegment =''");
@@ -125,7 +125,7 @@ public class SentenceOrganStateMarker {
 				}
 
 				//ResultSet rs = stmt.executeQuery("select source, tag, originalsent from "+this.tableprefix+"_sentence");
-				ResultSet rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
+				rs = stmt.executeQuery("select source, modifier, tag, sentence, originalsent from "+this.tableprefix+"_sentence order by sentid desc");
 				//leave ditto as it is
 				while(rs.next()){//read sent in in reversed order
 					String tag = rs.getString("tag");
@@ -196,6 +196,16 @@ public class SentenceOrganStateMarker {
 				}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		Collections.sort(adjnouns);
 		for(int i = adjnouns.size()-1; i>=0; i--){
@@ -340,15 +350,27 @@ public class SentenceOrganStateMarker {
 				
 				if(debug) System.out.println(taggedsent);
 				sentences.put(source, taggedsent);
+				Statement stmt = null;
+				ResultSet rs = null;
 				try{
-					Statement stmt1 = conn.createStatement();
-					ResultSet rs = stmt1.executeQuery("select sentid from "+this.tableprefix+"_sentence where source='"+source+"'");
+					stmt = conn.createStatement();
+					rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_sentence where source='"+source+"'");
 					if(rs.next()){
 						int id = rs.getInt("sentid");
-						stmt1.execute("insert into "+this.tableprefix+"_markedsentence (sentid, source, markedsent) values("+id+",'"+source+"', '"+taggedsent+"')");
+						stmt.execute("insert into "+this.tableprefix+"_markedsentence (sentid, source, markedsent) values("+id+",'"+source+"', '"+taggedsent+"')");
 					}
 				}catch(Exception e){
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}finally{
+					try{
+						if(rs!=null) rs.close();
+						if(stmt!=null) stmt.close();
+					}catch(Exception e){
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+						LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+								System.getProperty("line.separator")
+								+sw.toString());
+					}
 				}
 				
 			}
@@ -357,9 +379,11 @@ public class SentenceOrganStateMarker {
 	}
 
 	protected void loadMarked() {
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence");
 			while(rs.next()){
 				String source = (String)rs.getString("source");
 				String taggedsent = (String)rs.getString("markedsent"); 
@@ -367,6 +391,16 @@ public class SentenceOrganStateMarker {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
@@ -488,9 +522,11 @@ public class SentenceOrganStateMarker {
 
 	private String getParentTag(String source) {
 		String tag = null;
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_sentence where source='"+source+"'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_sentence where source='"+source+"'");
 			if(rs.next()){
 				int sentid = rs.getInt("sentid");
 				sentid = sentid+1;
@@ -503,10 +539,18 @@ public class SentenceOrganStateMarker {
 				}while(tag.compareTo("ditto")==0);
 				
 			}
-			rs.close();
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return tag;
 	}
@@ -575,11 +619,13 @@ public class SentenceOrganStateMarker {
 	
 	protected String collectStateNames(){
 		String statestring = "";
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 
 			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
-			ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c' ");
+			rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c' ");
 
 			while(rs.next()){
 				String w = rs.getString("word");
@@ -599,6 +645,16 @@ public class SentenceOrganStateMarker {
 			}
 		}catch (Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return statestring.replaceAll("_", "|").replaceAll("\\b(and|or|to)\\b", "").replaceAll("\\\\d\\+", "").trim().replaceFirst("^\\|", "").replaceFirst("\\|$", "").replaceAll("\\|+", "|");
 	}
@@ -624,13 +680,30 @@ public class SentenceOrganStateMarker {
 	
 
 	protected void organNameFromPlNouns(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs;
-		String wordroletable = this.tableprefix + "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
-		rs = stmt.executeQuery("select word from "+wordroletable+" where semanticrole in ('op', 'os')");
-		while(rs.next()){
-			tags.append(rs.getString("word").trim()+"|");
+			 {
+		ResultSet rs = null;
+		try{
+			String wordroletable = this.tableprefix + "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
+			rs = stmt.executeQuery("select word from "+wordroletable+" where semanticrole in ('op', 'os')");
+			while(rs.next()){
+				tags.append(rs.getString("word").trim()+"|");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")
+					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
+		
 		/*
 		String postable = this.tableprefix + "_"+ApplicationUtilities.getProperty("POSTABLE");
 		rs = stmt.executeQuery("select word from "+postable+" where pos in ('p', 's', 'n') and word not in (select word from "+wordroletable+" where semanticrole in ('op', 'os'))");// and word not in (select term from "+this.glosstable+" where category ='life_style')");
@@ -645,55 +718,104 @@ public class SentenceOrganStateMarker {
 	 * @throws SQLException
 	 */
 	protected void organNameFromSentences(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs;
-		
-		/*tag terms are already in WORDROLES
-		 * rs = stmt.executeQuery("select distinct tag from sentence where tag not like '% %'");
-		while(rs.next()){
-			String tag = rs.getString("tag");
-			if(tag == null || tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0){continue;}
-			tags.append(tag+"|");
-		}*/
-		
-		rs = stmt.executeQuery("select modifier, tag from "+this.tableprefix+"_sentence where tag  like '[%]'"); //inner [tepal]
-		while(rs.next()){
-			String m = rs.getString("modifier");
-			m = m.replaceAll("\\[^\\[*\\]", ""); 
-			if(m.compareTo("")!= 0){
-				String tag = null;
-				if(m.lastIndexOf(" ")<0){
-					tag = m;
-				}else{
-					tag = m.substring(m.lastIndexOf(" ")+1); //last word from modifier
-				}
-				if(tag == null ||tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0 || tag.indexOf("[")>=0 || tag.matches(".*?(\\d|"+StateCollector.stop+").*")){continue;}
+			 {
+		ResultSet rs = null;
+		try{	
+			/*tag terms are already in WORDROLES
+			 * rs = stmt.executeQuery("select distinct tag from sentence where tag not like '% %'");
+			while(rs.next()){
+				String tag = rs.getString("tag");
+				if(tag == null || tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0){continue;}
 				tags.append(tag+"|");
+			}*/
+			
+			rs = stmt.executeQuery("select modifier, tag from "+this.tableprefix+"_sentence where tag  like '[%]'"); //inner [tepal]
+			while(rs.next()){
+				String m = rs.getString("modifier");
+				m = m.replaceAll("\\[^\\[*\\]", ""); 
+				if(m.compareTo("")!= 0){
+					String tag = null;
+					if(m.lastIndexOf(" ")<0){
+						tag = m;
+					}else{
+						tag = m.substring(m.lastIndexOf(" ")+1); //last word from modifier
+					}
+					if(tag == null ||tag.indexOf("[")>=0|| tags.indexOf("|"+tag+"|") >= 0 || tag.indexOf("[")>=0 || tag.matches(".*?(\\d|"+StateCollector.stop+").*")){continue;}
+					tags.append(tag+"|");
+				}
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")
+					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
 			}
 		}
 	}
 	
-	protected void organNameFromGloss(StringBuffer tags, Statement stmt)
-			throws SQLException {
-		ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure')");
-		while(rs.next()){
-			String term = rs.getString("term").trim();
-			if(term == null){continue;}
-			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
-			tags.append(term+"|");
+	protected void organNameFromGloss(StringBuffer tags, Statement stmt) {
+		ResultSet rs = null;
+		try{
+			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('STRUCTURE', 'FEATURE', 'SUBSTANCE', 'PLANT', 'nominative', 'structure')");
+			while(rs.next()){
+				String term = rs.getString("term").trim();
+				if(term == null){continue;}
+				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+				tags.append(term+"|");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")
+					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
-	protected String colorsFromGloss()
-			throws SQLException {
-		StringBuffer colors = new StringBuffer();
-		Statement stmt = conn.createStatement();
-		ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('coloration', 'color')");
-		while(rs.next()){
-			String term = rs.getString("term").trim();
-			if(term == null){continue;}
-			term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
-			colors.append(term+"|");
+	protected String colorsFromGloss() {
+		Statement stmt = null;
+		ResultSet rs = null;
+		try{
+			StringBuffer colors = new StringBuffer();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('coloration', 'color')");
+			while(rs.next()){
+				String term = rs.getString("term").trim();
+				if(term == null){continue;}
+				term = term.indexOf(" ")> 0? term.substring(term.lastIndexOf(' ')+1) : term;
+				colors.append(term+"|");
+			}
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+					System.getProperty("line.separator")
+					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return colors.toString().replaceFirst("\\|$", "");
 	}

@@ -422,7 +422,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			pstmt.setString(1, term);
 			pstmt.setString(2, decision);
 			pstmt.execute();
-			pstmt.close();
+
 			
 			/*savedecision for groupID*/
 			this.saveDecision(Integer.parseInt(groupID), "done");
@@ -430,7 +430,16 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTermCategory", exe);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		} 
+		} finally{
+			try{
+				if(pstmt!=null) pstmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
 		return false;
 		
 	}

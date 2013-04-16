@@ -44,15 +44,25 @@ public class HabitatParserDbAccessor {
 	}
 	
 	public void createTable(){
+		Statement stmt = null;
 		try{
 			conn = DriverManager.getConnection(url);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+this.prefix+"_habitat");
 			stmt.execute("create table if not exists "+this.prefix+"_habitat (source varchar(50) not null, habitat_string text, habitat_values varchar(500), primary key (source))");
 			//stmt.execute("delete from "+this.prefix+"_habitat");
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}		
 	}
 	
@@ -70,12 +80,22 @@ public class HabitatParserDbAccessor {
 	
 	
 	private void insertRecord(String fname, String text) {
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("insert into "+this.prefix+"_habitat(source, habitat_string) values ('"+fname+"','"+text+"')");			
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}
@@ -85,12 +105,22 @@ public class HabitatParserDbAccessor {
 		if(where.trim().length() > 0){
 			query += " where "+where;
 		}
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute(query);			
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}
@@ -107,9 +137,11 @@ public class HabitatParserDbAccessor {
 		if(orderby.length()>0){
 			query += " order by "+orderby;
 		}
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			stmt = conn.createStatement();
+		    rs = stmt.executeQuery(query);
 			while(rs.next()){
 				String[] temp = select.split(",");
 				String r = "";
@@ -122,6 +154,16 @@ public class HabitatParserDbAccessor {
 		}catch(Exception e){
 			LOGGER.error("HabitatParserDbAccessor insert record error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return results;
 	}

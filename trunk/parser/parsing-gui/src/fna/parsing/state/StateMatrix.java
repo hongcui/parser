@@ -57,9 +57,17 @@ public class StateMatrix {
 			stmt.execute("create table if not exists "+tableprefix+"_syns (term varchar(200), synonym varchar(200))");	
 			//noneqterms must not be refreshed
 			//stmt.execute("create table if not exists "+tableprefix+"_noneqterms (term varchar(100) not null, source varchar(200))");
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}
@@ -88,9 +96,17 @@ public class StateMatrix {
 			stmt.execute("create table if not exists "+tableprefix+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 			stmt.execute("drop table if exists "+tableprefix+"_term_category");
 			stmt.execute("create table if not exists "+tableprefix+"_term_category (term varchar(100), category varchar(200), tinyint(1))");
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
@@ -230,16 +246,28 @@ public class StateMatrix {
 
 	private void insertIntoTermsTable(String[] pair, String othervalues) {
 		// TODO Auto-generated method stub
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			//check to see if the pair exist in terms table
-			ResultSet rs = stmt.executeQuery("select * from "+tableprefix+"_terms where term='"+pair[0]+"' and cooccurTerm='"+pair[1]+"'");
+			rs = stmt.executeQuery("select * from "+tableprefix+"_terms where term='"+pair[0]+"' and cooccurTerm='"+pair[1]+"'");
 			if(!rs.next()){
 				stmt.execute("insert into "+tableprefix+"_terms (term, cooccurTerm, frequency, sourceFiles) values('"+pair[0]+"','"+pair[1]+"',"+othervalues+")");
 			}
 			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 
@@ -362,8 +390,10 @@ public class StateMatrix {
 		//save these terms in clusters for return
 
 		ArrayList<State> freeStates = new ArrayList<State> ();
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String q = "select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+
 					" where semanticrole ='c' and" +
 					" mid(word, locate('_', word)+1) not in (select distinct term from " +this.glossarytable+")";
@@ -373,7 +403,7 @@ public class StateMatrix {
 					q += " and word not in ("+coocur+")";
 			}
 			System.out.println(q);
-			ResultSet rs = stmt.executeQuery(q);
+			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String freeterm = rs.getString("word");
 				//if(freeterm.indexOf("_")<0){//ignore terms such as lance_linear, but should show second_order
@@ -384,6 +414,16 @@ public class StateMatrix {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		Set<State> freeStateSet = new HashSet<State>(freeStates);
 		clusters.add(freeStateSet);		
@@ -398,8 +438,10 @@ public class StateMatrix {
 	 * @param clusters
 	 */
 	private void saveClustersInDB(Collection<Set<State>> clusters){
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			int gcount = 1;
 			Iterator<Set<State>> sets = clusters.iterator();
 			while(sets.hasNext()){
@@ -421,7 +463,7 @@ public class StateMatrix {
 							}
 						}
 					}
-					ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
+					rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
 					//set group id
 					if(rs.next()){
 						stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
@@ -435,7 +477,7 @@ public class StateMatrix {
 			//Statement stmt = conn.createStatement();
 			while(it.hasNext()){
 				String w = it.next();
-				ResultSet rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
+				rs = stmt.executeQuery("select distinct source from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+
 						" where sentence like '% "+w+" %' or sentence like '"+w+" %' or sentence like '% "+w+"'");
 				String srcs = "";
 				int count = 0;
@@ -450,13 +492,22 @@ public class StateMatrix {
 				stmt.execute("insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+w+"', '', "+count+ ", '"+srcs+"')");
 			}
 			//set group id
-			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
+			rs = stmt.executeQuery("select * from "+this.tableprefix+"_grouped_terms where isnull(groupId) or groupID=0");
 			if(rs.next()){
 				stmt.execute("update "+this.tableprefix+"_grouped_terms set groupId="+gcount+" where isnull(groupId) or groupID=0");
 			}
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 					
 	}
@@ -471,10 +522,12 @@ public class StateMatrix {
 	 */
 	private String[] freqsource(String term1, String term2) {
 		String[] info = new String[2];
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			//System.out.println("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
-			ResultSet rs = stmt.executeQuery("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
+			rs = stmt.executeQuery("select frequency, sourceFiles from "+this.tableprefix+"_terms where grouped='n' and (term='"+term1+"' and cooccurterm='"+term2+"') or (term='"+term2+"' and cooccurterm='"+term1+"')");
 			
 			if(rs.next()){
 				info[0] = rs.getString(1);
@@ -487,6 +540,16 @@ public class StateMatrix {
 			rs.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return null;
 	}
@@ -509,9 +572,11 @@ public class StateMatrix {
 			State s = sit.next();
 			String term = s.getName();
 			statestring.append("'"+term+"', ");		
+			Statement stmt = null;
+			ResultSet rs = null;
 			try{
-				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select distinct category from "+this.glossarytable+" where term ='"+term+"'");
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery("select distinct category from "+this.glossarytable+" where term ='"+term+"'");
 				
 				while(rs.next())
 				{
@@ -530,6 +595,16 @@ public class StateMatrix {
 				
 			}catch (Exception e) {
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
 			}
 			
 			//commented on 14th march to find the overlapping category.If such a category is present then decide whether to display the entire set or not
@@ -613,11 +688,13 @@ public class StateMatrix {
 		GraphMLOutputter gmo = new GraphMLOutputter();
 		//from saved grouped_terms
 		ArrayList<ArrayList> groups = new ArrayList<ArrayList>();
-		int gnumber = 0;		
+		int gnumber = 0;	
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String q = "select groupId from "+this.tableprefix+"_grouped_terms order by groupId desc";
-			ResultSet rs = stmt.executeQuery(q);
+		    rs = stmt.executeQuery(q);
 			if(rs.next()){
 				gnumber = rs.getInt("groupId");
 			}				
@@ -637,7 +714,17 @@ public class StateMatrix {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}			
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}		
 		if(groups.size()>0){
 			gmo.output(groups, 1);
 			return groups.size();

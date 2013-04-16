@@ -63,11 +63,13 @@ public class Utilities {
 			if(debugPOS) System.out.println(word+" is sureVerb");
 			return true;
 		}
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String q = "select * from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
 					"where originalsent like '%does not "+word+"%'";
-			ResultSet rs = stmt.executeQuery(q);
+			rs = stmt.executeQuery(q);
 			if(rs.next()){
 				sureVerbs.add(word);
 				if(debugPOS) System.out.println(word+" is sureVerb");
@@ -125,22 +127,44 @@ public class Utilities {
 			}			
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		notSureVerbs.add(word);
 		return false;
 	}
 	
 	private static boolean isOrgan(String term, Connection conn, String tablePrefix) {
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");		
-			ResultSet rs = stmt.executeQuery("select word from "+wordrolesable+" where semanticrole in ('os', 'op') and word='"+term+"'");		
+			rs = stmt.executeQuery("select word from "+wordrolesable+" where semanticrole in ('os', 'op') and word='"+term+"'");		
 			if(rs.next()){
 				if(debugPOS) System.out.println(term+" is an organ");
 				return true;
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return false;
 	}
@@ -165,9 +189,11 @@ public class Utilities {
 			notPartOfPrepPhrase.add(word);
 			return false;
 		}
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select sentence from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select sentence from "+prefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE")+" " +
 					"where originalsent rlike ' ("+ChunkedSentence.prepositions+") "+word+" ("+ChunkedSentence.prepositions+")'");
 			boolean select = true;
 			boolean exist = false;
@@ -182,6 +208,16 @@ public class Utilities {
 			}			
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		notPartOfPrepPhrase.add(word);
 		return false;
@@ -601,18 +637,22 @@ public class Utilities {
 		String[] result = new String[2];
 		HashSet<String> chs = new HashSet<String>();
 		HashSet<String> syns = new HashSet<String>();
+		Statement stmt = null;
+		ResultSet rs = null;
+		Statement stmt1 = null;
+		ResultSet rs1 = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
+			stmt1 = conn.createStatement();
 			//check glossarytable
-			ResultSet rs = stmt.executeQuery("select term, category, hasSyn from "+glosstable+" where term rlike '^"+w+"(_[0-9])?$' or term rlike '_"+w+"(_[0-9])?$' order by category");
+			rs = stmt.executeQuery("select term, category, hasSyn from "+glosstable+" where term rlike '^"+w+"(_[0-9])?$' or term rlike '_"+w+"(_[0-9])?$' order by category");
 			while(rs.next()){
 				String term = rs.getString("term");
 				String cat = rs.getString("category");
 				chs.add(cat);
 				int hassyn = rs.getInt("hasSyn");
 				if(hassyn == 1){
-					Statement stmt1 = conn.createStatement();
-					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+glosstable.replace("fixed", "syns") + 
+					rs1 = stmt1.executeQuery("select term, synonym from "+glosstable.replace("fixed", "syns") + 
 							" where synonym ='"+term+"'");
 					while(rs1.next()){
 						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
@@ -632,8 +672,7 @@ public class Utilities {
 				chs.add(cat);
 				int hassyn = rs.getInt("hasSyn");
 				if(hassyn == 1){
-					Statement stmt1 = conn.createStatement();
-					ResultSet rs1 = stmt1.executeQuery("select term, synonym from "+prefix+ "_syns" + 
+					rs1 = stmt1.executeQuery("select term, synonym from "+prefix+ "_syns" + 
 							" where synonym ='"+term+"'");
 					while(rs1.next()){
 						syns.add(rs1.getString("term")+"_"+cat); //find preferred term
@@ -644,13 +683,9 @@ public class Utilities {
 				//	ch += rs.getString("decision").trim().replaceAll("\\s+", "_")+"_or_";
 				//}
 			}			
-			rs.close();
-			stmt.close();
 			String[] charas = chs.toArray(new String[]{});
 			String[] synonyms = syns.toArray(new String[]{});
- 			Arrays.sort(charas);
- 	
- 			
+ 			Arrays.sort(charas);		
  			for(String character: charas){
  				ch += character.replaceAll("\\s+", "_")+"_or_";
  			}
@@ -670,6 +705,18 @@ public class Utilities {
 			return result;
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(rs1!=null) rs1.close();
+				if(stmt1!=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return null;
 	}
@@ -730,9 +777,11 @@ public class Utilities {
 		String termcopy = term;
 		term = term.replaceFirst("(semi|sub|un)", "");
 		boolean in = false;
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select term, category from "+glosstable+" where term ='"+term+"'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select term, category from "+glosstable+" where term ='"+term+"'");
 			if(rs.next()){
 				String cat = rs.getString("category");
 				in = true;
@@ -743,6 +792,16 @@ public class Utilities {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return in;
 	}

@@ -370,21 +370,32 @@ public class VolumeFinalizer extends Thread {
 	 * add new character/state to glossary
 	 */
 	private void updateGlossary() {
+		Statement stmt = null;
+		Statement stmt1 = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String q ="select distinct term, decision from "+this.dataPrefix+"_group_decisions as t1, "+this.dataPrefix+"_grouped_terms as t2 where term not in (select term from fnaglossary) and t1.groupId=t2.groupId";
-			ResultSet rs = stmt.executeQuery(q);
-			Statement stmt1 = conn.createStatement();
+			rs = stmt.executeQuery(q);
+			stmt1 = conn.createStatement();
 			while(rs.next()){				
 				String q1 = "insert into fnaglossary (term, category, status) values ('"+rs.getString("term")+"', '"+rs.getString("decision")+"', 'learned')";
 				stmt1.execute(q1);
-			}
-			stmt1.close();
-			rs.close();
-			stmt.close();						
+			}					
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}		
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(stmt1 !=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}	
 	}
 	/**
 	 * 2010

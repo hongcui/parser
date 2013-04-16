@@ -1458,7 +1458,7 @@ end procedure
 					IN.setAttribute("text", "i["+alltext+"]");
 					IN.setAttribute("id", id);
 					PP.addContent(IN);//combined in-list
-					PP.addContent(NP);//the object of the in-list
+					if(NP!=null) PP.addContent(NP);//the object of the in-list
 				}
 			}
 		}catch (Exception e){

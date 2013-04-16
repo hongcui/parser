@@ -32,18 +32,27 @@ public class ExtractOntoFromAnno {
 	 */
 	public ExtractOntoFromAnno(String folder, String database, String ontoname, String username, String password) {
 		this.ontoname = ontoname;
+		Statement stmt = null;
 		try{
 			if(conn == null){
 				Class.forName("com.mysql.jdbc.Driver");
 				String URL = "jdbc:mysql://localhost/"+database+"?user="+username+"&password="+password+"&connectTimeout=0&socketTimeout=0&autoReconnect=true";
 				conn = DriverManager.getConnection(URL);
-				Statement stmt = conn.createStatement();
+				stmt = conn.createStatement();
 				stmt.execute("create table if not exists "+ontoname+" (id int NOT NULL auto_increment, term varchar(150), category varchar(150), remark varchar(150), primary key(id))");
 				//stmt.execute("delete from antglossary");
-				stmt.close();
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		File[] files = new File(folder).listFiles();
 		for(int i = 0; i<files.length; i++){
@@ -55,16 +64,27 @@ public class ExtractOntoFromAnno {
 
 	
 	private void dump2database() {
+		Statement stmt = null;
 		try{
+			stmt = conn.createStatement();
 			Enumeration<String> en = this.onto.keys();
 			while(en.hasMoreElements()){
 				String term = en.nextElement();
 				String cat = this.onto.get(term);
-				Statement stmt = conn.createStatement();
+				stmt = conn.createStatement();
 				stmt.execute("insert into "+ontoname+" (term, category) values ('"+term+"','"+cat+"')");
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}

@@ -1,28 +1,22 @@
 package input;
 import java.io.File;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+
+import fna.parsing.ApplicationUtilities;
 
 public class ExtractAntStructures {
 
@@ -136,15 +130,22 @@ public class ExtractAntStructures {
 												    	structure = constraint + structure;
 												    	constraint = "";
 													    System.out.println(structure);
+													    Statement stmt = null;
 													    try {
 															if (!con.isClosed()) {
-																Statement stmt = con.createStatement();
+																stmt = con.createStatement();
 																String sql =  "Insert into ant_structure values ('" + structure + "')";
 															    stmt.execute(sql);
 																}
 														}catch(SQLException e) {
 																	e.printStackTrace();
-																}
+														}finally{
+															try{
+																if(stmt!=null) stmt.close();
+															}catch(Exception e){
+																e.printStackTrace();
+															}
+														}
 												    }
 												    
 												}

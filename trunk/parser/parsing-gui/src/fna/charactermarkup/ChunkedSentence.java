@@ -133,10 +133,11 @@ public class ChunkedSentence {
 		this.conn = conn;
 		//this.taxonnamepattern1 = taxonnamepattern;
 		//ChunkedSentence.taxonnamepattern2 = taxonnamepattern2;
-		
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select term from "+glosstable+" where category='character'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select term from "+glosstable+" where category='character'");
 			while(rs.next()){
 				nouns.add(rs.getString("term")); //initialize nouns with "size", "color", etc.
 			}
@@ -145,6 +146,16 @@ public class ChunkedSentence {
 			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
 					System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
 					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 		this.sentsrc = sentsrc;
@@ -2669,6 +2680,8 @@ parallelism scope: q[other chunks]
 			ResultSet rs = stmt.executeQuery("select originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
 			rs.next();
 			this.text = rs.getString(1);
+			if(rs!=null) rs.close();
+			if(stmt!=null) stmt.close();
 		}
 		return this.text;
 	}
@@ -2683,10 +2696,12 @@ parallelism scope: q[other chunks]
 		String sentmod = null;
 		String text = null;
 		//boolean islifestyle = false;//make this a post-process
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			//ResultSet rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
-			ResultSet rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
+		    rs = stmt.executeQuery("select modifier, tag, originalsent from "+this.tableprefix+"_sentence where source ='"+sentsrc+"'");
 			if(rs.next()){
 				senttag = rs.getString(2).trim();
 				senttag = senttag.compareTo("general")==0? "whole_organism" : senttag;
@@ -2703,12 +2718,23 @@ parallelism scope: q[other chunks]
 			if(rs.next()){
 				islifestyle = true;
 			}*/
+
 		}
 		catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
 			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
 					System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
 					+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")+"source:"+this.sentsrc+System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 		if(senttag.compareTo("ignore")!=0){

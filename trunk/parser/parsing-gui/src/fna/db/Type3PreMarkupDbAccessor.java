@@ -43,10 +43,12 @@ public class Type3PreMarkupDbAccessor {
 	
 	public ArrayList selectRecords(String select, String from, String where){
 		ArrayList<String> results = new ArrayList<String>();
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
 			conn = DriverManager.getConnection(url);
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select "+select+" from "+from+" where "+where);
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select "+select+" from "+from+" where "+where);
 			String[] temp = select.split("\\s*,\\s*");
 			while(rs.next()){
 				String row = "";
@@ -62,6 +64,16 @@ public class Type3PreMarkupDbAccessor {
 		}catch(Exception e){
 			LOGGER.error("Type3PreMarkupDbAccessor error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}		
 		return results;
 	}

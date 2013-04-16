@@ -95,9 +95,10 @@ public abstract class OntologyClassFetcher {
 	 * @param condition to determine whether a term be saved in the arraylist or now
 	 */
 	public void saveSelectedClass(String condition){
+		PreparedStatement stmt = null;
 		try{
 			//table: must have at least three fields: ontoid, term, category, 
-			PreparedStatement stmt = conn.prepareStatement("insert into "+table+"(ontoid, term, category, underscored) values (?, ?, ?, ?)");
+			stmt = conn.prepareStatement("insert into "+table+"(ontoid, term, category, underscored) values (?, ?, ?, ?)");
 			for(int i = 0; i < this.selectedClassIds.size(); i++){
 				String label = this.selectedClassLabels.get(i).trim();
 				//remove () from label if () is not in the middle of the term. If it is, ignore the term. 
@@ -119,6 +120,15 @@ public abstract class OntologyClassFetcher {
 			
 		}catch (Exception e){
 			e.printStackTrace();
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	

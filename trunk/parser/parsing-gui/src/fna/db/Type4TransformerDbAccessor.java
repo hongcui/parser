@@ -48,23 +48,33 @@ public class Type4TransformerDbAccessor {
 	public Type4TransformerDbAccessor(String tablename, String prefix) {
 		this.tablename = tablename;
 		this.prefix = prefix;
+		Statement stmt =null;
 		try{
 			conn = DriverManager.getConnection(url);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+prefix+"_"+tablename);
 			stmt.execute("create table if not exists "+prefix+"_"+tablename+" (ofilename varchar(100) NOT NULL, nfilename varchar(100), primary key(ofilename))");			
 		}catch(Exception e){
 			LOGGER.error("Type4TransformerDbAccessor error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}	
+		}	finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
 	}
 	
 	
 	public void addRecords(Hashtable files){
-		
+		Statement stmt = null;
 		try{
 			conn = DriverManager.getConnection(url);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			Enumeration<String> en = files.keys();
 			while(en.hasMoreElements()){
 				String filename = (String)en.nextElement();
@@ -74,7 +84,16 @@ public class Type4TransformerDbAccessor {
 		}catch(Exception e){
 			LOGGER.error("Type3PreMarkupDbAccessor error:" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}		
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
 	}
 	
 	
