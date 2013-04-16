@@ -839,21 +839,30 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 		//StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "diatomglossaryfixed", false);
 			
 			
-		String database = "markedupdatasets";
+		/*String database = "markedupdatasets";
 		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\fna2_v7_jing_posedsentences.txt";
 		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\fna2_v7_jing_parsedsentences.txt";
 		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FNAV7\\target\\transformed";
 		String prefix = "fna2_v7_jing";
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
+		*/
+			
 		
 
-		/*String database = "markedupdatasets";
+		String database = "markedupdatasets";
 		String posedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_posedsentences.txt";
 		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\foc_v10_jing_parsedsentences.txt";
 		String transformedir = "C:\\Users\\updates\\CharaParserTest\\FOCV10\\target\\transformed";
 		String prefix = "foc_v10_jing";
-		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);*/
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "fnaglossaryfixed", false);
 		
+		/*String database = "markedupdatasets";
+		String posedfile = "C:\\Users\\updates\\CharaParserTest\\Sponges\\sponges-11mar13\\target\\sponges_1__posedsentences.txt";
+		String parsedfile = "C:\\Users\\updates\\CharaParserTest\\Sponges\\sponges-11mar13\\target\\sponges_1_parsedsentences.txt";
+		String transformedir = "C:\\Users\\updates\\CharaParserTest\\Sponges\\sponges-11mar13\\target\\transformed";
+		String prefix = "sponges_1";
+		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, prefix, "spongeglossaryfixed", false);	
+		*/
 		//sp.POSTagging();
 		//sp.parsing();
 		sp.extracting();
