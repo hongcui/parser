@@ -40,7 +40,7 @@ public class Utilities {
 	public static ArrayList<String> notSureAdvs = new ArrayList<String>();
 	public static ArrayList<String> notPartOfPrepPhrase = new ArrayList<String>();
 	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
-	public static boolean debug = false;
+	public static boolean debug = true;
 	public static boolean debugPOS = true;
 	//special cases
 	/**
@@ -547,7 +547,7 @@ public class Utilities {
 	 * @return null if not found; string[2]: string[0]: chara1_or_chara2, string[1]: preferedterm_chara1, perferredterm_chara2
 	 */
 	public static String[] lookupCharacter(String w, Connection conn, Hashtable<String, String[]> characterhash, String glosstable, String prefix) {
-		if(w.trim().length()==0) return null;
+		if(w.trim().length()==0 || w.matches("\\W+")) return null; //w = "?"
 		if(w.contains("[")) return null;
 		if(w.indexOf(" ")>0) w = w.substring(w.lastIndexOf(" ")+1).trim();
 		//w = w.replaceAll("[{}<>()]", "").replaceAll("\\d+[–-]", "_").replaceAll("[–_]", "-")./*replaceAll(" ", "").*/replaceAll("_+", "_");//"(3-)5-merous" =>_merous
@@ -665,6 +665,7 @@ public class Utilities {
 			}
 			//check _term_category table, terms in the table may have number suffix such as linear_1, linear_2, 
 			String q = "select term, category, hasSyn from "+prefix+"_term_category where term rlike '^"+w+"(_[0-9])?$' and category !='structure' order by category";
+			if(debug) System.out.println(q);
 			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				String term = rs.getString("term");
