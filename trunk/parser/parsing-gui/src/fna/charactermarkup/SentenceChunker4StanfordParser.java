@@ -1443,7 +1443,12 @@ end procedure
 					Element NP = PP.getChild("NP");
 					if(NP == null){
 						NP = lastPP.getChild("NP");
-						lastPP.removeContent(NP);
+						if(NP==null){
+							//treat any node after IN the NP
+							List<Element> childnodes = lastPP.getChildren();
+							if(childnodes.size()>1) NP = childnodes.get(1);
+						}
+						if(NP!=null) lastPP.removeContent(NP);
 					}else{
 						PP.removeContent(NP);
 					}
