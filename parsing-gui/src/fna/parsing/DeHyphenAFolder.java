@@ -95,10 +95,11 @@ public class DeHyphenAFolder {
 		       if(listener!= null) listener.progress(50);
 	
 		       DeHyphenizer dh = new DeHyphenizerCorrected(this.database, this.tablename, "word", "count", "-", this.glossarytable, glossary);
-	
+		       Statement stmt = null;
+		       ResultSet rs = null;
 		       try{
-		            Statement stmt = conn.createStatement();
-		            ResultSet rs = stmt.executeQuery("select word from "+tablename+" where word like '%-%'");
+		            stmt = conn.createStatement();
+		            rs = stmt.executeQuery("select word from "+tablename+" where word like '%-%'");
 		            while(rs.next()){
 		                String word = rs.getString("word");
 		                String dhword = dh.normalFormat(word).replaceAll("-", "_"); //so dhwords in _allwords table are comparable to words in _wordpos and other tables.
@@ -110,7 +111,17 @@ public class DeHyphenAFolder {
 		       }catch(Exception e){
 		        	LOGGER.error("Problem in VolumeDehyphenizer:dehyphen", e);
 		            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		       }
+		       }finally{
+					try{
+						if(rs!=null) rs.close();
+						if(stmt!=null) stmt.close();
+					}catch(Exception e){
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+						LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+								System.getProperty("line.separator")
+								+sw.toString());
+					}
+				}
 		       normalizeDocument();
 		       if(listener!= null) listener.progress(100);
 		       return true;
@@ -192,9 +203,10 @@ public class DeHyphenAFolder {
 	     * check for unmatched brackets too.
 	     */
 	    private void fillInWords(){
+	    	Statement stmt = null;
+	    	ResultSet rs = null;
 	        try {
-	            Statement stmt = conn.createStatement();
-	            ResultSet rs = null;
+	        	stmt = conn.createStatement();
 	            File[] flist = folder.listFiles();
 	            int total = flist.length;
 	            for(int i= 0; i < flist.length; i++){
@@ -277,12 +289,20 @@ public class DeHyphenAFolder {
 	                    stmt.close();
 	                }*/
 	            }
-                rs.close();
-                stmt.close();
 	        } catch (Exception e) {
 	        	LOGGER.error("Problem in VolumeDehyphenizer:fillInWords", e);
 	            StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-	        }
+	        }finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
+			}
 	    }
 	    private boolean hasUnmatchedBrackets(String text) {
 	    	String[] lbrackets = new String[]{"\\[", "(", "{"};

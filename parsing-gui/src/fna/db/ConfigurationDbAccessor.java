@@ -37,10 +37,11 @@ public class ConfigurationDbAccessor {
 	private static String url = ApplicationUtilities.getProperty("database.url");
 	
 	static {
+		Statement stmt = null;
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 			Connection conn = DriverManager.getConnection(url);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("create table if not exists configtags (tagname varchar(200), marker varchar(100), startStyle varchar(100), primary key (tagname))");
 			stmt.execute("DROP TABLE IF EXISTS `type4startparagraph`");
 			stmt.execute("CREATE TABLE type4startparagraph (`tagid` int(5) NOT NULL AUTO_INCREMENT, `paragraph` mediumtext CHARACTER SET utf8, `docformat` varchar(50) DEFAULT NULL, PRIMARY KEY (`tagid`))");
@@ -50,6 +51,15 @@ public class ConfigurationDbAccessor {
 			// TODO Auto-generated catch block
 			LOGGER.error("Couldn't find Class in ConfigurationDbAccessor" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	

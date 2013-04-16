@@ -77,13 +77,17 @@ public class VolumeMarkupDbAccessor {
     public ArrayList<String> structureTags4Curation(List <String> tagList) throws  ParsingException, SQLException {
     	
     	PreparedStatement stmt = null;
+    	PreparedStatement stmtSentence=null;
     	ResultSet rs = null;
+    	Statement stmt1 = null;
+    	ResultSet rs1 = null;
+    	ResultSet rs2 = null;
 		try {
 	 		String filter1 = "";
 	 		String filter2 = "";
 	 		String filter3 = "";
-			Statement stmt1 = conn.createStatement();
-			ResultSet rs1 = stmt1.executeQuery("show tables");
+			stmt1 = conn.createStatement();
+			rs1 = stmt1.executeQuery("show tables");
 			while(rs1.next()){
 				if(rs1.getString(1).compareToIgnoreCase(ApplicationUtilities.getProperty("NONEQTABLE"))==0){
 					filter1 = " and tag not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") "; 
@@ -91,8 +95,6 @@ public class VolumeMarkupDbAccessor {
 					filter3 = " and word not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
 				}
 			}
-	 		rs1.close();
-	 		stmt1.close();
 
 			String sql = "select distinct tag as structure from "+this.tablePrefix+"_sentence where tag != 'unknown' and tag is not null and tag not like '% %' " +
 			filter1 +
@@ -111,8 +113,8 @@ public class VolumeMarkupDbAccessor {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				String tag = rs.getString("word");
-				PreparedStatement stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + tag + "%'");
-				ResultSet rs2 = stmtSentence.executeQuery();
+				stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + tag + "%'");
+				rs2 = stmtSentence.executeQuery();
 				if (rs2.next()) {
 					populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
 				}
@@ -128,7 +130,11 @@ public class VolumeMarkupDbAccessor {
 			}
 			if (stmt != null) {
 				stmt.close();
-			}		
+			}
+			if(rs1!=null) rs1.close();
+			if(stmt!=null) stmt.close();
+			if(rs2!=null) rs2.close();
+			if(stmtSentence!=null) stmtSentence.close();
 		}
     }
 
@@ -155,19 +161,17 @@ public class VolumeMarkupDbAccessor {
     public ArrayList<String> contentTerms4Curation(List <String> curationList, ArrayList<String> structures, ArrayList<String> characters) throws  ParsingException, SQLException {
      	PreparedStatement stmt = null;
     	ResultSet rs = null;
-		 
+		Statement stmt1 = null;
+		ResultSet rs1 = null;
 	 	try {
 	 		String filter = "";
-			Statement stmt1 = conn.createStatement();
-			ResultSet rs1 = stmt1.executeQuery("show tables");
+			stmt1 = conn.createStatement();
+			rs1 = stmt1.executeQuery("show tables");
 			while(rs1.next()){
 				if(rs1.getString(1).compareToIgnoreCase(ApplicationUtilities.getProperty("NONEQTABLE"))==0){
 					filter = " and dhword not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
 				}
 			}
-	 		rs1.close();
-	 		stmt1.close();
-	 		
 	 		String sql = "select dhword from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("ALLWORDS")+
 			//" where count>=3 and inbrackets=0 and dhword not like '%\\_%' and " +
 			" where dhword not like '%\\_%' and " +		
@@ -194,6 +198,8 @@ public class VolumeMarkupDbAccessor {
 			if (stmt != null) {
 				stmt.close();
 			}		
+			if(stmt1!=null) stmt1.close();
+			if(rs1!=null) rs1.close();
 		}
     }
     /**
@@ -203,10 +209,11 @@ public class VolumeMarkupDbAccessor {
      * @param word
      */
 	private void populateCurationList(List<String> curationList, String word) {
-		try{
-			
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+word+"'");
+		Statement stmt = null;
+		ResultSet rs = null;
+		try{	
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+word+"'");
 			if(rs.next()){
 				String cat = rs.getString("category");
 				if(cat.matches("("+ApplicationUtilities.getProperty("STRUCTURECATEGORYPATTERNINGLOSSARY")+")")){
@@ -219,6 +226,16 @@ public class VolumeMarkupDbAccessor {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 
@@ -232,11 +249,15 @@ public class VolumeMarkupDbAccessor {
 		ArrayList<String> words = new ArrayList<String>();
 		
 		PreparedStatement stmt = null;
+		PreparedStatement stmtSentence = null;
 		ResultSet rset = null;
+		Statement stmt1 =null;
+		ResultSet rs1 = null;
+		ResultSet rs2 = null;
 		try {
 	 		String filter = "";
-			Statement stmt1 = conn.createStatement();
-			ResultSet rs1 = stmt1.executeQuery("show tables");
+		    stmt1 = conn.createStatement();
+			rs1 = stmt1.executeQuery("show tables");
 			while(rs1.next()){
 				if(rs1.getString(1).compareToIgnoreCase(ApplicationUtilities.getProperty("NONEQTABLE"))==0){
 					filter = " and word not in (select word from "+ ApplicationUtilities.getProperty("NONEQTABLE")+") ";
@@ -254,8 +275,8 @@ public class VolumeMarkupDbAccessor {
 			if (rset != null) {
 				while(rset.next()){
 					String word = rset.getString("word");
-					PreparedStatement stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + word + "%'");
-					ResultSet rs2 = stmtSentence.executeQuery();
+					stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + word + "%'");
+				    rs2 = stmtSentence.executeQuery();
 					if (rs2.next()) {
 						populateDescriptorList(words, word);
 					}
@@ -272,7 +293,10 @@ public class VolumeMarkupDbAccessor {
 			if(stmt != null) {
 				stmt.close();
 			}
-			
+			if(rs1 != null) rs1.close();
+			if(rs2 !=null) rs2.close();
+			if(stmt1 != null) stmt.close();
+			if(stmtSentence !=null) stmtSentence.close();
 		}
 	return words;	
 	}
@@ -294,10 +318,11 @@ public class VolumeMarkupDbAccessor {
 					String[] ws = w.split("[_-]");
 					w = ws[ws.length-1];
 				}
+				Statement stmt = null;
+				ResultSet rset = null;
 				try {
-
-					Statement stmt = conn.createStatement();
-					ResultSet rset = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+w+"'");					 
+					stmt = conn.createStatement();
+					rset = stmt.executeQuery("select category from "+this.glossarytable+" where term ='"+w+"'");					 
 					if(rset.next()){//in glossary
 						String cat = rset.getString(1);
 						if(cat.matches("\\b(STRUCTURE|FEATURE|SUBSTANCE|PLANT|nominative|structure)\\b")){
@@ -311,6 +336,16 @@ public class VolumeMarkupDbAccessor {
 					}
 				} catch (SQLException e) {
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				}finally{
+					try{
+						if(rset!=null) rset.close();
+						if(stmt!=null) stmt.close();
+					}catch(Exception e){
+						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+						LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+								System.getProperty("line.separator")
+								+sw.toString());
+					}
 				}
 		}
 	}
@@ -321,16 +356,27 @@ public class VolumeMarkupDbAccessor {
 	 * @param role
 	 */
 	private void add2WordRolesTable(String w, String role) {
+		Statement stmt = null;
+		ResultSet rs = null;
 		try {
-
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+w+"' and semanticrole='"+role+"'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select * from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+w+"' and semanticrole='"+role+"'");
 			if(!rs.next()){
 				stmt.execute("insert into "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+"(word, semanticrole) values ('"+w+"','"+role+"')");
 			}
 		} catch (SQLException e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-		}				
+		}	finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}			
 	}
 
 
@@ -414,24 +460,46 @@ public ArrayList<String> getSavedDescriptorWords() throws SQLException {
 	
 	
 	public void insertIntoHeuristicsTerms(String term, String type){
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("insert into "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS")+"(term, type) values ('"+term+"','"+type+"')");
 		}catch (Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
 	public ArrayList<String> retrieveOriginalSentences(){
 		ArrayList<String> originals = new ArrayList<String>();
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select originalsent from "+tablePrefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE"));
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select originalsent from "+tablePrefix+"_"+ApplicationUtilities.getProperty("SENTENCETABLE"));
 			while(rs.next()){
 				originals.add(rs.getString("originalsent"));
 			}
 		}catch (Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return originals;
 	}

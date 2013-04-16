@@ -42,11 +42,14 @@ public class TermIDAssigner {
 
 	public void assignID(){
 		if(this.conn != null){
+			Statement stmt = null;
+			ResultSet rs = null;
+			Statement stmt1 = null;
 			try{
-				Statement stmt = this.conn.createStatement();
+				stmt = this.conn.createStatement();
 				String q = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE " +
 						"TABLE_SCHEMA='"+this.schemaname+"' AND TABLE_NAME = '"+tablename+"' AND COLUMN_NAME = '"+idcolumn+"'";
-				ResultSet rs = stmt.executeQuery(q);
+				rs = stmt.executeQuery(q);
 				rs.next();
 				if(rs.getInt(1)==0){
 					q = "alter table "+schemaname+"."+tablename+" add column "+idcolumn+" varchar(200) default ''";
@@ -56,12 +59,23 @@ public class TermIDAssigner {
 				while(rs.next()){
 					int id = rs.getInt("id");
 					String uuid = UUID.randomUUID().toString();
-					Statement stmt1 = this.conn.createStatement();
+					stmt1 = this.conn.createStatement();
 					stmt1.execute("update "+schemaname+"."+tablename+" set "+idcolumn+"='"+uuid+"' where id="+id);
 				}								
 			}catch(Exception e){
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			}			
+			}finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+					if(stmt1!=null) stmt1.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
+			}	
 		}
 	}
 	/**

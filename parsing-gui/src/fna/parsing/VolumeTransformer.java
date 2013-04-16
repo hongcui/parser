@@ -132,12 +132,12 @@ public class VolumeTransformer extends Thread {
 			throw new ParsingException(
 					"Failed to load the style mapping file!", e);
 		}
-		
+		Statement stmt = null;
 		try{
 			if(conn == null){
 				String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
-				Statement stmt = conn.createStatement();
+				stmt = conn.createStatement();
 				stmt.execute("drop table if exists "+taxontable);
 				stmt.execute("create table if not exists "+taxontable+" (taxonnumber varchar(10), name varchar(500), rank varchar(20), filenumber int)");
 				stmt.execute("drop table if exists "+authortable);
@@ -147,6 +147,15 @@ public class VolumeTransformer extends Thread {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}	
 
 	}

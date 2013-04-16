@@ -162,10 +162,13 @@ public class POSTagger4StanfordParser {
 	        
 	        //10-20(-38) {cm}×6-10 {mm} 
 	        
-	        
+	        Statement stmt = null;
+	        Statement stmt1 = null;
+	        ResultSet rs1 = null;
+	        ResultSet rs2 = null;
 			try{
-				Statement stmt = conn.createStatement();
-				Statement stmt1 = conn.createStatement();
+				stmt = conn.createStatement();
+				stmt1 = conn.createStatement();
 				String strcp2 = str;
 				
 				String strnum = null;
@@ -252,7 +255,7 @@ public class POSTagger4StanfordParser {
 	        	   word = word.replaceAll("[<>{}]", "").trim();
 	        	   String p = "";
 	        	   if(word.length()>0 && !word.matches("\\W") && !word.matches("("+ChunkedSentence.prepositions+")") &&!word.matches("("+ChunkedSentence.stop+")")){
-		        	   ResultSet rs1 = stmt1.executeQuery("select semanticrole from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+word+"'");
+		        	   rs1 = stmt1.executeQuery("select semanticrole from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+" where word='"+word+"'");
 		       		   if(rs1.next()){
 		       			   p = rs1.getString("semanticrole");
 		       		   }
@@ -295,7 +298,7 @@ public class POSTagger4StanfordParser {
 	        	   //end mohan code
 	       		   else if(p.contains("c")|| pos.indexOf('{') >=0){
 	       			   	//ResultSet rs3 = stmt1.executeQuery("select word from wordpos4parser where word='"+word+"' and certaintyl>5");
-	       				ResultSet rs2 = stmt1.executeQuery("select word from brown_wordfreq where word='"+word+"' and freq>79");//1/largest freq in wordpos = 79/largest in brown
+	       			    rs2 = stmt1.executeQuery("select word from brown_wordfreq where word='"+word+"' and freq>79");//1/largest freq in wordpos = 79/largest in brown
 	       				if(rs2.next()){
 	       					sb.append(word+" ");
 	       				//}else if(word.indexOf("3-")>=0){
@@ -321,6 +324,18 @@ public class POSTagger4StanfordParser {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw e;
+		}finally{
+			try{
+				if(rs1!=null) rs1.close();
+				if(rs2!=null) rs2.close();
+				if(stmt!=null) stmt.close();
+				if(stmt1!=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		//return "";
 	}

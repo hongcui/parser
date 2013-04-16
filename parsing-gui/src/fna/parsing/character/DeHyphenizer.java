@@ -46,9 +46,11 @@ public class DeHyphenizer {
 	}
 
 	public void deHyphen(){
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select "+columnname+" from "+tablename+" where "+columnname+" like '%\\"+hyphen+"%'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select "+columnname+" from "+tablename+" where "+columnname+" like '%\\"+hyphen+"%'");
 			while(rs.next()){
 				String hyphenedterm = rs.getString(1);
 				String[] parts = hyphenedterm.split("\\s+");
@@ -65,6 +67,16 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
@@ -227,10 +239,12 @@ public class DeHyphenizer {
 	//}
 	
 	private void updateTable(String oldt, String newt){
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			if(countcolumn == null ||countcolumn.trim().compareTo("") == 0){//without count
-				ResultSet rs = stmt.executeQuery("select "+columnname+" from "+tablename+" where "+columnname+" = '"+newt+"'");
+				rs = stmt.executeQuery("select "+columnname+" from "+tablename+" where "+columnname+" = '"+newt+"'");
 				if(!rs.next()){//newt not exist
 					stmt.execute("update "+tablename+" set "+columnname+" = '"+newt+"' where "+columnname+" = '"+oldt+"'");
 					//System.out.println("no count, update old with new ");
@@ -241,7 +255,7 @@ public class DeHyphenizer {
 			}else{//with count
 				int total  = 0;
 				boolean newexist = false;
-				ResultSet rs = stmt.executeQuery("select "+countcolumn+" from "+tablename+" where "+columnname+" = '"+oldt+"'");
+				rs = stmt.executeQuery("select "+countcolumn+" from "+tablename+" where "+columnname+" = '"+oldt+"'");
 				if(rs.next()){
 					total += rs.getInt(1);
 				}
@@ -263,35 +277,69 @@ public class DeHyphenizer {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
 	public boolean stringMatchInGloss(String term){
 		boolean find = false;
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String query = "select term from fnaglossary where term like '% "+term+" %' or term like '"+term+" %' or term like '% "+term+"' or term like '"+term+"'";
-			ResultSet rs = stmt.executeQuery(query);
+			rs = stmt.executeQuery(query);
 			while(rs.next()){
 				find = true;
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return find;
 	}
 	
 	public boolean stringMatch(String term){
 		boolean find = false;
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+		    stmt = conn.createStatement();
 			String query = "select "+this.columnname+" from "+tablename+" where "+this.columnname+" like '% "+term+" %' or "+this.columnname+" like '"+term+" %' or "+this.columnname+" like '% "+term+"' or "+this.columnname+" like '"+term+"'";
-			ResultSet rs = stmt.executeQuery(query);
+			rs = stmt.executeQuery(query);
 			while(rs.next()){
 				find = true;
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return find;
 	}

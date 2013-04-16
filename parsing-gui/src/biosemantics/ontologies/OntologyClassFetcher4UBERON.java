@@ -3,6 +3,8 @@
  */
 package biosemantics.ontologies;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,6 +18,8 @@ import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
+
+import fna.parsing.ApplicationUtilities;
 
 /**
  * @author updates
@@ -32,14 +36,24 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 	public OntologyClassFetcher4UBERON(String ontopath, Connection conn,
 			String table) {
 		super(ontopath, conn, table);
+		Statement stmt = null;
 		try{
 			//create table if not exist
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+table);
 			//underscored terms (e.g, anal_fin) are added to glossaryfixed as "structure".
 			stmt.execute("create table if not exists "+table+"(id MEDIUMINT NOT NULL AUTO_INCREMENT Primary Key, ontoid varchar(200), term varchar(200), category varchar(100), head_noun varchar(50), underscored varchar(200), remark text)");		
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 
@@ -100,9 +114,10 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 	private void recordHeadNouns() {
 		Statement stmt = null;
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try{
 			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select id, term from "+table);
+			rs = stmt.executeQuery("select id, term from "+table);
 			while(rs.next()){
 				String id = rs.getString("id");
 				String term = rs.getString("term");
@@ -118,6 +133,7 @@ public class OntologyClassFetcher4UBERON extends OntologyClassFetcher {
 			try{
 				if(stmt != null) stmt.close();
 				if(pstmt != null) pstmt.close();
+				if(rs!=null) rs.close();
 			}catch(Exception e1){
 				e1.printStackTrace();
 			}

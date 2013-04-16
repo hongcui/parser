@@ -79,19 +79,29 @@ public class MainFormDbAccessor {
 	
 	public void createNonEQTable(){
 		//noneqterms table is refreshed for each data collection
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE"));
 			stmt.execute("create table if not exists "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+" (term varchar(100) not null, source varchar(200), savedid varchar(40))");
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 	
 	public void createTyposTable(){
+		Statement stmt = null;
         try{
-            Statement stmt = conn.createStatement();
+            stmt = conn.createStatement();
             String typotable = MainForm.dataPrefixCombo.getText().trim()+"_"+ApplicationUtilities.getProperty("TYPOS");
             stmt.execute("drop table if exists "+typotable);
             String query = "create table if not exists "+typotable+" (typo varchar(150), correction varchar(150), primary key (typo, correction))";
@@ -99,7 +109,16 @@ public class MainFormDbAccessor {
         }catch(Exception e){
         	LOGGER.error("Problem in VolumeDehyphenizer:createWordTable", e);
             StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-        }
+        }finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
     }
 	/**
 	 * change pos for these removedtags to 'b' in wordpos table
@@ -857,12 +876,12 @@ public class MainFormDbAccessor {
 		//Connection conn = null;
 		PreparedStatement pstmt = null;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		Statement stmt = null;
 		try {
 			//conn = DriverManager.getConnection(url);
 			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("delete from "+wordrolesable+" where savedid='"+last.toString()+"'");
-			stmt.close();
 			pstmt = conn.prepareStatement("Insert into "+wordrolesable+" (word,semanticrole, savedid) values (?,?, ?)");
 			//stmt = conn.prepareStatement("Update "+postable+" set saved_flag ='green' where word = ?");
 			for (String term : terms) {
@@ -881,7 +900,7 @@ public class MainFormDbAccessor {
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
-			
+			if(stmt!=null) stmt.close();
 			if (pstmt != null) {
 				pstmt.close();
 			}
@@ -897,8 +916,9 @@ public class MainFormDbAccessor {
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		Statement stmt = null;
 		try {
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			if(last!=null){
 				//clean up last saved info
 				stmt.execute("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag = '' where savedid='"+last.toString()+"'");
@@ -941,9 +961,9 @@ public class MainFormDbAccessor {
 			if (pstmt != null) {
 				pstmt.close();
 			}
-			//if (conn != null) {
-			//	conn.close();
-			//}			
+			if (stmt != null) {
+				stmt.close();
+			}			
 			
 		}
 	}
@@ -1092,15 +1112,19 @@ public class MainFormDbAccessor {
 	public int finalizeTermCategoryTable() {
 		String prefix = MainForm.dataPrefixCombo.getText();
 		int count = 0;
+		Statement stmt = null;
+		Statement stmt2 = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
+			stmt2 = conn.createStatement();
 			String q = "select distinct groupId, category from "+ prefix+"_group_decisions where category !='done'"; //"done" was a fake decision for unpaired terms
-			ResultSet rs = stmt.executeQuery(q);
+			rs = stmt.executeQuery(q);
 			while(rs.next()){
 				int gid = rs.getInt(1);
 				String cat = rs.getString(2);
-				Statement stmt2 = conn.createStatement();
-				ResultSet rs2 = stmt2.executeQuery("select term, cooccurTerm from "+prefix+"_grouped_terms where groupId ="+gid);
+				rs2 = stmt2.executeQuery("select term, cooccurTerm from "+prefix+"_grouped_terms where groupId ="+gid);
 				while(rs2.next()){
 					String t1 = rs2.getString(1);
 					String t2 = rs2.getString(2);
@@ -1124,6 +1148,18 @@ public class MainFormDbAccessor {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(rs2!=null) rs2.close();
+				if(stmt2!=null) stmt2.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return count;
 	}
@@ -1133,7 +1169,8 @@ public class MainFormDbAccessor {
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, term);
 		pstmt.setString(2, cat);
-		pstmt.execute();		
+		pstmt.execute();
+		pstmt.close();
 	}
 
 	/**
@@ -1148,13 +1185,15 @@ public class MainFormDbAccessor {
 		while(en.hasMoreElements()){
 			String typo = en.nextElement();
 			String correction = typos.get(typo);
+			PreparedStatement stmt = null;
+			ResultSet rs = null;
 			try{
 				//find sources
 				TreeSet<String> sources = typosources.get(typo);
-				PreparedStatement stmt = conn.prepareStatement("select source from "+
+				stmt = conn.prepareStatement("select source from "+
 						MainForm.dataPrefixCombo.getText().trim()+"_"+ ApplicationUtilities.getProperty("SENTENCETABLE") +
 						" where sentence REGEXP '[[:<:]]"+typo+"[[:>:]]'"); //originalsent already corrected
-				ResultSet rs = stmt.executeQuery();
+			    rs = stmt.executeQuery();
 				while(rs.next()){
 					String src = rs.getString(1);
 					src = src.substring(0, src.lastIndexOf("-"));					
@@ -1166,6 +1205,16 @@ public class MainFormDbAccessor {
 				typosources.put(typo, sources);
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
 			}
 			//make corrections in db tables
 			correctTypoInTableExactMatch(ApplicationUtilities.getProperty("POSTABLE"), "word", typo, correction);
@@ -1189,10 +1238,13 @@ public class MainFormDbAccessor {
 	 * @param exactmatch
 	 */
 	public void correctTypoInTableWordMatch(String table, String column, String typo, String correction, String PK) {
+		PreparedStatement stmt = null;
+		PreparedStatement stmt1 = null;
+		ResultSet rs = null;
 		try{
 			//mysql can't do word-based match, so had to update sentence one by one
-			PreparedStatement stmt = conn.prepareStatement("select "+PK+", "+column+" from "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" where "+column+" REGEXP '[[:<:]]"+typo+"[[:>:]]'");
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement("select "+PK+", "+column+" from "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" where "+column+" REGEXP '[[:<:]]"+typo+"[[:>:]]'");
+		    rs = stmt.executeQuery();
 			while(rs.next()){
 				String key = rs.getString(1);
 				String text = rs.getString(2);
@@ -1213,12 +1265,23 @@ public class MainFormDbAccessor {
 					m = p.matcher(text);
 				}
 				//put corrected back
-				PreparedStatement stmt1 = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+column+"='"+text+"' where "+PK+"='"+key+"'");
+			    stmt1 = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+column+"='"+text+"' where "+PK+"='"+key+"'");
 				stmt1.execute();
 			}
 		}catch(Exception e){
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(stmt1!=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}		
 	}
 	/**
@@ -1247,11 +1310,15 @@ public class MainFormDbAccessor {
 	 * @param correction
 	 */
 	public void insertTypo(String typo, String correction){
+		PreparedStatement stmt = null;
+		PreparedStatement stmt1 = null;
+		ResultSet rs = null;
+		
 		try{
-			PreparedStatement stmt = conn.prepareStatement("select * from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
+			stmt = conn.prepareStatement("select * from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
 			stmt.setString(1, correction);
 			stmt.setString(2, typo);
-			ResultSet rs = stmt.executeQuery();
+			rs = stmt.executeQuery();
 			if(rs.next()){
 				//delete the record
 				stmt = conn.prepareStatement("delete from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
@@ -1261,13 +1328,24 @@ public class MainFormDbAccessor {
 				return;
 			}
 			
-			PreparedStatement stmt1 = conn.prepareStatement("insert into  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" (typo, correction) values (?, ?)");
+			stmt1 = conn.prepareStatement("insert into  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" (typo, correction) values (?, ?)");
 			stmt1.setString(1, typo);
 			stmt1.setString(2, correction);
 			stmt1.execute();
 		}catch(Exception e){
 			if(!e.toString().contains("duplicate key")){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(stmt1 != null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
 			}
 		}	
 	}
@@ -1278,15 +1356,27 @@ public class MainFormDbAccessor {
 	 * @param typos
 	 */
 	public void readInTypos(Hashtable<String, String> typos) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 		try{
-			PreparedStatement stmt = conn.prepareStatement("select typo, correction from "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS"));
-			ResultSet rs = stmt.executeQuery();
+			stmt = conn.prepareStatement("select typo, correction from "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS"));
+			rs = stmt.executeQuery();
 			while(rs.next()){
 				typos.put(rs.getString(1), rs.getString(2));
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}		
 		
 	}

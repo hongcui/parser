@@ -38,14 +38,23 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 	 */
 	public OntologyClassFetcher4PO(String ontoURL, Connection conn, String table) {
 		super(ontoURL, conn, table);
-		
+		Statement stmt = null;
 		try{
 			//create table if not exist
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+table);
 			stmt.execute("create table if not exists "+table+"(ontoid varchar(50) NOT NULL Primary Key, term varchar(100), category varchar(100), head_noun varchar(50), underscored varchar(100), remark text)");		
 		}catch(Exception e){
 			e.printStackTrace();
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 
@@ -94,9 +103,10 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 	private void recordHeadNouns() {
 		Statement stmt = null;
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try{
 			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select ontoid, term from "+table);
+			rs = stmt.executeQuery("select ontoid, term from "+table);
 			while(rs.next()){
 				String id = rs.getString("ontoid");
 				String term = rs.getString("term");
@@ -112,6 +122,7 @@ public class OntologyClassFetcher4PO extends OntologyClassFetcher {
 			try{
 				if(stmt != null) stmt.close();
 				if(pstmt != null) pstmt.close();
+				if(rs!=null) rs.close();
 			}catch(Exception e1){
 				e1.printStackTrace();
 			}

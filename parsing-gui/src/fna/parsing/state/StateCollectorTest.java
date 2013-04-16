@@ -214,9 +214,11 @@ public class StateCollectorTest extends StateCollector {
 		result = this.checkedtermpairs.get(term1+"#"+term2);
 		result = result == null? this.checkedtermpairs.get(term2+"#"+term1) : result;
 		if(result==null){//not in cache
+			Statement stmt = null;
+			ResultSet rs = null;
 			try{
-				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select * from "+super.glosstable+
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery("select * from "+super.glosstable+
 				" where term ='"+term1+"' and category in (select category from "+super.glosstable+
 				" where term='"+term2+"')");
 				if(rs.next()){
@@ -225,6 +227,16 @@ public class StateCollectorTest extends StateCollector {
 				}
 			}catch (Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
 			}
 			
 		}else{

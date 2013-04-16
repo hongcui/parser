@@ -103,11 +103,11 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			Statement stmt = conn.createStatement();
 			stmt.execute("create table if not exists "+this.tableprefix+"_"+this.POSTaggedSentence+"(source varchar(100) NOT NULL, posedsent TEXT, PRIMARY KEY(source))");
 			stmt.execute("delete from "+this.tableprefix+"_"+this.POSTaggedSentence);	
-			
+			ResultSet rs = null;
 			try{
 				//collect life_style terms
-				stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='life_style'");
+				//stmt = conn.createStatement();
+				rs = stmt.executeQuery("select distinct term from "+this.glosstable+ " where category='life_style'");
 				while(rs.next()){
 					this.lifestyle += rs.getString(1)+"|";
 				}
@@ -120,8 +120,17 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				this.characters = characters.replaceFirst("\\|$", "");
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}finally{
+				try{
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
 			}
-			stmt.close();
 		}catch(Exception e){
 			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
@@ -129,9 +138,12 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	}
 	
 	public void POSTagging() throws Exception{
+		Statement stmt = null;
+		Statement stmt2 = null;
+		ResultSet rs = null;
 		try{
-  			Statement stmt = conn.createStatement();
-			Statement stmt2 = conn.createStatement();
+  			stmt = conn.createStatement();
+			stmt2 = conn.createStatement();
 			FileOutputStream ostream = new FileOutputStream(posedfile); 
 			PrintStream out = new PrintStream( ostream );
 			
@@ -139,7 +151,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			//stmt.execute("alter table markedsentence add rmarkedsent text");
 
 			//ResultSet rs = stmt.executeQuery("select source, sentence from "+this.tableprefix+"_sentence order by sentid");// order by (source+0) ");////sort as numbers
-			ResultSet rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
+			rs = stmt.executeQuery("select source, markedsent from "+this.tableprefix+"_markedsentence order by sentid");// order by (source+0) ");////sort as numbers
 			int count = 1;
 			while(rs.next()){
 				String src = rs.getString(1);
@@ -161,12 +173,21 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	       		count++;
 	       		
 			}
-			stmt2.close();
-			rs.close();
 			out.close();
 		}catch(Exception e){
 			sw = new StringWriter();pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				stmt2.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 	}
 
@@ -238,16 +259,20 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 	}
 	
 	
-	public void extracting() throws Exception{
+	public void extracting(){
+		Statement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs1 = null;
+		Statement stmt1 = null;
     	try{
 	        FileInputStream istream = new FileInputStream(this.parsedfile); 
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(istream));
 			String line = "";
 			String text = "";
 			int i = 0;
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 
-			ResultSet rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
+			rs = stmt.executeQuery("select sentid from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
 			//ResultSet rs = stmt.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence order by sentid");//(source+0)"); //+0 so sort as numbers
 			
 			
@@ -272,7 +297,6 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 			String thisfileindex="";
 			Element txt;
 			String sentid = "";
-			Statement stmt1;
 			//String humanreadable = "";
 			while ((line = stdInput.readLine())!=null){
 				if(line.startsWith("Loading") || line.startsWith("X:") || line.startsWith("Parsing file")|| line.startsWith("Parsed") ){continue;}
@@ -295,7 +319,7 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 						try{ //if exception is thrown at any of the following steps, move on the next sentence.
 							sentid = rs.getString(1);
 							stmt1 = conn.createStatement();
-							ResultSet rs1 = stmt1.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence where sentid='"+sentid+"'");//(source+0)"); //+0 so sort as numbers
+						    rs1 = stmt1.executeQuery("select source, rmarkedsent from "+this.tableprefix+"_markedsentence where sentid='"+sentid+"'");//(source+0)"); //+0 so sort as numbers
 							rs1.next();
 							sent = rs1.getString(2);
 							src = rs1.getString(1);
@@ -409,11 +433,22 @@ public class StanfordParser implements Learn2Parse, SyntacticParser{
 				placeDescription(description, pdescID, baseroot);
 				VolumeFinalizer.outputFinalXML(baseroot, pfileindex, "FINAL");		
 			}
-			rs.close();
     	}catch (Exception e){
 			sw = new StringWriter(); pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			//throw e;
-        }
+        }finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+				if(rs1!=null) rs1.close();
+				if(stmt1!=null) stmt1.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
+		}
     	//if(finalize) VolumeFinalizer.copyFilesWithoutDescriptions2FinalFolder();
     }
 

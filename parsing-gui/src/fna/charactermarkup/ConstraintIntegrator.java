@@ -661,9 +661,11 @@ public class ConstraintIntegrator {
 		
 		int matches = 0;
 		String matched = "";
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(unionquery);
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(unionquery);
 			while(rs.next()){
 				String filename = rs.getString("filename");
 				for(String listedname: taxonnames){
@@ -690,6 +692,13 @@ public class ConstraintIntegrator {
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());							
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());							
+			}
 		}
 	}
 

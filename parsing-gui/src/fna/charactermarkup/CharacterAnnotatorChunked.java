@@ -2317,14 +2317,23 @@ public class CharacterAnnotatorChunked {
 	}
 
 	private boolean isCharacter(String last) {
+		Statement stmt=null;
+		ResultSet rs=null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from "+this.glosstable +" where term='"+last+"' and category='character'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select * from "+this.glosstable +" where term='"+last+"' and category='character'");
 			if(rs.next()){
 				return true;
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 		}
 		return false;
 	}
@@ -2566,8 +2575,10 @@ public class CharacterAnnotatorChunked {
 	private String differentiateOf(ArrayList<Element> organsbeforeOf,
 			ArrayList<Element> organsafterOf) {
 		String result = "part_of";
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			
 			for (int i = 0; i<organsbeforeOf.size(); i++){
 				String b = organsbeforeOf.get(i).getAttributeValue("name");
@@ -2583,20 +2594,24 @@ public class CharacterAnnotatorChunked {
 						String pa = Utilities.plural(a);
 						String pattern = "("+b+"|"+pb+")"+"[ ]+of[ ]+[0-9]+.*"+"("+a+"|"+pa+")"+"[ ]?(,|;|\\.|and|or|plus)"; //consists-of
 						String query = "select * from "+this.tableprefix+"_sentence where sentence rlike '"+pattern+"'";
-						ResultSet rs  = stmt.executeQuery(query);
+						rs  = stmt.executeQuery(query);
 						if(rs.next()){
 							result = "consist_of";
 							break;
 						}
-						rs.close();
 					}
 				}				
 			}	
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 		}
-
 		return result;
 	}
 
@@ -3285,9 +3300,11 @@ public class CharacterAnnotatorChunked {
 		String[] chinfo = Utilities.lookupCharacter(w, conn, ChunkedSentence.characterhash, this.glosstable, tableprefix);
 		if(chinfo!=null && chinfo[0].matches(".*?_?(position|insertion|structure_type)_?.*") && w.compareTo("low")!=0) return "type";
 		String singlew = Utilities.toSingular(w);
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+singlew+"'");
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select * from "+this.tableprefix+"_sentence where tag = '"+w+"' or tag='"+singlew+"'");
 			if(rs.next()){
 				return "parent_organ";
 			}
@@ -3296,13 +3313,18 @@ public class CharacterAnnotatorChunked {
 			if(rs.next()){
 				return "type";
 			}
-			rs.close();
-			stmt.close();
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
 			LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			}
 		}
 		return result;
 	}

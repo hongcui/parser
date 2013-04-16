@@ -153,9 +153,9 @@ public abstract class FileName2Taxon {
 		String species = values.get("species");
 		String subspecies = values.get("subspecies");
 		String variety = values.get("variety");				
-		
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("insert into "+dataprefix+"_filename2taxon values (" +
 					"'"+filename+"'," +hasdescription+",'" +domain+"','"+kingdom+"','"+phylum+"','"+
 					subphylum+"','"+superdivision+"','"+division+"','"+subdivision+"','"+superclass+
@@ -163,17 +163,25 @@ public abstract class FileName2Taxon {
 					+superfamily+"','"+family+"','" +subfamily+"','" 
 					+tribe+"','" +subtribe+"','" + genus+"','" +subgenus+"','" +section+"','" +subsection+"','" 
 					+species+"','" +subspecies+"','" +variety+"')");
-
-			stmt.close();
 			
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}
 	public void createFilename2taxonTable() {
+		Statement stmt = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+dataprefix+"_filename2taxon");
 			stmt.execute("create table if not exists "+dataprefix+"_filename2taxon (" +
 					"`filename` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL," +
@@ -204,10 +212,18 @@ public abstract class FileName2Taxon {
 					"`subspecies` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin ," +
 					"`variety` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin) " +
 					" DEFAULT CHARSET=utf8;");
-			stmt.close();
 			
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		
 	}

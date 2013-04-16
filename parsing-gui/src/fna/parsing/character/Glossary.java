@@ -277,31 +277,55 @@ public class Glossary {
 	@SuppressWarnings("unchecked")
 	public static ArrayList getCharacter(String state){
 		ArrayList chs = new ArrayList();
+		Statement stmt = null;
+		ResultSet rs = null;
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String query = "select distinct category from "+tablename+" where term =\""+state+"\"";
-			ResultSet rs = stmt.executeQuery(query);
+			rs = stmt.executeQuery(query);
 			while(rs.next()){
 				chs.add(rs.getString("category"));
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return chs;
 	}
 	
 	public static String getAllCharacters(){
+		Statement stmt = null;
+		ResultSet rs = null;
 		StringBuffer chs = new StringBuffer();
 		try{
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			String query = "select distinct term from "+tablename +" where category not in ('STRUCTURE / SUBSTANCE','STRUCTURE', 'CHARACTER', 'FEATURE', 'SUBSTANCE', 'PLANT')";
-			ResultSet rs = stmt.executeQuery(query);
+			rs = stmt.executeQuery(query);
 			while(rs.next()){
 				chs.append(rs.getString("term").trim()+"|");
 			}
 		}catch(Exception e){
 			LOGGER.error("Exception in CharacterLearner getAllCharacters" + e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(stmt!=null) stmt.close();
+			}catch(Exception e){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+				LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+						System.getProperty("line.separator")
+						+sw.toString());
+			}
 		}
 		return chs.toString().replaceFirst("\\|$", "");
 	}
@@ -309,17 +333,29 @@ public class Glossary {
 	@SuppressWarnings("unchecked")
 	public static void addInducedPair(String term, ArrayList categories){
 		Iterator it = categories.iterator();
-		while(it.hasNext()){
-			String cat = (String)it.next();
-			try{
-				Statement stmt = conn.createStatement();
+		Statement stmt = null;
+		try{
+			stmt = conn.createStatement();
+			while(it.hasNext()){
+				String cat = (String)it.next();
 				String query = "insert into "+tablename+" (term, category, status) values (\""+term+"\", \""+cat+"\", \"learned\" )";
 				stmt.execute(query);
-			}catch(Exception e){
+				
+			}
+		}catch(Exception e){
 				LOGGER.error("Exception in CharacterLearner addInducedPair" + e);
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+				try{
+					if(stmt!=null) stmt.close();
+				}catch(Exception e){
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+					LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+							System.getProperty("line.separator")
+							+sw.toString());
+				}
 			}
-		}
+		
 	}
 
 

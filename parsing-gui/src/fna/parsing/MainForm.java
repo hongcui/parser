@@ -15,24 +15,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -45,13 +37,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JLabel;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jface.viewers.ColumnLayoutData;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyledText;
@@ -63,10 +51,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.DeviceData;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -88,20 +73,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWebBrowser;
-
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 import com.swtdesigner.SWTResourceManager;
-
 import fna.beans.CharacterGroupBean;
 import fna.beans.CoOccurrenceBean;
 import fna.beans.ContextBean;
 import fna.beans.TermBean;
-import fna.beans.TermRoleBean;
 import fna.beans.TermsDataBean;
 import fna.charactermarkup.Utilities;
 import fna.db.CharacterStateDBAccess;
@@ -618,17 +594,27 @@ public class MainForm {
 						//the fixed string[]
 					}
 					//reset the table to clear previous grouping decisions
+					Statement stmt = null;
 					try{
 						if(conn == null){
 							Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 							conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
 						}
-						Statement stmt = conn.createStatement();
+						stmt = conn.createStatement();
 						stmt.execute("drop table if exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions");
 						stmt.execute("create table if not exists "+dataPrefixCombo.getText().replaceAll("-", "_").trim()+"_group_decisions (groupId int, category varchar(200), primary key(groupId))");
 					}catch (Exception e){
 						StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);
 						e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					}finally{
+						try{
+							if(stmt!=null) stmt.close();
+						}catch(Exception e){
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);
+							LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+
+									System.getProperty("line.separator")
+									+sw.toString());
+						}
 					}
 					
 					processedGroups.clear();
@@ -3102,7 +3088,7 @@ public class MainForm {
 
 			}finally{
 				try{
-					stmt.close();
+					if(stmt!=null) stmt.close();
 				}catch(Exception exe){
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 					ApplicationUtilities.showPopUpWindow(
