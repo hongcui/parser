@@ -182,7 +182,11 @@ public class ChunkedSentence {
 				//String[] parts = treetoken[i].split("~list~");
 				//treetoken[i] = parts[0]+"["+parts[1]+"]"; 
 				//treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{2,40})(\\}| |$)","}]");
-				treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]");
+				String closebrackets = treetoken[i].replaceAll("[^\\]]", "*"); //]
+				closebrackets = closebrackets.substring(closebrackets.lastIndexOf('*')).replace("*", ""); 
+				String token = treetoken[i].substring(0, treetoken[i].length()-closebrackets.length());
+				treetoken[i] = token.replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]")+closebrackets;
+				//treetoken[i] = treetoken[i].replace("~list~", "[{").replaceAll("\\{(?=\\w{2,}\\[)", "").replaceAll("(?<=~[a-z0-9-]{1,40})(\\}| |$)","}]");
 			}
 		}		
 		for(i= 0; i<treetoken.length; i++){
