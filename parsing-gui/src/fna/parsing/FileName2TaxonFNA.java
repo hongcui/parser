@@ -53,7 +53,7 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 			subtribepath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subtribe_name");
 			genuspath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/genus_name");
 			subgenuspath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subgenus_name");
-			sectionpath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/seciton_name");
+			sectionpath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/section_name");
 			subsectionpath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subsection_name");
 			speciespath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/species_name");
 			subspeciespath = XPath.newInstance("//TaxonIdentification[@Status='ACCEPTED']/subspecies_name");
@@ -221,9 +221,9 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String filepath = "C:/Users/updates/CharaParserTest/2012BiosemanticsWorkshopTest/FNAv5Caryophyllaceae/source";
-		String database = "markedupdatasets";
-		String prefix = "test";
+		String filepath = "C:\\Users\\jingliu5\\UFLwork\\Charaparser\\V27\\source";
+		String database = "matrices";
+		String prefix = "fna2_V27_jing";
 		FileName2TaxonFNA fntf = new FileName2TaxonFNA(filepath, database, prefix);
 		fntf.createFilename2taxonTable();
 		fntf.populateFilename2TaxonTable();
