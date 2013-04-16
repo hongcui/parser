@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
@@ -40,7 +41,8 @@ public abstract class FileName2Taxon {
 			try{
 				Class.forName("com.mysql.jdbc.Driver");
 			    String URL = ApplicationUtilities.getProperty("database.url");
-				//String URL = ApplicationUtilities.getProperty("database.url");
+			    URL = "jdbc:mysql://localhost/"+database+URL.substring(URL.indexOf("?"));
+			   	//String URL = ApplicationUtilities.getProperty("database.url");
 				conn = DriverManager.getConnection(URL);
 			}catch(Exception e){
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -94,16 +96,28 @@ public abstract class FileName2Taxon {
 		//from 1.xml 10.xml, 100.xml ...
 		
 		int i = 0;
+		int j = 0;
+		HashMap<Integer, String> fnMap = new HashMap();
 		for(File xml: xmls){
-			filenames[i++]= Integer.parseInt(xml.getName().replace(".xml", ""));
+			String name = xml.getName().replace(".xml", "");
+			if (name.indexOf("_")>0){
+				j++;
+				filenames[i]= Integer.parseInt(name.substring(0,name.length()-2))+j;
+				fnMap.put(filenames[i], name);
+				i++;
+				continue;
+			}			
+			filenames[i]= Integer.parseInt(name)+j;
+			fnMap.put(filenames[i], name);
+			i++;			
 		}
 		//to 1, 2, 3, 4
 		Arrays.sort(filenames); 
 		//int size = xmls.length;
 		//must be in the original order in the original volume.
-		for(i = filenames[0]; i <= filenames[filenames.length-1]; i++){
-			System.out.println(i+".xml");
-			populateFilename2TaxonTableUsing(new File(this.inputfilepath, i+".xml"));
+		for(i = 0; i <= filenames.length-1; i++){
+			System.out.println(filenames[i]+".xml");
+			populateFilename2TaxonTableUsing(new File(this.inputfilepath, fnMap.get(filenames[i])+".xml"));
 		}
 	}
 	
