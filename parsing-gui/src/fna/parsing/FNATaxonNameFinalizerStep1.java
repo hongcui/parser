@@ -96,8 +96,8 @@ public class FNATaxonNameFinalizerStep1{
 	
 		ObjectOutputStream outputStream = null;
 		
-
-		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\namemapping.bin"));
+		outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\mohankrishna89\\Desktop\\FNA24\\namemapping.bin"));
+		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\namemapping.bin"));
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\namemapping.bin"));
 
 		//outputStream = new ObjectOutputStream(new FileOutputStream("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\namemapping.bin"));
@@ -119,8 +119,8 @@ public class FNATaxonNameFinalizerStep1{
 		String taxonname = null;
 		Hashtable mapping = new Hashtable();//the mapping here is trivial,mapping file index to file name only.
 		
-
-		File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\target\\transformed");
+		File extracted = new File("C:\\Users\\mohankrishna89\\Desktop\\FNA24\\target\\transformed");
+		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\target\\transformed");
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\transformed");
 
 		//File extracted = new File("C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\transformed");
@@ -2589,7 +2589,7 @@ public class FNATaxonNameFinalizerStep1{
 		XMLOutputter outputter = new XMLOutputter();
 		
 
-		String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V26-good\\target\\last\\" + filename;
+		String file = "C:\\Users\\mohankrishna89\\Desktop\\FNA24\\target\\last\\" + filename;
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V23-good\\target\\last\\" + filename;
 
 		//String file = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameCode\\V19-good\\target\\last\\" + filename;

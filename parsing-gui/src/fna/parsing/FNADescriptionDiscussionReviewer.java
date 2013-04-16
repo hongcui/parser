@@ -22,10 +22,10 @@ import org.jdom.xpath.XPath;
  * used to review <TaxonIdentifier> elements of parsed FNA volumes for JSTOR
  *
  */
-public class FNANameReviewer {
-	private XPath xpath1= XPath.newInstance("//number");
-	private XPath xpath2= XPath.newInstance("//TaxonIdentification");
-	private static final Logger LOGGER = Logger.getLogger(FNANameReviewer.class);  
+public class FNADescriptionDiscussionReviewer {
+	private XPath xpath1= XPath.newInstance("//description");
+	private XPath xpath2= XPath.newInstance("//discussion");
+	private static final Logger LOGGER = Logger.getLogger(FNADescriptionDiscussionReviewer.class);  
 
 
 	/**
@@ -35,25 +35,32 @@ public class FNANameReviewer {
 	 * @exceoption 
 	 * 
 	 */
-	public FNANameReviewer(String xmldir) throws Exception{
+	public FNADescriptionDiscussionReviewer(String xmldir) throws Exception{
 		File xmlfolder = new File(xmldir);
 		File[] xmls = xmlfolder.listFiles();
 		for(File xml: xmls){
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(xml);
 			Element root = doc.getRootElement();
-			List<Element> numbers = xpath1.selectNodes(root);
+			List<Element> references = xpath1.selectNodes(root);
 			List<Element> names = xpath2.selectNodes(root);
-			if(numbers.size()>1) System.out.println(xml.getName()+" has more than 1 names");
-			else{
+			//if(references.size()>1) System.out.println(xml.getName()+" has more than 1 names");
+			
 				System.out.println();
 				System.out.println(xml.getName()+":");
-				if(numbers.size()>0) System.out.println("number = "+numbers.get(0).getTextNormalize());
-				for(Element name: names){
-					String status = name.getAttributeValue("Status");
-					System.out.println(status +":\n"+printElement(name, ""));										
+				if(references.size()>0){
+					for(Element ref: references){
+						//String status = ref.getAttributeValue("Status");
+						//System.out.println(status +":\n"+printElement(ref, ""));										
+						System.out.println(":\n"+printElement(ref, ""));
+					}
+					//System.out.println("number = "+references.get(0).getTextNormalize());
 				}
-			}
+				for(Element name: names){
+					//String status = name.getAttributeValue("Status");
+					System.out.println("\n"+printElement(name, ""));										
+				}
+			
 		}
 	}
 
@@ -86,7 +93,7 @@ public class FNANameReviewer {
 
 		//String xmldir = "C:\\Documents and Settings\\Hong Updates\\Desktop\\FNANameReviewer\\finalnew\\V21_last_good\\reviewed_by_hong_tocheck_synonym";
 		try{
-			FNANameReviewer fnr = new FNANameReviewer(xmldir);
+			FNADescriptionDiscussionReviewer fnr = new FNADescriptionDiscussionReviewer(xmldir);
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
