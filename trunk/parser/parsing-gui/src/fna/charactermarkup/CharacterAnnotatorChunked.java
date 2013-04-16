@@ -2541,6 +2541,10 @@ public class CharacterAnnotatorChunked {
 
 	private void addAttribute(Element e, String attribute, String value) {
 		if(value.trim().length()==0) return;
+		//shape~list~4-lobed~or~minutely~2-toothed
+		if(value.contains("~list~")){
+			value = value.replaceFirst(".*~list~", "").replaceAll("~", " ").trim();
+		}
 		value = value.replaceAll("(\\w+\\[|\\]|\\{|\\}|\\(|\\)|<|>)", "").replaceAll("\\s+;\\s+", ";").replaceAll("\\[", "").trim();
 		if(value.indexOf("LRB-")>0) value = NumericalHandler.originalNumForm(value);
 		value = value.replaceAll("\\b("+this.notInModifier+") ", "").trim(); //not match a in "a. livermorensis" (taxon name)
