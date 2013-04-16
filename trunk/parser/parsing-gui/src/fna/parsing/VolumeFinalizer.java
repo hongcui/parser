@@ -551,7 +551,7 @@ public class VolumeFinalizer extends Thread {
 				else{
 					boolean hasDescription = false;
 					for(Element de: descript){
-						if(de.getChildren().size() !=0 && de.getTextTrim().length()!=0){//non-empty description element
+						if(de.getChildren().size() !=0 || de.getTextTrim().length()!=0){//non-empty description element
 							hasDescription = true;
 						}
 					}
@@ -559,13 +559,15 @@ public class VolumeFinalizer extends Thread {
 				}
 			}
 		    //for each file in files4copy, copy from transformed to final
-			
+			int count = 1;
 			for(String f: files2copy){
 				f = f.replaceFirst("txt$", "xml");
 				Document trans = builder.build(new File(source, f));
 				Element root = trans.getRootElement();
 				root.detach();
 				ParsingUtil.outputXML(root, new File(target, f) ,null);
+				System.out.println(count+": file "+f+" is copied to final");
+				count++;
 			}
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
