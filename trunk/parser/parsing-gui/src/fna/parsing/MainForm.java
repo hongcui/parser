@@ -5109,8 +5109,6 @@ public class MainForm {
 			VolumeMarkupDbAccessor vmdb = new VolumeMarkupDbAccessor(prefix,glossaryPrefixCombo.getText().trim());
 			words = vmdb.structureTags4Curation(words);
 			for(String word: words){
-				if(word.compareToIgnoreCase("ditto")==0) continue;
-				if(word.compareToIgnoreCase("general")==0) continue;
 				if(word.length()==0) continue;
 				if(word.startsWith("[") && word.endsWith("]")) continue;
 				//before structure terms are set, partOfPrepPhrases can not be reliability determined
