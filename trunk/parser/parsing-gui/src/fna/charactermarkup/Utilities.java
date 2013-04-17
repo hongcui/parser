@@ -40,8 +40,8 @@ public class Utilities {
 	public static ArrayList<String> notSureAdvs = new ArrayList<String>();
 	public static ArrayList<String> notPartOfPrepPhrase = new ArrayList<String>();
 	private static final Logger LOGGER = Logger.getLogger(Utilities.class);
-	public static boolean debug = true;
-	public static boolean debugPOS = true;
+	public static boolean debug = false;
+	public static boolean debugPOS = false;
 	//special cases
 	/**
 	 * word must be a verb if
