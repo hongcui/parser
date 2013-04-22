@@ -1,3 +1,11 @@
+/*
+ * The files should be run in the following order
+ * V24_Genusextractor
+ * V24_Extractor
+ * V24_Transformer
+ * FNATaxonNameFinalizerStep1
+ * 
+ */
 package fna.parsing;
 
 import java.io.BufferedOutputStream;
@@ -13,6 +21,15 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 public class V24_Genusextractor {
+	
+	/**
+	 * @author Mohan Krishna Gowda
+	 * 
+	 * Splits the volume of the source XML into different files into the folder genus_extracted based on the 
+	 * Family(or Genus) names.
+	 * 
+	 * 
+	 */
 	Element treatment = new Element("treatment");
 	static int i=0;
 	//protected XMLOutputter outputter;

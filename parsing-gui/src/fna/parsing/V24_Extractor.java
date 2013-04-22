@@ -1,3 +1,11 @@
+/*
+ * The files should be run in the following order
+ * V24_Genusextractor
+ * V24_Extractor
+ * V24_Transformer
+ * FNATaxonNameFinalizerStep1
+ * 
+ */
 package fna.parsing;
 
 import java.io.BufferedOutputStream;
@@ -14,6 +22,9 @@ import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
 
 public class V24_Extractor {
+	/*
+	 * Split the files into different volumes
+	 */
 	Element treatment = new Element("treatment");
 	static int i=0;
 	//static int j=0;

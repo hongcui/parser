@@ -1,3 +1,11 @@
+/*
+ * The files should be run in the following order
+ * V24_Genusextractor
+ * V24_Extractor
+ * V24_Transformer
+ * FNATaxonNameFinalizerStep1
+ * 
+ */
 package fna.parsing;
 
 import org.apache.log4j.Logger;
@@ -16,6 +24,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class V24_Transformer {
+	/*
+	 * Do the complete formatting of the files other than the names
+	 * Names processing will be done in FNATaxonNameFinalizerStep1
+	 */
 	private static final Logger LOGGER = Logger.getLogger(V24_Transformer.class);
 	Element treatment = new Element("treatment");
 	private boolean debugref = false;
@@ -803,6 +815,9 @@ public class V24_Transformer {
 		}
 	}
 	
+	/*
+	 * Used to insert the ### where needed for the keys
+	 */
 	private String hashText(String text)
 	{
 		//Pattern p1=Pattern.compile("(\\d+\\..*?)(\\d+\\w*\\.\\s+.*)");
@@ -820,7 +835,10 @@ public class V24_Transformer {
 	}
 	
 	
-	
+	/*
+	 * Fix_paragraphs is used to fix any broken paragraphs.
+	 * Any paragraph starting with neither a capital letter or a number is merged with its previous paragraph
+	 */
 	
 	private static Element fix_paragraphs(Element treatment) {
 		//Element key = null;
