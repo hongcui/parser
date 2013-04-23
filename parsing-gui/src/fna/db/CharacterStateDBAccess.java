@@ -407,17 +407,27 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 	 */
 	public boolean saveTermCategory(String groupID, String term, String decision) {
 		//Connection conn = null;
-		if(decision == null || decision.trim().length() <=0) return false;
+
 		PreparedStatement pstmt = null;
-		String sql = "delete from " + MainForm.dataPrefixCombo.getText().trim() +"_term_category where term=?" ;
+		
 		try {
+			String prefix = MainForm.dataPrefixCombo.getText().trim();
+			
+			if(decision == null || decision.trim().length() <=0) { //terms without a decision, save to non-eq
+				//pstmt = conn.prepareStatement("insert into "+ prefix +"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+"(term, source) values(?, ?)");
+				//pstmt.setString(1, term);
+				//pstmt.setString(2, prefix);
+				//pstmt.execute();
+				return false;
+			}
+			String sql = "delete from " + prefix +"_term_category where term=?" ;
 			/*Delete existing information */
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, term);
 			pstmt.execute();
 			
 			/* Insert the new decision */
-			sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category(term, category) values (?,?)";
+			sql = "insert into " + prefix +"_term_category(term, category) values (?,?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, term);
 			pstmt.setString(2, decision);
