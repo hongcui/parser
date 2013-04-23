@@ -871,7 +871,7 @@ sub characterHeuristics{
 		my $cp = $originalsent;
 		while($cp =~ /(.*?)\b(a|an|the|some|any|this|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) +(\w+)\s*($|\(|\[|{|\b($PREPOSITION)\b)(.*)/){
 			my $t = $3;
-			$cp = $5;
+			$cp = $6;
 			my $prep = $4;
 			if($prep =~/\w/ && $t =~/\b(length|width|presence|\w+tion)\b/){next;}
 			$t =~ tr/A-Z/a-z/;
@@ -1014,9 +1014,11 @@ sub isDescriptor{
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($count) = $sth->fetchrow_array()){
 		if($count>=1){
+			$term =~ tr/A-Z/a-z/;
 			$descriptors{$term}=1;
 			return 1;
 		}else{
+			$term =~ tr/A-Z/a-z/;
 			$descriptors{$term}=-1;
 			return 0;
 		}
