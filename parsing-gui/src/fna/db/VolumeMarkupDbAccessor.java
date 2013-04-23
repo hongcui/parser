@@ -31,6 +31,7 @@ import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
+import fna.charactermarkup.ChunkedSentence;
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.ParsingException;
 
@@ -105,7 +106,7 @@ public class VolumeMarkupDbAccessor {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				String tag = rs.getString("structure");
-				populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
+				if(isGoodTerm(tag)) populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
 			}
 			sql = "select distinct word from "+this.tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" where pos in ('p', 's', 'n') and saved_flag !='red' "+
 			filter3+" order by word";
@@ -116,7 +117,7 @@ public class VolumeMarkupDbAccessor {
 				stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + tag + "%'");
 				rs2 = stmtSentence.executeQuery();
 				if (rs2.next()) {
-					populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
+					if(isGoodTerm(tag)) populateCurationList(tagList, tag); //select tags for curation, filter against the glossary
 				}
 			}
 			return deduplicateSort(tagList);
@@ -138,7 +139,22 @@ public class VolumeMarkupDbAccessor {
 		}
     }
 
-
+    /**
+     * stop words, prepositions, system keywords, etc. are not good terms.
+     * this does not do adverb and verb filtering, which is done by another method.
+     * @param word
+     * @return
+     */
+    private boolean isGoodTerm(String word){
+		if(word.compareToIgnoreCase("ditto")==0) return false;
+		if(word.compareToIgnoreCase("general")==0) return false;
+		if(word.matches("\\b("+ChunkedSentence.stop+"|"+ChunkedSentence.units+"|"+
+				ChunkedSentence.percentage+"|"+ChunkedSentence.degree+"|"+
+				ChunkedSentence.times+"|"+ChunkedSentence.per+"|"+ChunkedSentence.more+"|"+
+				ChunkedSentence.counts+"|"+ChunkedSentence.allsimplepreps+"|"+
+				ChunkedSentence.basecounts+"|"+ChunkedSentence.skip+")\\b")) return false;
+		return true;
+    }
 	private ArrayList<String> deduplicateSort(List<String> tagList) {
 		HashSet<String> set = new HashSet<String>(tagList);
 		String[] sorted = set.toArray(new String[]{}); 
@@ -182,7 +198,7 @@ public class VolumeMarkupDbAccessor {
 			rs = stmt.executeQuery();
 			while (rs.next()) {
 				String word = rs.getString("dhword");
-				if(!structures.contains(word) && !characters.contains(word)){
+				if(!structures.contains(word) && !characters.contains(word) && isGoodTerm(word)){
 					populateCurationList(curationList, word);
 				}
 			}
@@ -205,6 +221,7 @@ public class VolumeMarkupDbAccessor {
     /**
      * if word in glossary, add it to wordroles
      * if not in glossary, add to curationList
+     * words already in the glossary table are not shown for review.
      * @param curationList
      * @param word
      */
@@ -278,7 +295,7 @@ public class VolumeMarkupDbAccessor {
 					stmtSentence = conn.prepareStatement("select * from " + this.tablePrefix + "_sentence where sentence like '% " + word + "%'");
 				    rs2 = stmtSentence.executeQuery();
 					if (rs2.next()) {
-						populateDescriptorList(words, word);
+						if(isGoodTerm(word)) populateDescriptorList(words, word);
 					}
 				}	
 			}
