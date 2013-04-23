@@ -77,6 +77,12 @@ public class MainFormDbAccessor {
 		} 
 	}
 	
+	/**
+	 * NonEQ table holds the terms that are not structure nor character/character states.
+	 * These terms could be the adverbs and verbs filtered out by CharaParser (these terms are without a savedid)
+	 * or the terms categorized as "neither" by a user
+	 * or the terms the user didn't give a decision in character categorization step. 
+	 */
 	public void createNonEQTable(){
 		//noneqterms table is refreshed for each data collection
 		Statement stmt = null;
@@ -478,7 +484,10 @@ public class MainFormDbAccessor {
 				  "tab_segm varchar(1) DEFAULT NULL, "+
 				  "tab_verf varchar(1) DEFAULT NULL, "+
 				  "tab_trans varchar(1) DEFAULT NULL, "+
-				  "tab_struct varchar(1) DEFAULT NULL, "+
+				  "tab_struct_perl varchar(1) DEFAULT NULL, "+
+				  "tab_struct_one varchar(1) DEFAULT NULL, "+
+				  "tab_struct_two varchar(1) DEFAULT NULL, "+
+				  "tab_struct_three varchar(1) DEFAULT NULL, "+
 				  "tab_unknown varchar(1) DEFAULT NULL, "+
 				  "tab_finalm varchar(1) DEFAULT NULL, "+
 				  "tab_gloss varchar(1) DEFAULT NULL, "+
@@ -618,8 +627,7 @@ public class MainFormDbAccessor {
 					//stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
 					//		prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 1,'"+glossaryName+"','"+optionChosen+"')");
 					stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
-							prefix + "', current_timestamp, 1, 0, 0 ,0, 0, 0, 0, 0,'"+glossaryName+"','"+optionChosen+"')");
-					//changed insert from 0 to 1 by Prasad, since the remaining code is taking 1 as unprocessed 
+							prefix + "', current_timestamp, 1, 0, 0 ,0, 0, 0, 0, 0, 0, 0, 0,'"+glossaryName+"','"+optionChosen+"')"); //a new prefix, set all but the first flag to 0
 					stmt.executeUpdate();
 				}
 			}
@@ -687,31 +695,59 @@ public class MainFormDbAccessor {
 					}
 					
 					/* Structure Name Correction tab */
-					if (rset.getInt("tab_struct") == 0) {
+					/*if (rset.getInt("tab_struct") == 0) {
+						markUpStatus[4] = false;
+					} else {
+						markUpStatus[4] = true;
+					}*/
+					
+					/* Structure Name Correction tab */
+					if (rset.getInt("tab_struct_perl") == 0) {
 						markUpStatus[4] = false;
 					} else {
 						markUpStatus[4] = true;
 					}
 					
-					/* Unknown removal tab */
-					if (rset.getInt("tab_unknown") == 0) {
+					/* Structure Name Correction tab */
+					if (rset.getInt("tab_struct_one") == 0) {
 						markUpStatus[5] = false;
 					} else {
 						markUpStatus[5] = true;
 					}
 					
-					/* Finalizer tab */
-					if (rset.getInt("tab_finalm") == 0) {
+					/* Structure Name Correction tab */
+					if (rset.getInt("tab_struct_two") == 0) {
 						markUpStatus[6] = false;
 					} else {
 						markUpStatus[6] = true;
 					}
 					
-					/* Glossary tab */
-					if (rset.getInt("tab_gloss") == 0) {
+					/* Structure Name Correction tab */
+					if (rset.getInt("tab_struct_three") == 0) {
 						markUpStatus[7] = false;
 					} else {
 						markUpStatus[7] = true;
+					}
+					
+					/* Unknown removal tab */
+					if (rset.getInt("tab_unknown") == 0) { //5 -> 8
+						markUpStatus[8] = false;
+					} else {
+						markUpStatus[8] = true;
+					}
+					
+					/* Finalizer tab */
+					if (rset.getInt("tab_finalm") == 0) { //6 -> 9
+						markUpStatus[9] = false;
+					} else {
+						markUpStatus[9] = true;
+					}
+					
+					/* Glossary tab */
+					if (rset.getInt("tab_gloss") == 0) {//7 -> 10
+						markUpStatus[10] = false;
+					} else {
+						markUpStatus[10] = true;
 					}
 					
 					
@@ -757,9 +793,26 @@ public class MainFormDbAccessor {
 			if (tab.equals(ApplicationUtilities.getProperty("tab.four.name"))) {
 				tab = "tab_trans";
 			}
-			if (tab.equals(ApplicationUtilities.getProperty("tab.five.name"))) {
-				tab = "tab_struct";
+				/*tab.five.perl.name=Step 4.perl
+					tab.five.one.name=Step 4.1
+					tab.five.two.name=Step 4.2
+					tab.five.three.name=Step 4.3
+					*/
+			//if (tab.equals(ApplicationUtilities.getProperty("tab.five.name"))) {
+			//	tab = "tab_struct";
+			//}
+			if (tab.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))) {
+				tab = "tab_struct_perl";
 			}
+			if (tab.equals(ApplicationUtilities.getProperty("tab.five.one.name"))) {
+				tab = "tab_struct_one";
+			}
+			if (tab.equals(ApplicationUtilities.getProperty("tab.five.two.name"))) {
+				tab = "tab_struct_two";
+			}
+			if (tab.equals(ApplicationUtilities.getProperty("tab.five.three.name"))) {
+				tab = "tab_struct_three";
+			}			
 			if (tab.equals(ApplicationUtilities.getProperty("tab.six.name"))) {
 				tab = "tab_unknown";
 			}
@@ -912,7 +965,21 @@ public class MainFormDbAccessor {
 		}		
 	}
 
+	/**
+	 * since the user may change their minds on whether a term is a non-eq term, use UUID to allow overwrite of previous decisions
+	 * also upldate postable, non-eq terms will have a red saved_flag.
+	 * 
+	 * @param words
+	 * @param last
+	 * @param current
+	 * @throws SQLException
+	 */
 	public void recordNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException {
+		updatePOSTableWithNonEQTerms(words, last, current);
+		updateNonEQTermsTable(words, last, current);
+	}
+	
+	private void updatePOSTableWithNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException{
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
@@ -938,6 +1005,26 @@ public class MainFormDbAccessor {
 				pstmt.addBatch();
 			}
 			pstmt.executeBatch();
+		} catch (SQLException e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		} finally {
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			if (stmt != null) {
+				stmt.close();
+			}			
+			
+		}
+	}
+	
+	private void updateNonEQTermsTable(ArrayList<String> words, UUID last, UUID current) throws SQLException{
+		//Connection conn = null;
+		PreparedStatement pstmt = null ;
+		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		Statement stmt = null;
+		try {
+			stmt = conn.createStatement();
 			//insert words in noneqterms table	
 			//clean up last saved info
 			if(last!=null){
@@ -964,7 +1051,6 @@ public class MainFormDbAccessor {
 			if (stmt != null) {
 				stmt.close();
 			}			
-			
 		}
 	}
 	
