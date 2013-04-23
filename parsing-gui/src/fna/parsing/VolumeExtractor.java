@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -74,7 +75,8 @@ public class VolumeExtractor extends Thread {
 	public String tribegennamestyle = "caps";
 	protected static String ignorednames = "incertae sedis";
 	private boolean debug = false;
-	private boolean keydebug = true;
+	private boolean keydebug = false;
+	private boolean degubName = true;
 
 	public VolumeExtractor(String source, String target,
 			ProcessListener listener) {
@@ -133,7 +135,7 @@ public class VolumeExtractor extends Thread {
 	}
 
 	/**
-	 * To process a w:p tag
+	 * To process a w:p tag. Each paragraph has a style, process the text according to the style.
 	 * 
 	 * output style:text pairs for each paragraph
 	 * 
@@ -201,15 +203,23 @@ public class VolumeExtractor extends Thread {
 		pe.addContent(se);
 
 		if (style.matches(start) || style.matches(names)) {
-			extractNameParagraph(wp, pe);
+			ArrayList<Element> pes = extractNameParagraph(wp, se);
+			for(Element ape: pes){
+			// add the element to the treatment (root) element
+			treatment.addContent(ape);
+			}
 		}else if(style.matches(key)){
 			extractKeyParagraph(wp, pe); //try to separate a key "statement" from "determination"
+
+			// add the element to the treatment (root) element
+			treatment.addContent(pe);
 		}else {		
 			extractTextParagraph(wp, pe);
+
+			// add the element to the treatment (root) element
+			treatment.addContent(pe);
 		}
 
-		// add the element to the treatment (root) element
-		treatment.addContent(pe);
 	}
 
 	/**
@@ -255,8 +265,17 @@ public class VolumeExtractor extends Thread {
 		
 	}
 
-	private void extractNameParagraph(Element wp, Element pe)
+	/**
+	 * 
+	 * @param wp
+	 * @param pe: paragraph. paragraph = style + [text]+
+	 * @param se: style
+	 * @return 
+	 * @throws JDOMException
+	 */
+	private ArrayList<Element> extractNameParagraph(Element wp, Element se)
 			throws JDOMException {
+		StringBuffer names = new StringBuffer();
 		String acase = "";
 		List rList = XPath.selectNodes(wp, "./w:r");
 
@@ -288,22 +307,42 @@ public class VolumeExtractor extends Thread {
 			String text = buffer.toString().replaceAll("\\s+", " ").trim();
 			;
 			// build the elements
-			Element te = null;
+			//Element te = null;
 			if (text.matches(".*?\\S.*")) { // not an empty string or a
 											// number of spaces
-				te = new Element("text");
-				te.setText(text);
+				//te = new Element("text");
+				names.append(text+" ");
+				//te.setText(text);
 			}
 			if(debug) System.out.println("Name: " + acase + " : " + text);
+			//Attribute ca = null;
+			//if (!acase.equals("") && te != null) {
+			//	ca = new Attribute("case", tribegennamestyle);
+			//	te.setAttribute(ca);
+			//}
+			//if (te != null)
+			//	pe.addContent(te);
+		}
+		ArrayList<Element> pes = new ArrayList<Element> ();
+		if(degubName) System.out.println("names:"+names);
+		String []texts = names.toString().split(";");
+		for(String text: texts){
+			Element te = new Element("text");
+			if(degubName ) System.out.println("semicolon-separated:"+text);
+			te.setText(text.trim());
 			Attribute ca = null;
 			if (!acase.equals("") && te != null) {
 				ca = new Attribute("case", tribegennamestyle);
-				te.setAttribute(ca);
+		    	te.setAttribute(ca);
 			}
-			if (te != null)
-				pe.addContent(te);
+			se.detach();
+			Element sec = (Element) se.clone();
+			Element pe = new Element("paragraph");
+			pe.addContent(sec);
+			pe.addContent(te);
+			pes.add(pe);
 		}
-		
+		return pes;
 	}
 
 	private void extractTextParagraph(Element wp, Element pe)
