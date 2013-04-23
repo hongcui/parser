@@ -99,6 +99,8 @@ public class VolumeDehyphenizer extends Thread {
     		resetPerlMessage(); //clean up perlLog box
     		vm.markup();
     		listener.setProgressBarVisible(false);
+    		this.mainForm.setStatus(4);
+    		this.mainForm.setRunPerl(true);
     	}
 
     }
