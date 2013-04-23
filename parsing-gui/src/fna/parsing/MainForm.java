@@ -166,7 +166,7 @@ public class MainForm {
 	public Shell shell;
 	/*In Unknown removal this variable is used to remember the last tab selected*/
 	private static int hashCodeOfItem = 0;
-	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false};
+	private boolean [] statusOfMarkUp = {false, false, false, false, false, false, false, false, false, false, false};
 	private static boolean saveFlag = false;
 	private static final Logger LOGGER = Logger.getLogger(MainForm.class);
 	/* document type: This will determine how many tabs to show */
@@ -394,6 +394,7 @@ public class MainForm {
 		
 		final TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
 		tabFolder.setBounds(10, 10, 803, 543);
+		
 		tabFolder.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 				System.out.println();
@@ -497,8 +498,8 @@ public class MainForm {
 					}
 
 				}
-				// Mark Up
-				if (!statusOfMarkUp[4]) {
+				// Mark Up, including 4 substeps
+				if (!statusOfMarkUp[4] || !statusOfMarkUp[5] || !statusOfMarkUp[6] || !statusOfMarkUp[7]) {
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
@@ -506,7 +507,7 @@ public class MainForm {
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
-								ApplicationUtilities.getProperty("tab.five.name"), 
+								ApplicationUtilities.getProperty("tab.five.name") + " and review all the terms. ", 
 								ApplicationUtilities.getProperty("popup.header.error"),
 								SWT.ICON_ERROR);
 						if (type.equals("")){
@@ -520,13 +521,138 @@ public class MainForm {
 					
 
 				}
-				//Unknown Removal
+				/*
+				// Mark Up
+				if (!statusOfMarkUp[4]) {
+					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))) {
+						ApplicationUtilities.showPopUpWindow(								
+								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+								ApplicationUtilities.getProperty("tab.five.name"), 
+								ApplicationUtilities.getProperty("popup.header.error"),
+								SWT.ICON_ERROR);
+						if (type.equals("")){
+							tabFolder.setSelection(4);
+						} else {
+							tabFolder.setSelection(2);
+						}
+						tabFolder.setFocus();
+						return;
+					}
+
+
+				}
+				
+				// Mark Up
 				if (!statusOfMarkUp[5]) {
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.one.name"))) {
+						ApplicationUtilities.showPopUpWindow(								
+								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+								ApplicationUtilities.getProperty("tab.five.one.name"), 
+								ApplicationUtilities.getProperty("popup.header.error"),
+								SWT.ICON_ERROR);
+						if (type.equals("")){
+							tabFolder.setSelection(4);
+						} else {
+							tabFolder.setSelection(2);
+						}
+						tabFolder.setFocus();
+						return;
+					}
+					
+
+				}
+				
+				// Mark Up
+				if (!statusOfMarkUp[6]) {
+					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.two.name"))) {
+						ApplicationUtilities.showPopUpWindow(								
+								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+								ApplicationUtilities.getProperty("tab.five.two.name"), 
+								ApplicationUtilities.getProperty("popup.header.error"),
+								SWT.ICON_ERROR);
+						if (type.equals("")){
+							tabFolder.setSelection(4);
+						} else {
+							tabFolder.setSelection(2);
+						}
+						tabFolder.setFocus();
+						return;
+					}
+					
+
+				}
+				
+				// Mark Up
+				if (!statusOfMarkUp[7]) {
+					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.three.name"))) {
+						ApplicationUtilities.showPopUpWindow(								
+								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+								ApplicationUtilities.getProperty("tab.five.three.name"), 
+								ApplicationUtilities.getProperty("popup.header.error"),
+								SWT.ICON_ERROR);
+						if (type.equals("")){
+							tabFolder.setSelection(4);
+						} else {
+							tabFolder.setSelection(2);
+						}
+						tabFolder.setFocus();
+						return;
+					}
+					
+
+				}
+				
+				
+				*/
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				//Unknown Removal
+				//if (!statusOfMarkUp[5]) {
+				if (!statusOfMarkUp[8]) {
+					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.three.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.six.name"))) {
 						ApplicationUtilities.showPopUpWindow(								
 								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
@@ -538,20 +664,23 @@ public class MainForm {
 						} else {
 							tabFolder.setSelection(3);
 						}
-						tabFolder.setFocus();
-						 
-						
+						tabFolder.setFocus();						
 						return;
 					}
 
 				}
 				//Finalizer//character
-				if (!statusOfMarkUp[6]) {
+				//if (!statusOfMarkUp[6]) {
+				if (!statusOfMarkUp[9]) {	
 					if(!tabName.equals(ApplicationUtilities.getProperty("tab.one.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.two.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.three.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.four.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.perl.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.one.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.two.name"))
+							&& !tabName.equals(ApplicationUtilities.getProperty("tab.five.three.name"))
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.six.name"))
 							/*&& !tabName.equals(ApplicationUtilities.getProperty("tab.seven.name"))*/
 							&& !tabName.equals(ApplicationUtilities.getProperty("tab.character"))
@@ -574,7 +703,8 @@ public class MainForm {
 				}
 
      			//changed from '6' to '5'
-				if (statusOfMarkUp[5]) {//passed tab 6 (step5),landed on tab 7 (step6)
+				//if (statusOfMarkUp[5]) {//passed tab 6 (step5),landed on tab 7 (step6)
+				if (statusOfMarkUp[8]) {
 					if(tabName.equals(ApplicationUtilities.getProperty("tab.character"))) loadCharacterTab();
 				}
 
@@ -630,6 +760,8 @@ public class MainForm {
 			}
 			
 		});
+		
+		
 		
 		/////////////////////////////////////////////////
 		/////////////general tab (tab1) /////////////////
@@ -1446,8 +1578,38 @@ public class MainForm {
 		final TabFolder markupNReviewTabFolder = new TabFolder(composite_4, SWT.NONE);
 		markupNReviewTabFolder.setBounds(0, 0, 795, 515);
 		
+		markupNReviewTabFolder.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				System.out.println();
+				
+			}
+			//Logic for subtab access goes here
+			public void widgetSelected(SelectionEvent arg0) {
+				String tabName = arg0.item.toString();
+				tabName = tabName.substring(tabName.indexOf("{")+1, tabName.indexOf("}")).trim();
+				
+				if (tabName.length()>0 && !statusOfMarkUp[4] ) { //if perl has not been run, the only subtab allowed to access is perl among the four subtabs
+					if(tabName.compareTo(ApplicationUtilities.getProperty("tab.five.perl.title"))!=0) {
+						ApplicationUtilities.showPopUpWindow(								
+								ApplicationUtilities.getProperty("popup.error.tab")+ " " +
+								ApplicationUtilities.getProperty("tab.five.perl.name"), 
+								ApplicationUtilities.getProperty("popup.header.error"),
+								SWT.ICON_ERROR);
+						markupNReviewTabFolder.setSelection(0);
+						markupNReviewTabFolder.setFocus();
+						return;
+					}
+				}
+				if(tabName.length()>0 && !fourdotonesave && !fourdottwosave && !fourdotthreesave && !fourdotoneload && !fourdottwoload && !fourdotthreeload){ //create these tables before terms are being reviewed
+					mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
+					mainDb.createNonEQTable();
+					mainDb.createTyposTable();
+				}
+			}
+		});
+		
 		TabItem tbtmPerlProgram = new TabItem(markupNReviewTabFolder, SWT.NONE);
-		tbtmPerlProgram.setText("Run Perl Program");
+		tbtmPerlProgram.setText(ApplicationUtilities.getProperty("tab.five.perl.title"));
 		
 		Composite composite_9 = new Composite(markupNReviewTabFolder, SWT.NONE);
 		tbtmPerlProgram.setControl(composite_9);
@@ -1480,31 +1642,13 @@ public class MainForm {
 					termRoleMatrix4others.setVisible(false);
 				}
 				startMarkup();
-				try {
-
-					runperl = true;
-					fourdotoneload = false;
-					fourdottwoload = false;
-					fourdotthreeload = false; 
-					fourdotonesave = false; 
-					fourdottwosave = false; 
-					fourdotthreesave = false;
-
-					/*forward to "review structure" subtab
-					markupNReviewTabFolder.setSelection(1);
-					//auto load structure terms
-					ArrayList<String> words = fetchStructureTerms();
-					int c = loadTermArea(termRoleMatrix4structures, scrolledComposite4structures, words, contextText4structures, type);
-					if(c==0){
-						String messageHeader = ApplicationUtilities.getProperty("popup.header.info");
-						String message = ApplicationUtilities.getProperty("popup.load.nodata");				
-						ApplicationUtilities.showPopUpWindow(message, messageHeader, SWT.ICON_INFORMATION);
-					}*/
-				} catch (Exception exe) {
-					LOGGER.error("Couldn't save status - markup" , exe);
-					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-				}
-				
+				//runperl = true; //set to true by VolumeDehyphenizer.java
+				fourdotoneload = false;
+				fourdottwoload = false;
+				fourdotthreeload = false; 
+				fourdotonesave = false; 
+				fourdottwosave = false; 
+				fourdotthreesave = false;			
 			}
 		});
 		
@@ -2204,7 +2348,8 @@ public class MainForm {
 				
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.six.name"), combo.getText(), true);
-					statusOfMarkUp[5] = true;
+					//statusOfMarkUp[5] = true;
+					statusOfMarkUp[8] = true;
 				} catch (Exception exe) {
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
@@ -2374,9 +2519,13 @@ public class MainForm {
 											ApplicationUtilities.getProperty("popup.header.warning"), 
 											SWT.YES | SWT.NO);
 								}
-								if(choice == SWT.NO) return; //continue to categorize terms
-								else if(choice == SWT.YES)  ignore = true;
-								charDb.saveTermCategory(groupsCombo.getText().replace("Group_", ""),term, decision);
+								if(choice == SWT.NO) {
+									return; //continue to categorize terms
+								}
+								else if(choice == SWT.YES){
+									ignore = true; //so the popup message will not show again.
+								}
+								charDb.saveTermCategory(groupsCombo.getText().replace("Group_", ""),term, decision); //unpaired terms are saved now. paired terms are saved through groups and decisions on groups.
 							}
 						}	
 						decision4group = "done";
@@ -2507,7 +2656,8 @@ public class MainForm {
 				}
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.character"), combo.getText(), true);
-					statusOfMarkUp[6] = true;
+					//statusOfMarkUp[6] = true;
+					statusOfMarkUp[9] = true;
 				} catch (Exception exe) {
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 				}
@@ -2780,8 +2930,8 @@ public class MainForm {
 				boolean completed = startFinalize(finalLog);
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					//statusOfMarkUp[6] = true; //wrong index
-					statusOfMarkUp[7] = true;
+					//statusOfMarkUp[7] = true;
+					statusOfMarkUp[10] = true;
 					//if(completed){
 					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
@@ -2820,8 +2970,8 @@ public class MainForm {
 				startFinalize(finalLog);
 				try {
 					mainDb.saveStatus(ApplicationUtilities.getProperty("tab.seven.name"), combo.getText(), true);
-					//statusOfMarkUp[6] = true; //wrong index
-					statusOfMarkUp[7] = true;
+					//statusOfMarkUp[7] = true;
+					statusOfMarkUp[10] = true;
 					//check if finalized final contains files--this should be done after finalize step is completed.
 					/*File fileList= new File(Registry.TargetDirectory+"/final/");
 					if(fileList.list().length==0)
@@ -3240,19 +3390,55 @@ public class MainForm {
 				//		ApplicationUtilities.getProperty("popup.header.info"), SWT.YES | SWT.NO);
 				//if(choice == SWT.YES) {
 					int subtabindex = markupNReviewTabFolder.getSelectionIndex(); //0: perl 1: 4.1 2: 4.2 3:4.3
-				
 					if(subtabindex == 1) fourdotonesave = true;
 					if(subtabindex == 2) fourdottwosave = true;
 					if(subtabindex == 3) fourdotthreesave = true;
-				
-					if(runperl && fourdotoneload && fourdottwoload && fourdotthreeload && fourdotonesave && fourdottwosave && fourdotthreesave){						
+			
+					/*if(runperl && fourdotoneload && fourdottwoload && fourdotthreeload && fourdotonesave && fourdottwosave && fourdotthreesave){						
 						try {
 							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.name"), combo.getText(), true);
 							statusOfMarkUp[4] = true;
 						} catch (Exception exe) {
 							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 						}
+					}*/
+					
+					if(runperl){						
+						try {
+							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.perl.name"), combo.getText(), true);
+							statusOfMarkUp[4] = true; //need work here
+						} catch (Exception exe) {
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
 					}
+					
+					if(fourdotoneload && fourdotonesave){						
+						try {
+							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.one.name"), combo.getText(), true);
+							statusOfMarkUp[5] = true;
+						} catch (Exception exe) {
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
+					}
+					
+					if(fourdottwoload && fourdottwosave){						
+						try {
+							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.two.name"), combo.getText(), true);
+							statusOfMarkUp[6] = true;
+						} catch (Exception exe) {
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
+					}
+					
+					if(fourdotthreeload && fourdotthreesave){						
+						try {
+							mainDb.saveStatus(ApplicationUtilities.getProperty("tab.five.three.name"), combo.getText(), true);
+							statusOfMarkUp[7] = true;
+						} catch (Exception exe) {
+							StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+						}
+					}
+					
 					recordTermReviewResults(termRoleMatrix);
 					contextText.setText("terms saved!");
 				//}else{
@@ -3295,8 +3481,8 @@ public class MainForm {
 
 					UUID currentSavedId = UUID.randomUUID();
 					mainDb.recordNonEQTerms(noneqs, lastSavedId , currentSavedId);//noneq
-					mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures
-					mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors
+					mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures, record into wordroles table
+					mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors, record into wordroles table
 					if(type.compareToIgnoreCase("structures") ==0){
 						lastSavedIdS = currentSavedId;
 					}
@@ -3938,9 +4124,9 @@ public class MainForm {
 	private void startMarkup() {
 		if(vd == null || !vd.isAlive()){
 			MainForm.markupstarted  = true;
-			mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
-			mainDb.createNonEQTable();
-			mainDb.createTyposTable();
+			//mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
+			//mainDb.createNonEQTable();
+			//mainDb.createTyposTable();
 			String workdir = Registry.TargetDirectory;
 			//if there is a characters folder,add the files in characters folder to descriptions folder
 			mergeCharDescFolders(new File(workdir));
@@ -5546,5 +5732,13 @@ public class MainForm {
 	
 	private String getType4XML(){
 		return this.type4xml;
+	}
+	
+	public void setStatus(int index){
+		this.statusOfMarkUp[index] = true;
+	}
+	
+	public void setRunPerl(boolean completed){
+		this.runperl = completed;
 	}
 }
