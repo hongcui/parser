@@ -539,7 +539,6 @@ public class VolumeTransformer extends Thread {
 
 
 	private String getChildText(Element pe, String string) throws Exception{
-		// TODO Auto-generated method stub
 		StringBuffer buffer=new StringBuffer();
 		List<Element> textList = XPath.selectNodes(pe, "./"+string);
 		for (Iterator ti = textList.iterator(); ti.hasNext();) {
@@ -1074,7 +1073,7 @@ public class VolumeTransformer extends Thread {
 	
 	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
-		if(namerank.equals("subgenus_name")&& (name.contains("sect.") || name.contains("Sect."))){ //section wrongly marked as subgenus
+		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\.\\b.*")){ //section wrongly marked as subgenus
 			namerank = "section_name";
 		}
 		
@@ -1114,7 +1113,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].contains("subfam.") || family[k].contains("Subfam."))
+				if(family[k].matches(".*?\\b[Ss]ubfam\\.\\b.*"))
 				{
 					break;
 				}
@@ -1159,7 +1158,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].contains("subfam.") || family[k].contains("Subfam."))
+				if(family[k].matches(".*?\\b[Ss]ubfam\\.\\b.*"))
 				{
 					break;
 				}
@@ -1255,7 +1254,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subg.") || var[k].contains("Subg."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 				{
 					break;
 				}
@@ -1300,7 +1299,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subg.")||var[k].contains("sect.") || var[k].contains("Subg.")||var[k].contains("Sect."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 				{
 					break;
 				}
@@ -1316,14 +1315,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			taxid.addContent(spat);
 			}
-			if(var[k].contains("subg.") || var[k].contains("Subg."))
+			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			taxid.addContent(subfm);
 			k++;
-			while((k<var.length)&&!(var[k].contains("sect."))&&!(var[k].contains("Sect.")))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1335,7 +1334,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				taxid.addContent(subauth);
 			}
-			if(var[k].contains("sect.") || var[k].contains("Sect."))
+			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -1391,7 +1390,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subsect.") || var[k].contains("Subsect."))
+				if(var[k].matches(".*?\\b[Ss]ubsect\\.\\b.*"))
 				{
 					break;
 				}
@@ -1436,7 +1435,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subg.")||var[k].contains("sect.")||var[k].contains("ser.") || var[k].contains("Subg.")||var[k].contains("Sect.")||var[k].contains("Ser."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*")||var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					break;
 				}
@@ -1452,14 +1451,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			taxid.addContent(spat);
 			}
-			if(var[k].contains("subg.") || var[k].contains("Subg."))
+			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			taxid.addContent(subfm);
 			k++;
-			while((k<var.length)&&!(var[k].contains("sect."))&&!(var[k].contains("Sect.")))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1472,14 +1471,14 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				taxid.addContent(subauth);
 			}
-			if(var[k].contains("sect.") || var[k].contains("Sect."))
+			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				taxid.addContent(sect);
 				k++;
-				while(k<var.length&&!(var[k].contains("ser."))&&!(var[k].contains("Ser.")))
+				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					sectauth=sectauth+var[k]+" ";
 					k++;
@@ -1492,7 +1491,7 @@ public class VolumeTransformer extends Thread {
 				subat.setText(sectauth);
 				taxid.addContent(subat);
 				}
-				if(var[k].contains("ser.") || var[k].contains("Ser."))
+				if(var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					k++;
 					Element ser= new Element("series_name");
@@ -1575,7 +1574,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("subsp.") || var[k].contains("Subsp."))
+				if(var[k].matches(".*?\\b[Ss]ubsp\\.\\b.*"))
 				{
 					break;
 				}
@@ -1631,7 +1630,7 @@ public class VolumeTransformer extends Thread {
 			//}
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("var.") || var[k].contains("Var."))
+				if(var[k].matches(".*?\\b[Vv]ar\\.\\b.*"))
 				{
 					break;
 				}
@@ -1727,7 +1726,7 @@ public class VolumeTransformer extends Thread {
 			Element newele= new Element("family_name");
 			newele.setText(text);
 			syn.addContent(newele);
-		}else if(text.contains("subtribe") || text.contains("Subtribe"))
+		}else if(text.matches(".*?\\b[sS]ubtribe\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -1740,7 +1739,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches("\\s*\\(tribe\\s*")||var[k].contains("subtribe") ||var[k].contains("Subtribe"))
+				if(var[k].matches("\\s*\\(tribe\\s*")||var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
 				{
 					break;
 				}
@@ -1763,7 +1762,7 @@ public class VolumeTransformer extends Thread {
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!var[k].contains("subtribe")&&!var[k].contains("Subtribe"))
+			while((k<var.length)&&!var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1775,7 +1774,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].contains("subtribe") ||var[k].contains("Subtribe"))
+			if(var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
 			{
 				k++;
 				Element sect= new Element("subtribe_name");
@@ -1821,7 +1820,7 @@ public class VolumeTransformer extends Thread {
 			}
 			}
 		}
-		else if(text.contains("tribe") ||text.contains("Tribe"))
+		else if(text.matches(".*?\\b[tT]ribe\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -1834,7 +1833,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subfam.")||var[k].contains("tribe") || var[k].contains("Subfam.")||var[k].contains("Tribe"))
+				if(var[k].matches(".*?\\b[Tt]ribe\\b.*") || var[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
 				{
 					break;
 				}
@@ -1850,14 +1849,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].contains("subfam.") || var[k].contains("Subfam."))
+			if(var[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
 			{
 			k++;
 			Element subfm= new Element("subfamily_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!(var[k].contains("tribe"))&&!(var[k].contains("Tribe")))
+			while((k<var.length)&&!var[k].matches(".*?\\b[tT]ribe\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1869,7 +1868,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].contains("tribe") || var[k].contains("Tribe"))
+			if(var[k].matches(".*?\\b[tT]ribe\\b.*"))
 			{
 				k++;
 				Element sect= new Element("tribe_name");
@@ -1915,7 +1914,7 @@ public class VolumeTransformer extends Thread {
 			}
 			}
 		}
-		else if(text.contains("subfam.") || text.contains("Subfam."))// SUBFAMILY
+		else if(text.matches(".*?\\b[sS]ubfam\\.\\b.*"))// SUBFAMILY
 		{	
 			int k;
 			String newtext= text;
@@ -1927,7 +1926,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].contains("subfam.") || family[k].contains("Subfam."))
+				if(family[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
 				{
 					break;
 				}
@@ -1962,7 +1961,7 @@ public class VolumeTransformer extends Thread {
 			}
 		}
 
-		else if(text.contains("var.") || text.contains("Var."))
+		else if(text.matches(".*?\\b[Vv]ar\\.\\b.*"))
 		{
 			int k;
 			//hong
@@ -1983,7 +1982,7 @@ public class VolumeTransformer extends Thread {
 			//}
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("var.") || var[k].contains("Var."))
+				if(var[k].matches(".*?\\b[Vv]ar\\.\\b.*"))
 				{
 					break;
 				}
@@ -2017,7 +2016,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(subfamat);	
 			}
 		}
-		else if(text.contains("subsp.") || text.contains("Subsp."))
+		else if(text.matches(".*?\\b[Ss]ubsp\\.\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -2032,7 +2031,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("subsp.") || var[k].contains("Subsp."))
+				if(var[k].matches(".*?\\b[Ss]ubsp\\.\\b.*"))
 				{
 					break;
 				}
@@ -2067,7 +2066,7 @@ public class VolumeTransformer extends Thread {
 			}
 		}
 		
-		else if(text.contains("ser.") || text.contains("Ser."))//SERIES NAME
+		else if(text.matches(".*?\\b[Ss]er\\.\\b.*"))//SERIES NAME
 		{
 			int k;
 			String newtext= text;
@@ -2080,7 +2079,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subg.")||var[k].contains("sect.")||var[k].contains("ser.") ||var[k].contains("Subg.")||var[k].contains("Sect.")||var[k].contains("Ser."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*")||var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					break;
 				}
@@ -2096,14 +2095,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].contains("subg.") || var[k].contains("Subg."))
+			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!(var[k].contains("sect.")) &&!(var[k].contains("Sect.")))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -2116,14 +2115,14 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].contains("sect.") || var[k].contains("Sect."))
+			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				syn.addContent(sect);
 				k++;
-				while(k<var.length&&!(var[k].contains("ser.")) &&!(var[k].contains("Ser.")))
+				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					sectauth=sectauth+var[k]+" ";
 					k++;
@@ -2136,7 +2135,7 @@ public class VolumeTransformer extends Thread {
 				subat.setText(sectauth);
 				syn.addContent(subat);
 				}
-				if(var[k].contains("ser.") ||var[k].contains("Ser."))
+				if(var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
 				{
 					k++;
 					Element ser= new Element("series_name");
@@ -2185,7 +2184,7 @@ public class VolumeTransformer extends Thread {
 			}
 			
 		}
-		else if(text.contains("subsect.") || text.contains("Subsect."))
+		else if(text.matches(".*?\\b[Ss]ubsect\\.\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -2197,7 +2196,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subsect.") || var[k].contains("Subsect."))
+				if(var[k].matches(".*?\\b[Ss]ubsect\\.\\b.*"))
 				{
 					break;
 				}
@@ -2231,7 +2230,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(subfamat);	
 			}
 		}
-		else if(text.contains("sect.") || text.contains("Sect."))
+		else if(text.matches(".*?\\b[Ss]ect\\.\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -2240,7 +2239,7 @@ public class VolumeTransformer extends Thread {
 			String subgauth="";
 			String[] var= text.split("\\s");
 			Element newele= new Element("genus_name");
-			if(var[0].contains("sect.") ||var[0].contains("Sect.")){ //in FOC, "6. Sect. Salix", no genus name before "sect."
+			if(var[0].matches(".*?\\b[Ss]ect\\.\\b.*")){ //in FOC, "6. Sect. Salix", no genus name before "sect."
 			    newele.setText(this.lastgenusname!=null? this.lastgenusname:ApplicationUtilities.getProperty("GenusName.PlaceHolder"));	
 			    k = 0;
 			}else{
@@ -2251,7 +2250,7 @@ public class VolumeTransformer extends Thread {
 			//for(k=1;k<var.length;k++)
 			for(;k<var.length;k++)
 			{
-				if(var[k].contains("subg.")||var[k].contains("sect.") ||var[k].contains("Subg.")||var[k].contains("Sect."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 				{
 					break;
 				}
@@ -2267,14 +2266,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].contains("subg.") || var[k].contains("Subg."))
+			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!(var[k].contains("sect."))&&!(var[k].contains("Sect.")))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -2286,7 +2285,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].contains("sect.") || var[k].contains("Sect."))
+			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -2332,7 +2331,7 @@ public class VolumeTransformer extends Thread {
 			}
 			}
 		}
-		else if(text.contains("subg.") || text.contains("Subg."))
+		else if(text.matches(".*?\\b[Ss]ubg\\.\\b.*"))
 		{
 			int k;
 			String newtext= text;
@@ -2344,7 +2343,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].contains("subg.") || var[k].contains("Subg."))
+				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
 				{
 					break;
 				}
