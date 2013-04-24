@@ -22,15 +22,14 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 	public VolumeTransformerFoC(ProcessListener listener, String dataPrefix,
 			String glosstable, Display display) throws ParsingException {
 		super(listener, dataPrefix, glosstable, display);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * species and below ranks get authority parsed here.
+	 * species and lower ranks get authority parsed here.
 	 */
 	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
-		if(namerank.equals("subgenus_name")&&name.contains("sect.")){ //section wrongly marked as subgenus
+		if(namerank.equals("subgenus_name")&&name.matches(".*?\\b[Ss]ect\\..*")){ //section wrongly marked as subgenus
 			namerank = "section_name";
 		}
 		
@@ -97,7 +96,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 			taxid.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("subsp."))
+				if(var[k].matches(".*?\\b[Ss]ubsp\\..*"))
 				{
 					break;
 				}
@@ -152,7 +151,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 			//}
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].contains("var."))
+				if(var[k].matches(".*?\\b[Vv]ar\\..*"))
 				{
 					break;
 				}
@@ -191,7 +190,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 	
 	/**
 	 * 
-	 * @param text in original letter case 
+	 * @param name string in the original letter case 
 	 * @param namerank
 	 * @return fixed name
 	 */

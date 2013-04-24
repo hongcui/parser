@@ -484,7 +484,7 @@ public class VolumeVerifier extends Thread {
 				Pattern genname = Pattern.compile("^([A-Z][A-Z].*?)\\b.*"); //NOTHOCALAIS with two dots on top of last I
 				m = famname.matcher(namestring);*/
 				
-				String namestring = text;
+				String namestring = text+"";
 				namestring = namestring.replaceAll("^\\d.*?\\s+", "");
 				namestring = namestring.replaceAll("^\\.\\s+", ""); // if there is a . Hong 08/04/09 e.g "4 . XXXX"
 				Pattern famname = Pattern.compile("^([a-z]*?ceae)\\b.*", Pattern.CASE_INSENSITIVE);

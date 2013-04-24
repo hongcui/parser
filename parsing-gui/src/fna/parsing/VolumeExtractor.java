@@ -202,12 +202,17 @@ public class VolumeExtractor extends Thread {
 		Element pe = new Element("paragraph");
 		pe.addContent(se);
 
-		if (style.matches(start) || style.matches(names)) {
-			ArrayList<Element> pes = extractNameParagraph(wp, se);
+		if (style.matches(start)) { //names, one name with multiple pubs (separated by ";"). spliting at ";" results in pubs without a name
+			extractNameParagraph(wp, pe);
+			// add the element to the treatment (root) element
+			treatment.addContent(pe);			
+		}else if (style.matches(names)) { //synonyms: split at ";" to find individual syns
+			ArrayList<Element> pes = extractSynNameParagraph(wp, se);
 			for(Element ape: pes){
 			// add the element to the treatment (root) element
 			treatment.addContent(ape);
 			}
+			
 		}else if(style.matches(key)){
 			extractKeyParagraph(wp, pe); //try to separate a key "statement" from "determination"
 
@@ -273,7 +278,7 @@ public class VolumeExtractor extends Thread {
 	 * @return 
 	 * @throws JDOMException
 	 */
-	private ArrayList<Element> extractNameParagraph(Element wp, Element se)
+	private ArrayList<Element> extractSynNameParagraph(Element wp, Element se)
 			throws JDOMException {
 		StringBuffer names = new StringBuffer();
 		String acase = "";
@@ -343,6 +348,66 @@ public class VolumeExtractor extends Thread {
 			pes.add(pe);
 		}
 		return pes;
+	}
+
+	/**
+	 * 
+	 * @param wp
+	 * @param pe: paragraph. paragraph = style + [text]+
+	 * @param se: style
+	 * @return 
+	 * @throws JDOMException
+	 */
+	private void extractNameParagraph(Element wp, Element pe)
+			throws JDOMException {
+		StringBuffer names = new StringBuffer();
+		String acase = "";
+		List rList = XPath.selectNodes(wp, "./w:r");
+
+		for (Iterator ti = rList.iterator(); ti.hasNext();) {
+			Element re = (Element) ti.next();
+			// find smallCaps
+			Element rpr = (Element) XPath.selectSingleNode(re, "./w:rPr"); // Genus,
+																			// Tribe
+																			// names
+																			// are
+																			// in
+																			// smallCaps
+			if (rpr != null
+					&& XPath.selectSingleNode(rpr, "./w:"
+							+ tribegennamestyle) != null) {
+				acase = tribegennamestyle;
+			} else {
+				acase = "";
+			}
+			// collect text
+			StringBuffer buffer = new StringBuffer();
+			List textList = XPath.selectNodes(re, "./w:t");
+			for (Iterator it = textList.iterator(); it.hasNext();) {
+				Element wt = (Element) it.next();
+				String tmp = wt.getText();
+				buffer.append(tmp).append(" ");
+			}
+			// }
+			String text = buffer.toString().replaceAll("\\s+", " ").trim();
+			;
+			// build the elements
+			Element te = null;
+			if (text.matches(".*?\\S.*")) { // not an empty string or a
+											// number of spaces
+				te = new Element("text");
+				names.append(text+" ");
+				te.setText(text);
+			}
+			if(debug) System.out.println("Name: " + acase + " : " + text);
+			Attribute ca = null;
+			if (!acase.equals("") && te != null) {
+				ca = new Attribute("case", tribegennamestyle);
+				te.setAttribute(ca);
+			}
+			if (te != null)
+				pe.addContent(te);
+		}
 	}
 
 	private void extractTextParagraph(Element wp, Element pe)
