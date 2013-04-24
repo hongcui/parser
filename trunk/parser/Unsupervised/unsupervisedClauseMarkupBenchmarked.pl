@@ -871,7 +871,7 @@ sub characterHeuristics{
 		my $cp = $originalsent;
 		while($cp =~ /(.*?)\b(a|an|the|some|any|this|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) +(\w+)\s*($|\(|\[|{|\b($PREPOSITION)\b)(.*)/){
 			my $t = $3;
-			$cp = $6;
+			$cp = $6; #not $5
 			my $prep = $4;
 			if($prep =~/\w/ && $t =~/\b(length|width|presence|\w+tion)\b/){next;}
 			$t =~ tr/A-Z/a-z/;
