@@ -624,7 +624,7 @@ public class SentenceOrganStateMarker {
 		try{
 			stmt = conn.createStatement();
 
-			//ResultSet rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
+			//rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordpos where pos ='b'");
 			rs = stmt.executeQuery("select word from "+this.tableprefix+"_wordroles where semanticrole ='c' ");
 
 			while(rs.next()){
@@ -791,8 +791,8 @@ public class SentenceOrganStateMarker {
 	protected String colorsFromGloss() {
 		Statement stmt = null;
 		ResultSet rs = null;
-		try{
-			StringBuffer colors = new StringBuffer();
+		StringBuffer colors = new StringBuffer();
+		try{	
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery("select distinct term from "+this.glosstable+" where category in ('coloration', 'color')");
 			while(rs.next()){
@@ -817,7 +817,8 @@ public class SentenceOrganStateMarker {
 						+sw.toString());
 			}
 		}
-		return colors.toString().replaceFirst("\\|$", "");
+		this.colors = colors.toString().replaceFirst("\\|$", "");
+		return this.colors;
 	}
 	
     private void resetOutputMessage() {
