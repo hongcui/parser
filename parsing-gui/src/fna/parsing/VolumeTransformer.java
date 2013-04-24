@@ -217,7 +217,7 @@ public class VolumeTransformer extends Thread {
 					
 					if (style.matches(start) ) {
 						// process the name tag
-						String sm= styleMappings.getProperty(style);//hong 6/26/08
+						String sm= styleMappings.getProperty(style+"");//hong 6/26/08
 						parseNameTag(count - 1, sm, text, treatment);
 					}else if  (style.matches(names)) {
 						// process the  synonym name tag
@@ -721,7 +721,7 @@ public class VolumeTransformer extends Thread {
 		//specificNameRank may need be adjusted depending on the style used in the orginal doc
 		//namerank = specificNameRank(namerank, text);	
 		//name = fixBrokenName(text, namerank);
-		namerank = specificNameRank(namerank, name);	
+		namerank = specificNameRank(namerank+"", name);	
 		name = fixBrokenName(name, namerank);
 		if(debug) System.out.println("namerank:"+namerank);
 		System.out.println("namerank:"+namerank);
@@ -1083,8 +1083,11 @@ public class VolumeTransformer extends Thread {
 	
 	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
-		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\..*")){ //section wrongly marked as subgenus
+		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\..*")){ //section wrongly marked as subgenus in word style(foc)
 			namerank = "section_name";
+		}
+		if(namerank.equals("subgenus_name")&& !name.matches(".*?\\b[Ss]ubg\\..*")){ //genus wrongly marked as subgenus in word style (fna)
+			namerank = "genus_name";
 		}
 		
 		if(namerank.equals("family_name")) 
@@ -2689,7 +2692,7 @@ public class VolumeTransformer extends Thread {
 		titlechunks=pubpart.split("[\\d].*");
 		
 		
-		String publtitl=titlechunks[0];
+		String publtitl=titlechunks.length>=1? titlechunks[0]: "";
 		/*int inlength=titlechunks[0].length();
 		
 		if(inlength<pubpart.length())
@@ -2712,7 +2715,7 @@ public class VolumeTransformer extends Thread {
 		publ_title.setText(publtitl);
 		pubname.addContent(publ_title);
 		}
-		int inlength=titlechunks[0].length();
+		int inlength= titlechunks.length>=1? titlechunks[0].length() : 0;
 		if(inlength<pubpart.length())
 		{
 			//String inpubl=pubpart.substring(inlength, pubpart.length()-1);
