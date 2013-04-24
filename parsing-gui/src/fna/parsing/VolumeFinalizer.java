@@ -355,10 +355,10 @@ public class VolumeFinalizer extends Thread {
 
 		StanfordParser sp = new StanfordParser(posedfile, parsedfile, database, this.dataPrefix,glosstable, false);
 		if(!standalone) this.showOutputMessage("System is POS-tagging sentences...");
-		//sp.POSTagging();
+		sp.POSTagging();
 		//if(!standalone) listener.progress(50);
 		if(!standalone) this.showOutputMessage("System is syntactic-parsing sentences...");		
-		//sp.parsing();
+		sp.parsing();
 		//if(!standalone) listener.progress(80);
 		if(!standalone) this.showOutputMessage("System is annotating sentences...");
 		sp.extracting();
