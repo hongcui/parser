@@ -4218,7 +4218,7 @@ public class MainForm {
 
 	}*/	
 	
-	private void loadTags(TabFolder tabFolder) {
+	/*private void loadTags(TabFolder tabFolder) {
 		int XMLFileCount = loadTagTable(tabFolder);
 		tagListCombo.add("PART OF LAST SENTENCE"); //part of the last sentence
 		
@@ -4238,7 +4238,7 @@ public class MainForm {
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);exe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		    }
 
-	}
+	}*/
 	
 	/**
 	 * simplified step 5
@@ -4267,7 +4267,7 @@ public class MainForm {
 				String dataPrefix = MainForm.dataPrefixCombo.getText().replaceAll("-", "_").trim();
 				String glosstable = MainForm.glossaryPrefixCombo.getText().trim();
 				StateCollectorTest sct = new StateCollectorTest(conn, dataPrefix,true,glosstable, shell.getDisplay(), contextStyledText); /*using learned semanticroles only*/
-				sct.collect();
+				sct.collect();//markedsentence created in there.
 				sct.saveStates();
 				XMLFileCount = sct.grouping4GraphML();
 				contextStyledText.append("Done! Ready to move to the next step.");
@@ -4368,7 +4368,7 @@ public class MainForm {
 	 * @throws ParsingException
 	 * @throws SQLException
 	 */
-	private void saveTag(TabFolder tabFolder) {
+	/*private void saveTag(TabFolder tabFolder) {
 
 		try {
 			mainDb.saveTagData(tagTable);
@@ -4380,7 +4380,7 @@ public class MainForm {
 		loadTagTable(tabFolder);
 		//reset context box
 		//contextStyledText.setText("");
-	}
+	}*/
 	
 	@SuppressWarnings("unused")
 	private void reportGlossary() {

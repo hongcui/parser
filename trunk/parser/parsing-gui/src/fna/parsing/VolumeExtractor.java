@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -74,9 +75,12 @@ public class VolumeExtractor extends Thread {
 	protected String key = ".*?(-Key|key).*";											
 	public String tribegennamestyle = "caps";
 	protected static String ignorednames = "incertae sedis";
+	protected StringBuffer instrnames = new StringBuffer();
+	protected ArrayList<String> instrnamesaved = new ArrayList<String>();
 	private boolean debug = false;
 	private boolean keydebug = false;
-	private boolean degubName = true;
+	private boolean degubName = false;
+	private boolean debugInstrText = true;
 
 	public VolumeExtractor(String source, String target,
 			ProcessListener listener) {
@@ -128,6 +132,11 @@ public class VolumeExtractor extends Thread {
 
 			// output the last file
 			output();
+			//save instrnames
+			String instrnames = this.instrnames.toString();
+			instrnames = instrnames.replaceAll("\\\\[bi]", "").replaceAll("(\\\"|\\bXE\\b|\\bxe\\b|[A-Z]\\.)", "").replaceAll("(^[:, ]+|[:, ]+$)", "").toLowerCase(); //all small case
+			String [] names = instrnames.split("[:, ]+");
+			instrnamesaved = new ArrayList<String>(Arrays.asList(names)); 
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);
@@ -281,6 +290,7 @@ public class VolumeExtractor extends Thread {
 	private ArrayList<Element> extractSynNameParagraph(Element wp, Element se)
 			throws JDOMException {
 		StringBuffer names = new StringBuffer();
+		
 		String acase = "";
 		List rList = XPath.selectNodes(wp, "./w:r");
 
@@ -300,17 +310,25 @@ public class VolumeExtractor extends Thread {
 			} else {
 				acase = "";
 			}
+			//collect instrText, which seems to hold taxon names that are not broken. These names are serieralized and then use in brokenname repair.
+			List textList = XPath.selectNodes(re, "./w:instrText");
+			for (Iterator it = textList.iterator(); it.hasNext();) {
+				Element wt = (Element) it.next();
+				String tmp = wt.getText();
+				this.instrnames.append(tmp).append(" ");
+			}
+			
 			// collect text
 			StringBuffer buffer = new StringBuffer();
-			List textList = XPath.selectNodes(re, "./w:t");
+			textList = XPath.selectNodes(re, "./w:t");
 			for (Iterator it = textList.iterator(); it.hasNext();) {
 				Element wt = (Element) it.next();
 				String tmp = wt.getText();
 				buffer.append(tmp).append(" ");
 			}
-			// }
+			
 			String text = buffer.toString().replaceAll("\\s+", " ").trim();
-			;
+			
 			// build the elements
 			//Element te = null;
 			if (text.matches(".*?\\S.*")) { // not an empty string or a
@@ -328,6 +346,7 @@ public class VolumeExtractor extends Thread {
 			//if (te != null)
 			//	pe.addContent(te);
 		}
+
 		ArrayList<Element> pes = new ArrayList<Element> ();
 		if(degubName) System.out.println("names:"+names);
 		String []texts = names.toString().split(";");
@@ -360,7 +379,6 @@ public class VolumeExtractor extends Thread {
 	 */
 	private void extractNameParagraph(Element wp, Element pe)
 			throws JDOMException {
-		StringBuffer names = new StringBuffer();
 		String acase = "";
 		List rList = XPath.selectNodes(wp, "./w:r");
 
@@ -380,23 +398,29 @@ public class VolumeExtractor extends Thread {
 			} else {
 				acase = "";
 			}
+			//collect instrText
+			List textList = XPath.selectNodes(re, "./w:instrText");
+			for (Iterator it = textList.iterator(); it.hasNext();) {
+				Element wt = (Element) it.next();
+				String tmp = wt.getText();
+				this.instrnames.append(tmp).append(" ");
+			}
 			// collect text
 			StringBuffer buffer = new StringBuffer();
-			List textList = XPath.selectNodes(re, "./w:t");
+			textList = XPath.selectNodes(re, "./w:t");
 			for (Iterator it = textList.iterator(); it.hasNext();) {
 				Element wt = (Element) it.next();
 				String tmp = wt.getText();
 				buffer.append(tmp).append(" ");
 			}
-			// }
 			String text = buffer.toString().replaceAll("\\s+", " ").trim();
-			;
+			
 			// build the elements
 			Element te = null;
 			if (text.matches(".*?\\S.*")) { // not an empty string or a
 											// number of spaces
 				te = new Element("text");
-				names.append(text+" ");
+				//names.append(text+" ");
 				te.setText(text);
 			}
 			if(debug) System.out.println("Name: " + acase + " : " + text);
@@ -432,6 +456,10 @@ public class VolumeExtractor extends Thread {
 
 	}
 
+
+ 
+	
+	
 	/**
 	 * To output the <treatment> element
 	 * 

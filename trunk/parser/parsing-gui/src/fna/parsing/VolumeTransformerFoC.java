@@ -37,7 +37,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 		{
 			String rank = namerank.replaceFirst("_name", "");
 			text = text.toLowerCase().replaceFirst("(family|subfam|tribe|sect|genus|subg)\\.?", "").trim();
-			if(rank.matches("(family|genus)")){
+			if(rank.matches("(family|genus)") && text.indexOf(" ")<0){ //single word
 				Element newele= new Element(rank+"_name");
 				newele.setText(text);
 				taxid.addContent(newele);

@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -376,9 +377,9 @@ public class VolumeVerifier extends Thread {
 			//concat <text> elements into one string
 			StringBuffer buffer=new StringBuffer();
 
-			List<Element> textList = XPath.selectNodes(pe, "./text");
-			List<Element> additionalList = XPath.selectNodes(pe, "./text[@case='"+Registry.TribeGenusNameCase+"']");
-			textList.addAll(additionalList);
+			List<Element> textList = XPath.selectNodes(pe, "./text");//will select text element with or without case attribute. node[not(@*)] selects node without any attribute
+			//List<Element> additionalList = XPath.selectNodes(pe, "./text[@case='"+Registry.TribeGenusNameCase+"']");
+			//textList.addAll(additionalList);
 			for (Iterator ti = textList.iterator(); ti.hasNext();) {
 				Element wt = (Element) ti.next();
 				buffer.append(wt.getText()).append(" ");
