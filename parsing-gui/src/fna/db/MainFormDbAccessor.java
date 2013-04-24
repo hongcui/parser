@@ -1215,10 +1215,10 @@ public class MainFormDbAccessor {
 					String t1 = rs2.getString(1);
 					String t2 = rs2.getString(2);
 					insert2TermCategoryTable(t1, cat);
-					count++;
+					//count++;
 					if(t2!=null && t2.trim().length()>0){
 						insert2TermCategoryTable(t2, cat);
-						count++;
+						//count++;
 					}
 				}
 			}
@@ -1230,6 +1230,11 @@ public class MainFormDbAccessor {
 			while(rs.next()){
 				String t = rs.getString(1);
 				insert2TermCategoryTable(t, "structure");
+				//count++;
+			}
+			
+			rs = stmt.executeQuery("select distinct term from " + MainForm.dataPrefixCombo.getText().trim() +"_term_category");
+			while(rs.next()){
 				count++;
 			}
 		}catch(Exception e){
