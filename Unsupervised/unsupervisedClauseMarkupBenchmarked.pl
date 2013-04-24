@@ -222,7 +222,8 @@ if($kb ne "null"){
 }
 #my $haskb = kbexists();
 
-setupdatabase();
+my $encoding = "CP1250";
+setupdatabase($encoding);
 
 if($haskb){
 	print stdout "importing from knowledgebase: $kb\n";
@@ -564,6 +565,7 @@ sub importfromkb{
 ########################prepare database tables            #################################
 ############################################################################################
 sub setupdatabase{
+	my $encoding = shift;
 
 #my $test = $dbh->prepare('show databases')
 #or die $dbh->errstr."\n";
@@ -582,7 +584,7 @@ sub setupdatabase{
 #$test->execute() or die $test->errstr."\n";
 #}
 
-my $test = $dbh->prepare('create database if not exists '.$db.' CHARACTER SET utf8')
+my $test = $dbh->prepare('create database if not exists '.$db.' CHARACTER SET '.$encoding)
 or die "Program terminates unexpected due to: ".$dbh->errstr."\n";
 $test->execute() or die $test->errstr."\n";
 
@@ -594,17 +596,17 @@ my ($create, $del);
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentence');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentence (sentid int(11) not null unique, source varchar(500), sentence text, originalsent text, lead varchar(2000), status varchar(20), tag varchar('.$taglength.'),modifier varchar(150), charsegment varchar(500),primary key (sentid)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_wordpos');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", savedid varchar(40), primary key (word, pos)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_wordpos (word varchar(200) not null, pos varchar(2) not null, role varchar(5), certaintyu int, certaintyl int, saved_flag varchar(20) default "", savedid varchar(40), primary key (word, pos)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_heuristicnouns');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_heuristicnouns (word varchar(200) not null, type varchar(20)) CHARACTER SET utf8');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_heuristicnouns (word varchar(200) not null, type varchar(20)) CHARACTER SET '.$encoding);
 $create->execute() or print STDOUT "$create->errstr\n";
 
 #$del = $dbh->prepare('drop table if exists '.$prefix.'_propernouns');
@@ -619,38 +621,37 @@ $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_sentInFile');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_sentInFile (filename varchar(200) not null unique primary key, endindex int not null) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_sentInFile (filename varchar(200) not null unique primary key, endindex int not null) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_modifiers');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(200) not null unique primary key, count int, istypemodifier tinyint) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_modifiers (word varchar(200) not null unique primary key, count int, istypemodifier tinyint) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_isA');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_isA (autoid int not null auto_increment primary key, instance varchar(50), class varchar(50)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_isA (autoid int not null auto_increment primary key, instance varchar(50), class varchar(50)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_unknownwords');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(200) not null primary key, flag varchar(200)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_unknownwords (word varchar(200) not null primary key, flag varchar(200)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
-
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_singularplural');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(200), plural varchar(200), primary key (singular, plural)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_singularplural (singular varchar(200), plural varchar(200), primary key (singular, plural)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_discounted');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(200), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_discounted (word varchar(200), discountedpos varchar(5), possiblenewpos varchar(5), primary key (word, discountedpos)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 $del = $dbh->prepare('drop table if exists '.$prefix.'_substructure');
 $del->execute() or print STDOUT "$del->errstr\n";
-$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) CHARACTER SET utf8 engine=innodb');
+$create = $dbh->prepare('create table if not exists '.$prefix.'_substructure (structure varchar(200), substructure varchar(200), count int, primary key (structure, substructure)) CHARACTER SET '.$encoding.' engine=innodb');
 $create->execute() or print STDOUT "$create->errstr\n";
 
 }
@@ -1259,7 +1260,7 @@ sub adjsverification{
 	print "\n========Correct adj-singular noun markup\n" if $debug;
 	#n [bm]+ n where [bm] not proposition
 	$ptn = "^<N>([a-z]+)</N> ([^N,;.]+ <N>[a-z]+</N>)";
-	$sth = $dbh->prepare("select sentid, sentence from ".$prefix."_sentence where sentence COLLATE utf8_bin rlike '$ptn'");
+	$sth = $dbh->prepare("select sentid, sentence from ".$prefix."_sentence where sentence COLLATE ".$encoding."_bin rlike '$ptn'");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($sentid, $sentence, $tag, $modifier)=$sth->fetchrow_array()){
 		if($sentence =~ /$ptn/){
@@ -1733,7 +1734,7 @@ sub getparentsentencetag{
 	($thissent) = $sth->fetchrow_array(); #take the tag of the first sentence
 	if($thissent =~/^\s*[^A-Z]/){
 		#for the following regexp to work, need to change originalsent's collate to latin1_general_cs (cs for case sensitive)
-		$sth = $dbh->prepare("select modifier, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and (originalsent COLLATE utf8_bin regexp '^[A-Z].*' or originalsent rlike ': *\$') and sentid < $sentid order by sentid desc");
+		$sth = $dbh->prepare("select modifier, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and (originalsent COLLATE ".$encoding."_bin regexp '^[A-Z].*' or originalsent rlike ': *\$') and sentid < $sentid order by sentid desc");
 		$sth->execute() or print STDOUT "$sth->errstr\n";
 		($modifier, $tag) = $sth->fetchrow_array(); #take the tag of the first sentence
 		$tag = $modifier." ".$tag if $modifier =~/\w/;
@@ -3146,7 +3147,7 @@ sub pronouncharactersubject{
 
 	#errous noun cases : ligules surpassing phyllaries by 15 Â– 20 mm
 
-	$sth = $dbh->prepare("select sentid, sentence, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and tag not rlike ' (and|nor|or) ' and tag not like '%[%' and sentence collate utf8_bin not rlike concat('^[^N]*<N>',tag) ");
+	$sth = $dbh->prepare("select sentid, sentence, tag from ".$prefix."_sentence where (tag != 'ignore' or isnull(tag)) and tag not rlike ' (and|nor|or) ' and tag not like '%[%' and sentence collate ".$encoding."_bin not rlike concat('^[^N]*<N>',tag) ");
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	while(($sentid, $sentence, $tag) = $sth->fetchrow_array()){
 		$sentcopy = $sentence;
@@ -4059,7 +4060,7 @@ sub getmcount{
 	my ($sentence, $mcount, $sth);
 
 	#my $ptn = "(>| )$word(</B></M>)? [^,]*<N";
- 	#$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where sentence COLLATE utf8_bin rlike  '$ptn'"); #4/29/09
+ 	#$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where sentence COLLATE ".$encoding."_bin rlike  '$ptn'"); #4/29/09
 	#$sth->execute() or print STDOUT "$sth->errstr\n";
 	#while(($sentence) = $sth->fetchrow_array()){
 	#	if($sentence =~ /(?:>| )$word(?:<\/B><\/M>)? ([^,]*?)<N/){
@@ -4070,7 +4071,7 @@ sub getmcount{
 	#}
 
 	my $ptn = "(>| )$word(</B></M>)? <N";
-	$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where sentence COLLATE utf8_bin rlike  '$ptn'"); #4/29/09
+	$sth = $dbh->prepare("select sentence from ".$prefix."_sentence where sentence COLLATE ".$encoding."_bin rlike  '$ptn'"); #4/29/09
 	$sth->execute() or print STDOUT "$sth->errstr\n";
 	$mcount = $sth->rows();
 	return $mcount;
@@ -5972,6 +5973,7 @@ while(defined ($file=readdir(IN))){
 	if($file !~ /\w/){next;}
 	#print "read $file\n" if $debug;
 	$text = ReadFile::readfile("$dir$file");
+	#$text =~ s#�#-#g; #turn � to ascii hyphen -
 	$text =~ s#["']##g;
 	#print $text."\n";
 	$text =~ s#\s*-\s*to\s+# to #g; #4/7/09 plano - to
