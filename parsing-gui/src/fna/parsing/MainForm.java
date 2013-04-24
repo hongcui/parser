@@ -1600,7 +1600,9 @@ public class MainForm {
 						return;
 					}
 				}
-				if(tabName.length()>0 && !fourdotonesave && !fourdottwosave && !fourdotthreesave && !fourdotoneload && !fourdottwoload && !fourdotthreeload){ //create these tables before terms are being reviewed
+				//status records activities completed before.
+				//if(tabName.length()>0 && !fourdotonesave && !fourdottwosave && !fourdotthreesave && !fourdotoneload && !fourdottwoload && !fourdotthreeload){ //create these tables before terms are being reviewed
+				if(tabName.length()>0 && !statusOfMarkUp[5]&& !statusOfMarkUp[6]&& !statusOfMarkUp[7]){ //create these tables before terms are being reviewed
 					mainDb.createWordRoleTable();//roles are: op for plural organ names, os for singular, c for character, v for verb
 					mainDb.createNonEQTable();
 					mainDb.createTyposTable();
