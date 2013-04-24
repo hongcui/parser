@@ -90,6 +90,7 @@ public class VolumeTransformer extends Thread {
 	static XPath acceptPath;
 	static XPath namePath;
 	static XPath authorPath;
+	private static String knownPublications = "Nouv\\. Arch\\. Mus\\. Hist\\. Nat\\.|Syst\\. Nat\\.";
 	static{
 		try{
 			discussion = XPath.newInstance(".//discussion");
@@ -718,8 +719,10 @@ public class VolumeTransformer extends Thread {
 		
 		//End code
 		//specificNameRank may need be adjusted depending on the style used in the orginal doc
-		namerank = specificNameRank(namerank, text);	
-		name = fixBrokenName(text, namerank);
+		//namerank = specificNameRank(namerank, text);	
+		//name = fixBrokenName(text, namerank);
+		namerank = specificNameRank(namerank, name);	
+		name = fixBrokenName(name, namerank);
 		if(debug) System.out.println("namerank:"+namerank);
 		System.out.println("namerank:"+namerank);
 		String[] nameinfo = getNameAuthority(name);//genus and above: authority parsed by getNameAuthority: 0: name 1:authority
@@ -794,7 +797,7 @@ public class VolumeTransformer extends Thread {
 		
 		//derivation: deal with this first to remove [] and avoid pub-year match in [] but added to treatment after name
 		//Pattern p = Pattern.compile("(.*?)(\\[.*?\\]$)");//was matching the outer most paranthesis but we want to match only the last pair
-		Pattern p = Pattern.compile("(.*?)(\\[([^\\]]+)\\]$)");
+		Pattern p = Pattern.compile("(.*?)(\\[([^\\]]+)\\]\\.?$)");
 		Matcher m = p.matcher(text);
 		String etymology="";
 		if(m.matches()){
@@ -808,7 +811,7 @@ public class VolumeTransformer extends Thread {
 		
 		//place of publication 
 		//Pattern p = Pattern.compile("(.* [12]\\d\\d\\d|.*(?=Â·)|.*(?=.))(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
-		p = Pattern.compile("(.* [12]\\d\\d\\d)($|,|\\.| +)(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
+		p = Pattern.compile("(.*[ –][12]\\d\\d\\d)($|,|\\.| +)(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
 		m = p.matcher(text);
 		if(m.matches()){
 			String pp = m.group(1).replaceFirst("^\\s*[,\\.]", "").trim();			
@@ -903,11 +906,18 @@ public class VolumeTransformer extends Thread {
 		if(text.trim().matches(".*?\\w+.*")){
 			if(debug) System.out.println((index+1)+"unparsed: "+text);
 			//addElement("unparsed", text, treatment);
-			addElement("other_info", text, treatment);//unparsed -->other_info according to schema for JSTOR
-			File xml = new File(Registry.TargetDirectory,
+			if(text.startsWith("[") && (text.endsWith("]") || text.endsWith("].") || text.endsWith("],"))){
+				addElement("etymology", text, treatment);
+			}else if(text.matches(".*?("+VolumeTransformer.knownPublications+").*") && taxonid !=null){
+				extractPublicationPlace(taxonid, text);
+			}else{
+				addElement("other_info", text, treatment);//unparsed -->other_info according to schema for JSTOR
+			
+				File xml = new File(Registry.TargetDirectory,
 					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
-			//listener.info("unparsed: "+text, xml.getPath());
-			unparsed.put((index+1)+" unparsed: "+text, xml.getPath());
+				//listener.info("unparsed: "+text, xml.getPath());
+				unparsed.put((index+1)+" tagged as 'other_info': "+text, xml.getPath());
+			}
 		}
 		return namerank.replace("_name", "");
 	}
@@ -1073,7 +1083,7 @@ public class VolumeTransformer extends Thread {
 	
 	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
-		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\.\\b.*")){ //section wrongly marked as subgenus
+		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\..*")){ //section wrongly marked as subgenus
 			namerank = "section_name";
 		}
 		
@@ -1113,7 +1123,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].matches(".*?\\b[Ss]ubfam\\.\\b.*"))
+				if(family[k].matches(".*?\\b[Ss]ubfam\\..*"))
 				{
 					break;
 				}
@@ -1158,7 +1168,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].matches(".*?\\b[Ss]ubfam\\.\\b.*"))
+				if(family[k].matches(".*?\\b[Tt]ribe\\b.*"))
 				{
 					break;
 				}
@@ -1175,7 +1185,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(famat);
 			}
 			k++;
-			Element subfm= new Element("subfamily_name");
+			Element subfm= new Element("tribe_name");
 			subfm.setText(family[k]);
 			taxid.addContent(subfm);
 			k++;
@@ -1187,7 +1197,7 @@ public class VolumeTransformer extends Thread {
 			subfamauth=subfamauth.trim();
 			if(subfamauth.length()!=0)
 			{
-			Element subfamat= new Element("subfamily_authority");
+			Element subfamat= new Element("tribe_authority");
 			subfamat.setText(subfamauth);
 			taxid.addContent(subfamat);	
 			}
@@ -1254,7 +1264,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 				{
 					break;
 				}
@@ -1299,7 +1309,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*")||var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
 					break;
 				}
@@ -1315,14 +1325,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			taxid.addContent(spat);
 			}
-			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			taxid.addContent(subfm);
 			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1334,7 +1344,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				taxid.addContent(subauth);
 			}
-			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -1390,7 +1400,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubsect\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubsect\\..*"))
 				{
 					break;
 				}
@@ -1435,7 +1445,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*")||var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*")||var[k].matches(".*?\\b[Ss]ect\\..*")||var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					break;
 				}
@@ -1451,14 +1461,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			taxid.addContent(spat);
 			}
-			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			taxid.addContent(subfm);
 			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -1471,14 +1481,14 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				taxid.addContent(subauth);
 			}
-			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				taxid.addContent(sect);
 				k++;
-				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					sectauth=sectauth+var[k]+" ";
 					k++;
@@ -1491,7 +1501,7 @@ public class VolumeTransformer extends Thread {
 				subat.setText(sectauth);
 				taxid.addContent(subat);
 				}
-				if(var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					k++;
 					Element ser= new Element("series_name");
@@ -1574,7 +1584,7 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubsp\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubsp\\..*"))
 				{
 					break;
 				}
@@ -1630,7 +1640,7 @@ public class VolumeTransformer extends Thread {
 			//}
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Vv]ar\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Vv]ar\\..*"))
 				{
 					break;
 				}
@@ -1833,7 +1843,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Tt]ribe\\b.*") || var[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Tt]ribe\\b.*") || var[k].matches(".*?\\b[sS]ubfam\\..*"))
 				{
 					break;
 				}
@@ -1849,7 +1859,7 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
+			if(var[k].matches(".*?\\b[sS]ubfam\\..*"))
 			{
 			k++;
 			Element subfm= new Element("subfamily_name");
@@ -1914,7 +1924,7 @@ public class VolumeTransformer extends Thread {
 			}
 			}
 		}
-		else if(text.matches(".*?\\b[sS]ubfam\\.\\b.*"))// SUBFAMILY
+		else if(text.matches(".*?\\b[sS]ubfam\\..*"))// SUBFAMILY
 		{	
 			int k;
 			String newtext= text;
@@ -1926,7 +1936,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<family.length;k++)
 			{
-				if(family[k].matches(".*?\\b[sS]ubfam\\.\\b.*"))
+				if(family[k].matches(".*?\\b[sS]ubfam\\..*"))
 				{
 					break;
 				}
@@ -1961,7 +1971,7 @@ public class VolumeTransformer extends Thread {
 			}
 		}
 
-		else if(text.matches(".*?\\b[Vv]ar\\.\\b.*"))
+		else if(text.matches(".*?\\b[Vv]ar\\..*"))
 		{
 			int k;
 			//hong
@@ -1982,7 +1992,7 @@ public class VolumeTransformer extends Thread {
 			//}
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Vv]ar\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Vv]ar\\..*"))
 				{
 					break;
 				}
@@ -2016,7 +2026,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(subfamat);	
 			}
 		}
-		else if(text.matches(".*?\\b[Ss]ubsp\\.\\b.*"))
+		else if(text.matches(".*?\\b[Ss]ubsp\\..*"))
 		{
 			int k;
 			String newtext= text;
@@ -2031,7 +2041,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubsp\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubsp\\..*"))
 				{
 					break;
 				}
@@ -2066,7 +2076,7 @@ public class VolumeTransformer extends Thread {
 			}
 		}
 		
-		else if(text.matches(".*?\\b[Ss]er\\.\\b.*"))//SERIES NAME
+		else if(text.matches(".*?\\b[Ss]er\\..*"))//SERIES NAME
 		{
 			int k;
 			String newtext= text;
@@ -2079,7 +2089,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*")||var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*")||var[k].matches(".*?\\b[Ss]ect\\..*")||var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					break;
 				}
@@ -2095,14 +2105,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -2115,14 +2125,14 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				syn.addContent(sect);
 				k++;
-				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					sectauth=sectauth+var[k]+" ";
 					k++;
@@ -2135,7 +2145,7 @@ public class VolumeTransformer extends Thread {
 				subat.setText(sectauth);
 				syn.addContent(subat);
 				}
-				if(var[k].matches(".*?\\b[Ss]er\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]er\\..*"))
 				{
 					k++;
 					Element ser= new Element("series_name");
@@ -2184,7 +2194,7 @@ public class VolumeTransformer extends Thread {
 			}
 			
 		}
-		else if(text.matches(".*?\\b[Ss]ubsect\\.\\b.*"))
+		else if(text.matches(".*?\\b[Ss]ubsect\\..*"))
 		{
 			int k;
 			String newtext= text;
@@ -2196,7 +2206,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubsect\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubsect\\..*"))
 				{
 					break;
 				}
@@ -2230,7 +2240,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(subfamat);	
 			}
 		}
-		else if(text.matches(".*?\\b[Ss]ect\\.\\b.*"))
+		else if(text.matches(".*?\\b[Ss]ect\\..*"))
 		{
 			int k;
 			String newtext= text;
@@ -2239,7 +2249,7 @@ public class VolumeTransformer extends Thread {
 			String subgauth="";
 			String[] var= text.split("\\s");
 			Element newele= new Element("genus_name");
-			if(var[0].matches(".*?\\b[Ss]ect\\.\\b.*")){ //in FOC, "6. Sect. Salix", no genus name before "sect."
+			if(var[0].matches(".*?\\b[Ss]ect\\..*")){ //in FOC, "6. Sect. Salix", no genus name before "sect."
 			    newele.setText(this.lastgenusname!=null? this.lastgenusname:ApplicationUtilities.getProperty("GenusName.PlaceHolder"));	
 			    k = 0;
 			}else{
@@ -2250,7 +2260,7 @@ public class VolumeTransformer extends Thread {
 			//for(k=1;k<var.length;k++)
 			for(;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*")||var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*")||var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
 					break;
 				}
@@ -2266,14 +2276,14 @@ public class VolumeTransformer extends Thread {
 			spat.setText(spauth);
 			syn.addContent(spat);
 			}
-			if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
 			k++;
 			Element subfm= new Element("subgenus_name");
 			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
 			syn.addContent(subfm);
 			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				subgauth=subgauth+var[k]+" ";
 				k++;
@@ -2285,7 +2295,7 @@ public class VolumeTransformer extends Thread {
 				subauth.setText(subgauth);
 				syn.addContent(subauth);
 			}
-			if(var[k].matches(".*?\\b[Ss]ect\\.\\b.*"))
+			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -2331,7 +2341,7 @@ public class VolumeTransformer extends Thread {
 			}
 			}
 		}
-		else if(text.matches(".*?\\b[Ss]ubg\\.\\b.*"))
+		else if(text.matches(".*?\\b[Ss]ubg\\..*"))
 		{
 			int k;
 			String newtext= text;
@@ -2343,7 +2353,7 @@ public class VolumeTransformer extends Thread {
 			syn.addContent(newele);
 			for(k=1;k<var.length;k++)
 			{
-				if(var[k].matches(".*?\\b[Ss]ubg\\.\\b.*"))
+				if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 				{
 					break;
 				}
