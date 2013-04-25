@@ -30,6 +30,10 @@ charaparser.finalize=true
 charaparser.standalone=false
 
 # Data individual to mark up
+
+taxa.list=TaxaList.txt
+taxon.indexer=TaxonIndexer.bin	
+instr.names=InstrNames.bin
 style.mapping=style-mapping.properties
 MARKEDUP=markedup
 FINAL=final
