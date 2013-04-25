@@ -189,12 +189,12 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 	}
 	
 	/**
-	 * 
+	 * the fixBrokenNames function in Verifier works better than this.
 	 * @param name string in the original letter case 
 	 * @param namerank
 	 * @return fixed name
 	 */
-	protected String fixBrokenName(String name, String namerank) {
+	/*protected String fixBrokenName(String name, String namerank) {
 		String text = name;
 		String rank = "";
 		String[] tokens = name.split("\\s+");
@@ -278,7 +278,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 		name = (rank+name).replaceAll("\\s+", " ").trim();
 		text = text.replaceAll("\\s+", " ").trim();
 		if(text.length() != name.length()){
-			System.out.println("fixed broken names "+text+" to "+name);
+			System.out.println("fixed broken names (foc) "+text+" to "+name);
 		}
 		return name;
 	}
@@ -287,7 +287,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 		String count = super.allNameTokens.get(string.toLowerCase());
 		if(count!=null && Integer.parseInt(count)>2) return true;
 		return false;
-	}
+	}*/
 
 	/**
 	 * @param args

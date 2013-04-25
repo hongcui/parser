@@ -1,8 +1,11 @@
 package fna.parsing;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -137,6 +140,18 @@ public class VolumeExtractor extends Thread {
 			instrnames = instrnames.replaceAll("\\\\[bi]", "").replaceAll("(\\\"|\\bXE\\b|\\bxe\\b|[A-Z]\\.)", "").replaceAll("(^[:, ]+|[:, ]+$)", "").toLowerCase(); //all small case
 			String [] names = instrnames.split("[:, ]+");
 			instrnamesaved = new ArrayList<String>(Arrays.asList(names)); 
+			//write it out, treated as part of the TaxonIndexer files.
+			try {
+				File file = new File(Registry.ConfigurationDirectory, ApplicationUtilities.getProperty("instr.names"));
+				ObjectOutput out = new ObjectOutputStream(
+						new FileOutputStream(file));
+				out.writeObject(instrnamesaved);
+				out.close();
+			} catch (IOException e) {
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+				throw new ParsingException(
+						"Save the updated TaxonIndexer failed.", e);
+			}
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(e);

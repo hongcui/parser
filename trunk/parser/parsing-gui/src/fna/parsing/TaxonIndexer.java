@@ -31,9 +31,6 @@ public class TaxonIndexer implements Serializable {
 
 	private static final long serialVersionUID = -626445898401165211L;
 
-	private static final String TXT_FILE = "TaxaList.txt"; //TODO:configurable
-
-	private static final String BIN_FILE = "TaxonIndexer.bin";
 	private static final Logger LOGGER = Logger.getLogger(TaxonIndexer.class);
 	
 	private String path;
@@ -43,11 +40,12 @@ public class TaxonIndexer implements Serializable {
 	private ArrayList<String> numberList = new ArrayList<String>();
 	private ArrayList<String> nameList = new ArrayList<String>();
 	private Hashtable<String, String> allnametokens = new Hashtable<String, String> ();
+	
 	/*if TXT_FILE is available, build TaxonIndex. Otherwise create an empty TaxonIndex to be populated by VolumeVerifier*/
 
 	public static void saveUpdated(String path, TaxonIndexer ti) throws ParsingException {
 		try {
-			File file = new File(path, BIN_FILE);
+			File file = new File(path, ApplicationUtilities.getProperty("taxon.indexer"));
 			ObjectOutput out = new ObjectOutputStream(
 					new FileOutputStream(file));
 			out.writeObject(ti);
@@ -61,13 +59,12 @@ public class TaxonIndexer implements Serializable {
 	
 	public static TaxonIndexer loadUpdated(String path) throws ParsingException{
 		try {
-			File file = new File(path, BIN_FILE);
+			File file = new File(path, ApplicationUtilities.getProperty("taxon.indexer"));
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(
 					file));
 			// Deserialize the object
 			TaxonIndexer ti = (TaxonIndexer) in.readObject();
 			in.close();
-			
 			return ti;
 		} catch (Exception e) {
 			//LOGGER.error("Load the updated TaxonIndexer failed.", e);
@@ -85,7 +82,7 @@ public class TaxonIndexer implements Serializable {
 	public void build() throws ParsingException {
 	
 		try {
-			File file = new File(path, TXT_FILE);
+			File file = new File(path, ApplicationUtilities.getProperty("taxon.list"));
 			if(file.exists()){//otherwise do nothing. 
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line = null;
