@@ -121,6 +121,21 @@ public abstract class FileName2Taxon {
 		}
 	}
 	
+	//added by Jing Liu
+	// used when the file names are not integer
+	protected void populateFilename2TaxonTable_AlphebeticNames(){
+		File[] xmls = (new File(this.inputfilepath)).listFiles();
+		int[] filenames = new int[xmls.length];
+		
+		int i = 0;
+		int j = 0;
+		for(File xml: xmls){
+			System.out.println(xml.getName());
+			populateFilename2TaxonTableUsing(new File(this.inputfilepath, xml.getName()));
+		}	
+	
+	}
+	
 	protected abstract void populateFilename2TaxonTableUsing(File xml);
 	public void insertIntoFilename2TaxonTable(){
 		
@@ -139,9 +154,7 @@ public abstract class FileName2Taxon {
 		String superorder = values.get("superorder");
 		String order = values.get("order");
 		String suborder = values.get("suborder");
-		String superfamily = values.get("superfamily");
-		
-		
+		String superfamily = values.get("superfamily");		
 		String family = values.get("family");
 		String subfamily = values.get("subfamily");
 		String tribe = values.get("tribe");
@@ -184,7 +197,7 @@ public abstract class FileName2Taxon {
 			stmt = conn.createStatement();
 			stmt.execute("drop table if exists "+dataprefix+"_filename2taxon");
 			stmt.execute("create table if not exists "+dataprefix+"_filename2taxon (" +
-					"`filename` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL," +
+					"`filename` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL," +
 					"`hasdescription` tinyint(1) DEFAULT 0," +
 					"`domain` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin," +
 					"`kingdom` varchar(250) CHARACTER SET utf8 COLLATE utf8_bin," +

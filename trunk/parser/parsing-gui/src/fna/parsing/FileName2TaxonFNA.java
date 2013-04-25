@@ -221,9 +221,9 @@ public class FileName2TaxonFNA extends FileName2Taxon {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String filepath = "C:\\Users\\jingliu5\\UFLwork\\Charaparser\\V27\\source";
+		String filepath = "C:\\Users\\jingliu5\\UFLwork\\Charaparser\\FoC\\FoCV10\\target\\final\\";
 		String database = "matrices";
-		String prefix = "fna2_V27_jing";
+		String prefix = "foc_V10";
 		FileName2TaxonFNA fntf = new FileName2TaxonFNA(filepath, database, prefix);
 		fntf.createFilename2taxonTable();
 		fntf.populateFilename2TaxonTable();
