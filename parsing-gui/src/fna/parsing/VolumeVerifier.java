@@ -2,13 +2,16 @@ package fna.parsing;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -53,8 +56,28 @@ public class VolumeVerifier extends Thread {
 	private TaxonIndexer ti;
 	
 	private String namelist = "|";
+
+	private static ArrayList<String> allInstrNames;
 	
 	private static final Logger LOGGER = Logger.getLogger(VolumeVerifier.class);
+	
+	static{
+		//deserialize instrnames
+				try {
+					File file = new File(Registry.ConfigurationDirectory, ApplicationUtilities.getProperty("instr.names"));
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(
+							file));
+					// Deserialize the object
+					allInstrNames = (ArrayList<String>) in.readObject();
+					in.close();
+				} catch (Exception e) {
+					//LOGGER.error("Load the updated TaxonIndexer failed.", e);
+					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					throw new ParsingException(
+							"Load the updated TaxonIndexer failed.", e);
+				}
+	}
+	
 	public VolumeVerifier(ProcessListener listener) {
 		this.listener = listener;
 
@@ -62,6 +85,7 @@ public class VolumeVerifier extends Thread {
 		conf = Registry.ConfigurationDirectory;
 
 		path = target + "extracted/";
+		
 	}
 
 	public void run () {
@@ -651,6 +675,7 @@ public class VolumeVerifier extends Thread {
 	}
 
 	public static String fixBrokenNames(String text){
+		//A mber
 		Pattern p = Pattern.compile("(.*?(?:^| ))([A-Z] )(\\w.*)");
 		Matcher m = p.matcher(text);
 		if(m.matches()){
@@ -677,8 +702,121 @@ public class VolumeVerifier extends Thread {
 		if(m.matches()){
 			text = m.group(1)+m.group(2).replaceAll("\\s+", "")+m.group(3);
 		}
+		
+		text = dynamic(text);
 		return text;
 	}
+	
+	
+	
+	private static String dynamic(String text) {
+		String[] segs = text.split("\\s+");
+		String[] terms = new String[segs.length];
+		int[][] matrix = new int[segs.length][segs.length];
+		//fill matrix
+		for(int i = 0; i < segs.length; i++){
+			for(int j = i; j<segs.length; j++){
+				matrix[i][j] = isTerm(segs, i, j);
+				matrix[j][i] = matrix[i][j];
+			}
+		}
+		
+		// collectTerms
+		int max = 0;
+		Hashtable rank = new Hashtable();
+		for(int i = 0; i < segs.length; i++){
+			int ones = countOnes(matrix[i]);
+			if(ones > max){
+				max = ones;
+			}
+			String list = (String)rank.get(ones+"");
+			if(list == null){
+				rank.put(ones+"", i+"");
+			}else{
+				rank.put(ones+"", list+" "+i+"");
+			}
+		}
+		//collect terms
+		String checked="-";
+		for(int i = 0; i <= max; i++){
+			String list = (String)rank.get(i+"");
+			if(list!= null && i == 0){//term not see in learned or glossary, and not connectable to other terms
+				String[] indexes = list.split(" ");
+				for(int j = 0; j < indexes.length; j++){
+					int ind = Integer.parseInt(indexes[j]);
+					terms[ind] = segs[ind];
+				}
+
+			}else if(list!=null){
+				String[] indexes = list.split(" ");
+				for(int j = 0; j < indexes.length; j++){
+					int ind = Integer.parseInt(indexes[j]);
+					if(checked.indexOf("-"+ind+"-")<0){
+						int lastk = otherEndIndex(matrix[ind], ind); //last index of 1 in the row
+					    terms[ind] = ind > lastk? formTerm(segs, lastk, ind) : formTerm(segs, ind, lastk);
+					    checked += ind > lastk? formString(lastk, ind, "-") : formString(ind, lastk, "-");
+					}
+				}
+			}
+		}
+			
+		//out put term
+		String term = "";
+		for(int i =0; i<terms.length; i++){
+			if(terms[i] != null){
+				term += terms[i]+" ";
+			}
+		}
+		if(text.trim().compareTo(term.trim())!=0) System.out.println("fix a broken name: ["+text+":"+term+"]");
+		return term.trim();
+	}
+	
+	protected static String formString(int start, int end, String connector){
+		String str = "";
+		for(int i = start; i<=end; i++){
+			str +=i+connector;
+		}
+		return str;
+	}
+	
+	protected static String formTerm(String[] segs, int start, int end){
+		String str="";
+		for(int i = start; i<=end; i++){
+			str +=segs[i];
+		}
+		return str;
+	}
+	
+	private static int otherEndIndex(int [] array, int theotherindex){
+		boolean self = false;
+		int index = -1;
+		for(int i = 0; i< array.length; i++){
+			if(array[i]==1 && i == theotherindex){
+				self = true;
+			}else if(array[i]==1){//take the greatest index, may cause problem here.
+				index = i;
+			}
+		}
+		
+		return index==-1? theotherindex : index;
+	}
+	
+	private static int countOnes(int[] array){
+		int count = 0;
+		for(int i = 0; i< array.length; i++){
+			if(array[i]==1){
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	private static int isTerm(String[] segs, int start, int end){
+		String str=formTerm(segs, start, end).toLowerCase();
+		if(allInstrNames.contains(str)) return 1;
+		return 0;
+	}
+
 	private int nameLine(List<Element> textList2) {
 		// TODO Auto-generated method stub
 		int size = textList2.size();

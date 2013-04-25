@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -122,6 +123,8 @@ public class VolumeTransformer extends Thread {
 		this.allNameTokens = ti.getAllNameTokens();
 		if(ti.emptyNumbers() || ti.emptyNames()) ti = null;
 		
+
+		
 		// load style mapping
 		styleMappings = new Properties();
 		try {
@@ -133,6 +136,7 @@ public class VolumeTransformer extends Thread {
 			throw new ParsingException(
 					"Failed to load the style mapping file!", e);
 		}
+		//create needed  tables
 		Statement stmt = null;
 		try{
 			if(conn == null){
@@ -722,7 +726,7 @@ public class VolumeTransformer extends Thread {
 		//namerank = specificNameRank(namerank, text);	
 		//name = fixBrokenName(text, namerank);
 		namerank = specificNameRank(namerank+"", name);	
-		name = fixBrokenName(name, namerank);
+		//name = fixBrokenName(name, namerank);
 		if(debug) System.out.println("namerank:"+namerank);
 		System.out.println("namerank:"+namerank);
 		String[] nameinfo = getNameAuthority(name);//genus and above: authority parsed by getNameAuthority: 0: name 1:authority
@@ -925,10 +929,10 @@ public class VolumeTransformer extends Thread {
 	
 
 
-	protected String fixBrokenName(String text, String namerank) {
+	/*protected String fixBrokenName(String text, String namerank) {
 		// TODO Auto-generated method stub
 		return text;
-	}
+	}*/
 
 
 	/**
