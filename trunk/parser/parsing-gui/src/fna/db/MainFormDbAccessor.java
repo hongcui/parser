@@ -626,8 +626,15 @@ public class MainFormDbAccessor {
 				{
 					//stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
 					//		prefix + "', current_timestamp, 1, 1, 1 ,1, 1, 1, 1, 1,'"+glossaryName+"','"+optionChosen+"')");
-					stmt = conn.prepareStatement("insert into datasetprefix values ('"+ 
-							prefix + "', current_timestamp, 1, 0, 0 ,0, 0, 0, 0, 0, 0, 0, 0,'"+glossaryName+"','"+optionChosen+"')"); //a new prefix, set all but the first flag to 0
+					stmt = conn
+							.prepareStatement("insert into datasetprefix (prefix,time_last_accessed,tab_general,tab_segm,tab_verf,tab_trans,tab_struct_perl,tab_struct_one,tab_struct_two,tab_struct_three,tab_unknown,tab_finalm,tab_gloss,glossary,option_chosen) values ('"
+									+ prefix
+									+ "', current_timestamp, 1, 0, 0 ,0, 0, 0, 0, 0, 0, 0, 0,'"
+									+ glossaryName
+									+ "','"
+									+ optionChosen
+									+ "')"); // a new prefix, set all but the
+												// first flag to 0
 					stmt.executeUpdate();
 				}
 			}
