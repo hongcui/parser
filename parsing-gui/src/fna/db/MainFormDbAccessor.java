@@ -157,7 +157,7 @@ public class MainFormDbAccessor {
 	 * @throws ParsingException
 	 * @throws SQLException
 	 */
-	public void setUnknownTags(List <String> removedTags) throws ParsingException, SQLException {
+	public boolean setUnknownTags(List <String> removedTags) throws ParsingException, SQLException {
 		
 		//Connection conn = null;
 		PreparedStatement stmt = null;
@@ -173,11 +173,12 @@ public class MainFormDbAccessor {
 					stmt.setString(1, tag);
 					stmt.executeUpdate();
 				}
+				return true;
 		} catch (SQLException sqlexe) {
 			//LOGGER.error("Couldn't update sentence table in MainFormDbAccessor:removeMarkUpData", sqlexe);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);sqlexe.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
-			throw new ParsingException("Error Accessing the database" , sqlexe);
-			
+			//throw new ParsingException("Error Accessing the database" , sqlexe);
+			return false;
 		} /*catch (ClassNotFoundException clexe) {
 			LOGGER.error("Couldn't load the db Driver in MainFormDbAccessor:removeMarkUpData", clexe);
 			throw new ParsingException("Couldn't load the db Driver" , clexe);
@@ -931,7 +932,7 @@ public class MainFormDbAccessor {
 	 * This function will save terms from the Markup - (Structure tab) to database
 	 * @param terms
 	 */
-	public void saveTermRole
+	public boolean saveTermRole
 		(ArrayList<String> terms, String role, UUID last, UUID current)throws SQLException {
 		//Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -951,14 +952,16 @@ public class MainFormDbAccessor {
 				try {
 					pstmt.execute();
 				} catch (Exception exe) {
-				 if (!exe.getMessage().contains("Duplicate entry")) {
+				 if (!exe.getMessage().contains("Duplicate entry")) { //only insert unique term-category pairs
 					 throw exe;
 				 }
 				}			
 			}
+			return true;
 			//stmt.executeBatch();
 		} catch (Exception e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			return false;
 		} finally {
 			if(stmt!=null) stmt.close();
 			if (pstmt != null) {
@@ -981,12 +984,13 @@ public class MainFormDbAccessor {
 	 * @param current
 	 * @throws SQLException
 	 */
-	public void recordNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException {
-		updatePOSTableWithNonEQTerms(words, last, current);
-		updateNonEQTermsTable(words, last, current);
+	public boolean recordNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException {
+		boolean success2 = updatePOSTableWithNonEQTerms(words, last, current);
+		boolean success1 = updateNonEQTermsTable(words, last, current);
+		return success2 && success1;
 	}
 	
-	private void updatePOSTableWithNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException{
+	private boolean updatePOSTableWithNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException{
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
@@ -1012,8 +1016,10 @@ public class MainFormDbAccessor {
 				pstmt.addBatch();
 			}
 			pstmt.executeBatch();
+			return true;
 		} catch (SQLException e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			return false;
 		} finally {
 			if (pstmt != null) {
 				pstmt.close();
@@ -1025,7 +1031,7 @@ public class MainFormDbAccessor {
 		}
 	}
 	
-	private void updateNonEQTermsTable(ArrayList<String> words, UUID last, UUID current) throws SQLException{
+	private boolean updateNonEQTermsTable(ArrayList<String> words, UUID last, UUID current) throws SQLException{
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
 		String tablePrefix = MainForm.dataPrefixCombo.getText();
@@ -1049,8 +1055,10 @@ public class MainFormDbAccessor {
 					pstmt.addBatch();
 			}
 			pstmt.executeBatch();
+			return true;
 		} catch (SQLException e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+			return false;
 		} finally {
 			if (pstmt != null) {
 				pstmt.close();
