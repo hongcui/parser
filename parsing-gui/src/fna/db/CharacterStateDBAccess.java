@@ -410,6 +410,7 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 
 		PreparedStatement pstmt = null;
 		
+		
 		try {
 			String prefix = MainForm.dataPrefixCombo.getText().trim();
 			
@@ -436,6 +437,17 @@ public void getDefaultDecisionCategory(ArrayList<String> decisions) throws SQLEx
 			
 			/*savedecision for groupID*/
 			this.saveDecision(Integer.parseInt(groupID), "done");
+			
+			
+			/* if decision=structure, update wordrole table too.*/
+			if(decision.compareToIgnoreCase("structure")==0){
+				sql = "update " + prefix +"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+"set semanticrole = 'op' where word = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, term);
+				pstmt.execute();
+			}
+			
+			
 			return true;
 		} catch (Exception exe) {
 			LOGGER.error("Couldn't execute db query in CharacterStateDBAccess:saveTermCategory", exe);
