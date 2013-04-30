@@ -51,6 +51,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -256,9 +257,9 @@ public class MainForm {
 
 	Color red = colordisplay.getSystemColor(SWT.COLOR_RED);
 	Color green = colordisplay.getSystemColor(SWT.COLOR_GREEN);*/
-	Color red;
-	Color white;
-	Color green;
+	//Color red;
+	//Color white;
+	//Color green;
 	public static Color grey;
 	private Text step3_desc;
 	private Text tab2desc; 	   
@@ -351,14 +352,14 @@ public class MainForm {
 	 */
 	public void open() throws Exception {
 		final Display display = Display.getDefault();
-	    /*DeviceData data = new DeviceData();
+	   /* DeviceData data = new DeviceData();
 	    data.tracking = true;
 	    final Display display = new Display(data);
 	    Sleak sleak = new Sleak();
 	    sleak.open();*/
 	    
-		 red = display.getSystemColor(SWT.COLOR_RED);
-		 green = display.getSystemColor(SWT.COLOR_GREEN);
+		 //red = display.getSystemColor(SWT.COLOR_RED);
+		 //green = display.getSystemColor(SWT.COLOR_GREEN);
 		 grey = display.getSystemColor(SWT.COLOR_GRAY);
 		
 		
@@ -2610,9 +2611,9 @@ public class MainForm {
 				    	break;
 				    case SWT.CANCEL:
 				    case SWT.NO:
+				    	int count = mainDb.finalizeTermCategoryTable();
 						if(MainForm.upload2OTO){
-							int count = mainDb.finalizeTermCategoryTable();
-							if(count>0 && MainForm.upload2OTO){
+							if(count>0){
 								UploadTerms2OTO ud = new UploadTerms2OTO(dataPrefixCombo.getText().replaceAll("-", "_").trim());
 								boolean uploaded = ud.upload();
 								if(uploaded){
@@ -2627,6 +2628,11 @@ public class MainForm {
 											ApplicationUtilities.getProperty("popup.header.info"), 
 											SWT.OK);
 								}
+							}else{
+								ApplicationUtilities.showPopUpWindow(
+										"no new terms are available to upload to OTO ",
+										ApplicationUtilities.getProperty("popup.header.info"), 
+										SWT.OK);
 							}
 						}						
 						break;
@@ -3441,15 +3447,18 @@ public class MainForm {
 						}
 					}
 					
-					recordTermReviewResults(termRoleMatrix);
-					contextText.setText("terms saved!");
+					if(recordTermReviewResults(termRoleMatrix))
+						contextText.setText("Terms saved!");
+					else
+						contextText.setText("Failed to save the terms. Check the log for details.");
 				//}else{
 				//	return;
 				//}
 			}
 
-			private void recordTermReviewResults(Composite termRoleMatrix) {
+			private boolean recordTermReviewResults(Composite termRoleMatrix) {
 				try{
+					String temp = "";
 					//save to db
 					ArrayList<String> noneqs = new ArrayList<String>();
 					ArrayList<String> structures = new ArrayList<String>();
@@ -3482,9 +3491,12 @@ public class MainForm {
 					
 
 					UUID currentSavedId = UUID.randomUUID();
-					mainDb.recordNonEQTerms(noneqs, lastSavedId , currentSavedId);//noneq
-					mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures, record into wordroles table
-					mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors, record into wordroles table
+					boolean success = mainDb.recordNonEQTerms(noneqs, lastSavedId , currentSavedId);//noneq
+					if(!success) return false;
+					success = mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures, record into wordroles table
+					if(!success) return false;
+					success = mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors, record into wordroles table
+					if(!success) return false;
 					if(type.compareToIgnoreCase("structures") ==0){
 						lastSavedIdS = currentSavedId;
 					}
@@ -3498,9 +3510,11 @@ public class MainForm {
 					ArrayList<String> nonStructureTerms = new ArrayList<String>();
 					nonStructureTerms.addAll(noneqs);
 					nonStructureTerms.addAll(characters);
-					mainDb.setUnknownTags(nonStructureTerms);
+					success = mainDb.setUnknownTags(nonStructureTerms);
+					if(!success) return false;
 				}catch(Exception e){
 					StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+					return false;
 				}
 				//termRoleMatrix.setVisible(false);
 				//termRoleMatrix4others.dispose();
@@ -3550,7 +3564,7 @@ public class MainForm {
 				//termRoleMatrix.setVisible(false);
 				termRoleMatrix.dispose();
 				contextText.setText("");*/
-				
+				return true;
 			}
 		});
 	}
