@@ -55,6 +55,7 @@ public class MainFormDbAccessor {
 
 	private static final Logger LOGGER = Logger.getLogger(MainFormDbAccessor.class);
 	private static Connection conn = null;
+	private String prefix;
 	 
 	public static void main(String[] args) throws Exception {
 
@@ -68,6 +69,7 @@ public class MainFormDbAccessor {
 	public MainFormDbAccessor(){
 		//Statement stmt = null;
 		//Connection conn = null;
+
 		try {
 			Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 			conn = DriverManager.getConnection(url);
@@ -88,8 +90,9 @@ public class MainFormDbAccessor {
 		Statement stmt = null;
 		try{
 			stmt = conn.createStatement();
-			stmt.execute("drop table if exists "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE"));
-			stmt.execute("create table if not exists "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+" (term varchar(100) not null, source varchar(200), savedid varchar(40))");
+			if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
+			stmt.execute("drop table if exists "+this.prefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE"));
+			stmt.execute("create table if not exists "+this.prefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+" (term varchar(100) not null, source varchar(200), savedid varchar(40))");
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}finally{
@@ -108,7 +111,8 @@ public class MainFormDbAccessor {
 		Statement stmt = null;
         try{
             stmt = conn.createStatement();
-            String typotable = MainForm.dataPrefixCombo.getText().trim()+"_"+ApplicationUtilities.getProperty("TYPOS");
+    		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
+            String typotable = this.prefix+"_"+ApplicationUtilities.getProperty("TYPOS");
             stmt.execute("drop table if exists "+typotable);
             String query = "create table if not exists "+typotable+" (typo varchar(150), correction varchar(150), primary key (typo, correction))";
             stmt.execute(query);	           
@@ -136,9 +140,10 @@ public class MainFormDbAccessor {
 		//Connection conn = null;
 		PreparedStatement stmt = null;
 		try {
-			//conn = DriverManager.getConnection(url);
-			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" set pos = 'b' where word = ?";
+			//conn = DriverManager.getConnection(url);		
+			if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
+			
+			String sql = "update "+this.prefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+" set pos = 'b' where word = ?";
 			stmt = conn.prepareStatement(sql);
 			for (String tag : removedTags) {
 				stmt.setString(1, tag);
@@ -161,12 +166,13 @@ public class MainFormDbAccessor {
 		
 		//Connection conn = null;
 		PreparedStatement stmt = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			
 				//Class.forName(driverPath);
 				//conn = DriverManager.getConnection(url);
-				String tablePrefix = MainForm.dataPrefixCombo.getText();
-				String sql = "update "+tablePrefix+"_sentence set tag = 'unknown' where tag = ?";
+				
+				String sql = "update "+this.prefix+"_sentence set tag = 'unknown' where tag = ?";
 				stmt = conn.prepareStatement(sql);
 				
 				for (String tag : removedTags) {
@@ -203,8 +209,8 @@ public class MainFormDbAccessor {
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
-			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select distinct tag from "+tablePrefix+"_sentence where tag != 'unknown' and tag is not null order by tag asc";
+			if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
+			String sql = "select distinct tag from "+this.prefix+"_sentence where tag != 'unknown' and tag is not null order by tag asc";
 			stmt = conn.prepareStatement(sql);
 			
 			rs = stmt.executeQuery();
@@ -213,7 +219,7 @@ public class MainFormDbAccessor {
 				tagListCombo.add(tag);
 			}
 //changed 02/28 added modifier != ''
-			sql = "select distinct modifier from "+tablePrefix+"_sentence where modifier is not null and modifier != '' order by modifier asc";
+			sql = "select distinct modifier from "+this.prefix+"_sentence where modifier is not null and modifier != '' order by modifier asc";
 			stmt_select = conn.prepareStatement(sql);			
 			rs = stmt_select.executeQuery();
 			
@@ -262,12 +268,11 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		//Connection conn = null;
 		ResultSet rs = null;
-		
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
-			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select * from "+tablePrefix+"_sentence where tag = 'unknown' or isnull(tag) order by sentence";
+			String sql = "select * from "+this.prefix+"_sentence where tag = 'unknown' or isnull(tag) order by sentence";
 			stmt = conn.prepareStatement(sql);
 			
 			int i = 0;
@@ -314,12 +319,11 @@ public class MainFormDbAccessor {
 		String min = "" + (sentid - 2);
 		String max = "" + (sentid + 2);
 		
-		
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
-			String tablePrefix = MainForm.dataPrefixCombo.getText();
-			String sql = "select * from "+tablePrefix+"_sentence where sentid > ? and sentid < ?";
+			String sql = "select * from "+this.prefix+"_sentence where sentid > ? and sentid < ?";
 			stmt = conn.prepareStatement(sql);
 			
 			stmt.setString(1, min);
@@ -379,7 +383,7 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt_update = null;
 		ResultSet rs = null;
-		
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
@@ -394,15 +398,13 @@ public class MainFormDbAccessor {
 					continue;
 				
 				if(tag.equals("PART OF LAST SENTENCE")){//find tag of the last sentence
-					String tablePrefix = MainForm.dataPrefixCombo.getText();
-					String sql = "select tag from "+tablePrefix+"_sentence where sentid ="+(Integer.parseInt(sentid)-1);
+					String sql = "select tag from "+this.prefix+"_sentence where sentid ="+(Integer.parseInt(sentid)-1);
 					stmt = conn.prepareStatement(sql);
 					rs = stmt.executeQuery();
 					rs.next();
 					tag = rs.getString("tag");
 				}
-				String tablePrefix = MainForm.dataPrefixCombo.getText();
-				String sql = "update "+tablePrefix+"_sentence set modifier = ?, tag = ? where sentid = ?";
+				String sql = "update "+this.prefix+"_sentence set modifier = ?, tag = ? where sentid = ?";
 				stmt_update = conn.prepareStatement(sql);
 				stmt_update.setString(1, modifier);
 				stmt_update.setString(2, tag);
@@ -572,10 +574,10 @@ public class MainFormDbAccessor {
 		
 		//Connection conn = null;
 		PreparedStatement stmt = null;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//conn = DriverManager.getConnection(url);
-			String postable = tablePrefix+ "_"+ApplicationUtilities.getProperty("POSTABLE");
+			String postable = this.prefix+ "_"+ApplicationUtilities.getProperty("POSTABLE");
 			
 			stmt = conn.prepareStatement("insert into "+postable+"(word,pos) values (?,?)");
 			Set<String> keys = otherTerms.keySet();
@@ -864,10 +866,11 @@ public class MainFormDbAccessor {
 	public void removeDescriptorData(List<String> words) throws SQLException {
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//conn = DriverManager.getConnection(url);
-			pstmt = conn.prepareStatement("delete from "+tablePrefix+"_wordpos where pos=? and word=?");
+			
+			pstmt = conn.prepareStatement("delete from "+this.prefix+"_wordpos where pos=? and word=?");
 			for (String word : words) {
 				pstmt.setString(1, "b");
 				pstmt.setString(2, word);
@@ -895,10 +898,10 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		ResultSet rset = null;
 		ArrayList<String> unknownWords = new ArrayList<String>();
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try{
 			//conn = DriverManager.getConnection(url);
-			stmt = conn.prepareStatement("select word from "+tablePrefix+"_unknownwords " +
+			stmt = conn.prepareStatement("select word from "+this.prefix+"_unknownwords " +
 					"where flag = ?");
 			stmt.setString(1, "unknown");
 			rset = stmt.executeQuery();
@@ -931,24 +934,26 @@ public class MainFormDbAccessor {
 	/** 
 	 * This function will save terms from the Markup - (Structure tab) to database
 	 * @param terms
+	 * @param type 
 	 */
 	public boolean saveTermRole
-		(ArrayList<String> terms, String role, UUID last, UUID current)throws SQLException {
+		(ArrayList<String> terms, String role, UUID last, UUID current, String type)throws SQLException {
 		//Connection conn = null;
 		PreparedStatement pstmt = null;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		Statement stmt = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//conn = DriverManager.getConnection(url);
-			String wordrolesable = tablePrefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
+			String wordrolesable = this.prefix+ "_"+ApplicationUtilities.getProperty("WORDROLESTABLE");
 			stmt = conn.createStatement();
 			stmt.execute("delete from "+wordrolesable+" where savedid='"+last.toString()+"'");
-			pstmt = conn.prepareStatement("Insert into "+wordrolesable+" (word,semanticrole, savedid) values (?,?, ?)");
+			pstmt = conn.prepareStatement("Insert into "+wordrolesable+" (word,semanticrole, savedid, sourcetab) values (?,?, ?, ?)");
 			//stmt = conn.prepareStatement("Update "+postable+" set saved_flag ='green' where word = ?");
 			for (String term : terms) {
 				pstmt.setString(1, term);
 				pstmt.setString(2, role);	
 				pstmt.setString(3, current.toString());
+				pstmt.setString(4, type);
 				try {
 					pstmt.execute();
 				} catch (Exception exe) {
@@ -978,10 +983,11 @@ public class MainFormDbAccessor {
 	/**
 	 * since the user may change their minds on whether a term is a non-eq term, use UUID to allow overwrite of previous decisions
 	 * also upldate postable, non-eq terms will have a red saved_flag.
-	 * 
+	 * when adding filtered terms to nonEQtable,  last = null and current = null, when adding terms categorized as "neither", both values are non-null values
 	 * @param words
 	 * @param last
 	 * @param current
+	 * @param type 
 	 * @throws SQLException
 	 */
 	public boolean recordNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException {
@@ -989,25 +995,32 @@ public class MainFormDbAccessor {
 		boolean success1 = updateNonEQTermsTable(words, last, current);
 		return success2 && success1;
 	}
-	
+	/**
+	 * when adding filtered terms to nonEQtable,  last = null and current = null
+	 * @param words
+	 * @param last
+	 * @param current
+	 * @return
+	 * @throws SQLException
+	 */
 	private boolean updatePOSTableWithNonEQTerms(ArrayList<String> words, UUID last, UUID current) throws SQLException{
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		Statement stmt = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			stmt = conn.createStatement();
 			if(last!=null){
 				//clean up last saved info
-				stmt.execute("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag = '' where savedid='"+last.toString()+"'");
+				stmt.execute("update "+this.prefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag = '' where savedid='"+last.toString()+"'");
 			}
 			if(current==null){
 			//set flag in pos table
 				//pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red' where pos=? and word=?");
-				pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red' where word=?");
+				pstmt = conn.prepareStatement("update "+this.prefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red' where word=?");
 			}else{
 				//pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red', savedid='"+current.toString()+"' where pos=? and word=?");
-				pstmt = conn.prepareStatement("update "+tablePrefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red', savedid='"+current.toString()+"' where word=?");
+				pstmt = conn.prepareStatement("update "+this.prefix+"_"+ApplicationUtilities.getProperty("POSTABLE")+ " set saved_flag ='red', savedid='"+current.toString()+"' where word=?");
 			}
 			for (String word : words) {
 				//pstmt.setString(1, "b");
@@ -1034,23 +1047,23 @@ public class MainFormDbAccessor {
 	private boolean updateNonEQTermsTable(ArrayList<String> words, UUID last, UUID current) throws SQLException{
 		//Connection conn = null;
 		PreparedStatement pstmt = null ;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
 		Statement stmt = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			stmt = conn.createStatement();
 			//insert words in noneqterms table	
 			//clean up last saved info
 			if(last!=null){
-				stmt.execute("delete from "+tablePrefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ " where savedid='"+last.toString()+"'");
+				stmt.execute("delete from "+this.prefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ " where savedid='"+last.toString()+"'");
 			}
 			if(last!=null){
-				pstmt = conn.prepareStatement("insert into "+tablePrefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ "(term, source, savedid) values(?, ?, ?)");
+				pstmt = conn.prepareStatement("insert into "+this.prefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ "(term, source, savedid) values(?, ?, ?)");
 			}else{
-				pstmt = conn.prepareStatement("insert into "+tablePrefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ "(term, source) values(?, ?)");
+				pstmt = conn.prepareStatement("insert into "+this.prefix+"_"+ApplicationUtilities.getProperty("NONEQTERMSTABLE")+ "(term, source) values(?, ?)");
 			}
 			for (String word : words) {
 					pstmt.setString(1, word);
-					pstmt.setString(2, tablePrefix);
+					pstmt.setString(2, this.prefix);
 					if(current!=null) pstmt.setString(3, current.toString());
 					pstmt.addBatch();
 			}
@@ -1072,12 +1085,12 @@ public class MainFormDbAccessor {
 	public void createHeuristicTermsTable(){
 		//Connection conn = null;
 		Statement stmt = null ;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
-			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS"));
-			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS")+ " (word varchar(50), type varchar(20), primary key(word))");			
+			stmt.execute("drop table if exists "+this.prefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS"));
+			stmt.execute("create table if not exists "+this.prefix+"_"+ApplicationUtilities.getProperty("HEURISTICSTERMS")+ " (word varchar(50), type varchar(20), primary key(word))");			
 		} catch (SQLException e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
@@ -1102,12 +1115,12 @@ public class MainFormDbAccessor {
 	public void createWordRoleTable(){
 		//Connection conn = null;
 		Statement stmt = null ;
-		String tablePrefix = MainForm.dataPrefixCombo.getText();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//conn = DriverManager.getConnection(url);
 			stmt = conn.createStatement();
-			stmt.execute("drop table if exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE"));
-			stmt.execute("create table if not exists "+tablePrefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2), savedid varchar(40), primary key(word, semanticrole))");			
+			stmt.execute("drop table if exists "+this.prefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE"));
+			stmt.execute("create table if not exists "+this.prefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+ " (word varchar(50), semanticrole varchar(2), savedid varchar(40), sourcetab varchar(20), primary key(word, semanticrole))");			
 		} catch (SQLException e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		} finally {
@@ -1133,14 +1146,13 @@ public class MainFormDbAccessor {
 		//Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try {
 			//Class.forName(driverPath);
 			//conn = DriverManager.getConnection(url);
-			String tablePrefix = MainForm.dataPrefixCombo.getText();
 			word = word.replaceAll("_", "-");
-			String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]'";
-			//String sql = "select source,originalsent from "+tablePrefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
+			String sql = "select source,originalsent from "+this.prefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]'";
+			//String sql = "select source,originalsent from "+this.prefix+"_sentence where originalsent rlike '[[:<:]]"+word+"[[:>:]]' or tag = '"+word+"'";
 			stmt = conn.prepareStatement(sql);
 			rs = stmt.executeQuery();
 			context.cut();
@@ -1211,12 +1223,12 @@ public class MainFormDbAccessor {
 	 * This makes term_category contain all new terms learned from a volume of text
 	 */
 	public int finalizeTermCategoryTable() {
-		String prefix = MainForm.dataPrefixCombo.getText();
 		int count = 0;
 		Statement stmt = null;
 		Statement stmt2 = null;
 		ResultSet rs = null;
 		ResultSet rs2 = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try{
 			stmt = conn.createStatement();
 			stmt2 = conn.createStatement();
@@ -1248,7 +1260,7 @@ public class MainFormDbAccessor {
 				//count++;
 			}
 			
-			rs = stmt.executeQuery("select distinct term from " + MainForm.dataPrefixCombo.getText().trim() +"_term_category");
+			rs = stmt.executeQuery("select distinct term from " + this.prefix +"_term_category");
 			while(rs.next()){
 				count++;
 			}
@@ -1271,7 +1283,8 @@ public class MainFormDbAccessor {
 	}
 	
 	private void insert2TermCategoryTable(String term, String cat) throws SQLException {
-		String sql = "insert into " + MainForm.dataPrefixCombo.getText().trim() +"_term_category(term, category) values (?,?)";
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
+		String sql = "insert into " + this.prefix +"_term_category(term, category) values (?,?)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, term);
 		pstmt.setString(2, cat);
@@ -1288,6 +1301,7 @@ public class MainFormDbAccessor {
 	public Hashtable<String, TreeSet<String>> correctTyposInDB(Hashtable<String, String> typos) {
 		Hashtable<String, TreeSet<String>> typosources = new Hashtable<String, TreeSet<String>>();
 		Enumeration<String> en = typos.keys();
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		while(en.hasMoreElements()){
 			String typo = en.nextElement();
 			String correction = typos.get(typo);
@@ -1297,7 +1311,7 @@ public class MainFormDbAccessor {
 				//find sources
 				TreeSet<String> sources = typosources.get(typo);
 				stmt = conn.prepareStatement("select source from "+
-						MainForm.dataPrefixCombo.getText().trim()+"_"+ ApplicationUtilities.getProperty("SENTENCETABLE") +
+						this.prefix+"_"+ ApplicationUtilities.getProperty("SENTENCETABLE") +
 						" where sentence REGEXP '[[:<:]]"+typo+"[[:>:]]'"); //originalsent already corrected
 			    rs = stmt.executeQuery();
 				while(rs.next()){
@@ -1347,9 +1361,10 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try{
 			//mysql can't do word-based match, so had to update sentence one by one
-			stmt = conn.prepareStatement("select "+PK+", "+column+" from "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" where "+column+" REGEXP '[[:<:]]"+typo+"[[:>:]]'");
+			stmt = conn.prepareStatement("select "+PK+", "+column+" from "+this.prefix+"_"+table+" where "+column+" REGEXP '[[:<:]]"+typo+"[[:>:]]'");
 		    rs = stmt.executeQuery();
 			while(rs.next()){
 				String key = rs.getString(1);
@@ -1371,7 +1386,7 @@ public class MainFormDbAccessor {
 					m = p.matcher(text);
 				}
 				//put corrected back
-			    stmt1 = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+column+"='"+text+"' where "+PK+"='"+key+"'");
+			    stmt1 = conn.prepareStatement("update "+this.prefix+"_"+table+" set "+column+"='"+text+"' where "+PK+"='"+key+"'");
 				stmt1.execute();
 			}
 		}catch(Exception e){
@@ -1399,9 +1414,10 @@ public class MainFormDbAccessor {
 	 */
 	public void correctTypoInTableExactMatch(String table, String column, String typo, String correction) {
 		try{
+			if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 			String	where = column+"='"+typo+"'";
 			String 	set = column+"='"+correction+"'";
-			PreparedStatement stmt = conn.prepareStatement("update "+MainForm.dataPrefixCombo.getText().trim()+"_"+table+" set "+set+" where "+where);
+			PreparedStatement stmt = conn.prepareStatement("update "+this.prefix+"_"+table+" set "+set+" where "+where);
 			stmt.executeUpdate();
 		}catch(Exception e){
 			LOGGER.error("Couldn't find Class in MainFormDbAccessor" + e);
@@ -1419,22 +1435,22 @@ public class MainFormDbAccessor {
 		PreparedStatement stmt = null;
 		PreparedStatement stmt1 = null;
 		ResultSet rs = null;
-		
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try{
-			stmt = conn.prepareStatement("select * from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
+			stmt = conn.prepareStatement("select * from  "+this.prefix+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
 			stmt.setString(1, correction);
 			stmt.setString(2, typo);
 			rs = stmt.executeQuery();
 			if(rs.next()){
 				//delete the record
-				stmt = conn.prepareStatement("delete from  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
+				stmt = conn.prepareStatement("delete from  "+this.prefix+"_"+ApplicationUtilities.getProperty("TYPOS")+" where typo = ? and correction = ?");
 				stmt.setString(1, correction);
 				stmt.setString(2, typo);
 				stmt.execute();	
 				return;
 			}
 			
-			stmt1 = conn.prepareStatement("insert into  "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS")+" (typo, correction) values (?, ?)");
+			stmt1 = conn.prepareStatement("insert into  "+this.prefix+"_"+ApplicationUtilities.getProperty("TYPOS")+" (typo, correction) values (?, ?)");
 			stmt1.setString(1, typo);
 			stmt1.setString(2, correction);
 			stmt1.execute();
@@ -1456,6 +1472,36 @@ public class MainFormDbAccessor {
 		}	
 	}
 	
+	/**
+	 * retrieve the last savedid for the type from wordroles table.
+	 * 
+	 * @param type: structure, descriptor, other
+	 * @param prefix: datatable prefix
+	 * @param conn
+	 * @return UUID: the last id used in saving categorized terms
+	 */
+	public UUID getLastSavedId(String type) {
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		try{
+			statement = conn.prepareStatement("select savedid from "+prefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE") +" where sourcetab = ? and ! isnull(savedid)");
+			statement.setString(1, type);
+			rs = statement.executeQuery();
+			if(rs.next())
+				return UUID.fromString(rs.getString(1));
+		}catch(Exception e){
+			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
+		}finally{
+			try{
+				if(rs!=null) rs.close();
+				if(statement!=null) statement.close();
+			}catch(Exception e1){
+				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e1.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());				
+			}
+		}
+		return UUID.randomUUID();
+	}
+	
 	
 	/**
 	 * read typos from the known database table into the hashtable.
@@ -1464,8 +1510,9 @@ public class MainFormDbAccessor {
 	public void readInTypos(Hashtable<String, String> typos) {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
+		if(this.prefix ==null) this.prefix = MainForm.dataPrefixCombo.getText().trim();
 		try{
-			stmt = conn.prepareStatement("select typo, correction from "+MainForm.dataPrefixCombo.getText()+"_"+ApplicationUtilities.getProperty("TYPOS"));
+			stmt = conn.prepareStatement("select typo, correction from "+this.prefix+"_"+ApplicationUtilities.getProperty("TYPOS"));
 			rs = stmt.executeQuery();
 			while(rs.next()){
 				typos.put(rs.getString(1), rs.getString(2));
