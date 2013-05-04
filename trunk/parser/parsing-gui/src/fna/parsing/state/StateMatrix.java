@@ -396,7 +396,7 @@ public class StateMatrix {
 			stmt = conn.createStatement();
 			String q = "select word from "+this.tableprefix+"_"+ApplicationUtilities.getProperty("WORDROLESTABLE")+
 					" where semanticrole ='c' and" +
-					" mid(word, locate('_', word)+1) not in (select distinct term from " +this.glossarytable+")";
+					" mid(word, locate('_', word)+1) not in (select distinct term from " +this.glossarytable+")"; //mid(word, locate('_', word)+1) => 2_fid => fid
 					
 			String coocur = cooccurTerms.toString().replaceFirst(",$", "").replaceAll(",+", ",").trim();
 			if(coocur.length()>0){
@@ -455,7 +455,7 @@ public class StateMatrix {
 						for(int j = i+1; j <terms.length; j++){
 							if(!Utilities.inGlossary(terms[i], conn, this.glossarytable, this.tableprefix) || !Utilities.inGlossary(terms[j], conn, this.glossarytable, this.tableprefix)){
 								String[] info = freqsource(terms[i], terms[j]); //search for frequency and source files info for the term pair
-								if(info!=null && info[1].split(",").length>=3){ //include only the terms apprears 3 or more times.
+								if(info!=null && info[1].split(",").length>=1){ //include only the terms apprears 1 or more times.
 									String q = "insert into "+this.tableprefix+"_grouped_terms(term, cooccurTerm, frequency, sourceFiles) values ('"+terms[i]+"', '"+terms[j]+"',"+Integer.parseInt(info[0])+",'"+info[1]+"')";
 									System.out.println("query::"+q);
 									stmt.execute(q);
