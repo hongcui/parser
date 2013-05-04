@@ -295,9 +295,9 @@ public class MainForm {
 	private Group group4characters;
 	private Composite composite4others;
 	private Group group4others;
-	protected UUID lastSavedIdS = UUID.randomUUID();
-	protected UUID lastSavedIdC = UUID.randomUUID();
-	protected UUID lastSavedIdO = UUID.randomUUID();
+	protected UUID lastSavedIdS; //= Utilities.getLastSavedId ("structure"); //UUID.randomUUID();
+	protected UUID lastSavedIdC; //= Utilities.getLastSavedId ("character"); //UUID.randomUUID();
+	protected UUID lastSavedIdO;// = Utilities.getLastSavedId ("other"); //UUID.randomUUID();
 	private static boolean markupstarted = false;
 	private static Group grpTermSets;
 	
@@ -3458,7 +3458,6 @@ public class MainForm {
 
 			private boolean recordTermReviewResults(Composite termRoleMatrix) {
 				try{
-					String temp = "";
 					//save to db
 					ArrayList<String> noneqs = new ArrayList<String>();
 					ArrayList<String> structures = new ArrayList<String>();
@@ -3467,14 +3466,23 @@ public class MainForm {
 					UUID lastSavedId = null;
 					if(type.compareToIgnoreCase("structures") ==0){
 						categorizedterms = categorizedtermsS;
+						if(lastSavedIdS == null){
+							lastSavedIdS = mainDb.getLastSavedId(type);
+						}
 						lastSavedId = lastSavedIdS;
 					}
 					if(type.compareToIgnoreCase("characters") ==0){
 						categorizedterms = categorizedtermsC;
+						if(lastSavedIdC == null){
+							lastSavedIdC = mainDb.getLastSavedId(type);
+						}
 						lastSavedId = lastSavedIdC;
 					}
 					if(type.compareToIgnoreCase("others") ==0){
 						categorizedterms = categorizedtermsO;
+						if(lastSavedIdO == null){
+							lastSavedIdO = mainDb.getLastSavedId(type);
+						}
 						lastSavedId = lastSavedIdO;
 					}
 					Enumeration<String> en = categorizedterms.keys();
@@ -3491,11 +3499,11 @@ public class MainForm {
 					
 
 					UUID currentSavedId = UUID.randomUUID();
-					boolean success = mainDb.recordNonEQTerms(noneqs, lastSavedId , currentSavedId);//noneq
+					boolean success = mainDb.recordNonEQTerms(noneqs, lastSavedId, currentSavedId);//noneq, need not use type info because lastSavedId is found from wordroles table
 					if(!success) return false;
-					success = mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId); //structures, record into wordroles table
+					success = mainDb.saveTermRole(structures, Registry.MARKUP_ROLE_O, lastSavedId, currentSavedId, type); //structures, record into wordroles table
 					if(!success) return false;
-					success = mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId); //descriptors, record into wordroles table
+					success = mainDb.saveTermRole(characters, Registry.MARKUP_ROLE_B, lastSavedId, currentSavedId, type); //descriptors, record into wordroles table
 					if(!success) return false;
 					if(type.compareToIgnoreCase("structures") ==0){
 						lastSavedIdS = currentSavedId;
