@@ -1,9 +1,9 @@
 /*
  * The files should be run in the following order
- * V24_Genusextractor
- * V24_Extractor
- * V24_Transformer
- * FNATaxonNameFinalizerStep1
+ * V24_Genusextractor : split input file into families
+ * V24_Extractor: each family split into individual treatment
+ * V24_Transformer: markup everything except for names (not fine-grained marked, names = basi and syn, and taxon identification)
+ * FNATaxonNameFinalizerStep1: review process and refinement.
  * 
  */
 package fna.parsing;
