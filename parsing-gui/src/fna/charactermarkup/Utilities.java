@@ -7,6 +7,7 @@ package fna.charactermarkup;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.UUID;
 
 import fna.parsing.ApplicationUtilities;
 import fna.parsing.state.StateCollector;
@@ -1074,7 +1076,10 @@ public class Utilities {
 			return str;
 		}
 
+		
+		
 
+		
 	public static void main(String[] argv){
 		Connection conn = null;
 		try{
@@ -1092,4 +1097,6 @@ public class Utilities {
 		//System.out.println(Utilities.isAdv("much", new ArrayList<String>()));
 		//System.out.println(Utilities.indexOfunmatched(']', "2-]5-20[-30+]"));
 	}
+
+	
 }

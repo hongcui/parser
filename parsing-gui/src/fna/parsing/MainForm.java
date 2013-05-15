@@ -4,8 +4,6 @@
 package fna.parsing;
 
 
-
-
 /**
  * @author prasad
  *
@@ -778,12 +776,12 @@ public class MainForm {
 		configurationText = new Text(composite, SWT.BORDER);
 		sourceText = new Text(composite, SWT.BORDER);
 		
-		final Group configurationDirectoryGroup_1_1_1 = new Group(composite, SWT.NONE);
+		//final Group configurationDirectoryGroup_1_1_1 = new Group(composite, SWT.NONE);
 		//configurationDirectoryGroup_1_1_1.setEnabled(false);
 		//configurationDirectoryGroup_1_1_1.setBounds(20, 117, 748, 70);
-		configurationDirectoryGroup_1_1_1.setText(
-				ApplicationUtilities.getProperty("datasetprefix"));
-		configurationDirectoryGroup_1_1_1.setVisible(false);
+		//configurationDirectoryGroup_1_1_1.setText(
+		//		ApplicationUtilities.getProperty("datasetprefix"));
+		//configurationDirectoryGroup_1_1_1.setVisible(false);
 		// get value from the project conf and set it here
 		List <String> datasetPrefixes = new ArrayList <String> (); 
 		mainDb.datasetPrefixRetriever(datasetPrefixes);
