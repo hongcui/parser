@@ -307,9 +307,9 @@ public class VolumeExtractor extends Thread {
 		StringBuffer names = new StringBuffer();
 		
 		String acase = "";
-		List rList = XPath.selectNodes(wp, "./w:r");
-
-		for (Iterator ti = rList.iterator(); ti.hasNext();) {
+		removeSmartTag(wp);//FoC v6, some w:r are nested in misused w:smartTag, use .// to also get them
+		List<Element> rList = XPath.selectNodes(wp, "./w:r"); 
+		for (Iterator<Element> ti = rList.iterator(); ti.hasNext();) {
 			Element re = (Element) ti.next();
 			// find smallCaps
 			Element rpr = (Element) XPath.selectSingleNode(re, "./w:rPr"); // Genus,
@@ -382,6 +382,37 @@ public class VolumeExtractor extends Thread {
 			pes.add(pe);
 		}
 		return pes;
+	}
+
+	/**
+	 *   <w:p w:rsidR="00B53495" w:rsidRPr="00E37260" w:rsidRDefault="00B53495">
+	 *  <w:smartTag w:uri="urn:schemas-microsoft-com:office:smarttags"
+                w:element="country-region">
+                <w:smartTag w:uri="urn:schemas-microsoft-com:office:smarttags" w:element="place">
+                    <w:r w:rsidRPr="00E37260">
+                        <w:rPr>
+                            <w:rStyle w:val="italic"/>
+                        </w:rPr>
+                        <w:t>formosa</w:t>
+                    </w:r>
+                </w:smartTag>
+            </w:smartTag>
+            </w:p>
+            
+      remove w:smartTag elements to expose w:r, so w:p/w:r      
+	 * @param wp
+	 * @return
+	 */
+	private void removeSmartTag(Element wp) throws JDOMException {
+		List<Element> children = wp.getChildren();
+		for(int i = 0; i < children.size(); i++){
+			if(children.get(i).getName().contains("smartTag")){
+				Element r = (Element) XPath.selectSingleNode(children.get(i), ".//w:r");
+				children.get(i).detach();
+				r.detach();
+				wp.addContent(i, r);			
+			}
+		}
 	}
 
 	/**
