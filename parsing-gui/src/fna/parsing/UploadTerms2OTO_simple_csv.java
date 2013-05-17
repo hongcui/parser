@@ -4,6 +4,18 @@ package fna.parsing;
  * This class is specificly designed to upload ang glosssary in csv files into OTO
  * Develop environment: Windows 8
  * Author: Fengqiong Huang
+ * 
+ * Usage: some parameters you should set before you run the class
+ * 1. dataprefix: the datasetprefix that will be used in OTO after you upload
+ * 2. csv_folderPath: your local folder which holds all the .cvs files you want to use. 
+ * 	  There are at most two files, one is the glossary file, which is a must, and the 
+ * 	  other is synonym file, which can be optional. 
+ * 3. hasSynonymFile: true or false. Specify if you have the synonyms .cvs file or not. 
+ * 4. datasetOwnerID: your userID in OTO. You can get it from table 'users' on OTO server. 
+ * 5. useTimeStamp: true or false. Specify if you want to attach timestamp after 
+ * 	  dataprefix or not. 
+ * 6. glossFileName
+ * 7. synFileName
  */
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,23 +41,26 @@ import com.jcraft.jsch.Session;
 
 public class UploadTerms2OTO_simple_csv {
 
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(UploadTerms2OTO.class);
-
+/*make sure the following variables are correctly set before you run the class*/	
+	private static String csv_folderPath = "D:\\Work\\Data\\ant_gloss\\"; //your local folder 
+																		//holding all the .cvs files
+	private static String glossFileName = "fnagloss from Hong 16May.csv"; //the file name of the glossary file
+	private static String synFileName = "antglossarysynonym.csv"; //the file name of the synonym file
+																  //can be anything if hasSynonymFile = false
 	private static String dataprefix = "ant_gloss"; // the prefix that will be
 													// used on OTO server
+	private static String datasetOwnerID = "43"; // your userID in OTO
+	private static boolean useTimeStamp = true; // attach timestamp to dataprefix or not
+	private static boolean hasSynonymFile = false;// has synonym .cvs files or not
+/*end of variables that need to be set*/
+	
 
-	// the csv files path and names
-	private static String csv_folderPath = "D:\\Work\\Data\\ant_gloss\\";
-	private static String glossFileName = "antglossary.csv";
-	private static String synFileName = "antglossarysynonym.csv";
 	private static String folderOnServer = "/home/sirls/hongcui/tmp/";
-	private static String serverPath = "hongcui@biosemantics.arizona.edu:";
-	//private static String folderOnServer = "D:\\Work\\Data\\ant_gloss\\";
-	private static String datasetOwnerID = "43";
-	private static boolean useTimeStamp = true;
-	boolean test = false;
-
+	private static String serverPath = "hongcui@biosemantics.arizona.edu:";	
+	boolean test = true;
+	
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(UploadTerms2OTO.class);
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 	public static Calendar cal = Calendar.getInstance();
 
@@ -76,13 +91,18 @@ public class UploadTerms2OTO_simple_csv {
 
 		// copy those two csv files to server
 		// glossary csv file
-		success = scpTo(csv_folderPath, serverPath + folderOnServer, glossFileName);
+		success = scpTo(csv_folderPath, serverPath + folderOnServer,
+				glossFileName);
 		if (!success)
 			return false;
-		// synonym csv file
-		success = scpTo(csv_folderPath, serverPath + folderOnServer, synFileName);
-		if (!success)
-			return false;
+		
+		if (hasSynonymFile) {
+			// synonym csv file
+			success = scpTo(csv_folderPath, serverPath + folderOnServer,
+					synFileName);
+			if (!success)
+				return false;
+		}
 
 		// back up the OTO database
 		/*
@@ -164,12 +184,14 @@ public class UploadTerms2OTO_simple_csv {
 					+ "term varchar(100), synonym varchar(100));";
 			sql_commands.add(command);
 
-			// table: _syns (term, synonym)
-			command = "LOAD data local infile '" + folderOnServer + synFileName
-					+ "' INTO Table " + target_dataprefix
-					+ "_syns FIELDS TERMINATED BY ',' IGNORE 1 LINES;";
-			sql_commands.add(command);
-
+			if (hasSynonymFile) {
+				// table: _syns (term, synonym)
+				command = "LOAD data local infile '" + folderOnServer + synFileName
+						+ "' INTO Table " + target_dataprefix
+						+ "_syns FIELDS TERMINATED BY ',' IGNORE 1 LINES;";
+				sql_commands.add(command);	
+			}
+			
 			// insert dataset prefix
 			command = "insert into datasetprefix (prefix) value ('"
 					+ target_dataprefix + "');";
@@ -265,49 +287,66 @@ public class UploadTerms2OTO_simple_csv {
 					+ target_dataprefix + "_term_category;";
 			sql_commands.add(command);
 
-			// get decisions related to main terms (main terms means those with
-			// synonyms)
-			command = "insert into "
-					+ target_dataprefix
-					+ "_user_terms_decisions(term, decision, userid, decisiondate, groupid, hasSyn, relatedTerms) "
-					+ "select tc.term, tc.category, "
-					+ datasetOwnerID
-					+ " as userid, sysdate(), 1 as groupid, hasSyn, syns.relatedTerms "
-					+ "from "
-					+ target_dataprefix
-					+ "_term_category tc left join "
-					+ "(select term, group_concat(\"'\", synonym, \"'\") as relatedTerms "
-					+ "from " + target_dataprefix + "_syns "
-					+ "group by term) syns " + "on syns.term = tc.term "
-					+ "where tc.hasSyn = true; ";
-			sql_commands.add(command);
+			if (hasSynonymFile) {
+				// get decisions related to main terms (main terms means those with
+				// synonyms)
+				command = "insert into "
+						+ target_dataprefix
+						+ "_user_terms_decisions(term, decision, userid, decisiondate, groupid, hasSyn, relatedTerms) "
+						+ "select tc.term, tc.category, "
+						+ datasetOwnerID
+						+ " as userid, sysdate(), 1 as groupid, hasSyn, syns.relatedTerms "
+						+ "from "
+						+ target_dataprefix
+						+ "_term_category tc left join "
+						+ "(select term, group_concat(\"'\", synonym, \"'\") as relatedTerms "
+						+ "from " + target_dataprefix + "_syns "
+						+ "group by term) syns " + "on syns.term = tc.term "
+						+ "where tc.hasSyn = true; ";
+				sql_commands.add(command);
 
-			// get decisions related to those synonyms
+				// get decisions related to those synonyms
+				command = "insert into "
+						+ target_dataprefix
+						+ "_user_terms_decisions(term, decision, userid, decisiondate, groupid, relatedTerms) "
+						+ "select tc.term, tc.category, "
+						+ datasetOwnerID
+						+ " as userid, sysdate(), 1 as groupid, syns.relatedTerms "
+						+ "from "
+						+ target_dataprefix
+						+ "_term_category tc left join "
+						+ "(select synonym, group_concat(\"synonym of '\", term, \"'\") as relatedTerms, 1 as isAdditional "
+						+ "from " + target_dataprefix + "_syns "
+						+ "group by synonym) syns " + "on syns.synonym = tc.term "
+						+ "where tc.hasSyn = false; ";
+				sql_commands.add(command);
+
+				// update isAdditional
+				command = "update " + target_dataprefix
+						+ "_user_terms_decisions set isAdditional = true "
+						+ "where term in (select synonym from " + target_dataprefix
+						+ "_syns); ";
+				sql_commands.add(command);
+			} else {
+				// get data for table _user_terms_decisions
+				command = "insert into "
+						+ target_dataprefix
+						+ "_user_terms_decisions(term, decision, userid, decisiondate, groupid, hasSyn, relatedTerms) "
+						+ "select term, category, "
+						+ datasetOwnerID
+						+ " as userid, sysdate(), 1 as groupid, 0 as hasSyn, '' as relatedTerms " 
+						+ "from "
+						+ target_dataprefix
+						+ "_term_category; ";
+				sql_commands.add(command);
+			}
+			
+			// add data into _confirmed_category
 			command = "insert into "
 					+ target_dataprefix
-					+ "_user_terms_decisions(term, decision, userid, decisiondate, groupid, relatedTerms) "
-					+ "select tc.term, tc.category, "
-					+ datasetOwnerID
-					+ " as userid, sysdate(), 1 as groupid, syns.relatedTerms "
-					+ "from "
-					+ target_dataprefix
-					+ "_term_category tc left join "
-					+ "(select synonym, group_concat(\"synonym of '\", term, \"'\") as relatedTerms, 1 as isAdditional "
-					+ "from " + target_dataprefix + "_syns "
-					+ "group by synonym) syns " + "on syns.synonym = tc.term "
-					+ "where tc.hasSyn = false; ";
-			sql_commands.add(command);
-			
-			//update isAdditional
-			command = "update " + target_dataprefix + "_user_terms_decisions set isAdditional = true " +
-					"where term in (select synonym from " + target_dataprefix +
-					"_syns); ";
-			sql_commands.add(command);
-			
-			//add data into _confirmed_category
-			command = "insert into " + target_dataprefix + "_confirmed_category (term, category, accepted, confirmDate) " +
-					"select term, category, 1 as accepted, now() as confirmDate " +
-					"from " + target_dataprefix + "_term_category; ";
+					+ "_confirmed_category (term, category, accepted, confirmDate) "
+					+ "select term, category, 1 as accepted, now() as confirmDate "
+					+ "from " + target_dataprefix + "_term_category; ";
 			sql_commands.add(command);
 
 			command = "";
