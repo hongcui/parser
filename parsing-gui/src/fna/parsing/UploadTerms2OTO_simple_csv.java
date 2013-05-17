@@ -45,9 +45,9 @@ public class UploadTerms2OTO_simple_csv {
 	private static String csv_folderPath = "D:\\Work\\Data\\ant_gloss\\"; //your local folder 
 																		//holding all the .cvs files
 	private static String glossFileName = "fnagloss from Hong 16May.csv"; //the file name of the glossary file
-	private static String synFileName = "antglossarysynonym.csv"; //the file name of the synonym file
+	private static String synFileName = ""; //the file name of the synonym file
 																  //can be anything if hasSynonymFile = false
-	private static String dataprefix = "ant_gloss"; // the prefix that will be
+	private static String dataprefix = "fna_gloss"; // the prefix that will be
 													// used on OTO server
 	private static String datasetOwnerID = "43"; // your userID in OTO
 	private static boolean useTimeStamp = true; // attach timestamp to dataprefix or not
@@ -57,7 +57,6 @@ public class UploadTerms2OTO_simple_csv {
 
 	private static String folderOnServer = "/home/sirls/hongcui/tmp/";
 	private static String serverPath = "hongcui@biosemantics.arizona.edu:";	
-	boolean test = true;
 	
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(UploadTerms2OTO.class);
@@ -78,10 +77,6 @@ public class UploadTerms2OTO_simple_csv {
 		boolean success = createTextFile(dataprefix);
 		if (!success)
 			return false;
-
-		if (test) {
-			return true;
-		}
 
 		// copy _sqlscript.txt file to server
 		String textfile = dataprefix + "_sqlscript.txt";
