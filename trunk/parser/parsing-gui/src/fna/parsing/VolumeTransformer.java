@@ -46,7 +46,7 @@ import fna.db.VolumeTransformerDbAccess;
  */
 @SuppressWarnings({ "unchecked", "unused","static-access" })
 public class VolumeTransformer extends Thread {
-	
+
 	private static String organnames ="2n|achene|anther|apex|awn|ax|bark|beak|blade|bract|bracteole|branch|branchlet|broad|calyx|capsule|cap_sule|caropohore|carpophore|caudex|cluster|corolla|corona|crown|cup_|cusp|cyme|cymule|embryo|endosperm|fascicle|filament|flower|fruit|head|herb|homophyllous|hypanthium|hypanth_ium|indument|inflore|inflorescence|inflores_cence|inflo_rescence|internode|involucre|invo_lucre|in_florescence|in_ternode|leaf|limb|lobe|margin|midvein|nectary|node|ocrea|ocreola|ovary|ovule|pair|papilla|pedicel|pedicle|peduncle|perennial|perianth|petal|petiole|plant|prickle|rhizome|rhi_zome|root|rootstock|rosette|scape|seed|sepal|shoot|spikelet|spur|stamen|stem|stigma|stipule|sti_pule|structure|style|subshrub|taproot|taprooted|tap_root|tendril|tepal|testa|tooth|tree|tube|tubercle|tubercule|tuft|twig|utricle|vein|vine|wing|x";
 	private static String organnamep ="achenes|anthers|awns|axes|blades|bracteoles|bracts|branches|buds|bumps|calyces|capsules|clusters|crescents|crowns|cusps|cymes|cymules|ends|escences|fascicles|filaments|flowers|fruits|heads|herbs|hoods|inflores|inflorescences|internodes|involucres|leaves|lengths|limbs|lobes|margins|midribs|midveins|nectaries|nodes|ocreae|ocreolae|ovules|pairs|papillae|pedicels|pedicles|peduncles|perennials|perianths|petals|petioles|pistils|plants|prickles|pules|rescences|rhizomes|rhi_zomes|roots|rows|scapes|seeds|sepals|shoots|spikelets|stamens|staminodes|stems|stigmas|stipules|sti_pules|structures|styles|subshrubs|taproots|tap_roots|teeth|tendrils|tepals|trees|tubercles|tubercules|tubes|tufts|twigs|utricles|veins|vines|wings";
 	private static String usstates ="Ala\\.|Alabama|Alaska|Ariz\\.|Arizona|Ark\\.|Arkansas|Calif\\.|California|Colo\\.|Colorado|Conn\\.|Connecticut|Del\\.|Delaware|D\\.C\\.|District of Columbia|Fla\\.|Florida|Ga\\.|Georgia|Idaho|Ill\\.|Illinois|Ind\\.|Indiana|Iowa|Kans\\.|Kansas|Ky\\.|Kentucky|La\\.|Louisiana|Maine|Maryland|Md\\.|Massachusetts|Mass\\.|Michigan|Mich\\.|Minnesota|Minn\\.|Mississippi|Miss\\.|Missouri|Mo\\.|Montana|Mont\\.|Nebraska|Nebr\\.|Nevada|Nev\\.|New Hampshire|N\\.H\\.|New Jersey|N\\.J\\.|New Mexico|N\\.Mex\\.|New York|N\\.Y\\.|North Carolina|N\\.C\\.|North Dakota|N\\.Dak\\.|Ohio|Oklahoma|Okla\\.|Oregon|Oreg\\.|Pennsylvania|Pa\\.|Rhode Island|R\\.I\\.|South Carolina|S\\.C\\.|South Dakota|S\\.Dak\\.|Tennessee|Tenn\\.|Texas|Tex\\.|Utah|Vermont|Vt\\.|Virginia|Va\\.|Washington|Wash\\.|West Virginia|W\\.Va\\.|Wisconsin|Wis\\.|Wyoming|Wyo\\.";	
@@ -77,14 +77,14 @@ public class VolumeTransformer extends Thread {
 	private Hashtable<String, String> unparsed = new Hashtable<String, String>(); //support display of unparsed segments
 	private ArrayList<String> nonames = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
 	private ArrayList<String> parsed = new ArrayList<String>(); //support rearrange of parsed files when unparsed is added
-	
+
 	private boolean debug = false;
 	private boolean debugref = false;
 	private boolean debugkey = true;
 	protected Hashtable<String, String> allNameTokens;
 	private String lastgenusname = null;
-	
-	
+
+
 	static XPath discussion;
 	static XPath placeInPub;
 	static XPath synPath;
@@ -105,9 +105,9 @@ public class VolumeTransformer extends Thread {
 		}		
 	}
 
-	
-	
-	
+
+
+
 	public VolumeTransformer(ProcessListener listener, String dataPrefix, String glosstable, Display display) throws ParsingException {
 		this.listener = listener;
 		this.dataPrefix = dataPrefix;
@@ -118,19 +118,19 @@ public class VolumeTransformer extends Thread {
 		this.authortable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("authortable");
 		this.publicationtable = dataPrefix.trim() + "_" + ApplicationUtilities.getProperty("publicationtable");
 		vtDbA = new VolumeTransformerDbAccess(dataPrefix);
-		
+
 		ti = TaxonIndexer.loadUpdated(Registry.ConfigurationDirectory);
 		this.allNameTokens = ti.getAllNameTokens();
 		if(ti.emptyNumbers() || ti.emptyNames()) ti = null;
-		
 
-		
+
+
 		// load style mapping
 		styleMappings = new Properties();
 		try {
 			styleMappings.load(new FileInputStream(
 					Registry.ConfigurationDirectory
-							+ "/style-mapping.properties"));
+					+ "/style-mapping.properties"));
 		} catch (IOException e) {
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			throw new ParsingException(
@@ -165,7 +165,7 @@ public class VolumeTransformer extends Thread {
 
 	}
 
-	
+
 	/**
 	 * Transform the extracted data to the xml format.
 	 */
@@ -198,7 +198,7 @@ public class VolumeTransformer extends Thread {
 		listener.progress(1);
 		try {
 			for (int count = 1; count <= total; count++) {
-			//for (int count = 1010; count <= total; count++) {
+				//for (int count = 1010; count <= total; count++) {
 
 				File file = new File(source, count + ".xml");
 				// logger.info("Start to process: " + file.getName());
@@ -213,12 +213,12 @@ public class VolumeTransformer extends Thread {
 				int textcount = 0, nextstepid = 0;
 				String ptexttag ="";
 				String idstorage = "1";
-				
+
 				for (Iterator iter = plist.iterator(); iter.hasNext();) {
 					Element pe = (Element) iter.next();
 					String style = pe.getChildText("style");
 					String text = getChildText(pe, "text");
-					
+
 					if (style.matches(start) ) {
 						// process the name tag
 						String sm= styleMappings.getProperty(style+"");//hong 6/26/08
@@ -247,14 +247,14 @@ public class VolumeTransformer extends Thread {
 						}
 						Element e = new Element(sm);
 						if(text.trim().length()!=0)
-						e.setText(text.trim());
+							e.setText(text.trim());
 						if(e.getContentSize()!=0)//to prevent empty tags
-						treatment.addContent(e);
-												
-	
+							treatment.addContent(e);
+
+
 					}
 				}
-			
+
 				//further mark up reference
 				List<Element> elements = XPath.selectNodes(treatment, "./references");
 				Iterator<Element> it = elements.iterator();
@@ -262,14 +262,14 @@ public class VolumeTransformer extends Thread {
 					Element ref = it.next();
 					furtherMarkupReference(ref);
 				}
-				
+
 				//further mark up keys <run_in_sidehead>
 				//elements = XPath.selectNodes(treatment, "./key|./couplet");
 				elements = XPath.selectNodes(treatment, "./key|./couplet");
 				if(elements.size()>0){//contains key
 					furtherMarkupKeys(treatment);
 				}
-				
+
 				//fixSynonymRank(treatment);
 				System.out.println(count + ".xml"); //Just to check what file is outputted
 				// output the treatment to transformed
@@ -278,7 +278,7 @@ public class VolumeTransformer extends Thread {
 				ParsingUtil.outputXML(treatment, xml ,null);
 				//String error = (String)errors.get(count+"");
 				//error = error ==null? "":error;
-				
+
 				// output the description part to Registry.descriptions 08/04/09
 				List<Element> textList = XPath.selectNodes(treatment, "./description");
 				StringBuffer buffer = new StringBuffer("");
@@ -288,7 +288,7 @@ public class VolumeTransformer extends Thread {
 				}
 				String text = buffer.toString().replaceAll("\\s+", " ").trim();
 				outputElementText(count, text, "DESCRIPTIONS");
-				
+
 				// output the habitat part to Registry.habitat 08/04/09
 				textList = XPath.selectNodes(treatment, "./habitat");
 				buffer = new StringBuffer("");
@@ -298,18 +298,18 @@ public class VolumeTransformer extends Thread {
 				}
 				text = buffer.toString().replaceAll("\\s+", " ").trim();
 				outputElementText(count, text, "HABITATS");
-				
+
 				//when output list is displayed in CharaParser, habitat sections have not 
 				//been marked up yet.
 				//listener.info(String.valueOf(count), xml.getPath(), ""); //for FNA, this is executed later in vf.replaceAnnotated.
 				listener.progress((count*50) / total);
 			}
-			
+
 			HabitatParser4FNA hpf = new HabitatParser4FNA(dataPrefix);
 			hpf.parse();
 			VolumeFinalizer vf = new VolumeFinalizer(listener,null, dataPrefix, this.conn, glosstable, display);//display output files to listener here.
 			parsed = vf.replaceWithAnnotated(hpf, "/treatment/habitat", "TRANSFORMED", true);
-			
+
 			if(MainForm.conn == null){
 				Class.forName(ApplicationUtilities.getProperty("database.driverPath"));
 				MainForm.conn = DriverManager.getConnection(ApplicationUtilities.getProperty("database.url"));
@@ -318,7 +318,7 @@ public class VolumeTransformer extends Thread {
 			String transformeddir = Registry.TargetDirectory+"\\transformed\\";
 			TaxonNameCollector tnc = new TaxonNameCollector(conn, transformeddir, dataPrefix+"_"+ApplicationUtilities.getProperty("TAXONNAMES"), dataPrefix);
 			tnc.collect();
-			
+
 		} catch (Exception e) {
 			//LOGGER.error("VolumeTransformer : transform - error in parsing", e);
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
@@ -351,17 +351,17 @@ public class VolumeTransformer extends Thread {
 	 * First assemble the key element(s) <key></key>
 	 * Then turn individual statement :
 	 *  <key>2. Carpels and stamens more than 5; plants perennial; leaves alternate; inflorescences ax-</key>
-  	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
-     * to:
-     * <key_statement>
-     * <statement_id>2</statement_id>
-     * <statement>Carpels and stamens more than 5; 
-     * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
-     * or leaf-opposed racemes or spikes</statement>
-     * <determination>3. Phytolacca (in part), p. 6</determination>
-     * </key_statement>
-     * 
-     * <determination> is optional, and may be replaced by <next_statement_id>.
+	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
+	 * to:
+	 * <key_statement>
+	 * <statement_id>2</statement_id>
+	 * <statement>Carpels and stamens more than 5; 
+	 * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
+	 * or leaf-opposed racemes or spikes</statement>
+	 * <determination>3. Phytolacca (in part), p. 6</determination>
+	 * </key_statement>
+	 * 
+	 * <determination> is optional, and may be replaced by <next_statement_id>.
 	 * @param treatment
 	 */
 	private void furtherMarkupKeys(Element treatment) {
@@ -374,22 +374,22 @@ public class VolumeTransformer extends Thread {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		
+
 	}
-	
+
 	/* Turn individual statement :
 	 *  <key>2. Carpels and stamens more than 5; plants perennial; leaves alternate; inflorescences ax-</key>
-  	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
-     * To:
-     * <key_statement>
-     * <statement_id>2</statement_id>
-     * <statement>Carpels and stamens more than 5; 
-     * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
-     * or leaf-opposed racemes or spikes</statement>
-     * <determination>3. Phytolacca (in part), p. 6</determination>
-     * </key_statement>
-     * 
-     * <determination> is optional, and may be replaced by <next_statement_id>.
+	 *	<key>illary, terminal, or leaf-opposed racemes or spikes ### 3. Phytolac ca ### (in part), p. 6</key>
+	 * To:
+	 * <key_statement>
+	 * <statement_id>2</statement_id>
+	 * <statement>Carpels and stamens more than 5; 
+	 * plants perennial; leaves alternate; inflorescences ax-illary, terminal, 
+	 * or leaf-opposed racemes or spikes</statement>
+	 * <determination>3. Phytolacca (in part), p. 6</determination>
+	 * </key_statement>
+	 * 
+	 * <determination> is optional, and may be replaced by <next_statement_id>.
 	 * @param treatment
 	 */
 	private void furtherMarkupKeyStatements(Element taxonkey) {
@@ -448,11 +448,11 @@ public class VolumeTransformer extends Thread {
 				if(stateclone.getName().compareTo("run_in_sidehead")==0){
 					stateclone.setName("key_head");
 				}
-				
+
 				allstatements.add(stateclone);//"discussion" remains
 			}
 		}
-		
+
 		for(int i = allstatements.size()-1; i >=0; i--){
 			marked.addContent(allstatements.get(i));
 		}		
@@ -487,7 +487,7 @@ public class VolumeTransformer extends Thread {
 					treatment.addContent((Element)key.clone());	
 				}
 				key = new Element("TaxonKey");
-				
+
 			}
 			if(!foundkey && (e.getName().compareTo("key")==0 || e.getName().compareTo("couplet")==0)){
 				foundkey = true;	
@@ -584,7 +584,7 @@ public class VolumeTransformer extends Thread {
 			//System.out.println("discussion:"+text);
 		}
 		return tag;
-		
+
 	}
 	/**
 	 * further markup distribution to: (species-with infrataxa and higher)
@@ -604,16 +604,16 @@ public class VolumeTransformer extends Thread {
 				//System.out.println("number_of_infrataxa:"+m.group(1));
 			}
 			if(m.group(2)!=null){
-					addElement("introduced", m.group(2), treatment);
-					//System.out.println("introduced:"+m.group(2));
+				addElement("introduced", m.group(2), treatment);
+				//System.out.println("introduced:"+m.group(2));
 			}
 			if(m.group(3) != null){
-					//addElement("general_distribution", m.group(3), treatment);
-					//further markkup distribution
-					//DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "general_distribution");
-					DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "global_distribution");  //general_distribution -> global_distribution
-					treatment = dp.parse(); 
-					//System.out.println("general_distribution:"+m.group(3));
+				//addElement("general_distribution", m.group(3), treatment);
+				//further markkup distribution
+				//DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "general_distribution");
+				DistributionParser4FNA dp = new DistributionParser4FNA(treatment, m.group(3), "global_distribution");  //general_distribution -> global_distribution
+				treatment = dp.parse(); 
+				//System.out.println("general_distribution:"+m.group(3));
 			}	
 		}else{//species and lower
 			Pattern h = Pattern.compile("(Flowering.*?\\.)?(.*?(?:;|\\.$))?(\\s*of conservation concern\\s*(?:;|\\.$))?(.*?\\b(?:\\d+|m)\\b.*?(?:;|\\.$))?\\s*(introduced(?:;|\\.$))?(.*)");
@@ -632,7 +632,7 @@ public class VolumeTransformer extends Thread {
 					for(int l=0;l<habitatchunk.length;l++){
 						addElement("habitat",habitatchunk[l].trim(), treatment);
 					}
-					
+
 					//System.out.println("habitat:"+mh.group(2));
 				}
 				if(mh.group(3)!= null){
@@ -677,17 +677,17 @@ public class VolumeTransformer extends Thread {
 			}						
 		}
 	}
-	
-	
-	
+
+
+
 	private String parseNameTag(int index, String namerank, String line,
 			Element treatment) {
 		if(line == null || line.equals("")){
 			return ""; //TODO: should not happen. but did happen with v. 19 295.xml==>VolumeExtractor JDOM problem.
 		}
-		
+
 		String name = ti.getName(index);
- 
+
 
 		if(name==null ||name.compareTo("") == 0){
 			File xml = new File(Registry.TargetDirectory,
@@ -701,7 +701,7 @@ public class VolumeTransformer extends Thread {
 		String text = new String(line);
 		text = text.replaceAll(" ", " ").replaceAll("\\s+", " ").trim(); //there are some whitespaces that are not really a space, don't know what they are. 
 		if(debug) System.out.println("\n"+(index+1)+": text="+text);
-		
+
 		String number = null;
 		if(ti != null)
 			number = ti.getNumber(index);
@@ -710,26 +710,26 @@ public class VolumeTransformer extends Thread {
 		}
 		// number
 		addElement("number", number, treatment); // TODO: add the number tag
-		                                         // to the sytle mapping
+		// to the sytle mapping
 
 		//text = text.substring(number.length() + 1); //Hong 08/04/09 change to
 		text = VolumeVerifier.fixBrokenNames(text);
 		text = text.replaceFirst("^.*?(?=[A-Z])", "").trim();;
-		
-		
+
+
 		//Code to add name to taxon ID mohan 1/18/2013
 		Element taxonid = new Element("TaxonIdentification");
 		taxonid.setAttribute("Status","ACCEPTED");
-		
+
 		//End code
 		//specificNameRank may need be adjusted depending on the style used in the orginal doc
 		//namerank = specificNameRank(namerank, text);	
 		//name = fixBrokenName(text, namerank);
-		namerank = specificNameRank(namerank+"", name);	
+		namerank = specificNameRank(namerank, name);	
 		//name = fixBrokenName(name, namerank);
 		if(debug) System.out.println("namerank:"+namerank);
 		System.out.println("namerank:"+namerank);
-		String[] nameinfo = getNameAuthority(name);//genus and above: authority parsed by getNameAuthority: 0: name 1:authority
+		String[] nameinfo = getNameAuthority4FamilyGenusSpecies(name);//genus and above: authority parsed by getNameAuthority: 0: name 1:authority
 		if(nameinfo[0]!=null && nameinfo[1]!=null){
 			//addElement(namerank, nameinfo[0], treatment);
 			//addElement(namerank, nameinfo[0], taxonid); //add to taxonid
@@ -795,10 +795,10 @@ public class VolumeTransformer extends Thread {
 			ending = text.substring(pos + 1).trim();
 			text = text.substring(0, pos+1);
 		}*/
-		
-		
-		
-		
+
+
+
+
 		//derivation: deal with this first to remove [] and avoid pub-year match in [] but added to treatment after name
 		//Pattern p = Pattern.compile("(.*?)(\\[.*?\\]$)");//was matching the outer most paranthesis but we want to match only the last pair
 		Pattern p = Pattern.compile("(.*?)(\\[([^\\]]+)\\]\\.?$)");
@@ -812,7 +812,7 @@ public class VolumeTransformer extends Thread {
 			etymology = m.group(2).trim();
 			text = m.group(1).trim();
 		}
-		
+
 		//place of publication 
 		//Pattern p = Pattern.compile("(.* [12]\\d\\d\\d|.*(?=Â·)|.*(?=.))(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
 		p = Pattern.compile("(.*[ –][12]\\d\\d\\d)($|,|\\.| +)(.*)"); //TODO: a better fix is needed Brittonia 28: 427, fig. 1.  1977   ?  Yellow spinecape [For George Jones Goodman, 1904-1999
@@ -830,7 +830,7 @@ public class VolumeTransformer extends Thread {
 			addElement("etymology", etymology, treatment);
 			if(debug) System.out.println("etymology:"+etymology);
 		}
-		
+
 		// conserved
 		String conserved="name conserved";
 		int	pos = text.indexOf(conserved);
@@ -849,7 +849,7 @@ public class VolumeTransformer extends Thread {
 			//addElement("conserved", conserved, treatment);
 			addElement("conserved_name", conserved, treatment);//conserved --> conserved_name according to JSTOR schema
 			if(debug) System.out.println("conserved:"+conserved);
-			
+
 			// trim the text
 			//int p1 = text.lastIndexOf(',', pos);
 			//text = text.substring(0, p1);
@@ -901,11 +901,11 @@ public class VolumeTransformer extends Thread {
 					addElement("derivation", derivation, treatment);
 					//System.out.println("derivation:"+derivation);
 				}
-				
+
 				//text = text.substring(0, pos).trim();
 			}
 		}*/
-		
+
 
 		if(text.trim().matches(".*?\\w+.*")){
 			if(debug) System.out.println((index+1)+"unparsed: "+text);
@@ -916,9 +916,9 @@ public class VolumeTransformer extends Thread {
 				extractPublicationPlace(taxonid, text);
 			}else{
 				addElement("other_info", text, treatment);//unparsed -->other_info according to schema for JSTOR
-			
+
 				File xml = new File(Registry.TargetDirectory,
-					ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
+						ApplicationUtilities.getProperty("TRANSFORMED") + "/" + (index+1) + ".xml");
 				//listener.info("unparsed: "+text, xml.getPath());
 				unparsed.put((index+1)+" tagged as 'other_info': "+text, xml.getPath());
 			}
@@ -926,7 +926,7 @@ public class VolumeTransformer extends Thread {
 		return namerank.replace("_name", "");
 	}
 
-	
+
 
 
 	/*protected String fixBrokenName(String text, String namerank) {
@@ -952,12 +952,12 @@ public class VolumeTransformer extends Thread {
 				namerank = "variety_name";
 			}else if(text.indexOf("subsp.") >=0){
 				namerank = "subspecies_name";
-			}else if(text.indexOf("ser.") >=0 && text.indexOf(",") > text.indexOf("ser.")){ //after "," is publication where ser. may appear.
-				namerank = "series_name";
 			}else if(text.indexOf("sect.") >=0){
 				namerank = "section_name";
 			}else if(text.indexOf("subsect.") >=0){
 				namerank = "subsection_name";
+			}else if((text.indexOf("ser.") >=0 && text.indexOf(",")<0) ||(text.indexOf("ser.") >=0 && text.indexOf(",")>=0 && text.indexOf(",") > text.indexOf("ser."))){ //after "," is publication where ser. may appear.
+				namerank = "series_name";
 			}else {
 				namerank = "species_name";
 			}
@@ -974,6 +974,8 @@ public class VolumeTransformer extends Thread {
 				namerank = "section_name";
 			}else if(text.toLowerCase().indexOf("subg.") >=0){
 				namerank = "subgenus_name";
+			}else if((text.toLowerCase().indexOf("ser.") >=0 && text.indexOf(",")<0) ||(text.toLowerCase().indexOf("ser.") >=0 && text.indexOf(",")>=0 && text.indexOf(",") > text.toLowerCase().indexOf("ser."))){ //after "," is publication where ser. may appear.
+				namerank = "series_name";
 			}
 		}
 		return namerank;
@@ -988,7 +990,7 @@ public class VolumeTransformer extends Thread {
 	 * @param name
 	 * @return array of two elements: 0: name 1:authority
 	 */
-	private String[] getNameAuthority(String name) {
+	private String[] getNameAuthority4FamilyGenusSpecies(String name) {
 		String[] nameinfo = new String[2];
 		if(name.toLowerCase().matches(".*?\\b(subfam|var|subgen|subg|subsp|ser|tribe|sect|subsect)\\b.*")){
 			nameinfo[0] = name;
@@ -1043,14 +1045,14 @@ public class VolumeTransformer extends Thread {
 				pub=pubm.group(1).trim();
 				pip=pubm.group(2).trim();
 			}
-						
+
 			Element placeOfPub=new Element("place_of_publication");
 			addElement("publication_title",pub,placeOfPub);
 			addElement("place_in_publication",pip,placeOfPub);
 			treatment.addContent(placeOfPub);
 			if(debug) System.out.println("publication_title:"+pub);
 			if(debug) System.out.println("place_in_publication:"+pip);
-			
+
 			try {
 				vtDbA.add2PublicationTable(pub);
 			} catch (ParsingException e) {
@@ -1084,7 +1086,7 @@ public class VolumeTransformer extends Thread {
 			throw new ParsingException("Failed to output text file.", e);
 		}
 	}
-	
+
 	protected void parseName(String name, String namerank, Element taxid){
 		String text = name;
 		if(namerank.equals("subgenus_name")&& name.matches(".*?\\b[Ss]ect\\..*")){ //section wrongly marked as subgenus in word style(foc)
@@ -1093,7 +1095,7 @@ public class VolumeTransformer extends Thread {
 		if(namerank.equals("subgenus_name")&& !name.matches(".*?\\b[Ss]ubg\\..*")){ //genus wrongly marked as subgenus in word style (fna)
 			namerank = "genus_name";
 		}
-		
+
 		if(namerank.equals("family_name")) 
 		{
 			String newtext= text;
@@ -1115,9 +1117,9 @@ public class VolumeTransformer extends Thread {
 				famat.setText(famauth);
 				taxid.addContent(famat);
 			}
-			
+
 		}
-		
+
 		else if(namerank.equals("subfamily_name"))// SUBFAMILY
 		{	
 			int k;
@@ -1142,9 +1144,9 @@ public class VolumeTransformer extends Thread {
 			famauth=famauth.trim();
 			if(famauth.length()!=0)
 			{
-			Element famat= new Element("family_authority");
-			famat.setText(famauth);
-			taxid.addContent(famat);
+				Element famat= new Element("family_authority");
+				famat.setText(famauth);
+				taxid.addContent(famat);
 			}
 			k++;
 			Element subfm= new Element("subfamily_name");
@@ -1159,9 +1161,9 @@ public class VolumeTransformer extends Thread {
 			subfamauth=subfamauth.trim();
 			if(subfamauth.length()!=0)
 			{
-			Element subfamat= new Element("subfamily_authority");
-			subfamat.setText(subfamauth);
-			taxid.addContent(subfamat);	
+				Element subfamat= new Element("subfamily_authority");
+				subfamat.setText(subfamauth);
+				taxid.addContent(subfamat);	
 			}
 		}else if(namerank.equals("tribe_name"))// tribe for FoC, differs from FNA, tribe names do not have a family name prefixing them
 		{	
@@ -1187,9 +1189,9 @@ public class VolumeTransformer extends Thread {
 			famauth=famauth.trim();
 			if(famauth.length()!=0)
 			{
-			Element famat= new Element("family_authority");
-			famat.setText(famauth);
-			taxid.addContent(famat);
+				Element famat= new Element("family_authority");
+				famat.setText(famauth);
+				taxid.addContent(famat);
 			}
 			k++;
 			Element subfm= new Element("tribe_name");
@@ -1204,9 +1206,9 @@ public class VolumeTransformer extends Thread {
 			subfamauth=subfamauth.trim();
 			if(subfamauth.length()!=0)
 			{
-			Element subfamat= new Element("tribe_authority");
-			subfamat.setText(subfamauth);
-			taxid.addContent(subfamat);	
+				Element subfamat= new Element("tribe_authority");
+				subfamat.setText(subfamauth);
+				taxid.addContent(subfamat);	
 			}
 		}else if(namerank.equals("genus_name")){
 			int k;
@@ -1233,9 +1235,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			if(unrank==1)
 			{
@@ -1253,11 +1255,11 @@ public class VolumeTransformer extends Thread {
 				unauth=unauth.trim();
 				if(unauth.length()!=0)
 				{
-				Element unat= new Element("unranked_epithet_authority");
-				unat.setText(unauth);
-				taxid.addContent(unat);
+					Element unat= new Element("unranked_epithet_authority");
+					unat.setText(unauth);
+					taxid.addContent(unat);
 				}
-				
+
 			}
 
 		}else if(namerank.equals("subgenus_name")){
@@ -1283,9 +1285,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			k++;
 			Element sect= new Element("subgenus_name");
@@ -1300,9 +1302,9 @@ public class VolumeTransformer extends Thread {
 			sectauth=sectauth.trim();
 			if(sectauth.length()!=0)
 			{
-			Element subat= new Element("subgenus_authority");
-			subat.setText(sectauth);
-			taxid.addContent(subat);		
+				Element subat= new Element("subgenus_authority");
+				subat.setText(sectauth);
+				taxid.addContent(subat);		
 			}
 		}else if(namerank.equals("section_name")){
 			int k;
@@ -1328,30 +1330,55 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
-			k++;
-			Element subfm= new Element("subgenus_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			taxid.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
+				Element subfm= new Element("subgenus_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				taxid.addContent(subfm);
+				k++;
+				while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
+				{
+					subgauth=subgauth+var[k]+" ";
+					k++;
+				}
+				subgauth=subgauth.trim();
+				if(subgauth.length()!=0)
+				{
+					Element subauth= new Element("subgenus_authority");
+					subauth.setText(subgauth);
+					taxid.addContent(subauth);
+				}
+				if(var[k].matches(".*?\\b[Ss]ect\\..*"))
+				{
+					k++;
+					Element sect= new Element("section_name");
+					sect.setText(var[k]);
+					taxid.addContent(sect);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					if(sectauth.length()!=0)
+					{
+						Element subat= new Element("section_authority");
+						subat.setText(sectauth);
+						taxid.addContent(subat);
+					}
+				}
+				else
+				{
+					System.out.println("Problem in section");
+				}
 			}
-			subgauth=subgauth.trim();
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("subgenus_authority");
-				subauth.setText(subgauth);
-				taxid.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
+			else
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -1366,35 +1393,10 @@ public class VolumeTransformer extends Thread {
 				sectauth=sectauth.trim();
 				if(sectauth.length()!=0)
 				{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				taxid.addContent(subat);
+					Element subat= new Element("section_authority");
+					subat.setText(sectauth);
+					taxid.addContent(subat);
 				}
-			}
-			else
-			{
-				System.out.println("Problem in section");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("section_name");
-			sect.setText(var[k]);
-			taxid.addContent(sect);
-			k++;
-			while(k<var.length)
-			{
-				sectauth=sectauth+var[k]+" ";
-				k++;
-			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				taxid.addContent(subat);
-			}
 			}
 		}else if(namerank.equals("subsection_name")){
 			int k;
@@ -1419,9 +1421,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("subsection_name");
@@ -1436,9 +1438,9 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("subsection_authority");
-			subfamat.setText(varauth);
-			taxid.addContent(subfamat);	
+				Element subfamat= new Element("subsection_authority");
+				subfamat.setText(varauth);
+				taxid.addContent(subfamat);	
 			}
 		}else if(namerank.equals("series_name")){ //after "," is publication where ser. may appear.
 			int k;
@@ -1464,58 +1466,38 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
-			k++;
-			Element subfm= new Element("subgenus_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			taxid.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
-			}
-			subgauth=subgauth.trim();
-			subgauth=subgauth.replaceFirst("(\\W)$", "");
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("subgenus_authority");
-				subauth.setText(subgauth);
-				taxid.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
+				Element subfm= new Element("subgenus_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				taxid.addContent(subfm);
 				k++;
-				Element sect= new Element("section_name");
-				sect.setText(var[k]);
-				taxid.addContent(sect);
-				k++;
-				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
+				while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
-					sectauth=sectauth+var[k]+" ";
+					subgauth=subgauth+var[k]+" ";
 					k++;
 				}
-				sectauth=sectauth.trim();
-				sectauth=sectauth.replaceFirst("(\\W)$", "");
-				if(sectauth.length()!=0)
+				subgauth=subgauth.trim();
+				subgauth=subgauth.replaceFirst("(\\W)$", "");
+				if(subgauth.length()!=0)
 				{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				taxid.addContent(subat);
+					Element subauth= new Element("subgenus_authority");
+					subauth.setText(subgauth);
+					taxid.addContent(subauth);
 				}
-				if(var[k].matches(".*?\\b[Ss]er\\..*"))
+				if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
 					k++;
-					Element ser= new Element("series_name");
-					ser.setText(var[k]);
-					taxid.addContent(ser);
+					Element sect= new Element("section_name");
+					sect.setText(var[k]);
+					taxid.addContent(sect);
 					k++;
-					while(k<var.length)
+					while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
 					{
 						sectauth=sectauth+var[k]+" ";
 						k++;
@@ -1524,36 +1506,56 @@ public class VolumeTransformer extends Thread {
 					sectauth=sectauth.replaceFirst("(\\W)$", "");
 					if(sectauth.length()!=0)
 					{
-					Element subat= new Element("series_authority");
-					subat.setText(sectauth);
-					taxid.addContent(subat);
+						Element subat= new Element("section_authority");
+						subat.setText(sectauth);
+						taxid.addContent(subat);
 					}
+					if(var[k].matches(".*?\\b[Ss]er\\..*"))
+					{
+						k++;
+						Element ser= new Element("series_name");
+						ser.setText(var[k]);
+						taxid.addContent(ser);
+						k++;
+						while(k<var.length)
+						{
+							sectauth=sectauth+var[k]+" ";
+							k++;
+						}
+						sectauth=sectauth.trim();
+						sectauth=sectauth.replaceFirst("(\\W)$", "");
+						if(sectauth.length()!=0)
+						{
+							Element subat= new Element("series_authority");
+							subat.setText(sectauth);
+							taxid.addContent(subat);
+						}
+					}
+				}
+				else
+				{
+					System.out.println("Problem in section");
 				}
 			}
 			else
 			{
-				System.out.println("Problem in section");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("series_name");
-			sect.setText(var[k]);
-			taxid.addContent(sect);
-			k++;
-			while((k<var.length))
-			{
-				sectauth=sectauth+var[k]+" ";
 				k++;
-			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("series_authority");
-				subat.setText(sectauth);
-				taxid.addContent(subat);
-			}
+				Element sect= new Element("series_name");
+				sect.setText(var[k]);
+				taxid.addContent(sect);
+				k++;
+				while((k<var.length))
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+					Element subat= new Element("series_authority");
+					subat.setText(sectauth);
+					taxid.addContent(subat);
+				}
 			}
 		}else if(namerank.equals("species_name")){
 			int k;
@@ -1568,14 +1570,14 @@ public class VolumeTransformer extends Thread {
 			taxid.addContent(spele);
 			for(k=2;k<var.length;k++)
 			{
-					spauth+=var[k]+" ";
+				spauth+=var[k]+" ";
 			}
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("species_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 		}else if(namerank.equals("subspecies_name")){
 			int k;
@@ -1603,9 +1605,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("species_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("subspecies_name");
@@ -1620,12 +1622,12 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("subspecies_authority");
-			subfamat.setText(varauth);
-			taxid.addContent(subfamat);	
+				Element subfamat= new Element("subspecies_authority");
+				subfamat.setText(varauth);
+				taxid.addContent(subfamat);	
 			}
 		}
-		
+
 
 		else if(namerank.equals("variety_name")){
 			int k;
@@ -1659,9 +1661,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("species_authority");
-			spat.setText(spauth);
-			taxid.addContent(spat);
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				taxid.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("variety_name");
@@ -1676,16 +1678,16 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("variety_authority");
-			subfamat.setText(varauth);
-			taxid.addContent(subfamat);	
+				Element subfamat= new Element("variety_authority");
+				subfamat.setText(varauth);
+				taxid.addContent(subfamat);	
 			}
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	private String cleantext(String namepart){
 		String result="";
 		String[] chunks=namepart.split("\\s");
@@ -1734,9 +1736,9 @@ public class VolumeTransformer extends Thread {
 		result=inter.trim();
 		return result;
 	}
-	
+
 	private Element synprocess(String namepart){
-		
+
 		Element syn=new Element("synonym");
 		String text=cleantext(namepart);
 		if(text.matches("[\\x{4e00}-\\x{9fa5}].*?")){
@@ -1768,33 +1770,58 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("family_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("family_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			if(var[k].matches("\\s*\\(tribe\\s*"))
 			{
-			k++;
-			Element subfm= new Element("tribe_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			syn.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
+				Element subfm= new Element("tribe_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				syn.addContent(subfm);
+				k++;
+				while((k<var.length)&&!var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
+				{
+					subgauth=subgauth+var[k]+" ";
+					k++;
+				}
+				subgauth=subgauth.trim();
+				if(subgauth.length()!=0)
+				{
+					Element subauth= new Element("tribe_authority");
+					subauth.setText(subgauth);
+					syn.addContent(subauth);
+				}
+				if(var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
+				{
+					k++;
+					Element sect= new Element("subtribe_name");
+					sect.setText(var[k]);
+					syn.addContent(sect);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					if(sectauth.length()!=0)
+					{
+						Element subat= new Element("subtribe_authority");
+						subat.setText(sectauth);
+						syn.addContent(subat);
+					}
+				}
+				else
+				{
+					System.out.println("Problem in subtribe");
+				}
 			}
-			subgauth=subgauth.trim();
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("tribe_authority");
-				subauth.setText(subgauth);
-				syn.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[sS]ubtribe\\b.*"))
+			else
 			{
 				k++;
-				Element sect= new Element("subtribe_name");
+				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				syn.addContent(sect);
 				k++;
@@ -1806,35 +1833,10 @@ public class VolumeTransformer extends Thread {
 				sectauth=sectauth.trim();
 				if(sectauth.length()!=0)
 				{
-				Element subat= new Element("subtribe_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
+					Element subat= new Element("section_authority");
+					subat.setText(sectauth);
+					syn.addContent(subat);
 				}
-			}
-			else
-			{
-				System.out.println("Problem in subtribe");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("section_name");
-			sect.setText(var[k]);
-			syn.addContent(sect);
-			k++;
-			while(k<var.length)
-			{
-				sectauth=sectauth+var[k]+" ";
-				k++;
-			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
-			}
 			}
 		}
 		else if(text.matches(".*?\\b[tT]ribe\\b.*"))
@@ -1862,33 +1864,58 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("family_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("family_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			if(var[k].matches(".*?\\b[sS]ubfam\\..*"))
 			{
-			k++;
-			Element subfm= new Element("subfamily_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			syn.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[tT]ribe\\b.*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
+				Element subfm= new Element("subfamily_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				syn.addContent(subfm);
+				k++;
+				while((k<var.length)&&!var[k].matches(".*?\\b[tT]ribe\\b.*"))
+				{
+					subgauth=subgauth+var[k]+" ";
+					k++;
+				}
+				subgauth=subgauth.trim();
+				if(subgauth.length()!=0)
+				{
+					Element subauth= new Element("subfamily_authority");
+					subauth.setText(subgauth);
+					syn.addContent(subauth);
+				}
+				if(var[k].matches(".*?\\b[tT]ribe\\b.*"))
+				{
+					k++;
+					Element sect= new Element("tribe_name");
+					sect.setText(var[k]);
+					syn.addContent(sect);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					if(sectauth.length()!=0)
+					{
+						Element subat= new Element("tribe_authority");
+						subat.setText(sectauth);
+						syn.addContent(subat);
+					}
+				}
+				else
+				{
+					System.out.println("Problem in subtribe");
+				}
 			}
-			subgauth=subgauth.trim();
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("subfamily_authority");
-				subauth.setText(subgauth);
-				syn.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[tT]ribe\\b.*"))
+			else
 			{
 				k++;
-				Element sect= new Element("tribe_name");
+				Element sect= new Element("section_name");
 				sect.setText(var[k]);
 				syn.addContent(sect);
 				k++;
@@ -1900,35 +1927,10 @@ public class VolumeTransformer extends Thread {
 				sectauth=sectauth.trim();
 				if(sectauth.length()!=0)
 				{
-				Element subat= new Element("tribe_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
+					Element subat= new Element("section_authority");
+					subat.setText(sectauth);
+					syn.addContent(subat);
 				}
-			}
-			else
-			{
-				System.out.println("Problem in subtribe");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("section_name");
-			sect.setText(var[k]);
-			syn.addContent(sect);
-			k++;
-			while(k<var.length)
-			{
-				sectauth=sectauth+var[k]+" ";
-				k++;
-			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
-			}
 			}
 		}
 		else if(text.matches(".*?\\b[sS]ubfam\\..*"))// SUBFAMILY
@@ -1955,9 +1957,9 @@ public class VolumeTransformer extends Thread {
 			famauth=famauth.trim();
 			if(famauth.length()!=0)
 			{
-			Element famat= new Element("family_authority");
-			famat.setText(famauth);
-			syn.addContent(famat);
+				Element famat= new Element("family_authority");
+				famat.setText(famauth);
+				syn.addContent(famat);
 			}
 			k++;
 			Element subfm= new Element("subfamily_name");
@@ -1972,9 +1974,9 @@ public class VolumeTransformer extends Thread {
 			subfamauth=subfamauth.trim();
 			if(subfamauth.length()!=0)
 			{
-			Element subfamat= new Element("subfamily_authority");
-			subfamat.setText(subfamauth);
-			syn.addContent(subfamat);	
+				Element subfamat= new Element("subfamily_authority");
+				subfamat.setText(subfamauth);
+				syn.addContent(subfamat);	
 			}
 		}
 
@@ -2011,9 +2013,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("species_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("variety_name");
@@ -2028,9 +2030,9 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("variety_authority");
-			subfamat.setText(varauth);
-			syn.addContent(subfamat);	
+				Element subfamat= new Element("variety_authority");
+				subfamat.setText(varauth);
+				syn.addContent(subfamat);	
 			}
 		}
 		else if(text.matches(".*?\\b[Ss]ubsp\\..*"))
@@ -2060,9 +2062,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("species_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("species_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("subspecies_name");
@@ -2077,15 +2079,39 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("subspecies_authority");
-			subfamat.setText(varauth);
-			syn.addContent(subfamat);	
+				Element subfamat= new Element("subspecies_authority");
+				subfamat.setText(varauth);
+				syn.addContent(subfamat);	
 			}
 		}
-		
-		else if(text.matches(".*?\\b[Ss]er\\..*"))//SERIES NAME
+		else if(text.matches("[Ss]er\\..*"))//SERIES NAME alone
 		{
-			int k;
+			int k=1;
+			String newtext= text;
+			String spauth="";
+			String sectauth="";
+			String subgauth="";
+			String[] var= text.split("\\s");
+			Element ser= new Element("series_name");
+			ser.setText(var[k]);
+			syn.addContent(ser);
+			k++;
+			while((k<var.length))
+			{
+				sectauth=sectauth+var[k]+" ";
+				k++;
+			}
+			sectauth=sectauth.trim();
+			if(sectauth.length()!=0)
+			{
+				Element subat= new Element("series_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);
+			}
+		}
+		else if(text.matches(".*+\\b[Ss]er\\..*"))//SERIES NAME in context
+		{
+			int k=0;
 			String newtext= text;
 			String spauth="";
 			String sectauth="";
@@ -2108,58 +2134,38 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
-			k++;
-			Element subfm= new Element("subgenus_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			syn.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
-			}
-			subgauth=subgauth.trim();
-			subgauth=subgauth.replaceFirst("(\\W)$", "");
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("subgenus_authority");
-				subauth.setText(subgauth);
-				syn.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
+				Element subfm= new Element("subgenus_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				syn.addContent(subfm);
 				k++;
-				Element sect= new Element("section_name");
-				sect.setText(var[k]);
-				syn.addContent(sect);
-				k++;
-				while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
+				while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
-					sectauth=sectauth+var[k]+" ";
+					subgauth=subgauth+var[k]+" ";
 					k++;
 				}
-				sectauth=sectauth.trim();
-				sectauth=sectauth.replaceFirst("(\\W)$", "");
-				if(sectauth.length()!=0)
+				subgauth=subgauth.trim();
+				subgauth=subgauth.replaceFirst("(\\W)$", "");
+				if(subgauth.length()!=0)
 				{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
+					Element subauth= new Element("subgenus_authority");
+					subauth.setText(subgauth);
+					syn.addContent(subauth);
 				}
-				if(var[k].matches(".*?\\b[Ss]er\\..*"))
+				if(var[k].matches(".*?\\b[Ss]ect\\..*"))
 				{
 					k++;
-					Element ser= new Element("series_name");
-					ser.setText(var[k]);
-					syn.addContent(ser);
+					Element sect= new Element("section_name");
+					sect.setText(var[k]);
+					syn.addContent(sect);
 					k++;
-					while(k<var.length)
+					while(k<var.length&&!var[k].matches(".*?\\b[Ss]er\\..*"))
 					{
 						sectauth=sectauth+var[k]+" ";
 						k++;
@@ -2168,38 +2174,58 @@ public class VolumeTransformer extends Thread {
 					sectauth=sectauth.replaceFirst("(\\W)$", "");
 					if(sectauth.length()!=0)
 					{
-					Element subat= new Element("series_authority");
-					subat.setText(sectauth);
-					syn.addContent(subat);
+						Element subat= new Element("section_authority");
+						subat.setText(sectauth);
+						syn.addContent(subat);
 					}
+					if(var[k].matches(".*?\\b[Ss]er\\..*"))
+					{
+						k++;
+						Element ser= new Element("series_name");
+						ser.setText(var[k]);
+						syn.addContent(ser);
+						k++;
+						while(k<var.length)
+						{
+							sectauth=sectauth+var[k]+" ";
+							k++;
+						}
+						sectauth=sectauth.trim();
+						sectauth=sectauth.replaceFirst("(\\W)$", "");
+						if(sectauth.length()!=0)
+						{
+							Element subat= new Element("series_authority");
+							subat.setText(sectauth);
+							syn.addContent(subat);
+						}
+					}
+				}
+				else
+				{
+					System.out.println("Problem in section");
 				}
 			}
 			else
 			{
-				System.out.println("Problem in section");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("series_name");
-			sect.setText(var[k]);
-			syn.addContent(sect);
-			k++;
-			while((k<var.length))
-			{
-				sectauth=sectauth+var[k]+" ";
 				k++;
+				Element sect= new Element("series_name");
+				sect.setText(var[k]);
+				syn.addContent(sect);
+				k++;
+				while((k<var.length))
+				{
+					sectauth=sectauth+var[k]+" ";
+					k++;
+				}
+				sectauth=sectauth.trim();
+				if(sectauth.length()!=0)
+				{
+					Element subat= new Element("series_authority");
+					subat.setText(sectauth);
+					syn.addContent(subat);
+				}
 			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("series_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
-			}
-			}
-			
+
 		}
 		else if(text.matches(".*?\\b[Ss]ubsect\\..*"))
 		{
@@ -2225,9 +2251,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			k++;
 			Element subfm= new Element("subsection_name");
@@ -2242,9 +2268,9 @@ public class VolumeTransformer extends Thread {
 			varauth=varauth.trim();
 			if(varauth.length()!=0)
 			{
-			Element subfamat= new Element("subsection_authority");
-			subfamat.setText(varauth);
-			syn.addContent(subfamat);	
+				Element subfamat= new Element("subsection_authority");
+				subfamat.setText(varauth);
+				syn.addContent(subfamat);	
 			}
 		}
 		else if(text.matches(".*?\\b[Ss]ect\\..*"))
@@ -2257,8 +2283,8 @@ public class VolumeTransformer extends Thread {
 			String[] var= text.split("\\s");
 			Element newele= new Element("genus_name");
 			if(var[0].matches(".*?\\b[Ss]ect\\..*")){ //in FOC, "6. Sect. Salix", no genus name before "sect."
-			    newele.setText(this.lastgenusname!=null? this.lastgenusname:ApplicationUtilities.getProperty("GenusName.PlaceHolder"));	
-			    k = 0;
+				newele.setText(this.lastgenusname!=null? this.lastgenusname:ApplicationUtilities.getProperty("GenusName.PlaceHolder"));	
+				k = 0;
 			}else{
 				newele.setText(var[0]);
 				k = 1;
@@ -2279,30 +2305,55 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			if(var[k].matches(".*?\\b[Ss]ubg\\..*"))
 			{
-			k++;
-			Element subfm= new Element("subgenus_name");
-			subfm.setText(var[k].replaceFirst("(\\W)$", ""));
-			syn.addContent(subfm);
-			k++;
-			while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
-			{
-				subgauth=subgauth+var[k]+" ";
 				k++;
+				Element subfm= new Element("subgenus_name");
+				subfm.setText(var[k].replaceFirst("(\\W)$", ""));
+				syn.addContent(subfm);
+				k++;
+				while((k<var.length)&&!var[k].matches(".*?\\b[Ss]ect\\..*"))
+				{
+					subgauth=subgauth+var[k]+" ";
+					k++;
+				}
+				subgauth=subgauth.trim();
+				if(subgauth.length()!=0)
+				{
+					Element subauth= new Element("subgenus_authority");
+					subauth.setText(subgauth);
+					syn.addContent(subauth);
+				}
+				if(var[k].matches(".*?\\b[Ss]ect\\..*"))
+				{
+					k++;
+					Element sect= new Element("section_name");
+					sect.setText(var[k]);
+					syn.addContent(sect);
+					k++;
+					while(k<var.length)
+					{
+						sectauth=sectauth+var[k]+" ";
+						k++;
+					}
+					sectauth=sectauth.trim();
+					if(sectauth.length()!=0)
+					{
+						Element subat= new Element("section_authority");
+						subat.setText(sectauth);
+						syn.addContent(subat);
+					}
+				}
+				else
+				{
+					System.out.println("Problem in section");
+				}
 			}
-			subgauth=subgauth.trim();
-			if(subgauth.length()!=0)
-			{
-				Element subauth= new Element("subgenus_authority");
-				subauth.setText(subgauth);
-				syn.addContent(subauth);
-			}
-			if(var[k].matches(".*?\\b[Ss]ect\\..*"))
+			else
 			{
 				k++;
 				Element sect= new Element("section_name");
@@ -2317,35 +2368,10 @@ public class VolumeTransformer extends Thread {
 				sectauth=sectauth.trim();
 				if(sectauth.length()!=0)
 				{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
+					Element subat= new Element("section_authority");
+					subat.setText(sectauth);
+					syn.addContent(subat);
 				}
-			}
-			else
-			{
-				System.out.println("Problem in section");
-			}
-			}
-			else
-			{
-			k++;
-			Element sect= new Element("section_name");
-			sect.setText(var[k]);
-			syn.addContent(sect);
-			k++;
-			while(k<var.length)
-			{
-				sectauth=sectauth+var[k]+" ";
-				k++;
-			}
-			sectauth=sectauth.trim();
-			if(sectauth.length()!=0)
-			{
-				Element subat= new Element("section_authority");
-				subat.setText(sectauth);
-				syn.addContent(subat);
-			}
 			}
 		}
 		else if(text.matches(".*?\\b[Ss]ubg\\..*"))
@@ -2372,9 +2398,9 @@ public class VolumeTransformer extends Thread {
 			spauth=spauth.trim();
 			if(spauth.length()!=0)
 			{
-			Element spat= new Element("genus_authority");
-			spat.setText(spauth);
-			syn.addContent(spat);
+				Element spat= new Element("genus_authority");
+				spat.setText(spauth);
+				syn.addContent(spat);
 			}
 			k++;
 			Element sect= new Element("subgenus_name");
@@ -2389,12 +2415,12 @@ public class VolumeTransformer extends Thread {
 			sectauth=sectauth.trim();
 			if(sectauth.length()!=0)
 			{
-			Element subat= new Element("subgenus_authority");
-			subat.setText(sectauth);
-			syn.addContent(subat);		
+				Element subat= new Element("subgenus_authority");
+				subat.setText(sectauth);
+				syn.addContent(subat);		
 			}
 		}
-		
+
 		else
 		{
 			//if(text.matches("(^[A-Z](\\w|\\.|ï)+\\s+){1}(([a-z]|×)(\\w|-)+\\s*){1}.*"))//species name
@@ -2412,14 +2438,14 @@ public class VolumeTransformer extends Thread {
 				syn.addContent(spele);
 				for(k=2;k<var.length;k++)
 				{
-						spauth+=var[k]+" ";
+					spauth+=var[k]+" ";
 				}
 				spauth=spauth.trim();
 				if(spauth.length()!=0)
 				{
-				Element spat= new Element("species_authority");
-				spat.setText(spauth);
-				syn.addContent(spat);
+					Element spat= new Element("species_authority");
+					spat.setText(spauth);
+					syn.addContent(spat);
 				}
 			}
 
@@ -2451,9 +2477,9 @@ public class VolumeTransformer extends Thread {
 				spauth=spauth.trim();
 				if(spauth.length()!=0)
 				{
-				Element spat= new Element("genus_authority");
-				spat.setText(spauth);
-				syn.addContent(spat);
+					Element spat= new Element("genus_authority");
+					spat.setText(spauth);
+					syn.addContent(spat);
 				}
 				if(unrank==1)
 				{
@@ -2471,17 +2497,17 @@ public class VolumeTransformer extends Thread {
 					unauth=unauth.trim();
 					if(unauth.length()!=0)
 					{
-					Element unat= new Element("unranked_epithet_authority");
-					unat.setText(unauth);
-					syn.addContent(unat);
+						Element unat= new Element("unranked_epithet_authority");
+						unat.setText(unauth);
+						syn.addContent(unat);
 					}
-					
+
 				}
 			}
 
 			else  //lump it in fam, and correct it later in synrank
 			{
-				
+
 				String newtext= text;
 				String famauth="";
 				String[] Chunks = text.split("-");
@@ -2502,19 +2528,19 @@ public class VolumeTransformer extends Thread {
 					syn.addContent(famat);
 				}
 
-				
+
 			}
 
-			
-			
+
+
 		}
-	
+
 		return syn;
 	}
 
 
 	//private void parseSynTag(String tag, String text, Element treatment){
-		/*Element e = treatment.getChild("variety_name");
+	/*Element e = treatment.getChild("variety_name");
 		if(e != null){
 			tag = "synonym_of_variety_name";
 		}else if((e = treatment.getChild("subspecies_name"))!=null){
@@ -2526,116 +2552,116 @@ public class VolumeTransformer extends Thread {
 		}else if((e = treatment.getChild("genus_name"))!=null){
 			tag = "synonym_of_genus_name";
 		}
-		
+
 		addElement(tag, text, treatment);*/
-		//System.out.println(tag+":"+text);
-		
-		
-		
-		//Mohan's Code
-		private void parseSynTag(String tag, String text, Element treatment){
-			String namepart="";
-			String pubpart="";
-			String indsyntext="";
-			//String syntext = text; //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
-			String syntext = VolumeVerifier.fixBrokenNames(text); //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
-			String[] indsyn = syntext.split(";"); //; separate N syns or N pubs of a syn
-			
-			/**/
-			Element prvtaxid = null; //remember the last taxid element to be used with additional pubs
-			for(int s=0; s<indsyn.length; s++)// for every synonym
-			{
-				Element pubname = new Element("place_of_publication");
-				Element taxid= new Element("TaxonIdentification");
-				taxid.setAttribute("Status","SYNONYM");
-				indsyntext=indsyn[s];
-				if(s!=0 && !indsyntext.matches("\\D*?,\\D*?,\\s*\\d.*") && indsyntext.matches(".*?\\d.*?") && !indsyntext.matches("\\D*?[a-z]\\s+\\d{4,4}\\W.*")){//this is the 2nd pub, e.g. Mant. Pl., 108. 1767
-					if(indsyntext.trim().matches("^\\d.*")) { //this is the second place_in_publication, attach it to the last place_in_pub element
-						taxid = prvtaxid;
-						pubname = add2pubname(indsyntext,treatment);
-					}else{
-						taxid = prvtaxid;
-						publicationMarkuper(pubpart, indsyntext, pubname);
-					}
+	//System.out.println(tag+":"+text);
+
+
+
+	//Mohan's Code
+	private void parseSynTag(String tag, String text, Element treatment){
+		String namepart="";
+		String pubpart="";
+		String indsyntext="";
+		//String syntext = text; //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
+		String syntext = VolumeVerifier.fixBrokenNames(text); //e.g.may have N pubs: Crepis rhagadioloides Linnaeus, Syst. Nat. ed. 12, 2: 527. 1767; Mant. Pl., 108. 1767
+		String[] indsyn = syntext.split(";"); //; separate N syns or N pubs of a syn
+
+		/**/
+		Element prvtaxid = null; //remember the last taxid element to be used with additional pubs
+		for(int s=0; s<indsyn.length; s++)// for every synonym
+		{
+			Element pubname = new Element("place_of_publication");
+			Element taxid= new Element("TaxonIdentification");
+			taxid.setAttribute("Status","SYNONYM");
+			indsyntext=indsyn[s];
+			if(s!=0 && !indsyntext.matches("\\D*?,\\D*?,\\s*\\d.*") && indsyntext.matches(".*?\\d.*?") && !indsyntext.matches("\\D*?[a-z]\\s+\\d{4,4}\\W.*")){//this is the 2nd pub, e.g. Mant. Pl., 108. 1767
+				if(indsyntext.trim().matches("^\\d.*")) { //this is the second place_in_publication, attach it to the last place_in_pub element
+					taxid = prvtaxid;
+					pubname = add2pubname(indsyntext,treatment);
 				}else{
-					namepart="";
-					pubpart="";
-					int commaindex=-1;
-					int genindex=100000;
-					
-					int ci_in=indsyntext.indexOf(" in ");
-					int ci_based=indsyntext.indexOf(" based ");
-					int ci_comma=indsyntext.indexOf(",");
-					if(ci_in>=0&&ci_in<genindex)
-					{
-						genindex=ci_in;
-					}
-					if(ci_based>=0&&ci_based<genindex)
-					{
-						genindex=ci_based;
-					}
-					if(ci_comma>=0&&ci_comma<genindex)
-					{
-						genindex=ci_comma;
-					}
-					
-					if(genindex!=100000)
-					{
+					taxid = prvtaxid;
+					publicationMarkuper(pubpart, indsyntext, pubname);
+				}
+			}else{
+				namepart="";
+				pubpart="";
+				int commaindex=-1;
+				int genindex=100000;
+
+				int ci_in=indsyntext.indexOf(" in ");
+				int ci_based=indsyntext.indexOf(" based ");
+				int ci_comma=indsyntext.indexOf(",");
+				if(ci_in>=0&&ci_in<genindex)
+				{
+					genindex=ci_in;
+				}
+				if(ci_based>=0&&ci_based<genindex)
+				{
+					genindex=ci_based;
+				}
+				if(ci_comma>=0&&ci_comma<genindex)
+				{
+					genindex=ci_comma;
+				}
+
+				if(genindex!=100000)
+				{
 					commaindex=genindex;
-					}
-					
-					/*int commaindex=indsyntext.indexOf(" in ");
+				}
+
+				/*int commaindex=indsyntext.indexOf(" in ");
 					int inorcomma=0;
 					if(commaindex==-1)
 					{
 						commaindex=indsyntext.indexOf(",");
 						inorcomma=1;
 					}*/
-					
-					
-					if(commaindex!=-1)
-					{
-						namepart=(namepart+indsyntext.substring(0, commaindex)).trim();
-						String publication=indsyntext.substring(commaindex+1, indsyntext.length());
-						publicationMarkuper(pubpart, publication, pubname); //populate pubname element
-					}
-					else
-					{
-						namepart=indsyntext.trim();
-					}
-					
-					Element syn=synprocess(namepart);
-					List synlist=syn.getChildren();
-					for(int m=0;m<synlist.size();m++)
-					{
-						Element synte = (Element) synlist.get(m);
-						Element newsynte=(Element) synte.clone();
-						taxid.addContent(newsynte);
-					}
-					prvtaxid = taxid;
+
+
+				if(commaindex!=-1)
+				{
+					namepart=(namepart+indsyntext.substring(0, commaindex)).trim();
+					String publication=indsyntext.substring(commaindex+1, indsyntext.length());
+					publicationMarkuper(pubpart, publication, pubname); //populate pubname element
+				}
+				else
+				{
+					namepart=indsyntext.trim();
+				}
+
+				Element syn=synprocess(namepart);
+				List synlist=syn.getChildren();
+				for(int m=0;m<synlist.size();m++)
+				{
+					Element synte = (Element) synlist.get(m);
+					Element newsynte=(Element) synte.clone();
+					taxid.addContent(newsynte);
+				}
+				prvtaxid = taxid;
 				/*Iterator synit=synlist.iterator();
 					while(synit.hasNext())
 					{
 						Element synpe = (Element)synit.next();
 						taxid.addContent(synpe.detach());
 					}*/
-					//taxid.addContent(synlist);						
-				}
-				if(pubname.getContentSize()!=0 && pubname.getParentElement()==null) //to check if the publication has children.
-				{
-					taxid.addContent(pubname);
-					//System.out.println();
-				}
-				if(taxid.getParentElement()==null) treatment.addContent(taxid); //don't add taxid when the taxid is only updated by adding a pub
-			
+				//taxid.addContent(synlist);						
+			}
+			if(pubname.getContentSize()!=0 && pubname.getParentElement()==null) //to check if the publication has children.
+			{
+				taxid.addContent(pubname);
+				//System.out.println();
+			}
+			if(taxid.getParentElement()==null) treatment.addContent(taxid); //don't add taxid when the taxid is only updated by adding a pub
+
 			/*Element disc=(Element) te.clone();
 			treatment.addContent(disc);*/
 		}
-			
-			fixSynonymRank(treatment);	
+
+		fixSynonymRank(treatment);	
 	}
 
-	
+
 	private Element add2pubname(String placeinpubtext, Element treatment) {
 		try{
 			List<Element> placeinpub = placeInPub.selectNodes(treatment);
@@ -2652,17 +2678,17 @@ public class VolumeTransformer extends Thread {
 		}
 		return null;
 	}
-	
-	
+
+
 	private void publicationMarkuper(String pubpart, String publication,
 			Element pubname) {
 		String other="";
 		//Code to process other_info
 		//String publication=indsyntext.substring(commaindex+1, indsyntext.length()).trim();
-		
+
 		int n_commaindex=-1;
 		int n_genindex=100000;
-		
+
 		int n_ci_in=publication.indexOf(" not ");
 		int n_ci_based=publication.indexOf(" based ");
 		if(n_ci_in>=0&&n_ci_in<n_genindex)
@@ -2673,10 +2699,10 @@ public class VolumeTransformer extends Thread {
 		{
 			n_genindex=n_ci_based;
 		}
-									
+
 		if(n_genindex!=100000)
 		{
-		n_commaindex=n_genindex;
+			n_commaindex=n_genindex;
 		}
 		if(n_commaindex!=-1)
 		{
@@ -2688,17 +2714,17 @@ public class VolumeTransformer extends Thread {
 			pubpart=(pubpart+publication).trim();
 		}
 		//End of Code to process other_info
-		
+
 		//process the publication part
 
 		//pubpart=(pubpart+indsyntext.substring(commaindex+1, indsyntext.length())).trim();
 		String[] titlechunks = new String[1];
 		titlechunks=pubpart.split("[\\d].*");
-		
-		
+
+
 		String publtitl=titlechunks.length>=1? titlechunks[0]: "";
 		/*int inlength=titlechunks[0].length();
-		
+
 		if(inlength<pubpart.length())
 		{
 			Element publ_title = new Element("publication_title");
@@ -2715,9 +2741,9 @@ public class VolumeTransformer extends Thread {
 		}*/
 		if(publtitl.length()!=0)
 		{
-		Element publ_title = new Element("publication_title");
-		publ_title.setText(publtitl);
-		pubname.addContent(publ_title);
+			Element publ_title = new Element("publication_title");
+			publ_title.setText(publtitl);
+			pubname.addContent(publ_title);
 		}
 		int inlength= titlechunks.length>=1? titlechunks[0].length() : 0;
 		if(inlength<pubpart.length())
@@ -2738,13 +2764,13 @@ public class VolumeTransformer extends Thread {
 		{
 			System.out.println("only one element in publication");
 		}*/
-		
+
 		//finished processing the publication.
 	}
-	
-	
-	
-	
+
+
+
+
 	/**
 	 * deal with two categories:
 	 * 1. synonyms with at least genus and species(and any lower rank) need not fix
@@ -2764,7 +2790,7 @@ public class VolumeTransformer extends Thread {
 				if(citations.size()>0){
 					synonym.setAttribute("Status", "BASIONYM");
 				}
-				
+
 				//test for single name
 				List<Element> names = namePath.selectNodes(synonym);
 				if(names.size()==1){
@@ -2787,7 +2813,7 @@ public class VolumeTransformer extends Thread {
 		}catch(Exception e){
 			StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 		}
-		
+
 	}
 
 }

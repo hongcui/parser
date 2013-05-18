@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
+import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -83,7 +84,7 @@ public class VolumeExtractor extends Thread {
 	private boolean debug = false;
 	private boolean keydebug = false;
 	private boolean degubName = false;
-	private boolean debugInstrText = true;
+	private boolean debugInstrText = false;
 
 	public VolumeExtractor(String source, String target,
 			ProcessListener listener) {
@@ -199,6 +200,7 @@ public class VolumeExtractor extends Thread {
 						 */
 
 						output(); // ready to write this treatment out
+						if(debug) System.out.println("saved file "+count+".xml");
 						count++;
 					}
 				} else {
@@ -227,10 +229,12 @@ public class VolumeExtractor extends Thread {
 		pe.addContent(se);
 
 		if (style.matches(start)) { //names, one name with multiple pubs (separated by ";"). spliting at ";" results in pubs without a name
+			if(debug) System.out.println("start tag");
 			extractNameParagraph(wp, pe);
 			// add the element to the treatment (root) element
 			treatment.addContent(pe);			
 		}else if (style.matches(names)) { //synonyms: split at ";" to find individual syns
+			if(debug) System.out.println("syn name tag");
 			ArrayList<Element> pes = extractSynNameParagraph(wp, se);
 			for(Element ape: pes){
 			// add the element to the treatment (root) element
@@ -404,9 +408,10 @@ public class VolumeExtractor extends Thread {
 	 * @return
 	 */
 	private void removeSmartTag(Element wp) throws JDOMException {
-		List<Element> children = wp.getChildren();
+		List<Content> children = wp.getContent();
 		for(int i = 0; i < children.size(); i++){
-			if(children.get(i).getName().contains("smartTag")){
+			Content c = children.get(i);
+			if(c instanceof Element && ((Element)c).getName().contains("smartTag")){
 				Element r = (Element) XPath.selectSingleNode(children.get(i), ".//w:r");
 				children.get(i).detach();
 				r.detach();
@@ -426,6 +431,7 @@ public class VolumeExtractor extends Thread {
 	private void extractNameParagraph(Element wp, Element pe)
 			throws JDOMException {
 		String acase = "";
+		removeSmartTag(wp);//FoC v6, some w:r are nested in misused w:smartTag, use .// to also get them
 		List rList = XPath.selectNodes(wp, "./w:r");
 
 		for (Iterator ti = rList.iterator(); ti.hasNext();) {
