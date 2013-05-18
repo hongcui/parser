@@ -844,7 +844,7 @@ public class VolumeVerifier extends Thread {
 	 */
 	private void fillInNames(){
 		try {
-			for (int i = 1; i <= total; i++) {
+			for (int i = 1+0; i <= total; i++) {
 				File file = new File(path, i + ".xml");
 				SAXBuilder builder = new SAXBuilder();
 				Document doc = builder.build(file);

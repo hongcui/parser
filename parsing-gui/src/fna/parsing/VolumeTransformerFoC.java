@@ -33,14 +33,14 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 			namerank = "section_name";
 		}
 		
-		if(namerank.matches("(family|subfamily|tribe|section|genus|subgenus)_name")) 
+		if(namerank.matches("(family|subfamily|tribe|section|genus|subgenus|series)_name")) 
 		{
 			String rank = namerank.replaceFirst("_name", "");
-			text = text.toLowerCase().replaceFirst("(family|subfam|tribe|sect|genus|subg)\\.?", "").trim();
+			text = text.replaceFirst("(Family|Subfam|Tribe|Sect|Genus|Subg|Ser)\\.?", "").trim();
 			if(rank.matches("(family|genus)") && text.indexOf(" ")<0){ //single word
 				Element newele= new Element(rank+"_name");
 				newele.setText(text);
-				taxid.addContent(newele);
+				taxid.addContent(newele);//no need to parse authority again here. Family, genus, species authority already parsed in getNameAuthority
 			}else{
 				String famauth="";
 				String[] Chunks = text.split("-");
@@ -48,7 +48,7 @@ public class VolumeTransformerFoC extends VolumeTransformer {
 				String[] family= text.split("\\s");
 				Element newele= new Element(rank+"_name");
 				newele.setText(family[0]);
-				taxid.addContent(newele); //no need to parse authority again here. Family, genus, species authority already parsed in getNameAuthority
+				taxid.addContent(newele); 
 				for(int k=1;k<family.length;k++)
 				{
 					famauth+=family[k]+" ";
