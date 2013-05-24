@@ -1455,7 +1455,7 @@ public class MainFormDbAccessor {
 			stmt1.setString(2, correction);
 			stmt1.execute();
 		}catch(Exception e){
-			if(!e.toString().contains("duplicate key")){
+			if(!e.toString().contains("Duplicate entry")){ //ignore this exception
 				StringWriter sw = new StringWriter();PrintWriter pw = new PrintWriter(sw);e.printStackTrace(pw);LOGGER.error(ApplicationUtilities.getProperty("CharaParser.version")+System.getProperty("line.separator")+sw.toString());
 			}
 		}finally{
